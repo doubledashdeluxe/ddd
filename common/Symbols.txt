@@ -1,0 +1,47 @@
+80000000 discID
+8000002c consoleType
+80000030 arenaLo
+800000c4 userInterruptMask
+800000c8 osInterruptMask
+
+cc002000 vtr
+cc002002 dcr
+cc00200c vto
+cc002010 vte
+cc00201c tfbl
+cc002024 bfbl
+cc002048 hsw
+cc00204a hsr
+cc00206e visel
+
+cc003000 intsr
+cc003004 intmr
+
+cc00401e miirqflag
+
+cc00500a dspcsr
+
+cc006000 disr
+cc006004 dicvr
+cc006008 dicmdbuf0
+cc00600c dicmdbuf1
+cc006010 dicmdbuf2
+cc006014 dimar
+cc006018 dilength
+cc00601c dicr
+cc006020 diimmbuf
+
+cc006800 exi0csr
+cc006814 exi1csr
+cc006828 exi2csr
+
+cc006c00 aicr
+
+cd800000 ppcmsg
+cd800004 ppcctrl
+cd800008 armmsg
+cd800030 ppcirqflag
+cd80003c armirqmask
+cd800070 aipprot
+cd8000e0 gpio_out
+cd800194 resets

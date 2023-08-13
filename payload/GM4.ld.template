@@ -1,0 +1,29 @@
+PHDRS {
+    text PT_LOAD;
+    rodata PT_LOAD;
+    data PT_LOAD;
+}
+
+SECTIONS {
+    .text : { *(first) *(.init*) *(.text*) *(replacements*) *(thunks*) } :text
+    .ctors : { *(.ctors*) } :rodata
+    .dtors : { *(.dtors*) } :rodata
+    .rodata : { *(.rodata*) } :rodata
+    .data : { *(.data*) } :rodata
+    .bss : { *(.bss*) } :data
+
+    payload_text_start = ADDR(.text);
+    payload_text_end = payload_text_start + SIZEOF(.text);
+    payload_ctors_start = ADDR(.ctors);
+    payload_ctors_end = payload_ctors_start + SIZEOF(.ctors);
+    payload_dtors_start = ADDR(.dtors);
+    payload_dtors_end = payload_dtors_start + SIZEOF(.dtors);
+    payload_rodata_start = ADDR(.rodata);
+    payload_rodata_end = payload_rodata_start + SIZEOF(.rodata);
+    payload_data_start = ADDR(.data);
+    payload_data_end = payload_data_start + SIZEOF(.data);
+    payload_bss_start = ADDR(.bss);
+    payload_bss_end = payload_bss_start + SIZEOF(.bss);
+
+$symbols
+}

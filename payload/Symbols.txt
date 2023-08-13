@@ -1,0 +1,57 @@
+80003458 memset
+80003540 memcpy
+
+800157a8 __dl__FPv
+80023e24 setRenderMode__8JUTVideoFPC15GXRenderModeObj
+
+800af1d8 VIInit
+800af688 VIWaitForRetrace
+800b0378 VIFlush
+800b0524 VISetBlack
+800b0780 VIGetTvFormat
+800b147c ARAlloc
+800b14e4 ARInit
+800b15a8 ARGetSize
+800b2fec ARQInit
+800b305c ARQPostRequest
+800bf904 GXInitTlutObj
+800e5b50 OSInit
+800e6d8c OSSetArenaLo
+800e703c DCInvalidateRange
+800e7068 DCFlushRange
+800e7098 DCStoreRange
+800e714c ICInvalidateRange
+800e79dc OSLoadContext
+800e803c OSReport
+800e80bc OSPanic
+800e8740 OSDisableInterrupts
+800e8768 OSRestoreInterrupts
+800e878c OSSetInterruptHandler
+800e87a8 OSGetInterruptHandler
+800e87bc OSInterruptInit
+800e8830 OSSetInterruptMask
+800e8b08 OSMaskInterrupts
+800e8b90 OSUnmaskInterrupts
+800e8c18 OSDispatchInterrupt
+800eb198 OSInitThreadQueue
+800eb1e8 OSDisableScheduler
+800eb228 OSEnableScheduler
+800eb744 OSReschedule
+800ec0d0 OSSleepThread
+800ec1bc OSWakeupThread
+800ec36c OSGetTime
+
+80107088 strlen
+
+80114ad8 isWaveLoaded__Q29GameAudio4MainFl
+801af940 Create__8MovieAppFv
+801ceb3c LoadKeepData__6ResMgrFv
+801cf914 Call__7LogoAppFv
+801d3704 Ask__9CardAgentFll
+801d9358 Call__11SequenceAppFl
+
+803d51c4 OSLastInterruptSrr0
+803d51c8 OSLastInterrupt
+803d51d0 OSLastInterruptTime
+
+803d5498 s_instance__Q29GameAudio4Main

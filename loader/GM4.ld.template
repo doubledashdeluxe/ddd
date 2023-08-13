@@ -1,0 +1,31 @@
+PHDRS {
+    text PT_LOAD;
+    rodata PT_LOAD;
+    data PT_LOAD;
+}
+
+SECTIONS {
+    .text : { *(.init*) *(.text*) } :text
+    .ctors : { *(.ctors*) } :rodata
+    .dtors : { *(.dtors*) } :rodata
+    .rodata : { *(.rodata*) } :rodata
+    .data : { *(.data*) } :rodata
+    .bss : { *(.bss*) } :data
+
+    loader_text_start = ADDR(.text);
+    loader_text_end = loader_text_start + SIZEOF(.text);
+    loader_ctors_start = ADDR(.ctors);
+    loader_ctors_end = loader_ctors_start + SIZEOF(.ctors);
+    loader_dtors_start = ADDR(.dtors);
+    loader_dtors_end = loader_dtors_start + SIZEOF(.dtors);
+    loader_rodata_start = ADDR(.rodata);
+    loader_rodata_end = loader_rodata_start + SIZEOF(.rodata);
+    loader_data_start = ADDR(.data);
+    loader_data_end = loader_data_start + SIZEOF(.data);
+    loader_bss_start = ADDR(.bss);
+    loader_bss_end = loader_bss_start + SIZEOF(.bss);
+
+    stackTop = ADDR(.text) - 0x8;
+
+$symbols
+}
