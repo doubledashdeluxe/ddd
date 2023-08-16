@@ -7,6 +7,7 @@
 
 #include <common/DCache.hh>
 #include <common/ICache.hh>
+#include <common/Log.hh>
 #include <common/Platform.hh>
 
 extern "C" {
@@ -42,13 +43,13 @@ Apploader::GameEntryFunc Loader::Run() {
 
     VI::Init();
 
-    Console::Init(16, 235);
-    Console::Print("[Redacted] Loader\n");
-    Console::Print("\n");
+    Console::Init();
+    INFO("[Redacted] Loader\n");
+    INFO("\n");
 
     if (iosVersion >> 16 != 58 && iosVersion >> 16 != 59) {
-        Console::Print("In order for [Redacted] to work properly, IOS58 or IOS59 must be used.\n");
-        Console::Print("Before launching [Redacted], ensure that IOS58 or IOS59 is loaded!\n");
+        ERROR("In order for [Redacted] to work properly, IOS58 or IOS59 must be used.\n");
+        ERROR("Before launching [Redacted], ensure that IOS58 or IOS59 is loaded!\n");
         return nullptr;
     }
 
@@ -56,13 +57,12 @@ Apploader::GameEntryFunc Loader::Run() {
     while (!(gameEntry = Apploader::LoadAndRun())) {
         if (!DI::IsInserted()) {
             if (Platform::IsDolphin()) {
-                Console::Print(
-                        "\nInsert the MKDD disc\nby right-clicking the game in "
-                        "the game list \nand select \"Change Disc\".\n\n"
-                        "To avoid this in the future, select \n\"Set as Default ISO\" as "
-                        "well.\n");
+                INFO("\nInsert the MKDD disc\nby right-clicking the game in "
+                     "the game list \nand select \"Change Disc\".\n\n"
+                     "To avoid this in the future, select \n\"Set as Default ISO\" as "
+                     "well.\n");
             } else {
-                Console::Print("Please insert an MKDD disc.\n");
+                INFO("Please insert an MKDD disc.\n");
             }
 
             while (!DI::IsInserted()) {
@@ -72,9 +72,9 @@ Apploader::GameEntryFunc Loader::Run() {
 
         Clock::WaitMilliseconds(100);
 
-        Console::Print("Resetting disc interface...");
+        INFO("Resetting disc interface...");
         DI::Reset();
-        Console::Print(" done.\n");
+        INFO(" done.\n");
     }
 
     void *payloadDst;
@@ -97,20 +97,20 @@ Apploader::GameEntryFunc Loader::Run() {
         payloadSize = payloadJ_size;
         break;
     default:
-        Console::Print("Region detection failed!");
+        ERROR("Region detection failed!\n");
         return nullptr;
     }
 
-    Console::Print("Copying payload...");
+    INFO("Copying payload...");
     memcpy(payloadDst, payloadSrc, payloadSize);
     DCache::Flush(payloadDst, payloadSize);
     ICache::Invalidate(payloadDst, payloadSize);
-    Console::Print(" done.\n");
+    INFO(" done.\n");
 
-    Console::Print("Applying patches...");
+    INFO("Applying patches...");
     PayloadEntryFunc payloadEntry = reinterpret_cast<PayloadEntryFunc>(payloadDst);
     payloadEntry();
-    Console::Print(" done.\n");
+    INFO(" done.\n");
 
     if (Platform::IsDolphin()) {
         // Enable OSReport over EXI

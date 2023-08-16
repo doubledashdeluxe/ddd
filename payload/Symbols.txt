@@ -41,6 +41,7 @@
 800ec1bc OSWakeupThread
 800ec36c OSGetTime
 
+80103a28 vprintf
 80107088 strlen
 
 80114ad8 isWaveLoaded__Q29GameAudio4MainFl

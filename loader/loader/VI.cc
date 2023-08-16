@@ -12,6 +12,9 @@ extern "C" volatile u16 hsw;
 extern "C" volatile u16 hsr;
 extern "C" volatile u16 visel;
 
+const VI::Color VI::Color::Black = {16, 128, 16, 128};
+const VI::Color VI::Color::White = {255, 128, 255, 128};
+
 void VI::Init() {
     bool isProgressive = IsProgressive();
     bool isNtsc = (dcr >> 8 & 3) == 0;
@@ -20,7 +23,7 @@ void VI::Init() {
     s_xfb = reinterpret_cast<u32 *>(0x91000000);
     for (u16 y = 0; y < s_xfbHeight; y++) {
         for (u16 x = 0; x < s_xfbWidth; x++) {
-            WriteGrayscaleToXFB(x, y, 16);
+            WriteToXFB(x, y, Color::Black);
         }
     }
     FlushXFB();
@@ -53,33 +56,23 @@ u16 VI::GetXFBHeight() {
     return s_xfbHeight;
 }
 
-u8 VI::ReadGrayscaleFromXFB(u16 x, u16 y) {
+VI::Color VI::ReadFromXFB(u16 x, u16 y) {
     if (x > s_xfbWidth || y > s_xfbHeight) {
-        return 16;
+        return Color::Black;
     }
 
     u32 val = s_xfb[y * (s_xfbWidth / 2) + x / 2];
-    if (x & 1) {
-        return val >> 8;
-    } else {
-        return val >> 24;
-    }
+    Color color = {val >> 24, val >> 16, val >> 8, val >> 0};
+    return color;
 }
 
-void VI::WriteGrayscaleToXFB(u16 x, u16 y, u8 intensity) {
+void VI::WriteToXFB(u16 x, u16 y, Color color) {
     if (x > s_xfbWidth || y > s_xfbHeight) {
         return;
     }
 
-    u32 *val = &s_xfb[y * (s_xfbWidth / 2) + x / 2];
-    u8 y0 = *val >> 24;
-    u8 y1 = *val >> 8;
-    if (x & 1) {
-        y1 = intensity;
-    } else {
-        y0 = intensity;
-    }
-    *val = y0 << 24 | 127 << 16 | y1 << 8 | 127;
+    u32 val = color.y0 << 24 | color.u << 16 | color.y1 << 8 | color.v;
+    s_xfb[y * (s_xfbWidth / 2) + x / 2] = val;
 }
 
 void VI::FlushXFB() {

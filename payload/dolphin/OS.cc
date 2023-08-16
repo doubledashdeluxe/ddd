@@ -1,9 +1,8 @@
 extern "C" {
 #include "OS.h"
-
-#include "dolphin/OSError.h"
 }
 
+#include <common/Log.hh>
 #include <common/Platform.hh>
 #include <common/ios/Resource.hh>
 
@@ -18,9 +17,9 @@ extern "C" void OSInit() {
 
     IOS::Resource::Init();
     if (Platform::IsDolphin()) {
-        OSReport("Running on Dolphin\n");
+        INFO("Running on Dolphin\n");
     } else {
-        OSReport("Running on console\n");
+        INFO("Running on console\n");
     }
 
     isInit = true;

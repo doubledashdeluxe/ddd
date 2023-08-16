@@ -59,11 +59,11 @@ common_cflags = [
     '-lang', 'c99',
     '-O4,p',
     '-pragma', '"cpp1x on"',
+    '-pragma', '"no_register_save_helpers on"',
     '-rostr',
     '-RTTI', 'off',
     '-sdata', '0',
     '-sdata2', '0',
-    '-use_lmw_stmw', 'on',
     '-w', 'most',
     '-w', 'noextracomma',
 ]
@@ -78,11 +78,11 @@ common_ccflags = [
     '-ipa', 'file',
     '-O4,p',
     '-pragma', '"cpp1x on"',
+    '-pragma', '"no_register_save_helpers on"',
     '-rostr',
     '-RTTI', 'off',
     '-sdata', '0',
     '-sdata2', '0',
-    '-use_lmw_stmw', 'on',
     '-w', 'most',
     '-w', 'noextracomma',
 ]
@@ -214,6 +214,7 @@ n.newline()
 
 code_in_files = {
     'vendor': [
+        os.path.join('vendor', 'arith64.c'),
         *sorted(glob.glob('vendor/ff/**/*.c', recursive=True)),
     ],
     'libc': [
