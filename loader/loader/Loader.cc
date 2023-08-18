@@ -44,12 +44,12 @@ Apploader::GameEntryFunc Loader::Run() {
     VI::Init();
 
     Console::Init();
-    INFO("[Redacted] Loader\n");
+    INFO("Double Dash Deluxe Loader\n");
     INFO("\n");
 
     if (iosVersion >> 16 != 58 && iosVersion >> 16 != 59) {
-        ERROR("In order for [Redacted] to work properly, IOS58 or IOS59 must be used.\n");
-        ERROR("Before launching [Redacted], ensure that IOS58 or IOS59 is loaded!\n");
+        ERROR("In order for Double Dash Deluxe to work properly, IOS58 or IOS59 must be used.\n");
+        ERROR("Before launching Double Dash Deluxe, ensure that IOS58 or IOS59 is loaded!\n");
         return nullptr;
     }
 
