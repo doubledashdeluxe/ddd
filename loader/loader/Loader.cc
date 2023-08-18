@@ -48,8 +48,8 @@ Apploader::GameEntryFunc Loader::Run() {
     INFO("\n");
 
     if (iosVersion >> 16 != 58 && iosVersion >> 16 != 59) {
-        ERROR("In order for Double Dash Deluxe to work properly, IOS58 or IOS59 must be used.\n");
-        ERROR("Before launching Double Dash Deluxe, ensure that IOS58 or IOS59 is loaded!\n");
+        ERROR("In order for Double Dash Deluxe to work, IOS58 (or IOS59) must be installed.\n");
+        ERROR("Please perform a Wii System Update or use the IOS58 Installer to install IOS58.\n");
         return nullptr;
     }
 
