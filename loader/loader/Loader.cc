@@ -53,16 +53,21 @@ Apploader::GameEntryFunc Loader::Run() {
         return nullptr;
     }
 
+    bool diWasReset = false;
     Apploader::GameEntryFunc gameEntry;
     while (!(gameEntry = Apploader::LoadAndRun())) {
         if (!DI::IsInserted()) {
             if (Platform::IsDolphin()) {
-                INFO("\nInsert the MKDD disc\nby right-clicking the game in "
-                     "the game list \nand select \"Change Disc\".\n\n"
-                     "To avoid this in the future, select \n\"Set as Default ISO\" as "
-                     "well.\n");
+                if (diWasReset) {
+                    INFO("\n");
+                }
+                INFO("Insert the Mario Kart: Double Dash!! disc by right-clicking the game\n");
+                INFO("in the game list and select \"Change Disc\".\n");
+                INFO("\n");
+                INFO("To avoid this in the future, select \"Set as Default ISO\" as well.\n");
+                INFO("\n");
             } else {
-                INFO("Please insert an MKDD disc.\n");
+                INFO("Please insert a Mario Kart: Double Dash!! disc.\n");
             }
 
             while (!DI::IsInserted()) {
@@ -75,6 +80,7 @@ Apploader::GameEntryFunc Loader::Run() {
         INFO("Resetting disc interface...");
         DI::Reset();
         INFO(" done.\n");
+        diWasReset = true;
     }
 
     void *payloadDst;

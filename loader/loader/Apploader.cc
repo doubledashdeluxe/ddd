@@ -23,14 +23,14 @@ Apploader::GameEntryFunc Apploader::LoadAndRun() {
     memcpy(discIDString, &discID[0], sizeof(discID[0]));
 
     if (!IsDiscIDValid()) {
-        ERROR("This is not MKDD (disc id %s).\n", discIDString);
+        ERROR("This is not Mario Kart: Double Dash!! (disc id %s).\n", discIDString);
 
         while (DI::IsInserted()) {
             Clock::WaitMilliseconds(100);
         }
         return nullptr;
     }
-    INFO("MKDD disc found (disc id %s).\n", discIDString);
+    INFO("Mario Kart: Double Dash!! disc found (disc id %s).\n", discIDString);
 
     alignas(0x20) ApploaderHeader header;
     if (!DI::Read(&header, sizeof(header), 0x2440)) {
