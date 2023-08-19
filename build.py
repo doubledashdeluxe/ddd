@@ -146,6 +146,13 @@ n.rule(
 n.newline()
 
 n.rule(
+    'cp',
+    command = 'cp $in $out',
+    description = 'CP $out',
+)
+n.newline()
+
+n.rule(
     'elf2bin',
     command = f'{sys.executable} $elf2bin $in $out',
     description = 'ELF2BIN $out',
@@ -433,6 +440,13 @@ n.build(
     'elf2dol',
     os.path.join('$builddir', 'loader', 'loader.elf'),
     implicit = '$elf2dol',
+)
+n.newline()
+
+n.build(
+    os.path.join('$outdir', 'meta.xml'),
+    'cp',
+    os.path.join('meta.xml'),
 )
 n.newline()
 
