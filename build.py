@@ -41,7 +41,10 @@ n.newline()
 n.variable('bin2c', os.path.join('tools', 'bin2c.py'))
 n.variable('elf2bin', os.path.join('tools', 'elf2bin.py'))
 n.variable('elf2dol', os.path.join('tools', 'elf2dol.py'))
-n.variable('mwcc', os.path.join('tools', 'mwcc.py'))
+if 'win' in sys.platform or 'msys' in sys.platform:
+    n.variable('mwcc', os.path.join('tools', 'cw', 'mwcceppc.exe'))
+else:
+    n.variable('mwcc', os.path.join('tools', 'mwcc.py'))
 n.variable('patch', os.path.join('tools', 'patch.py'))
 n.variable('port', os.path.join('tools', 'port.py'))
 n.variable('script', os.path.join('tools', 'script.py'))
@@ -127,18 +130,26 @@ n.rule(
 )
 n.newline()
 
+if 'win' in sys.platform or 'msys' in sys.platform:
+    c_command = '$mwcc -MDfile $out.d $cflags -c $in -o $out'
+else:
+    c_command = f'{sys.executable} $mwcc -MDfile $out.d $cflags -c $in -o $out'
 n.rule(
     'c',
-    command = f'{sys.executable} $mwcc -MDfile $out.d $cflags -c $in -o $out',
+    command = c_command,
     depfile = '$out.d',
     deps = 'gcc',
     description = 'C $out',
 )
 n.newline()
 
+if 'win' in sys.platform or 'msys' in sys.platform:
+    cc_command = '$mwcc -MDfile $out.d $ccflags -c $in -o $out'
+else:
+    cc_command = f'{sys.executable} $mwcc -MDfile $out.d $ccflags -c $in -o $out'
 n.rule(
     'cc',
-    command = f'{sys.executable} $mwcc -MDfile $out.d $ccflags -c $in -o $out',
+    command = cc_command,
     depfile = '$out.d',
     deps = 'gcc',
     description = 'CC $out',
@@ -166,9 +177,13 @@ n.rule(
 )
 n.newline()
 
+if 'win' in sys.platform or 'msys' in sys.platform:
+    ld_command = 'ld.lld.exe $ldflags $in -o $out'
+else:
+    ld_command = 'ld.lld $ldflags $in -o $out'
 n.rule(
     'ld',
-    command = 'ld.lld $ldflags $in -o $out',
+    command = ld_command,
     description = 'LD $out',
 )
 n.newline()
@@ -224,8 +239,8 @@ n.newline()
 
 code_in_files = {
     'vendor': [
-        os.path.join('vendor', 'arith64.c'),
-        *sorted(glob.glob('vendor/ff/**/*.c', recursive=True)),
+        *sorted(glob.glob('vendor/**/*.c', recursive=True)),
+        *sorted(glob.glob('vendor/**/*.cc', recursive=True)),
     ],
     'libc': [
         *sorted(glob.glob('libc/**/*.c', recursive=True)),

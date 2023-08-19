@@ -50,6 +50,43 @@ jobs:
           name: ddd-linux
           path: out
 
+  build-windows:
+    name: Build on Windows
+    runs-on: windows-2022
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - name: Install pyelftools
+        run: pip install pyelftools
+      - name: Install Ninja
+        run: pip install ninja
+      - name: Cache CodeWarrior
+        id: cache-cw
+        uses: actions/cache@v3
+        with:
+          path: cache
+          key: ${{ runner.os }}-cw-se-v2.10
+      - name: Download CodeWarrior
+        if: steps.cache-cw.outputs.cache-hit != 'true'
+        run: |
+          mkdir cache && cd cache
+          curl -OJ "https://www.nxp.com/lgfiles/devsuites/PowerPC/CW55xx_v2_10_SE.exe"
+          cd ..
+      - name: Prepare tools
+        run: bash tools/prepare.sh cache/CW55xx_v2_10_SE.exe
+      - name: Build
+        run: python build.py --ci
+      - name: Upload result
+        uses: actions/upload-artifact@v3
+        with:
+          name: ddd-windows
+          path: out
+
   format-linux:
     name: Format on Linux
     runs-on: ubuntu-22.04
