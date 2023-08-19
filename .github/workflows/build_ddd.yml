@@ -87,6 +87,17 @@ jobs:
           name: ddd-windows
           path: out
 
+  compare-results:
+    name: Compare results
+    runs-on: ubuntu-22.04
+    needs: [build-linux, build-windows]
+    timeout-minutes: 5
+    steps:
+      - name: Download results
+        uses: actions/download-artifact@v3
+      - name: Compare
+        run: cmp ddd-linux/boot.dol ddd-windows/boot.dol
+
   format-linux:
     name: Format on Linux
     runs-on: ubuntu-22.04
