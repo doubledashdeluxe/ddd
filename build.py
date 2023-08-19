@@ -116,6 +116,9 @@ target_ccflags = {
         '-Ipayload',
     ],
 }
+if args.ci:
+    common_cflags += ['-w', 'error']
+    common_ccflags += ['-w', 'error']
 
 n.rule(
     'bin2c',
@@ -126,7 +129,7 @@ n.newline()
 
 n.rule(
     'c',
-    command = '$mwcc -MDfile $out.d $cflags -c $in -o $out',
+    command = f'{sys.executable} $mwcc -MDfile $out.d $cflags -c $in -o $out',
     depfile = '$out.d',
     deps = 'gcc',
     description = 'C $out',
@@ -135,7 +138,7 @@ n.newline()
 
 n.rule(
     'cc',
-    command = '$mwcc -MDfile $out.d $ccflags -c $in -o $out',
+    command = f'{sys.executable} $mwcc -MDfile $out.d $ccflags -c $in -o $out',
     depfile = '$out.d',
     deps = 'gcc',
     description = 'CC $out',

@@ -25,8 +25,10 @@ with tempfile.TemporaryFile() as stdout:
         ).returncode
         stdout.seek(0)
         sys.stdout.buffer.write(stdout.read())
+        sys.stdout.buffer.flush()
         stderr.seek(0)
         sys.stdout.buffer.write(stderr.read())
+        sys.stdout.buffer.flush()
         if returncode != 0:
             sys.exit(returncode)
 
