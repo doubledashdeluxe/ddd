@@ -31,7 +31,9 @@ For new code running on the Wii, C++ and the `REPLACE`/`REPLACED` patching syste
 
 The codebase is automatically formatted using `clang-format` (15), this will be checked by CI and must be run before merge.
 
-## Resources
+## Links and resources
+
+- [Discord guild](https://discord.gg/Ay3qffjcsE)
 
 - Ghidra project: ask stebler on Discord for access
 
