@@ -39,6 +39,7 @@ n.variable('outdir', 'out')
 n.newline()
 
 n.variable('bin2c', os.path.join('tools', 'bin2c.py'))
+n.variable('cp', os.path.join('tools', 'cp.py'))
 n.variable('elf2bin', os.path.join('tools', 'elf2bin.py'))
 n.variable('elf2dol', os.path.join('tools', 'elf2dol.py'))
 if 'win' in sys.platform or 'msys' in sys.platform:
@@ -158,7 +159,7 @@ n.newline()
 
 n.rule(
     'cp',
-    command = 'cp $in $out',
+    command = f'{sys.executable} $cp $name $in $out',
     description = 'CP $out',
 )
 n.newline()
@@ -462,6 +463,7 @@ n.build(
     os.path.join('$outdir', 'meta.xml'),
     'cp',
     os.path.join('meta.xml'),
+    implicit = '$cp',
 )
 n.newline()
 
