@@ -156,9 +156,13 @@ n.rule(
 )
 n.newline()
 
+if 'win' in sys.platform or 'msys' in sys.platform:
+    cp_command = 'copy.exe $in $out'
+else:
+    cp_command = 'cp $in $out'
 n.rule(
     'cp',
-    command = 'cp $in $out',
+    command = cp_command,
     description = 'CP $out',
 )
 n.newline()
