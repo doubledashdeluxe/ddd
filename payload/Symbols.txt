@@ -3,6 +3,7 @@
 
 800157a8 __dl__FPv
 
+8001ab48 panic_f__12JUTExceptionFPCciPCce
 8001cda0 setPreUserCallback__12JUTExceptionFPFUsP9OSContextUlUl_v
 80023e24 setRenderMode__8JUTVideoFPC15GXRenderModeObj
 
