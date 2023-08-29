@@ -14,6 +14,19 @@ extern "C" {
 #include <string.h>
 }
 
+extern "C" u8 loader_text_start[];
+extern "C" u8 loader_text_end[];
+extern "C" u8 loader_ctors_start[];
+extern "C" u8 loader_ctors_end[];
+extern "C" u8 loader_dtors_start[];
+extern "C" u8 loader_dtors_end[];
+extern "C" u8 loader_rodata_start[];
+extern "C" u8 loader_rodata_end[];
+extern "C" u8 loader_data_start[];
+extern "C" u8 loader_data_end[];
+extern "C" u8 loader_bss_start[];
+extern "C" u8 loader_bss_end[];
+
 extern "C" const u8 payloadP[];
 extern "C" const size_t payloadP_size;
 extern "C" const u8 payloadE[];
@@ -30,6 +43,90 @@ extern "C" volatile u32 aicr;
 
 extern "C" volatile u32 armirqmask;
 extern "C" volatile u32 aipprot;
+
+void *Loader::Start() {
+    return loader_text_start;
+}
+
+void *Loader::End() {
+    return loader_bss_end;
+}
+
+size_t Loader::Size() {
+    return loader_bss_end - loader_text_start;
+}
+
+void *Loader::TextSectionStart() {
+    return loader_text_start;
+}
+
+void *Loader::TextSectionEnd() {
+    return loader_text_end;
+}
+
+size_t Loader::TextSectionSize() {
+    return loader_text_end - loader_text_start;
+}
+
+void *Loader::CtorsSectionStart() {
+    return loader_ctors_start;
+}
+
+void *Loader::CtorsSectionEnd() {
+    return loader_ctors_end;
+}
+
+size_t Loader::CtorsSectionSize() {
+    return loader_ctors_end - loader_ctors_start;
+}
+
+void *Loader::DtorsSectionStart() {
+    return loader_dtors_start;
+}
+
+void *Loader::DtorsSectionEnd() {
+    return loader_dtors_end;
+}
+
+size_t Loader::DtorsSectionSize() {
+    return loader_dtors_end - loader_dtors_start;
+}
+
+void *Loader::RodataSectionStart() {
+    return loader_rodata_start;
+}
+
+void *Loader::RodataSectionEnd() {
+    return loader_rodata_end;
+}
+
+size_t Loader::RodataSectionSize() {
+    return loader_rodata_end - loader_rodata_start;
+}
+
+void *Loader::DataSectionStart() {
+    return loader_data_start;
+}
+
+void *Loader::DataSectionEnd() {
+    return loader_data_end;
+}
+
+size_t Loader::DataSectionSize() {
+    return loader_data_end - loader_data_start;
+}
+
+void *Loader::BssSectionStart() {
+    return loader_bss_start;
+}
+
+void *Loader::BssSectionEnd() {
+    return loader_bss_end;
+}
+
+size_t Loader::BssSectionSize() {
+    return loader_bss_end - loader_bss_start;
+}
 
 Apploader::GameEntryFunc Loader::Run() {
     // Use compat MMIO ranges for DI/SI/EXI/AI

@@ -2,12 +2,12 @@
 
 #include <common/Types.hh>
 
-extern "C" __declspec(weak) void (*_ctors)() = nullptr;
-
 extern "C" u32 stackTop;
 
 extern "C" void RunLoader() {
-    for (void (**ctor)() = &_ctors; *ctor; ctor++) {
+    void (**ctorsStart)() = reinterpret_cast<void (**)()>(Loader::CtorsSectionStart());
+    void (**ctorsEnd)() = reinterpret_cast<void (**)()>(Loader::CtorsSectionEnd());
+    for (void (**ctor)() = ctorsStart; ctor < ctorsEnd; ctor++) {
         (*ctor)();
     }
 

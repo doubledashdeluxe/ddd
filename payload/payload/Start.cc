@@ -1,11 +1,12 @@
 #include "payload/Patcher.hh"
+#include "payload/Payload.hh"
 
 #pragma section RX "first"
 
-extern "C" __declspec(weak) void (*_ctors)() = nullptr;
-
 extern "C" __declspec(section "first") void Start() {
-    for (void (**ctor)() = &_ctors; *ctor; ctor++) {
+    void (**ctorsStart)() = reinterpret_cast<void (**)()>(Payload::CtorsSectionStart());
+    void (**ctorsEnd)() = reinterpret_cast<void (**)()>(Payload::CtorsSectionEnd());
+    for (void (**ctor)() = ctorsStart; ctor < ctorsEnd; ctor++) {
         (*ctor)();
     }
 
