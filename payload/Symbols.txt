@@ -48,6 +48,7 @@
 80107088 strlen
 
 80114ad8 isWaveLoaded__Q29GameAudio4MainFl
+801573fc reset__9SceneMenuFv
 801af940 Create__8MovieAppFv
 801ceb3c LoadKeepData__6ResMgrFv
 801cf914 Call__7LogoAppFv
@@ -58,4 +59,5 @@
 803d51c8 OSLastInterrupt
 803d51d0 OSLastInterruptTime
 
+803c5fe0 s_systemRecord
 803d5498 s_instance__Q29GameAudio4Main

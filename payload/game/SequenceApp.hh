@@ -1,6 +1,7 @@
 #pragma once
 
 #include <common/Types.hh>
+#include <payload/Replace.hh>
 
 class SceneType {
 public:
@@ -15,7 +16,8 @@ private:
 
 class SequenceApp {
 public:
-    static void Call(s32 sceneType);
+    static void REPLACED(Call)(s32 sceneType);
+    REPLACE static void Call(s32 sceneType);
 
 private:
     SequenceApp();
