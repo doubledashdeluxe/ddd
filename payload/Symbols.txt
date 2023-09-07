@@ -61,3 +61,4 @@
 
 803c5fe0 s_systemRecord
 803d5498 s_instance__Q29GameAudio4Main
+803d5be0 s_currentApp__6AppMgr

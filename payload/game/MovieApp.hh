@@ -5,6 +5,7 @@
 
 class MovieApp {
 public:
+    static MovieApp *REPLACED(Create)();
     REPLACE static MovieApp *Create();
 
 private:
