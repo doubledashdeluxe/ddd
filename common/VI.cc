@@ -57,7 +57,7 @@ u16 VI::GetXFBHeight() {
 }
 
 VI::Color VI::ReadFromXFB(u16 x, u16 y) {
-    if (x > s_xfbWidth || y > s_xfbHeight) {
+    if (x >= s_xfbWidth || y >= s_xfbHeight) {
         return Color::Black;
     }
 
@@ -67,7 +67,7 @@ VI::Color VI::ReadFromXFB(u16 x, u16 y) {
 }
 
 void VI::WriteToXFB(u16 x, u16 y, Color color) {
-    if (x > s_xfbWidth || y > s_xfbHeight) {
+    if (x >= s_xfbWidth || y >= s_xfbHeight) {
         return;
     }
 
