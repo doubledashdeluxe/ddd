@@ -44,10 +44,11 @@ void Resource::Sync(Request &request) {
 
 void Resource::HandleInterrupt(s16 /* interrupt */, OSContext * /* context */) {
     if (ppcctrl & Y1) {
+        Request *reply = Memory::PhysicalToVirtual<Request>(armmsg);
+
         ppcctrl = IY2 | IY1 | Y1;
         ppcirqflag = 1 << 30;
 
-        Request *reply = Memory::PhysicalToVirtual<Request>(armmsg);
         DCache::Invalidate(reply, offsetof(Request, user));
         OSThreadQueue *queue = reinterpret_cast<OSThreadQueue *>(reply->user);
         OSWakeupThread(queue);
