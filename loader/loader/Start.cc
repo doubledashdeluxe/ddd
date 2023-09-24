@@ -2,9 +2,17 @@
 
 #include <common/Types.hh>
 
+extern "C" {
+#include <string.h>
+}
+
 extern "C" u32 stackTop;
 
 extern "C" void RunLoader() {
+    void *bssStart = Loader::BssSectionStart();
+    size_t bssSize = Loader::BssSectionSize();
+    memset(bssStart, 0, bssSize);
+
     void (**ctorsStart)() = reinterpret_cast<void (**)()>(Loader::CtorsSectionStart());
     void (**ctorsEnd)() = reinterpret_cast<void (**)()>(Loader::CtorsSectionEnd());
     for (void (**ctor)() = ctorsStart; ctor < ctorsEnd; ctor++) {
