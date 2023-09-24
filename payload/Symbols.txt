@@ -45,6 +45,10 @@
 800ec1bc OSWakeupThread
 800ec36c OSGetTime
 
+800ff6e0 __div2u
+800ff904 __mod2u
+800ffaf4 __shl2i
+
 80103a28 vprintf
 80107088 strlen
 

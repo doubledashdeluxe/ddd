@@ -1,7 +1,19 @@
 #include "Console.hh"
 
-#include "loader/Font.hh"
-#include "loader/VI.hh"
+#include "common/Font.hh"
+#include "common/VI.hh"
+
+extern "C" {
+#define NANOPRINTF_USE_FIELD_WIDTH_FORMAT_SPECIFIERS 1
+#define NANOPRINTF_USE_PRECISION_FORMAT_SPECIFIERS 1
+#define NANOPRINTF_USE_LARGE_FORMAT_SPECIFIERS 0
+#define NANOPRINTF_USE_FLOAT_FORMAT_SPECIFIERS 1
+#define NANOPRINTF_USE_BINARY_FORMAT_SPECIFIERS 1
+#define NANOPRINTF_USE_WRITEBACK_FORMAT_SPECIFIERS 0
+#define NANOPRINTF_VISIBILITY_STATIC
+#define NANOPRINTF_IMPLEMENTATION
+#include <vendor/nanoprintf.h>
+}
 
 const Console::Color Console::Color::Black = {0, 0, 0};
 const Console::Color Console::Color::Blue = {0, 0, 255};
@@ -17,9 +29,23 @@ void Console::Init() {
     s_rows = VI::GetXFBHeight() / Font::GetGlyphHeight() / (!VI::IsProgressive() + 1) - 1;
     s_col = 0;
     s_row = 0;
+    s_isInit = true;
 }
 
-void Console::Putchar(char c) {
+void Console::Deinit() {
+    s_isInit = false;
+}
+
+void Console::VPrintf(const char *format, va_list vlist) {
+    if (!s_isInit) {
+        return;
+    }
+
+    npf_vpprintf(Putchar, nullptr, format, vlist);
+    VI::FlushXFB();
+}
+
+void Console::Putchar(int c, void * /* ctx */) {
     if (s_col >= s_cols) {
         return;
     }
@@ -79,6 +105,7 @@ void Console::Putchar(char c) {
 
 Console::Color Console::s_bg = {0, 0, 0};
 Console::Color Console::s_fg = {255, 255, 255};
+bool Console::s_isInit = false;
 u8 Console::s_cols;
 u8 Console::s_rows;
 u8 Console::s_col;

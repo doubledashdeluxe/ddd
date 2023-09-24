@@ -1,10 +1,10 @@
 #include "Apploader.hh"
 
 #include "loader/Clock.hh"
-#include "loader/Console.hh"
 #include "loader/DI.hh"
 
 #include <common/Align.hh>
+#include <common/Console.hh>
 #include <common/ICache.hh>
 #include <common/Log.hh>
 

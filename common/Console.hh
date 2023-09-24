@@ -2,6 +2,10 @@
 
 #include <common/Types.hh>
 
+extern "C" {
+#include <stdarg.h>
+}
+
 class Console {
 public:
     struct Color {
@@ -20,7 +24,8 @@ public:
     };
 
     static void Init();
-    static void Putchar(char c);
+    static void Deinit();
+    static void VPrintf(const char *format, va_list vlist);
 
     static Color s_bg;
     static Color s_fg;
@@ -28,6 +33,9 @@ public:
 private:
     Console();
 
+    static void Putchar(int c, void *ctx);
+
+    static bool s_isInit;
     static u8 s_cols;
     static u8 s_rows;
     static u8 s_col;

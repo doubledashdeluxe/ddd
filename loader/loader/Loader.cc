@@ -1,14 +1,14 @@
 #include "Loader.hh"
 
 #include "loader/Clock.hh"
-#include "loader/Console.hh"
 #include "loader/DI.hh"
-#include "loader/VI.hh"
 
+#include <common/Console.hh>
 #include <common/DCache.hh>
 #include <common/ICache.hh>
 #include <common/Log.hh>
 #include <common/Platform.hh>
+#include <common/VI.hh>
 
 extern "C" {
 #include <string.h>

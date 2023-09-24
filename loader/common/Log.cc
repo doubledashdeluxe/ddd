@@ -1,22 +1,6 @@
 #include <common/Log.hh>
 
-#include <loader/loader/Console.hh>
-#include <loader/loader/VI.hh>
-extern "C" {
-#define NANOPRINTF_USE_FIELD_WIDTH_FORMAT_SPECIFIERS 1
-#define NANOPRINTF_USE_PRECISION_FORMAT_SPECIFIERS 1
-#define NANOPRINTF_USE_LARGE_FORMAT_SPECIFIERS 0
-#define NANOPRINTF_USE_FLOAT_FORMAT_SPECIFIERS 1
-#define NANOPRINTF_USE_BINARY_FORMAT_SPECIFIERS 1
-#define NANOPRINTF_USE_WRITEBACK_FORMAT_SPECIFIERS 0
-#define NANOPRINTF_VISIBILITY_STATIC
-#define NANOPRINTF_IMPLEMENTATION
-#include <vendor/nanoprintf.h>
-}
-
-static void Putchar(int c, void * /* ctx */) {
-    Console::Putchar(c);
-}
+#include <common/Console.hh>
 
 extern "C" void Log(LogLevel level, const char *format, ...) {
     switch (level) {
@@ -26,13 +10,14 @@ extern "C" void Log(LogLevel level, const char *format, ...) {
     case LOG_LEVEL_WARN:
         Console::s_fg = Console::Color::Yellow;
         break;
-    default:
+    case LOG_LEVEL_INFO:
         Console::s_fg = Console::Color::White;
         break;
+    default:
+        return;
     }
     va_list vlist;
     va_start(vlist, format);
-    npf_vpprintf(Putchar, nullptr, format, vlist);
+    Console::VPrintf(format, vlist);
     va_end(vlist);
-    VI::FlushXFB();
 }

@@ -20,7 +20,7 @@ void VI::Init() {
     bool isNtsc = (dcr >> 8 & 3) == 0;
     s_xfbWidth = 640;
     s_xfbHeight = isProgressive || isNtsc ? 480 : 574;
-    s_xfb = reinterpret_cast<u32 *>(0x91000000);
+    s_xfb = reinterpret_cast<u32 *>(0x93000000);
     for (u16 y = 0; y < s_xfbHeight; y++) {
         for (u16 x = 0; x < s_xfbWidth; x++) {
             WriteToXFB(x, y, Color::Black);
