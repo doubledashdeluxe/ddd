@@ -7,6 +7,7 @@ public:
     class SecretKart {
     public:
         enum {
+            None = 0 << 0,
             BabyLuigi = 1 << 0, // Rattle Buggy
             Patapata = 1 << 1,  // Para Wing
             Diddy = 1 << 2,     // Barrel Train
@@ -30,6 +31,7 @@ public:
     class GameFlag {
     public:
         enum {
+            None = 0 << 0,
             KinopioCombi = 1 << 0,  // Toad and Toadette
             BossCombi = 1 << 1,     // Petey Piranha and King Boo
             Mirror = 1 << 2,        // Mirror Mode
