@@ -20,6 +20,9 @@
 800b305c ARQPostRequest
 800bf904 GXInitTlutObj
 800e5b50 OSInit
+800e6d74 OSGetArenaHi
+800e6d7c OSGetArenaLo
+800e6d84 OSSetArenaHi
 800e6d8c OSSetArenaLo
 800e703c DCInvalidateRange
 800e7068 DCFlushRange
@@ -37,18 +40,32 @@
 800e8b08 OSMaskInterrupts
 800e8b90 OSUnmaskInterrupts
 800e8c18 OSDispatchInterrupt
+800e8fc4 OSInitMessageQueue
+800e9024 OSSendMessage
+800e90ec OSReceiveMessage
+800e9644 OSInitMutex
+800e967c OSLockMutex
+800e9758 OSUnlockMutex
 800eb198 OSInitThreadQueue
 800eb1e8 OSDisableScheduler
 800eb228 OSEnableScheduler
 800eb744 OSReschedule
+800eb7b0 OSCreateThread
+800ebcd8 OSResumeThread
 800ec0d0 OSSleepThread
 800ec1bc OSWakeupThread
 800ec36c OSGetTime
+800ed960 PADRead
+800edc60 PADControlMotor
+800eff6c SIProbe
 
+800ff1a4 __destroy_arr
+800ff21c __construct_array
 800ff6e0 __div2u
 800ff904 __mod2u
 800ffaf4 __shl2i
 
+801032e4 memcmp
 80103a28 vprintf
 80107088 strlen
 

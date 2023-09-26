@@ -1,6 +1,7 @@
 80000000 discID
 8000002c consoleType
 80000030 arenaLo
+80000034 arenaHi
 800000c4 userInterruptMask
 800000c8 osInterruptMask
 

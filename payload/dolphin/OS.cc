@@ -5,8 +5,10 @@ extern "C" {
 #include <common/Console.hh>
 #include <common/Log.hh>
 #include <common/Platform.hh>
+#include <common/USB.hh>
 #include <common/VI.hh>
 #include <common/ios/Resource.hh>
+#include <payload/WUP028.hh>
 
 static bool isInit = false;
 
@@ -23,12 +25,17 @@ extern "C" void OSInit() {
     INFO("Double Dash Deluxe Payload\n");
     INFO("\n");
 
+    INFO("Initializing IOS...");
     IOS::Resource::Init();
-    if (Platform::IsDolphin()) {
-        INFO("Running on Dolphin\n");
-    } else {
-        INFO("Running on console\n");
-    }
+    INFO(" done.\n");
+
+    INFO("Initializing WUP-028...");
+    WUP028::Init();
+    INFO(" done.\n");
+
+    INFO("Initializing USB...");
+    USB::Init();
+    INFO(" done.\n");
 
     Console::Deinit();
 

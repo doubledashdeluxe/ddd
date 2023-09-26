@@ -20,3 +20,7 @@ void OSWakeupThread(OSThreadQueue *queue);
 s32 OSDisableScheduler(void);
 s32 OSEnableScheduler(void);
 void OSReschedule(void);
+
+BOOL OSCreateThread(OSThread *thread, void *(*func)(void *), void *param, void *stack,
+        u32 stackSize, s32 priority, u16 attr);
+s32 OSResumeThread(OSThread *thread);

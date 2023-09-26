@@ -8,6 +8,10 @@ extern "C" {
 }
 
 extern "C" void Log(LogLevel level, const char *format, ...) {
+    if (level == LOG_LEVEL_TRACE) {
+        return;
+    }
+
     va_list vlist;
     va_start(vlist, format);
     vprintf(format, vlist);
