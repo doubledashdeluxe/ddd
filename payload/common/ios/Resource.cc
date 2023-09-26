@@ -34,12 +34,20 @@ void Resource::Sync(Request &request) {
     DCache::Flush(&request, offsetof(Request, user));
 
     Lock<NoInterrupts> lock;
-    ppcmsg = Memory::VirtualToPhysical(&request);
-    ppcctrl = IY2 | IY1 | X1;
 
-    OSThreadQueue *queue = reinterpret_cast<OSThreadQueue *>(request.user);
-    OSInitThreadQueue(queue);
-    OSSleepThread(queue);
+    request.user.next = nullptr;
+    if (s_request) {
+        Request *prev;
+        for (prev = s_request; prev->user.next; prev = prev->user.next) {}
+        prev->user.next = &request;
+    } else {
+        ppcmsg = Memory::VirtualToPhysical(&request);
+        ppcctrl = IY2 | IY1 | X1;
+        s_request = &request;
+    }
+
+    OSInitThreadQueue(&request.user.queue);
+    OSSleepThread(&request.user.queue);
 }
 
 void Resource::HandleInterrupt(s16 /* interrupt */, OSContext * /* context */) {
@@ -50,8 +58,7 @@ void Resource::HandleInterrupt(s16 /* interrupt */, OSContext * /* context */) {
         ppcirqflag = 1 << 30;
 
         DCache::Invalidate(reply, offsetof(Request, user));
-        OSThreadQueue *queue = reinterpret_cast<OSThreadQueue *>(reply->user);
-        OSWakeupThread(queue);
+        OSWakeupThread(&reply->user.queue);
 
         ppcctrl = IY2 | IY1 | X2;
     }
@@ -59,7 +66,17 @@ void Resource::HandleInterrupt(s16 /* interrupt */, OSContext * /* context */) {
     if (ppcctrl & Y2) {
         ppcctrl = IY2 | IY1 | Y2;
         ppcirqflag = 1 << 30;
+
+        if (s_request) {
+            s_request = s_request->user.next;
+            if (s_request) {
+                ppcmsg = Memory::VirtualToPhysical(s_request);
+                ppcctrl = IY2 | IY1 | X1;
+            }
+        }
     }
 }
+
+Resource::Request *Resource::s_request = nullptr;
 
 } // namespace IOS

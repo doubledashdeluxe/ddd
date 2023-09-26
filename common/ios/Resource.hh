@@ -3,7 +3,9 @@
 #include "common/Types.hh"
 
 #ifdef PAYLOAD
-typedef struct OSContext OSContext;
+extern "C" {
+#include <dolphin/OSThread.h>
+}
 #endif
 
 namespace IOS {
@@ -74,7 +76,15 @@ private:
                 u32 pairs;
             } ioctlv;
         };
-        u8 user[0x40 - 0x20];
+        struct {
+#ifdef PAYLOAD
+            Request *next;
+            OSThreadQueue queue;
+            u8 _0c[0x20 - 0x0c];
+#else
+            u8 _00[0x20 - 0x00];
+#endif
+        } user;
     };
     static_assert(sizeof(Request) == 0x40);
 
@@ -90,6 +100,11 @@ private:
 
 protected:
     s32 m_fd;
+
+private:
+#ifdef PAYLOAD
+    static Request *s_request;
+#endif
 };
 
 } // namespace IOS
