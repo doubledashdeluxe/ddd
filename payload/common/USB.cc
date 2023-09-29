@@ -158,7 +158,7 @@ void USB::HandleAdditions(Backend *backend, u32 deviceEntryCount,
             }
 
             if (deviceEntries[i].alternateSettingCount > 1) {
-                if (!backend->resource->setAlternateSetting(j, k)) {
+                if (!backend->resource->setAlternateSetting(backend->devices[j].m_id, k)) {
                     continue;
                 }
             }
