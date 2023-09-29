@@ -1,8 +1,8 @@
 #include <common/ios/Resource.hh>
 
+#include <common/Clock.hh>
 #include <common/DCache.hh>
 #include <common/Memory.hh>
-#include <loader/Clock.hh>
 
 extern "C" {
 #include <string.h>

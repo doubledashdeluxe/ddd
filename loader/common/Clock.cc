@@ -1,4 +1,4 @@
-#include "Clock.hh"
+#include <common/Clock.hh>
 
 void Clock::WaitMilliseconds(u32 milliseconds) {
     u32 duration = milliseconds * 60750;

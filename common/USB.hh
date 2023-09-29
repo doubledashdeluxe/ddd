@@ -20,6 +20,36 @@ private:
     class Resource;
 
 public:
+    class InterfaceClass {
+    public:
+        enum {
+            MassStorage = 0x8,
+        };
+
+    private:
+        InterfaceClass();
+    };
+
+    class InterfaceSubClass {
+    public:
+        enum {
+            MassStorageSCSI = 0x6,
+        };
+
+    private:
+        InterfaceSubClass();
+    };
+
+    class InterfaceProtocol {
+    public:
+        enum {
+            MassStorageBulkOnly = 0x50,
+        };
+
+    private:
+        InterfaceProtocol();
+    };
+
     class EndpointDirection {
     public:
         enum {
@@ -29,6 +59,19 @@ public:
 
     private:
         EndpointDirection();
+    };
+
+    class EndpointTransferType {
+    public:
+        enum {
+            Control = 0x0,
+            Isochronous = 0x1,
+            Bulk = 0x2,
+            Interrupt = 0x3,
+        };
+
+    private:
+        EndpointTransferType();
     };
 
     class RequestType {
@@ -111,7 +154,10 @@ public:
             u8 : 3;
             u8 number : 4;
         } endpointAddress;
-        u8 attributes;
+        struct {
+            u8 : 6;
+            u8 transferType : 2;
+        } attributes;
         u16 maxPacketSize;
         u8 interval;
         u8 _7[0x8 - 0x7];
@@ -136,9 +182,7 @@ public:
 
         virtual void onRemove(Device *device) = 0;
         virtual bool onAdd(const DeviceInfo *deviceInfo, Device *device) = 0;
-#ifdef PAYLOAD
         virtual void notify() = 0;
-#endif
 
     private:
         void pollRemove();

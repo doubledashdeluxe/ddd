@@ -8,6 +8,8 @@ extern "C" {
 #include <common/USB.hh>
 #include <common/VI.hh>
 #include <common/ios/Resource.hh>
+#include <common/storage/Storage.hh>
+#include <common/storage/USBStorage.hh>
 #include <payload/WUP028.hh>
 
 static bool isInit = false;
@@ -31,6 +33,14 @@ extern "C" void OSInit() {
 
     INFO("Initializing WUP-028...");
     WUP028::Init();
+    INFO(" done.\n");
+
+    INFO("Initializing storage...");
+    Storage::Init();
+    INFO(" done.\n");
+
+    INFO("Initializing USB storage...");
+    USBStorage::Init();
     INFO(" done.\n");
 
     INFO("Initializing USB...");

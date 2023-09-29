@@ -1,8 +1,8 @@
 #include "Loader.hh"
 
-#include "loader/Clock.hh"
 #include "loader/DI.hh"
 
+#include <common/Clock.hh>
 #include <common/Console.hh>
 #include <common/DCache.hh>
 #include <common/ICache.hh>

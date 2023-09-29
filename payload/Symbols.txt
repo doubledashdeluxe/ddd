@@ -20,6 +20,8 @@
 800b305c ARQPostRequest
 800bf904 GXInitTlutObj
 800e5b50 OSInit
+800e63e0 OSCreateAlarm
+800e6640 OSSetAlarm
 800e6d74 OSGetArenaHi
 800e6d7c OSGetArenaLo
 800e6d84 OSSetArenaHi
@@ -47,14 +49,17 @@
 800e967c OSLockMutex
 800e9758 OSUnlockMutex
 800eb198 OSInitThreadQueue
+800eb1a8 OSGetCurrentThread
 800eb1e8 OSDisableScheduler
 800eb228 OSEnableScheduler
 800eb744 OSReschedule
 800eb7b0 OSCreateThread
 800ebcd8 OSResumeThread
+800ebf60 OSSuspendThread
 800ec0d0 OSSleepThread
 800ec1bc OSWakeupThread
 800ec36c OSGetTime
+800ec5e4 OSTicksToCalendarTime
 800ed960 PADRead
 800edc60 PADControlMotor
 800eff6c SIProbe
@@ -66,7 +71,9 @@
 800ffaf4 __shl2i
 
 801032e4 memcmp
+801038e0 snprintf
 80103a28 vprintf
+80106cec strchr
 80107088 strlen
 
 80114ad8 isWaveLoaded__Q29GameAudio4MainFl

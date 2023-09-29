@@ -1,7 +1,6 @@
 #include "DI.hh"
 
-#include "loader/Clock.hh"
-
+#include <common/Clock.hh>
 #include <common/DCache.hh>
 
 extern "C" volatile u32 disr;

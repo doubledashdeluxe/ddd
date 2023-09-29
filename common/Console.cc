@@ -12,7 +12,7 @@ extern "C" {
 #define NANOPRINTF_USE_WRITEBACK_FORMAT_SPECIFIERS 0
 #define NANOPRINTF_VISIBILITY_STATIC
 #define NANOPRINTF_IMPLEMENTATION
-#include <vendor/nanoprintf.h>
+#include <nanoprintf.h>
 }
 
 const Console::Color Console::Color::Black = {0, 0, 0};

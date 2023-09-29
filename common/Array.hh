@@ -5,6 +5,14 @@
 template <typename T, size_t N>
 class Array {
 public:
+    Array() {}
+
+    Array(T value) {
+        for (size_t index = 0; index < N; index++) {
+            m_values[index] = value;
+        }
+    }
+
     size_t count() const {
         return N;
     }
