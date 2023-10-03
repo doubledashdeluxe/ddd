@@ -106,7 +106,7 @@ bool USB::Resource::ctrlTransfer(u32 id, Transfer *transfer, u8 endpointDirectio
     u32 inputCount = endpointDirection == EndpointDirection::HostToDevice ? 2 : 1;
     u32 outputCount = endpointDirection == EndpointDirection::HostToDevice ? 0 : 1;
     s32 result = ioctlv(Ioctlv::CtrlTransfer, inputCount, outputCount, transfer->pairs);
-    return result == length;
+    return result == 0x8 + length;
 }
 
 USB::VENResource::VENResource() : Resource("/dev/usb/ven") {}
