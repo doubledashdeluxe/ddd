@@ -6,6 +6,9 @@
 800000c8 osInterruptMask
 800000f8 busClock
 
+800030c0 exiProbeStartTimes
+800030d8 systemTimeOffset
+
 cc002000 vtr
 cc002002 dcr
 cc00200c vto

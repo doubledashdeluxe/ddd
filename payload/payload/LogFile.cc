@@ -22,9 +22,10 @@ void LogFile::VPrintf(const char *format, va_list vlist) {
     Lock<NoInterrupts> lock;
 
     u16 maxLength = s_buffers[0].count() - s_offset;
-    s64 currentTime = OSGetTime();
-    if (s_startTime == -1) {
+    s64 currentTime = OSGetSystemTime();
+    if (!s_startTimeIsValid) {
         s_startTime = currentTime;
+        s_startTimeIsValid = true;
     }
     u64 seconds = Clock::TicksToSeconds(currentTime - s_startTime);
     u32 milliseconds = Clock::TicksToMilliseconds(currentTime - s_startTime) % 1000;
@@ -175,6 +176,7 @@ bool LogFile::ShouldRemoveLogFile(const Storage::NodeInfo &nodeInfo) {
 Array<u8, 8 * 1024> LogFile::s_stack;
 OSThread LogFile::s_thread;
 Array<Array<char, 0x4000>, 2> LogFile::s_buffers;
-s64 LogFile::s_startTime = -1;
+bool LogFile::s_startTimeIsValid = false;
+s64 LogFile::s_startTime;
 u8 LogFile::s_index = 0;
 u16 LogFile::s_offset = 0;

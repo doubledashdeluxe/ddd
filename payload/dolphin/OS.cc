@@ -2,6 +2,7 @@ extern "C" {
 #include "OS.h"
 }
 
+#include <common/Clock.hh>
 #include <common/Console.hh>
 #include <common/Log.hh>
 #include <common/Platform.hh>
@@ -30,6 +31,10 @@ extern "C" void OSInit() {
 
     INFO("Initializing IOS...");
     IOS::Resource::Init();
+    INFO(" done.\n");
+
+    INFO("Initializing clock...");
+    Clock::Init();
     INFO(" done.\n");
 
     INFO("Initializing WUP-028...");

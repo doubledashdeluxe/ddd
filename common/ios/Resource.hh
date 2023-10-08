@@ -10,6 +10,19 @@ extern "C" {
 
 namespace IOS {
 
+class Mode {
+public:
+    enum {
+        None = 0,
+        Read = 1 << 0,
+        Write = 1 << 1,
+        Both = Write | Read,
+    };
+
+private:
+    Mode();
+};
+
 class Resource {
 public:
     struct IoctlvPair {
@@ -18,7 +31,7 @@ public:
     };
 
     Resource(s32 fd);
-    Resource(const char *path, bool read = false, bool write = false);
+    Resource(const char *path, u32 mode);
     ~Resource();
     s32 ioctl(u32 ioctl, const void *input, u32 inputSize, void *output, u32 outputSize);
     s32 ioctlv(u32 ioctlv, u32 inputCount, u32 outputCount, IoctlvPair *pairs);
@@ -28,7 +41,7 @@ public:
     static void Init();
 #endif
 
-private:
+protected:
     class Command {
     public:
         enum {
@@ -88,12 +101,14 @@ private:
     };
     static_assert(sizeof(Request) == 0x40);
 
+    static void Sync(Request &request);
+
+private:
     Resource(const Resource &);
     Resource &operator=(const Resource &);
-    s32 open(const char *path, bool read, bool write);
+    s32 open(const char *path, u32 mode);
     s32 close();
 
-    static void Sync(Request &request);
 #ifdef PAYLOAD
     static void HandleInterrupt(s16 interrupt, OSContext *context);
 #endif

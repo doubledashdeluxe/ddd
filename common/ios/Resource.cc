@@ -1,7 +1,7 @@
-#include <common/ios/Resource.hh>
+#include "common/ios/Resource.hh"
 
-#include <common/DCache.hh>
-#include <common/Memory.hh>
+#include "common/DCache.hh"
+#include "common/Memory.hh"
 
 extern "C" {
 #include <string.h>
@@ -11,8 +11,8 @@ namespace IOS {
 
 Resource::Resource(s32 fd) : m_fd(fd) {}
 
-Resource::Resource(const char *path, bool read, bool write) : m_fd(-1) {
-    open(path, read, write);
+Resource::Resource(const char *path, u32 mode) : m_fd(-1) {
+    open(path, mode);
 }
 
 Resource::~Resource() {
@@ -76,7 +76,7 @@ bool Resource::ok() const {
     return m_fd >= 0;
 }
 
-s32 Resource::open(const char *path, bool read, bool write) {
+s32 Resource::open(const char *path, u32 mode) {
     alignas(0x20) char alignedPath[0x40];
     strlcpy(alignedPath, path, sizeof(alignedPath));
 
@@ -86,7 +86,7 @@ s32 Resource::open(const char *path, bool read, bool write) {
     memset(&request, 0, sizeof(request));
     request.command = Command::Open;
     request.open.path = Memory::VirtualToPhysical(alignedPath);
-    request.open.mode = write << 1 | read << 0;
+    request.open.mode = mode;
 
     Sync(request);
 

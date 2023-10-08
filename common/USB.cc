@@ -32,7 +32,7 @@ bool USB::Device::bulkTransfer(void *data, u16 length, u8 endpointDirection, u8 
             endpointNumber);
 }
 
-USB::Resource::Resource(const char *name) : IOS::Resource(name) {}
+USB::Resource::Resource(const char *name) : IOS::Resource(name, IOS::Mode::None) {}
 
 USB::Resource::~Resource() {}
 

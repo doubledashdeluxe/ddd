@@ -19,6 +19,13 @@
 800b2fec ARQInit
 800b305c ARQPostRequest
 800bf904 GXInitTlutObj
+800c3970 EXIImm
+800c3d58 EXISync
+800c4068 __EXIProbe
+800c44d8 EXISelect
+800c4604 EXIDeselect
+800c4c98 EXILock
+800c4d8c EXIUnlock
 800e5b50 OSInit
 800e63e0 OSCreateAlarm
 800e6640 OSSetAlarm
@@ -59,6 +66,7 @@
 800ec0d0 OSSleepThread
 800ec1bc OSWakeupThread
 800ec36c OSGetTime
+800ec38c OSGetSystemTime
 800ec5e4 OSTicksToCalendarTime
 800ed960 PADRead
 800edc60 PADControlMotor
@@ -88,6 +96,8 @@
 801cf914 Call__7LogoAppFv
 801d3704 Ask__9CardAgentFll
 801d9358 Call__11SequenceAppFl
+
+80371e08 Ecb
 
 803d51c4 OSLastInterruptSrr0
 803d51c8 OSLastInterrupt
