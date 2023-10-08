@@ -52,6 +52,8 @@ private:
     void notify();
 
     void poll();
+    u32 priority();
+    const char *prefix();
 
     u32 sectorSize();
     bool read(u32 firstSector, u32 sectorCount, void *buffer);

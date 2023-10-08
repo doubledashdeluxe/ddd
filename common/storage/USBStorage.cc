@@ -14,6 +14,14 @@ extern "C" {
 
 USBStorage::USBStorage() : m_device(nullptr) {}
 
+u32 USBStorage::priority() {
+    return 1;
+}
+
+const char *USBStorage::prefix() {
+    return "usb:";
+}
+
 u32 USBStorage::sectorSize() {
     return m_blockSize;
 }

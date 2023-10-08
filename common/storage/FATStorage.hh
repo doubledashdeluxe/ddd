@@ -11,10 +11,51 @@ extern "C" {
 
 class FATStorage : protected Storage {
 protected:
+    class File : public Storage::File {
+    public:
+        File();
+
+    private:
+        void close();
+        bool read(void *dst, u32 size, u32 offset);
+        bool write(const void *src, u32 size, u32 offset);
+        bool sync();
+        bool size(u64 &size);
+        Storage *storage();
+
+        FATStorage *m_storage;
+        FIL m_fFile;
+
+        friend class FATStorage;
+    };
+
+    class Dir : public Storage::Dir {
+    public:
+        Dir();
+
+    private:
+        void close();
+        bool read(NodeInfo &nodeInfo);
+        Storage *storage();
+
+        FATStorage *m_storage;
+        DIR m_fDir;
+
+        friend class FATStorage;
+    };
+
     FATStorage();
 
     void remove();
     bool add();
+
+    Storage::File *openFile(const char *path, u32 mode);
+
+    Storage::Dir *openDir(const char *path);
+    bool createDir(const char *path, u32 mode);
+
+    bool rename(const char *srcPath, const char *dstPath);
+    bool remove(const char *path, u32 mode);
 
     virtual u32 sectorSize() = 0;
     virtual bool read(u32 firstSector, u32 sectorCount, void *buffer) = 0;
@@ -22,11 +63,26 @@ protected:
     virtual bool erase(u32 firstSector, u32 sectorCount) = 0;
     virtual bool sync() = 0;
 
+    bool convertPath(const char *path, Array<char, 256> &fPath);
+
 private:
     ~FATStorage();
 
+    template <typename N>
+    static N *FindNode(Array<N, 32> &nodes) {
+        for (u32 i = 0; i < nodes.count(); i++) {
+            if (!nodes[i].m_storage) {
+                return &nodes[i];
+            }
+        }
+
+        return nullptr;
+    }
+
     u8 m_volumeId;
     FATFS m_fs;
+    Array<File, 32> m_files;
+    Array<Dir, 32> m_dirs;
 
     static Array<FATStorage *, FF_VOLUMES> s_volumes;
 #ifdef PAYLOAD

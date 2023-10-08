@@ -10,6 +10,7 @@ extern "C" {
 #include <common/ios/Resource.hh>
 #include <common/storage/Storage.hh>
 #include <common/storage/USBStorage.hh>
+#include <payload/LogFile.hh>
 #include <payload/WUP028.hh>
 
 static bool isInit = false;
@@ -45,6 +46,10 @@ extern "C" void OSInit() {
 
     INFO("Initializing USB...");
     USB::Init();
+    INFO(" done.\n");
+
+    INFO("Initializing log file...");
+    LogFile::Init();
     INFO(" done.\n");
 
     Console::Deinit();

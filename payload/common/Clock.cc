@@ -10,7 +10,7 @@ void Clock::WaitMilliseconds(u32 milliseconds) {
     OSCreateAlarm(&alarm);
     alarm.userData = OSGetCurrentThread();
     Lock<NoInterrupts> lock;
-    OSSetAlarm(&alarm, milliseconds * 60750, HandleAlarm);
+    OSSetAlarm(&alarm, MillisecondsToTicks(milliseconds), HandleAlarm);
     OSSuspendThread(OSGetCurrentThread());
 }
 

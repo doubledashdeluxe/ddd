@@ -4,6 +4,7 @@
 80000034 arenaHi
 800000c4 userInterruptMask
 800000c8 osInterruptMask
+800000f8 busClock
 
 cc002000 vtr
 cc002002 dcr

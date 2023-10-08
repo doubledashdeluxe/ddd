@@ -2,6 +2,7 @@
 
 #include <common/Console.hh>
 #include <payload/Lock.hh>
+#include <payload/LogFile.hh>
 
 extern "C" {
 #include <stdio.h>
@@ -15,6 +16,10 @@ extern "C" void Log(LogLevel level, const char *format, ...) {
     va_list vlist;
     va_start(vlist, format);
     vprintf(format, vlist);
+    va_end(vlist);
+
+    va_start(vlist, format);
+    LogFile::VPrintf(format, vlist);
     va_end(vlist);
 
     Lock<NoInterrupts> lock;

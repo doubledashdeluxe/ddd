@@ -4,12 +4,98 @@
 #include <common/Panic.hh>
 
 extern "C" {
+#include <assert.h>
 #include <stdio.h>
+#include <string.h>
+}
+
+FATStorage::File::File() : m_storage(nullptr) {}
+
+void FATStorage::File::close() {
+    assert(f_close(&m_fFile) == FR_OK);
+    m_storage = nullptr;
+}
+
+bool FATStorage::File::read(void *dst, u32 size, u32 offset) {
+    if (f_lseek(&m_fFile, offset) != FR_OK) {
+        return false;
+    }
+
+    UINT readSize;
+    if (f_read(&m_fFile, dst, size, &readSize) != FR_OK) {
+        return false;
+    }
+
+    return readSize == size;
+}
+
+bool FATStorage::File::write(const void *src, u32 size, u32 offset) {
+    if (f_lseek(&m_fFile, offset) != FR_OK) {
+        return false;
+    }
+
+    UINT writtenSize;
+    if (f_write(&m_fFile, src, size, &writtenSize) != FR_OK) {
+        return false;
+    }
+
+    return writtenSize == size;
+}
+
+bool FATStorage::File::sync() {
+    return f_sync(&m_fFile) == FR_OK;
+}
+
+bool FATStorage::File::size(u64 &size) {
+    size = f_size(&m_fFile);
+    return true;
+}
+
+Storage *FATStorage::File::storage() {
+    return m_storage;
+}
+
+FATStorage::Dir::Dir() : m_storage(nullptr) {}
+
+void FATStorage::Dir::close() {
+    assert(f_closedir(&m_fDir) == FR_OK);
+    m_storage = nullptr;
+}
+
+bool FATStorage::Dir::read(NodeInfo &nodeInfo) {
+    FILINFO fInfo;
+    if (f_readdir(&m_fDir, &fInfo) != FR_OK) {
+        return false;
+    }
+
+    if (fInfo.fname[0] == L'\0') {
+        return false;
+    }
+
+    if (fInfo.fattrib & AM_DIR) {
+        nodeInfo.type = NodeType::Dir;
+    } else {
+        nodeInfo.type = NodeType::File;
+    }
+    static_assert(sizeof(fInfo.fname) <= sizeof(nodeInfo.name));
+    memcpy(nodeInfo.name.values(), fInfo.fname, sizeof(fInfo.fname));
+    return true;
+}
+
+Storage *FATStorage::Dir::storage() {
+    return m_storage;
 }
 
 FATStorage::FATStorage() {}
 
 void FATStorage::remove() {
+    for (u32 i = 0; i < m_files.count(); i++) {
+        m_files[i].close();
+    }
+    for (u32 i = 0; i < m_dirs.count(); i++) {
+        m_dirs[i].close();
+    }
+
     Storage::remove();
 }
 
@@ -31,7 +117,7 @@ bool FATStorage::add() {
         return false;
     }
 
-    Array<char, 128> fPath;
+    Array<char, 256> fPath;
     snprintf(fPath.values(), fPath.count(), "%u:/ddd", m_volumeId);
     fResult = f_mkdir(fPath.values());
     if (fResult != FR_OK && fResult != FR_EXIST) {
@@ -42,6 +128,97 @@ bool FATStorage::add() {
 
     Storage::add();
     return true;
+}
+
+Storage::File *FATStorage::openFile(const char *path, u32 mode) {
+    Array<char, 256> fPath;
+    if (!convertPath(path, fPath)) {
+        return nullptr;
+    }
+    u32 fMode;
+    switch (mode) {
+    case Mode::Read:
+        fMode = FA_READ;
+        break;
+    case Mode::WriteAlways:
+        fMode = FA_CREATE_ALWAYS | FA_WRITE;
+        break;
+    case Mode::WriteNew:
+        fMode = FA_CREATE_NEW | FA_WRITE;
+        break;
+    default:
+        return nullptr;
+    }
+
+    File *file = FindNode(m_files);
+    if (!file) {
+        return nullptr;
+    }
+
+    if (f_open(&file->m_fFile, fPath.values(), fMode) != FR_OK) {
+        return nullptr;
+    }
+
+    file->m_storage = this;
+    return file;
+}
+
+Storage::Dir *FATStorage::openDir(const char *path) {
+    Array<char, 256> fPath;
+    if (!convertPath(path, fPath)) {
+        return nullptr;
+    }
+
+    Dir *dir = FindNode(m_dirs);
+    if (!dir) {
+        return nullptr;
+    }
+
+    if (f_opendir(&dir->m_fDir, fPath.values()) != FR_OK) {
+        return nullptr;
+    }
+
+    dir->m_storage = this;
+    return dir;
+}
+
+bool FATStorage::createDir(const char *path, u32 mode) {
+    Array<char, 256> fPath;
+    if (!convertPath(path, fPath)) {
+        return false;
+    }
+
+    FRESULT fResult = f_mkdir(fPath.values());
+    return fResult == FR_OK || (mode == Mode::WriteAlways && fResult == FR_EXIST);
+}
+
+bool FATStorage::rename(const char *srcPath, const char *dstPath) {
+    Array<char, 256> fSrcPath;
+    if (!convertPath(srcPath, fSrcPath)) {
+        return false;
+    }
+
+    Array<char, 256> fDstPath;
+    if (!convertPath(dstPath, fDstPath)) {
+        return false;
+    }
+
+    FRESULT fResult = f_rename(fSrcPath.values(), fDstPath.values());
+    return fResult == FR_OK;
+}
+
+bool FATStorage::remove(const char *path, u32 mode) {
+    Array<char, 256> fPath;
+    if (!convertPath(path, fPath)) {
+        return false;
+    }
+
+    FRESULT fResult = f_unlink(path);
+    return fResult == FR_OK || (mode == Mode::RemoveAlways && fResult == FR_NO_FILE);
+}
+
+bool FATStorage::convertPath(const char *path, Array<char, 256> &fPath) {
+    return snprintf(fPath.values(), fPath.count(), "%u:/%s", m_volumeId, path) < fPath.count();
 }
 
 extern "C" DSTATUS disk_status(BYTE /* pdrv */) {
