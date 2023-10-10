@@ -9,18 +9,23 @@ extern "C" {
 }
 
 extern "C" void Log(LogLevel level, const char *format, ...) {
+    va_list vlist;
+    va_start(vlist, format);
+    VLog(level, format, vlist);
+    va_end(vlist);
+}
+
+extern "C" void VLog(LogLevel level, const char *format, va_list vlist) {
     if (level == LOG_LEVEL_TRACE) {
         return;
     }
 
-    va_list vlist;
-    va_start(vlist, format);
-    vprintf(format, vlist);
-    va_end(vlist);
+    va_list copy;
+    va_copy(copy, vlist);
+    vprintf(format, copy);
 
-    va_start(vlist, format);
-    LogFile::VPrintf(format, vlist);
-    va_end(vlist);
+    va_copy(copy, vlist);
+    LogFile::VPrintf(format, copy);
 
     Lock<NoInterrupts> lock;
     switch (level) {
@@ -36,7 +41,5 @@ extern "C" void Log(LogLevel level, const char *format, ...) {
     default:
         return;
     }
-    va_start(vlist, format);
     Console::VPrintf(format, vlist);
-    va_end(vlist);
 }

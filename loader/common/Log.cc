@@ -3,6 +3,13 @@
 #include <common/Console.hh>
 
 extern "C" void Log(LogLevel level, const char *format, ...) {
+    va_list vlist;
+    va_start(vlist, format);
+    VLog(level, format, vlist);
+    va_end(vlist);
+}
+
+extern "C" void VLog(LogLevel level, const char *format, va_list vlist) {
     switch (level) {
     case LOG_LEVEL_ERROR:
         Console::s_fg = Console::Color::Red;
@@ -16,8 +23,5 @@ extern "C" void Log(LogLevel level, const char *format, ...) {
     default:
         return;
     }
-    va_list vlist;
-    va_start(vlist, format);
     Console::VPrintf(format, vlist);
-    va_end(vlist);
 }
