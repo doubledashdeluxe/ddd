@@ -12,7 +12,7 @@ extern "C" {
 FATStorage::File::File() : m_storage(nullptr) {}
 
 void FATStorage::File::close() {
-    assert(f_close(&m_fFile) == FR_OK);
+    f_close(&m_fFile);
     m_storage = nullptr;
 }
 
@@ -58,7 +58,7 @@ Storage *FATStorage::File::storage() {
 FATStorage::Dir::Dir() : m_storage(nullptr) {}
 
 void FATStorage::Dir::close() {
-    assert(f_closedir(&m_fDir) == FR_OK);
+    f_closedir(&m_fDir);
     m_storage = nullptr;
 }
 
@@ -96,6 +96,12 @@ void FATStorage::remove() {
         m_dirs[i].close();
     }
 
+    Array<char, 256> fVolumePath;
+    snprintf(fVolumePath.values(), fVolumePath.count(), "%u:", m_volumeId);
+    f_unmount(fVolumePath.values());
+
+    s_volumes[m_volumeId] = nullptr;
+
     Storage::remove();
 }
 
@@ -110,18 +116,22 @@ bool FATStorage::add() {
     }
     s_volumes[m_volumeId] = this;
 
-    FRESULT fResult = f_mount(&m_fs, "", 1);
+    Array<char, 256> fVolumePath;
+    snprintf(fVolumePath.values(), fVolumePath.count(), "%u:", m_volumeId);
+    FRESULT fResult = f_mount(&m_fs, fVolumePath.values(), 1);
     if (fResult != FR_OK) {
         DEBUG("Failed to mount the filesystem with error %u\n", fResult);
         s_volumes[m_volumeId] = nullptr;
         return false;
     }
 
-    Array<char, 256> fPath;
-    snprintf(fPath.values(), fPath.count(), "%u:/ddd", m_volumeId);
-    fResult = f_mkdir(fPath.values());
+    Array<char, 256> fDirPath;
+    snprintf(fDirPath.values(), fDirPath.count(), "%u:/ddd", m_volumeId);
+    fResult = f_mkdir(fDirPath.values());
     if (fResult != FR_OK && fResult != FR_EXIST) {
-        DEBUG("Failed to create or open the %s directory with error %u", fPath.values(), fResult);
+        DEBUG("Failed to create or open the %s directory with error %u", fDirPath.values(),
+                fResult);
+        f_unmount(fVolumePath.values());
         s_volumes[m_volumeId] = nullptr;
         return false;
     }
