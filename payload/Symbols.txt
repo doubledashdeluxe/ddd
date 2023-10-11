@@ -74,6 +74,7 @@
 
 800ff1a4 __destroy_arr
 800ff21c __construct_array
+800ff504 __ptmf_scall
 800ff6e0 __div2u
 800ff7cc __div2i
 800ff904 __mod2u

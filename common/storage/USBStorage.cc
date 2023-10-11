@@ -15,7 +15,7 @@ extern "C" {
 USBStorage::USBStorage() : m_device(nullptr) {}
 
 u32 USBStorage::priority() {
-    return 1;
+    return 2;
 }
 
 const char *USBStorage::prefix() {

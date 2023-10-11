@@ -72,7 +72,7 @@ void USB::Init() {
         void *param = backends[i];
         Array<u8, 4 * 1024> *stack = new (MEM2Arena::Instance(), 0x8) Array<u8, 4 * 1024>;
         OSThread *thread = new (MEM2Arena::Instance(), 0x4) OSThread;
-        OSCreateThread(thread, Run, param, stack->values() + stack->count(), stack->count(), 10, 0);
+        OSCreateThread(thread, Run, param, stack->values() + stack->count(), stack->count(), 9, 0);
         OSResumeThread(thread);
     }
 }
