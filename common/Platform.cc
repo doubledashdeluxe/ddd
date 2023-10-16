@@ -1,10 +1,10 @@
 #include "Platform.hh"
 
-#include "common/ios/Resource.hh"
+#include "common/Dolphin.hh"
 
 bool Platform::IsDolphin() {
     // Modern versions
-    IOS::Resource dolphin("/dev/dolphin", IOS::Mode::None);
+    Dolphin dolphin;
     if (dolphin.ok()) {
         return true;
     }
@@ -16,4 +16,13 @@ bool Platform::IsDolphin() {
     }
 
     return false;
+}
+
+bool Platform::GetDolphinVersion(Array<char, 64> &dolphinVersion) {
+    Dolphin dolphin;
+    if (!dolphin.ok()) {
+        return false;
+    }
+
+    return dolphin.getVersion(dolphinVersion);
 }

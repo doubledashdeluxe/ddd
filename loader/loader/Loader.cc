@@ -150,6 +150,17 @@ Apploader::GameEntryFunc Loader::Run() {
         return nullptr;
     }
 
+    if (Platform::IsDolphin()) {
+        Array<char, 64> dolphinVersion;
+        if (!Platform::GetDolphinVersion(dolphinVersion) ||
+                strncmp(dolphinVersion.values(), "5.0-20189", strlen("5.0-20189")) < 0) {
+            WARN("Using DSP HLE will result in broken sound on this Dolphin version!\n");
+            WARN("Please update to Dolphin 5.0-20189 or later.\n");
+            WARN("\n");
+            Clock::WaitMilliseconds(1000);
+        }
+    }
+
     bool diWasReset = false;
     Apploader::GameEntryFunc gameEntry;
     while (!(gameEntry = Apploader::LoadAndRun())) {
