@@ -8,8 +8,6 @@ This is in an early state and not yet useful for regular players. As such, binar
 
 Only RVL-001 consoles are currently supported.
 
-On Dolphin, DSP LLE is currently needed, pending upstream patch.
-
 ## Building
 
 You need:
