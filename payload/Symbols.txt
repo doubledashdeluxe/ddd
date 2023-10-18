@@ -11,6 +11,7 @@
 80014c3c free__7JKRHeapFPv
 80014d10 resize__7JKRHeapFPvUl
 80014e14 FindFromRoot__7JKRHeapFPv
+8001563c __nw__FUlP7JKRHeapl
 800157a8 __dl__FPv
 80015a24 open__13JKRMemArchiveFlUl
 80015b94 open__13JKRMemArchiveFPvUlUl
@@ -123,8 +124,12 @@
 80107088 strlen
 
 80114ad8 isWaveLoaded__Q29GameAudio4MainFl
+8012cfbc __ct__5SceneFP10JKRArchiveP7JKRHeap
+8012cfd8 __dt__5SceneFv
 8013f6e8 createScene__12SceneFactoryFlP7JKRHeap
 801573fc reset__9SceneMenuFv
+80189bb0 setHeapGroup__8SysDebugFPCcP7JKRHeap
+80189bb4 setDefaultHeapGroup__8SysDebugFP7JKRHeap
 801af940 Create__8MovieAppFv
 801cc5bc main
 801ceb3c LoadKeepData__6ResMgrFv
@@ -154,4 +159,5 @@
 803c5fe0 s_systemRecord
 803d5498 s_instance__Q29GameAudio4Main
 803d5bcc s_loadTask__6System
+803d5630 s_manager__8SysDebug
 803d5be0 s_currentApp__6AppMgr
