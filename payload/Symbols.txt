@@ -123,6 +123,7 @@
 80107088 strlen
 
 80114ad8 isWaveLoaded__Q29GameAudio4MainFl
+8013f6e8 createScene__12SceneFactoryFlP7JKRHeap
 801573fc reset__9SceneMenuFv
 801af940 Create__8MovieAppFv
 801cc5bc main

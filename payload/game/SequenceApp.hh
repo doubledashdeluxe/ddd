@@ -1,18 +1,9 @@
 #pragma once
 
+#include "game/SceneType.hh"
+
 #include <common/Types.hh>
 #include <payload/Replace.hh>
-
-class SceneType {
-public:
-    enum {
-        Title = 0x0,
-        // ...
-    };
-
-private:
-    SceneType();
-};
 
 class SequenceApp {
 public:
