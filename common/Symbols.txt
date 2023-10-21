@@ -4,6 +4,7 @@
 80000034 arenaHi
 800000c4 userInterruptMask
 800000c8 osInterruptMask
+800000cc videoMode
 800000f8 busClock
 
 800030c0 exiProbeStartTimes

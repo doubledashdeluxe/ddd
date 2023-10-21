@@ -1,6 +1,8 @@
 80003458 memset
 80003540 memcpy
 
+800056c0 Localize__10KartLocaleFv
+
 800157a8 __dl__FPv
 
 80018ed4 print__10JUTConsoleFPCc
@@ -99,6 +101,9 @@
 801d9358 Call__11SequenceAppFl
 
 80371e08 Ecb
+
+803d3248 s_videoMode__10KartLocale
+803d324c s_videoFrameMode__10KartLocale
 
 803d51c4 OSLastInterruptSrr0
 803d51c8 OSLastInterrupt
