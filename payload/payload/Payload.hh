@@ -4,6 +4,8 @@
 
 class Payload {
 public:
+    static void Run();
+
     static void *Start();
     static void *End();
     static size_t Size();

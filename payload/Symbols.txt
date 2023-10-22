@@ -1,3 +1,6 @@
+800032b0 __init_registers
+80003340 __init_data
+80003400 __init_hardware
 80003458 memset
 80003540 memcpy
 
@@ -70,9 +73,11 @@
 800ec36c OSGetTime
 800ec38c OSGetSystemTime
 800ec5e4 OSTicksToCalendarTime
+800ec7e8 __init_user
 800ed960 PADRead
 800edc60 PADControlMotor
 800eff6c SIProbe
+800f0744 DBInit
 
 800ff1a4 __destroy_arr
 800ff21c __construct_array
@@ -82,6 +87,7 @@
 800ff904 __mod2u
 800ff9e8 __mod2i
 800ffaf4 __shl2i
+800ffe28 exit
 
 801024e8 isdigit
 801032e4 memcmp
@@ -95,6 +101,7 @@
 80114ad8 isWaveLoaded__Q29GameAudio4MainFl
 801573fc reset__9SceneMenuFv
 801af940 Create__8MovieAppFv
+801cc5bc main
 801ceb3c LoadKeepData__6ResMgrFv
 801cf914 Call__7LogoAppFv
 801d3704 Ask__9CardAgentFll

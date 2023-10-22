@@ -1,10 +1,12 @@
 #pragma once
 
-#include "loader/Apploader.hh"
+#include <common/Types.hh>
 
 class Loader {
 public:
-    static Apploader::GameEntryFunc Run();
+    typedef void (*PayloadEntryFunc)();
+
+    static PayloadEntryFunc Run();
 
     static void *Start();
     static void *End();
@@ -29,7 +31,5 @@ public:
     static size_t BssSectionSize();
 
 private:
-    typedef void (*PayloadEntryFunc)();
-
     Loader();
 };

@@ -1,5 +1,6 @@
 #include "Loader.hh"
 
+#include "loader/Apploader.hh"
 #include "loader/DI.hh"
 
 #include <common/Clock.hh>
@@ -128,7 +129,7 @@ size_t Loader::BssSectionSize() {
     return loader_bss_end - loader_bss_start;
 }
 
-Apploader::GameEntryFunc Loader::Run() {
+Loader::PayloadEntryFunc Loader::Run() {
     // Use compat MMIO ranges for DI/SI/EXI/AI
     aipprot &= ~0x1;
 
@@ -221,16 +222,12 @@ Apploader::GameEntryFunc Loader::Run() {
     ICache::Invalidate(payloadDst, payloadSize);
     INFO(" done.\n");
 
-    INFO("Applying patches...");
-    PayloadEntryFunc payloadEntry = reinterpret_cast<PayloadEntryFunc>(payloadDst);
-    payloadEntry();
-    INFO(" done.\n");
-
     if (Platform::IsDolphin()) {
         // Enable OSReport over EXI
         consoleType = 0x10000006;
     }
     arenaLo = reinterpret_cast<u32>(payloadDst) + payloadSize;
 
-    return gameEntry;
+    PayloadEntryFunc payloadEntry = reinterpret_cast<PayloadEntryFunc>(payloadDst);
+    return payloadEntry;
 }

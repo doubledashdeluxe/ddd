@@ -1,5 +1,19 @@
 #include "Payload.hh"
 
+#include "payload/LogFile.hh"
+#include "payload/WUP028.hh"
+
+#include <common/Clock.hh>
+#include <common/Console.hh>
+#include <common/Log.hh>
+#include <common/Platform.hh>
+#include <common/USB.hh>
+#include <common/VI.hh>
+#include <common/ios/Resource.hh>
+#include <common/storage/SDStorage.hh>
+#include <common/storage/Storage.hh>
+#include <common/storage/USBStorage.hh>
+
 extern "C" u8 payload_text_start[];
 extern "C" u8 payload_text_end[];
 extern "C" u8 payload_ctors_start[];
@@ -95,4 +109,46 @@ void *Payload::BssSectionEnd() {
 
 size_t Payload::BssSectionSize() {
     return payload_bss_end - payload_bss_start;
+}
+
+void Payload::Run() {
+    VI::Init();
+
+    Console::Init();
+    INFO("Double Dash Deluxe Payload\n");
+    INFO("\n");
+
+    INFO("Initializing IOS...");
+    IOS::Resource::Init();
+    INFO(" done.\n");
+
+    INFO("Initializing clock...");
+    Clock::Init();
+    INFO(" done.\n");
+
+    INFO("Initializing WUP-028...");
+    WUP028::Init();
+    INFO(" done.\n");
+
+    INFO("Initializing storage...");
+    Storage::Init();
+    INFO(" done.\n");
+
+    INFO("Initializing USB storage...");
+    USBStorage::Init();
+    INFO(" done.\n");
+
+    INFO("Initializing USB...");
+    USB::Init();
+    INFO(" done.\n");
+
+    INFO("Initializing SD storage...");
+    SDStorage::Init();
+    INFO(" done.\n");
+
+    INFO("Initializing log file...");
+    LogFile::Init();
+    INFO(" done.\n");
+
+    Console::Deinit();
 }

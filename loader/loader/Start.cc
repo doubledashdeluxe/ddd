@@ -19,9 +19,9 @@ extern "C" void RunLoader() {
         (*ctor)();
     }
 
-    Apploader::GameEntryFunc gameEntry = Loader::Run();
-    if (gameEntry) {
-        (*gameEntry)();
+    Loader::PayloadEntryFunc payloadEntry = Loader::Run();
+    if (payloadEntry) {
+        (*payloadEntry)();
     }
 }
 
