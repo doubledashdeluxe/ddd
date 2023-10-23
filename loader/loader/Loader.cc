@@ -9,7 +9,6 @@
 #include <common/ICache.hh>
 #include <common/Log.hh>
 #include <common/Platform.hh>
-#include <common/VI.hh>
 
 extern "C" {
 #include <string.h>
@@ -141,7 +140,7 @@ Loader::PayloadEntryFunc Loader::Run() {
 
     VI::Init();
 
-    Console::Init();
+    Console::Init(VI::Instance());
     INFO("Double Dash Deluxe Loader\n");
     INFO("\n");
 

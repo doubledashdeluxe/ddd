@@ -1,6 +1,6 @@
 #pragma once
 
-#include <common/Types.hh>
+#include "common/Types.hh"
 
 class VI {
 public:
@@ -14,18 +14,24 @@ public:
         static const Color White;
     };
 
+    bool isProgressive();
+    u16 getXFBWidth();
+    u16 getXFBHeight();
+    Color readFromXFB(u16 x, u16 y);
+    void writeToXFB(u16 x, u16 y, Color color);
+    void flushXFB();
+
     static void Init();
-    static bool IsProgressive();
-    static u16 GetXFBWidth();
-    static u16 GetXFBHeight();
-    static Color ReadFromXFB(u16 x, u16 y);
-    static void WriteToXFB(u16 x, u16 y, Color color);
-    static void FlushXFB();
+    static VI *Instance();
 
 private:
     VI();
 
-    static u16 s_xfbWidth;
-    static u16 s_xfbHeight;
-    static u32 *s_xfb;
+    bool m_isProgressive;
+    u16 m_xfbWidth;
+    u16 m_xfbHeight;
+    u32 m_xfbSize;
+    u32 *m_xfb;
+
+    static VI *s_instance;
 };

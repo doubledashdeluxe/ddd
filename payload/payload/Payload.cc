@@ -9,7 +9,6 @@
 #include <common/Log.hh>
 #include <common/Platform.hh>
 #include <common/USB.hh>
-#include <common/VI.hh>
 #include <common/ios/Resource.hh>
 #include <common/storage/SDStorage.hh>
 #include <common/storage/Storage.hh>
@@ -115,7 +114,7 @@ size_t Payload::BssSectionSize() {
 void Payload::Run() {
     VI::Init();
 
-    Console::Init();
+    Console::Init(VI::Instance());
     INFO("Double Dash Deluxe Payload\n");
     INFO("\n");
 

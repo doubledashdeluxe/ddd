@@ -2,7 +2,6 @@
 
 #include "common/Arena.hh"
 #include "common/Font.hh"
-#include "common/VI.hh"
 
 extern "C" {
 #define NANOPRINTF_USE_FIELD_WIDTH_FORMAT_SPECIFIERS 1
@@ -33,20 +32,20 @@ void Console::vprintf(Color bg, Color fg, const char *format, va_list vlist) {
     m_bg = bg;
     m_fg = fg;
     npf_vpprintf(Putchar, this, format, vlist);
-    VI::FlushXFB();
+    m_vi->flushXFB();
 }
 
-void Console::Init() {
-    s_instance = new (MEM2Arena::Instance(), -0x4) Console;
+void Console::Init(VI *vi) {
+    s_instance = new (MEM2Arena::Instance(), -0x4) Console(vi);
 }
 
 Console *Console::Instance() {
     return s_instance;
 }
 
-Console::Console()
-    : m_isActive(true), m_cols(VI::GetXFBWidth() / Font::GetGlyphWidth() - 1),
-      m_rows(VI::GetXFBHeight() / Font::GetGlyphHeight() / (!VI::IsProgressive() + 1) - 1),
+Console::Console(VI *vi)
+    : m_vi(vi), m_isActive(true), m_cols(vi->getXFBWidth() / Font::GetGlyphWidth() - 1),
+      m_rows(vi->getXFBHeight() / Font::GetGlyphHeight() / (!vi->isProgressive() + 1) - 1),
       m_col(0), m_row(0) {}
 
 void Console::putchar(int c) {
@@ -66,14 +65,14 @@ void Console::putchar(int c) {
     }
 
     while (m_row >= m_rows) {
-        u16 xfbWidth = VI::GetXFBWidth();
+        u16 xfbWidth = m_vi->getXFBWidth();
         u8 glyphHeight = Font::GetGlyphHeight();
         for (u8 m_row = 0; m_row < m_rows; m_row++) {
             u16 y0 = m_row * glyphHeight + glyphHeight / 2;
             for (u16 y = 0; y < glyphHeight; y++) {
                 for (u16 x = 0; x < xfbWidth; x++) {
-                    VI::Color color = VI::ReadFromXFB(x, y0 + glyphHeight + y);
-                    VI::WriteToXFB(x, y0 + y, color);
+                    VI::Color color = m_vi->readFromXFB(x, y0 + glyphHeight + y);
+                    m_vi->writeToXFB(x, y0 + y, color);
                 }
             }
         }
@@ -100,7 +99,7 @@ void Console::putchar(int c) {
             color.u = -0.148f * colorm.r - 0.291f * colorm.g + 0.439f * colorm.b + 128.0f;
             color.y1 = 0.257f * color1.r + 0.504f * color1.g + 0.098f * color1.b + 16.0f;
             color.v = 0.439f * colorm.r - 0.368f * colorm.g - 0.071f * colorm.b + 128.0f;
-            VI::WriteToXFB(x0 + x, y0 + y, color);
+            m_vi->writeToXFB(x0 + x, y0 + y, color);
         }
     }
 
