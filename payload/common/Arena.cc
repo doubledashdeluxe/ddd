@@ -16,9 +16,9 @@ void *MEM1Arena::alloc(size_t size, s32 align) {
     } else {
         u32 hi = reinterpret_cast<u32>(OSGetArenaHi());
         hi = AlignDown<u32>(hi, -align);
-        void *ptr = reinterpret_cast<void *>(hi);
         hi -= size;
         OSSetArenaHi(reinterpret_cast<void *>(hi));
+        void *ptr = reinterpret_cast<void *>(hi);
         return ptr;
     }
 }

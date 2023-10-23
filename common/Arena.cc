@@ -20,8 +20,8 @@ void *MEM2Arena::alloc(size_t size, s32 align) {
         return ptr;
     } else {
         m_hi = AlignDown<u32>(m_hi, -align);
-        void *ptr = reinterpret_cast<void *>(m_hi);
         m_hi -= size;
+        void *ptr = reinterpret_cast<void *>(m_hi);
         return ptr;
     }
 }
