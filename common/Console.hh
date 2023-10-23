@@ -26,6 +26,7 @@ public:
     void vprintf(Color bg, Color fg, const char *format, va_list vlist);
 
     static void Init(VI *vi);
+    static void Init(Console *instance);
     static Console *Instance();
 
     bool m_isActive;

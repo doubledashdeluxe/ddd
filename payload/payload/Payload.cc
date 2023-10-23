@@ -112,11 +112,7 @@ size_t Payload::BssSectionSize() {
 }
 
 void Payload::Run() {
-    VI::Init();
-
-    Console::Init(VI::Instance());
-    INFO("Double Dash Deluxe Payload\n");
-    INFO("\n");
+    INFO(" done.\n");
 
     INFO("Initializing IOS...");
     IOS::Resource::Init();

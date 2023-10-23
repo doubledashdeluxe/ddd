@@ -1,10 +1,10 @@
 #pragma once
 
-#include <common/Types.hh>
+#include <common/Context.hh>
 
 class Loader {
 public:
-    typedef void (*PayloadEntryFunc)();
+    typedef void (*PayloadEntryFunc)(Context *context);
 
     static PayloadEntryFunc Run();
 

@@ -1,6 +1,6 @@
 #include "loader/Loader.hh"
 
-#include <common/Types.hh>
+#include <common/Arena.hh>
 
 extern "C" {
 #include <string.h>
@@ -20,8 +20,12 @@ extern "C" void RunLoader() {
     }
 
     Loader::PayloadEntryFunc payloadEntry = Loader::Run();
+    Context *context = new (MEM2Arena::Instance(), 0x4) Context;
+    context->mem2ArenaLo = reinterpret_cast<u32>(MEM2Arena::Instance()->alloc(0x0, 0x4));
+    context->mem2ArenaHi = reinterpret_cast<u32>(MEM2Arena::Instance()->alloc(0x0, -0x4));
+    context->console = Console::Instance();
     if (payloadEntry) {
-        (*payloadEntry)();
+        (*payloadEntry)(context);
     }
 }
 

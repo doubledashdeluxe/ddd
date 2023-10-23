@@ -43,7 +43,5 @@ extern "C" void VLog(LogLevel level, const char *format, va_list vlist) {
     default:
         return;
     }
-    if (Console::Instance()) {
-        Console::Instance()->vprintf(bg, fg, format, vlist);
-    }
+    Console::Instance()->vprintf(bg, fg, format, vlist);
 }

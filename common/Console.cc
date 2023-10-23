@@ -36,7 +36,11 @@ void Console::vprintf(Color bg, Color fg, const char *format, va_list vlist) {
 }
 
 void Console::Init(VI *vi) {
-    s_instance = new (MEM2Arena::Instance(), -0x4) Console(vi);
+    s_instance = new (MEM2Arena::Instance(), 0x4) Console(vi);
+}
+
+void Console::Init(Console *instance) {
+    s_instance = instance;
 }
 
 Console *Console::Instance() {

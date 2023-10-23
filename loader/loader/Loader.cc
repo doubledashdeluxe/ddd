@@ -3,8 +3,8 @@
 #include "loader/Apploader.hh"
 #include "loader/DI.hh"
 
+#include <common/Arena.hh>
 #include <common/Clock.hh>
-#include <common/Console.hh>
 #include <common/DCache.hh>
 #include <common/ICache.hh>
 #include <common/Log.hh>
@@ -138,6 +138,9 @@ Loader::PayloadEntryFunc Loader::Run() {
     // Reset the DSP: libogc apps like the HBC cannot initialize it properly, but the SDK can.
     aicr = 0;
 
+    MEM1Arena::Init();
+    MEM2Arena::Init(0x91000000, 0x93400000);
+
     VI::Init();
 
     Console::Init(VI::Instance());
@@ -227,6 +230,7 @@ Loader::PayloadEntryFunc Loader::Run() {
     }
     arenaLo = reinterpret_cast<u32>(payloadDst) + payloadSize;
 
+    INFO("Starting payload...");
     PayloadEntryFunc payloadEntry = reinterpret_cast<PayloadEntryFunc>(payloadDst);
     return payloadEntry;
 }
