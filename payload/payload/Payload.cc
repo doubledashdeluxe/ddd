@@ -1,5 +1,6 @@
 #include "Payload.hh"
 
+#include "payload/Lock.hh"
 #include "payload/LogFile.hh"
 #include "payload/WUP028.hh"
 
@@ -150,5 +151,5 @@ void Payload::Run() {
     LogFile::Init();
     INFO(" done.\n");
 
-    Console::Deinit();
+    Console::Instance()->m_isActive = false;
 }

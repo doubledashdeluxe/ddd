@@ -1,5 +1,6 @@
 #include "Console.hh"
 
+#include "common/Arena.hh"
 #include "common/Font.hh"
 #include "common/VI.hh"
 
@@ -24,48 +25,51 @@ const Console::Color Console::Color::Magenta = {255, 0, 255};
 const Console::Color Console::Color::Yellow = {255, 255, 0};
 const Console::Color Console::Color::White = {255, 255, 255};
 
-void Console::Init() {
-    s_cols = VI::GetXFBWidth() / Font::GetGlyphWidth() - 1;
-    s_rows = VI::GetXFBHeight() / Font::GetGlyphHeight() / (!VI::IsProgressive() + 1) - 1;
-    s_col = 0;
-    s_row = 0;
-    s_isInit = true;
-}
-
-void Console::Deinit() {
-    s_isInit = false;
-}
-
-void Console::VPrintf(const char *format, va_list vlist) {
-    if (!s_isInit) {
+void Console::vprintf(Color bg, Color fg, const char *format, va_list vlist) {
+    if (!m_isActive) {
         return;
     }
 
-    npf_vpprintf(Putchar, nullptr, format, vlist);
+    m_bg = bg;
+    m_fg = fg;
+    npf_vpprintf(Putchar, this, format, vlist);
     VI::FlushXFB();
 }
 
-void Console::Putchar(int c, void * /* ctx */) {
-    if (s_col >= s_cols) {
+void Console::Init() {
+    s_instance = new (MEM2Arena::Instance(), -0x4) Console;
+}
+
+Console *Console::Instance() {
+    return s_instance;
+}
+
+Console::Console()
+    : m_isActive(true), m_cols(VI::GetXFBWidth() / Font::GetGlyphWidth() - 1),
+      m_rows(VI::GetXFBHeight() / Font::GetGlyphHeight() / (!VI::IsProgressive() + 1) - 1),
+      m_col(0), m_row(0) {}
+
+void Console::putchar(int c) {
+    if (m_col >= m_cols) {
         return;
     }
 
     if (c == '\n') {
-        s_col = 0;
-        s_row++;
+        m_col = 0;
+        m_row++;
         return;
     }
 
     if (c == '\r') {
-        s_col = 0;
+        m_col = 0;
         return;
     }
 
-    while (s_row >= s_rows) {
+    while (m_row >= m_rows) {
         u16 xfbWidth = VI::GetXFBWidth();
         u8 glyphHeight = Font::GetGlyphHeight();
-        for (u8 s_row = 0; s_row < s_rows; s_row++) {
-            u16 y0 = s_row * glyphHeight + glyphHeight / 2;
+        for (u8 m_row = 0; m_row < m_rows; m_row++) {
+            u16 y0 = m_row * glyphHeight + glyphHeight / 2;
             for (u16 y = 0; y < glyphHeight; y++) {
                 for (u16 x = 0; x < xfbWidth; x++) {
                     VI::Color color = VI::ReadFromXFB(x, y0 + glyphHeight + y);
@@ -73,20 +77,20 @@ void Console::Putchar(int c, void * /* ctx */) {
                 }
             }
         }
-        s_row--;
+        m_row--;
     }
 
     u8 glyphWidth = Font::GetGlyphWidth();
     u8 glyphHeight = Font::GetGlyphHeight();
     const u8 *glyph = Font::GetGlyph(c);
-    u16 y0 = s_row * glyphHeight + glyphHeight / 2;
+    u16 y0 = m_row * glyphHeight + glyphHeight / 2;
     for (u16 y = 0; y < glyphHeight; y++) {
-        u16 x0 = s_col * glyphWidth + glyphWidth / 2;
+        u16 x0 = m_col * glyphWidth + glyphWidth / 2;
         for (u16 x = 0; x < glyphWidth; x += 2) {
             u32 i0 = y * glyphWidth + x + 0;
             u32 i1 = y * glyphWidth + x + 1;
-            Color color0 = glyph[i0 / 8] & (1 << (8 - (i0 % 8))) ? s_fg : s_bg;
-            Color color1 = glyph[i1 / 8] & (1 << (8 - (i1 % 8))) ? s_fg : s_bg;
+            Color color0 = glyph[i0 / 8] & (1 << (8 - (i0 % 8))) ? m_fg : m_bg;
+            Color color1 = glyph[i1 / 8] & (1 << (8 - (i1 % 8))) ? m_fg : m_bg;
             Color colorm;
             colorm.r = (color0.r + color1.r) / 2;
             colorm.g = (color0.g + color1.g) / 2;
@@ -100,13 +104,11 @@ void Console::Putchar(int c, void * /* ctx */) {
         }
     }
 
-    s_col++;
+    m_col++;
 }
 
-Console::Color Console::s_bg = {0, 0, 0};
-Console::Color Console::s_fg = {255, 255, 255};
-bool Console::s_isInit = false;
-u8 Console::s_cols;
-u8 Console::s_rows;
-u8 Console::s_col;
-u8 Console::s_row;
+void Console::Putchar(int c, void *ctx) {
+    reinterpret_cast<Console *>(ctx)->putchar(c);
+}
+
+Console *Console::s_instance = nullptr;

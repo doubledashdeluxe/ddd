@@ -23,21 +23,26 @@ public:
         static const Color White;
     };
 
-    static void Init();
-    static void Deinit();
-    static void VPrintf(const char *format, va_list vlist);
+    void vprintf(Color bg, Color fg, const char *format, va_list vlist);
 
-    static Color s_bg;
-    static Color s_fg;
+    static void Init();
+    static Console *Instance();
+
+    bool m_isActive;
 
 private:
     Console();
 
+    void putchar(int c);
+
     static void Putchar(int c, void *ctx);
 
-    static bool s_isInit;
-    static u8 s_cols;
-    static u8 s_rows;
-    static u8 s_col;
-    static u8 s_row;
+    u8 m_cols;
+    u8 m_rows;
+    u8 m_col;
+    u8 m_row;
+    Color m_bg;
+    Color m_fg;
+
+    static Console *s_instance;
 };

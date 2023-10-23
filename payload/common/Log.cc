@@ -28,18 +28,22 @@ extern "C" void VLog(LogLevel level, const char *format, va_list vlist) {
     LogFile::VPrintf(format, copy);
 
     Lock<NoInterrupts> lock;
+    Console::Color bg = Console::Color::Black;
+    Console::Color fg;
     switch (level) {
     case LOG_LEVEL_ERROR:
-        Console::s_fg = Console::Color::Red;
+        fg = Console::Color::Red;
         break;
     case LOG_LEVEL_WARN:
-        Console::s_fg = Console::Color::Yellow;
+        fg = Console::Color::Yellow;
         break;
     case LOG_LEVEL_INFO:
-        Console::s_fg = Console::Color::White;
+        fg = Console::Color::White;
         break;
     default:
         return;
     }
-    Console::VPrintf(format, vlist);
+    if (Console::Instance()) {
+        Console::Instance()->vprintf(bg, fg, format, vlist);
+    }
 }
