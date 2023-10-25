@@ -13,6 +13,10 @@
 8001cda0 setPreUserCallback__12JUTExceptionFPFUsP9OSContextUlUl_v
 80023e24 setRenderMode__8JUTVideoFPC15GXRenderModeObj
 
+800ab56c DVDConvertPathToEntrynum
+800ab8d4 DVDOpen
+800ab99c DVDClose
+800abcd4 DVDReadPrio
 800af1d8 VIInit
 800af688 VIWaitForRetrace
 800b0378 VIFlush
@@ -112,6 +116,9 @@
 803d3248 s_videoMode__10KartLocale
 803d324c s_videoFrameMode__10KartLocale
 
+803d4e0c FstStart
+803d4e10 FstStringStart
+803d4e14 MaxEntryNum
 803d51c4 OSLastInterruptSrr0
 803d51c8 OSLastInterrupt
 803d51d0 OSLastInterruptTime

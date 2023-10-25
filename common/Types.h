@@ -18,6 +18,11 @@ typedef uint64_t u64;
 typedef float f32;
 typedef double f64;
 
+enum {
+    FALSE = 0,
+    TRUE = 1,
+};
+
 // clang-format off
 #define offsetof(type, member) ((size_t)&(((type *)0)->member))
 // clang-format on

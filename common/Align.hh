@@ -3,6 +3,11 @@
 #include "common/Types.hh"
 
 template <typename T>
+bool IsAligned(T val, size_t alignment) {
+    return val % alignment == 0;
+}
+
+template <typename T>
 T AlignDown(T val, size_t alignment) {
     return val / alignment * alignment;
 }

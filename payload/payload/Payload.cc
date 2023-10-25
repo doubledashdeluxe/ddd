@@ -1,5 +1,6 @@
 #include "Payload.hh"
 
+#include "payload/DVDStorage.hh"
 #include "payload/Lock.hh"
 #include "payload/LogFile.hh"
 #include "payload/WUP028.hh"
@@ -128,6 +129,10 @@ void Payload::Run() {
 
     INFO("Initializing storage...");
     Storage::Init();
+    INFO(" done.\n");
+
+    INFO("Initializing DVD storage...");
+    DVDStorage::Init();
     INFO(" done.\n");
 
     INFO("Initializing USB storage...");
