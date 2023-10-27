@@ -1,5 +1,7 @@
 #include "DVD.h"
 
+#include <stdio.h>
+
 typedef struct {
     u8 isDir : 8;
     u32 stringOffset : 24;
@@ -67,5 +69,32 @@ BOOL DVDReadDir(DVDDir *dir, DVDDirEntry *dirent) {
 }
 
 BOOL DVDCloseDir(DVDDir * /* dir */) {
+    return TRUE;
+}
+
+BOOL DVDConvertEntrynumToPath(s32 entrynum, char *path, u32 maxlen) {
+    u32 len = 0;
+    for (s32 location = 1; location != entrynum;) {
+        if (!FstStart[location].isDir) {
+            location++;
+            continue;
+        }
+        if (FstStart[location].dir.next <= entrynum) {
+            location = FstStart[location].dir.next;
+            continue;
+        }
+        const char *name = FstStringStart + FstStart[location].stringOffset;
+        len += snprintf(path + len, maxlen - len, "%s/", name);
+        if (len >= maxlen) {
+            return FALSE;
+        }
+        location++;
+    }
+    const char *name = FstStringStart + FstStart[entrynum].stringOffset;
+    const char *format = FstStart[entrynum].isDir ? "%s/" : "%s";
+    len += snprintf(path + len, maxlen - len, format, name);
+    if (len >= maxlen) {
+        return FALSE;
+    }
     return TRUE;
 }

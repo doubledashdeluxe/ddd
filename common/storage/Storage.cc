@@ -9,7 +9,17 @@ extern "C" {
 #include <string.h>
 }
 
+Storage::FileHandle::FileHandle() : m_file(nullptr) {}
+
 Storage::FileHandle::FileHandle(const char *path, u32 mode) : m_file(nullptr) {
+    open(path, mode);
+}
+
+Storage::FileHandle::~FileHandle() {
+    close();
+}
+
+void Storage::FileHandle::open(const char *path, u32 mode) {
     assert(path);
     assert(mode == Mode::Read || mode == Mode::WriteAlways || mode == Mode::WriteNew);
 
@@ -18,10 +28,6 @@ Storage::FileHandle::FileHandle(const char *path, u32 mode) : m_file(nullptr) {
     if (m_file) {
         m_file->m_handle = this;
     }
-}
-
-Storage::FileHandle::~FileHandle() {
-    close();
 }
 
 void Storage::FileHandle::close() {
@@ -73,7 +79,17 @@ bool Storage::FileHandle::size(u64 &size) {
     return m_file->size(size);
 }
 
-Storage::DirHandle::DirHandle(const char *path) {
+Storage::DirHandle::DirHandle() : m_dir(nullptr) {}
+
+Storage::DirHandle::DirHandle(const char *path) : m_dir(nullptr) {
+    open(path);
+}
+
+Storage::DirHandle::~DirHandle() {
+    close();
+}
+
+void Storage::DirHandle::open(const char *path) {
     assert(path);
 
     StorageHandle storage(path);
@@ -81,10 +97,6 @@ Storage::DirHandle::DirHandle(const char *path) {
     if (m_dir) {
         m_dir->m_handle = this;
     }
-}
-
-Storage::DirHandle::~DirHandle() {
-    close();
 }
 
 void Storage::DirHandle::close() {

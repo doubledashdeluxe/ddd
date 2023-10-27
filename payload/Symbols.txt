@@ -6,12 +6,21 @@
 
 800056c0 Localize__10KartLocaleFv
 
+8000a7d8 MainRamToAram__7JKRAramFPCUcUlUllUlP7JKRHeaplPUl
 800157a8 __dl__FPv
-
 80018ed4 print__10JUTConsoleFPCc
 8001ab48 panic_f__12JUTExceptionFPCciPCce
 8001cda0 setPreUserCallback__12JUTExceptionFPFUsP9OSContextUlUl_v
 80023e24 setRenderMode__8JUTVideoFPC15GXRenderModeObj
+8009162c sendCmdMsg__13JASTaskThreadFPFPv_vPvUl
+80094770 RejectCallback__9JASDriverFPFPv_lPv
+8009482c RegisterSubFrameCallback__9JASDriverFPFPv_lPv
+800996dc __ct__13JASAramStreamFv
+80099924 prepare__13JASAramStreamFll
+80099b18 FirstLoad__13JASAramStreamFPv
+80099c18 Finish__13JASAramStreamFPv
+80099e9c load__13JASAramStreamFv
+8009a164 ChannelProc__13JASAramStreamFPv
 
 800ab56c DVDConvertPathToEntrynum
 800ab8d4 DVDOpen
@@ -115,6 +124,11 @@
 
 803d3248 s_videoMode__10KartLocale
 803d324c s_videoFrameMode__10KartLocale
+
+803d4d50 s_loadThread__13JASAramStream
+803d4d54 s_readBuffer__13JASAramStream
+803d4d58 s_blockSize__13JASAramStream
+803d4d61 s_fatalErrorFlag__13JASAramStream
 
 803d4e0c FstStart
 803d4e10 FstStringStart

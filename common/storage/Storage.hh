@@ -51,9 +51,11 @@ public:
 
     class FileHandle {
     public:
+        FileHandle();
         FileHandle(const char *path, u32 mode);
         ~FileHandle();
 
+        void open(const char *path, u32 mode);
         void close();
         bool read(void *dst, u32 size, u32 offset);
         bool write(const void *src, u32 size, u32 offset);
@@ -71,9 +73,11 @@ public:
 
     class DirHandle {
     public:
+        DirHandle();
         DirHandle(const char *path);
         ~DirHandle();
 
+        void open(const char *path);
         void close();
         bool read(NodeInfo &nodeInfo);
 

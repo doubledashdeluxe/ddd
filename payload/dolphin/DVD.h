@@ -30,3 +30,6 @@ BOOL DVDClose(DVDFileInfo *fileInfo);
 BOOL DVDOpenDir(const char *dirName, DVDDir *dir);
 BOOL DVDReadDir(DVDDir *dir, DVDDirEntry *dirent);
 BOOL DVDCloseDir(DVDDir *dir);
+
+s32 DVDConvertPathToEntrynum(const char *path);
+BOOL DVDConvertEntrynumToPath(s32 entrynum, char *path, u32 maxlen);
