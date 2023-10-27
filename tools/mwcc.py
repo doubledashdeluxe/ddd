@@ -19,7 +19,7 @@ for i in range(len(sys.argv) - 1):
 with tempfile.TemporaryFile() as stdout:
     with tempfile.TemporaryFile() as stderr:
         returncode = subprocess.run(
-            ['wine', os.path.join('tools', 'cw', 'mwcceppc.exe'), *argv],
+            ['wine', os.path.join('tools', 'cw', 'modified_mwcceppc.exe'), *argv],
             stdout = stdout,
             stderr = stderr,
         ).returncode

@@ -1,6 +1,9 @@
 #include "loader/Loader.hh"
 
 #include <common/Arena.hh>
+extern "C" {
+#include <common/StackCanary.h>
+}
 
 extern "C" {
 #include <string.h>
@@ -37,6 +40,9 @@ extern "C" asm void Start() {
     // Initialize the stack pointer
     lis r1, stackTop@h
     ori r1, r1, stackTop@l
+
+    // Initialize the stack canary
+    bl StackCanary_Init
 
     // Jump to C++ code
     bl RunLoader

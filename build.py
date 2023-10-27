@@ -42,8 +42,9 @@ n.variable('bin2c', os.path.join('tools', 'bin2c.py'))
 n.variable('cp', os.path.join('tools', 'cp.py'))
 n.variable('elf2bin', os.path.join('tools', 'elf2bin.py'))
 n.variable('elf2dol', os.path.join('tools', 'elf2dol.py'))
+n.variable('file_patcher', os.path.join('tools', 'file_patcher.py'))
 if 'win' in sys.platform or 'msys' in sys.platform:
-    n.variable('mwcc', os.path.join('tools', 'cw', 'mwcceppc.exe'))
+    n.variable('mwcc', os.path.join('tools', 'cw', 'modified_mwcceppc.exe'))
 else:
     n.variable('mwcc', os.path.join('tools', 'mwcc.py'))
 n.variable('patch', os.path.join('tools', 'patch.py'))
@@ -206,6 +207,12 @@ n.rule(
 n.newline()
 
 n.rule(
+    'patch_mwcceppc',
+    command = f'{sys.executable} $file_patcher $in $out',
+    description = 'PATCH_MWCCEPPC $out'
+)
+
+n.rule(
     'port',
     command = f'{sys.executable} $port P $region file $in $out',
     description = 'PORT $out'
@@ -216,6 +223,16 @@ n.rule(
     'script',
     command = f'{sys.executable} $script $in $out',
     description = 'SCRIPT $out',
+)
+n.newline()
+
+n.build(
+    os.path.join('tools', 'cw', 'modified_mwcceppc.exe'),
+    'patch_mwcceppc',
+    [
+        os.path.join('tools', 'cw', 'patches.dif'),
+        os.path.join('tools', 'cw', 'mwcceppc.exe'),
+    ]
 )
 n.newline()
 
@@ -283,6 +300,7 @@ for target in code_in_files:
                 ]),
             },
             order_only = protobuf_h_files if target == 'payload' else [],
+            implicit=os.path.join('tools', 'cw', 'modified_mwcceppc.exe'),
         )
         n.newline()
 
