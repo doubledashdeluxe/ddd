@@ -7,7 +7,10 @@
 800056c0 Localize__10KartLocaleFv
 
 8000a7d8 MainRamToAram__7JKRAramFPCUcUlUllUlP7JKRHeaplPUl
+80014bc4 alloc__7JKRHeapFUll
+80014c3c free__7JKRHeapFPv
 800157a8 __dl__FPv
+80015a24 open__13JKRMemArchiveFlUl
 80018ed4 print__10JUTConsoleFPCc
 8001ab48 panic_f__12JUTExceptionFPCciPCce
 8001cda0 setPreUserCallback__12JUTExceptionFPFUsP9OSContextUlUl_v
