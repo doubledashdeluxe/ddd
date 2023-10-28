@@ -52,7 +52,7 @@ private:
     OSMessageQueue m_controlQueue;
     OSMessageQueue m_stateQueue;
     u8 _040[0x0cc - 0x040];
-    Storage::FileHandle m_file;
+    Storage::FileHandle m_file; // Modified
     u8 _unused[sizeof(DVDFileInfo) - sizeof(Storage::FileHandle)];
     u32 m_aramLoadBlockCount;
     u32 m_aramCurrentBlock;
@@ -79,5 +79,6 @@ private:
     static u8 *s_readBuffer;
     static u32 s_blockSize;
     static bool s_fatalErrorFlag;
+    static Array<char, 256> s_name; // Added
 };
 static_assert(sizeof(JASAramStream) == 0x1e8);

@@ -3,10 +3,10 @@
 #include "jsystem/JASDriver.hh"
 #include "jsystem/JKRAram.hh"
 
-#include <common/Array.hh>
 #include <common/Bytes.hh>
 extern "C" {
 #include <dolphin/DVD.h>
+#include <dolphin/OSTime.h>
 }
 #include <payload/Lock.hh>
 extern "C" {
@@ -179,15 +179,46 @@ bool JASAramStream::openFile(s32 entrynum) {
     const char *bare = strrchr(path.values(), '/');
     bare = bare ? bare + 1 : path.values();
 
-    Array<char, 256> mainPath;
-    snprintf(mainPath.values(), mainPath.count(), "main:/ddd/assets/%s", bare);
-    if (m_file.open(mainPath.values(), Storage::Mode::Read)) {
+    Array<char, 256> filePath;
+    snprintf(filePath.values(), filePath.count(), "main:/ddd/assets/%s", bare);
+    if (m_file.open(filePath.values(), Storage::Mode::Read)) {
         return true;
     }
 
-    Array<char, 256> dvdPath;
-    snprintf(dvdPath.values(), dvdPath.count(), "dvd:%s", path.values());
-    if (m_file.open(dvdPath.values(), Storage::Mode::Read)) {
+    if (!strncmp(bare, "FINALLAP_", strlen("FINALLAP_")) && s_name[0] != '\0') {
+        snprintf(filePath.values(), filePath.count(), "main:/ddd/assets/%s/%s", bare,
+                s_name.values());
+        if (m_file.open(filePath.values(), Storage::Mode::Read)) {
+            return true;
+        }
+    }
+
+    Array<char, 256> name('\0');
+    Array<char, 256> dirPath;
+    snprintf(dirPath.values(), dirPath.count(), "main:/ddd/assets/%s", bare);
+    Storage::DirHandle dir(dirPath.values());
+    Storage::NodeInfo nodeInfo;
+    for (u32 bestScore = 0; dir.read(nodeInfo);) {
+        u32 score = OSGetTime() % 1024;
+        if (score >= bestScore) {
+            name = nodeInfo.name;
+            bestScore = score;
+        }
+    }
+    if (name[0] != '\0') {
+        if (!strncmp(bare, "COURSE_", strlen("COURSE_"))) {
+            s_name = name;
+        }
+
+        snprintf(filePath.values(), filePath.count(), "main:/ddd/assets/%s/%s", bare,
+                name.values());
+        if (m_file.open(filePath.values(), Storage::Mode::Read)) {
+            return true;
+        }
+    }
+
+    snprintf(filePath.values(), filePath.count(), "dvd:%s", path.values());
+    if (m_file.open(filePath.values(), Storage::Mode::Read)) {
         return true;
     }
 
@@ -205,3 +236,5 @@ void JASAramStream::Finish(void *userData) {
 
     REPLACED(Finish)(userData);
 }
+
+Array<char, 256> JASAramStream::s_name('\0');
