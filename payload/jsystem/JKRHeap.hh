@@ -6,6 +6,9 @@ class JKRHeap {
 public:
     void *alloc(u32 size, s32 align);
     void free(void *ptr);
+    s32 resize(void *ptr, u32 size);
+
+    static JKRHeap *FindFromRoot(void *ptr);
 
 private:
     u8 _00[0x6c - 0x00];

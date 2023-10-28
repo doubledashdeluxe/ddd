@@ -2,6 +2,7 @@
 
 #include "jsystem/JKRArchive.hh"
 
+#include <common/Array.hh>
 #include <payload/Replace.hh>
 
 class JKRMemArchive : public JKRArchive {
@@ -9,7 +10,7 @@ public:
     class MemBreakFlag {
     public:
         enum {
-            NoBreak = 0,
+            DoNotBreak = 0,
             Break = 1,
         };
 
@@ -21,9 +22,20 @@ public:
     JKRMemArchive(void *archive, u32 r5, u32 memBreakFlag);
     ~JKRMemArchive();
 
-    REPLACE bool open(s32 entrynum, u32 mountDirection);
-
 private:
+    REPLACE bool open(s32 entrynum, u32 mountDirection);
+    REPLACE bool open(void *archive, u32 r5, u32 memBreakFlag);
+
+    bool parseTree(u32 treeSize);
+    bool addSubdir(u64 &archiveSize, const char *bare, Array<char, 256> &relative);
+    bool addSubfile(u64 &archiveSize, const char *bare, const Array<char, 256> &relative);
+    bool searchNode(const Array<char, 256> &relative, const char *&name, u8 *&dir, u8 *&node,
+            bool &exists);
+    bool addNode(u64 &archiveSize, const char *name, u8 *&dir, u8 *&node);
+    bool relocate(u64 &archiveSize, u8 *&dir, u8 *&node);
+    bool allocAt(u64 &archiveSize, u64 newArchiveSize, void *ptr, u8 *&dir, u8 *&node);
+    void move(u64 archiveSize, void *ptr, s32 offset, u8 *&dir, u8 *&node);
+
     void *m_archive;
     u8 *m_files;
     bool m_ownsMemory;

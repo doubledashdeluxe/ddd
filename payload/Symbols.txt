@@ -9,8 +9,11 @@
 8000a7d8 MainRamToAram__7JKRAramFPCUcUlUllUlP7JKRHeaplPUl
 80014bc4 alloc__7JKRHeapFUll
 80014c3c free__7JKRHeapFPv
+80014d10 resize__7JKRHeapFPvUl
+80014e14 FindFromRoot__7JKRHeapFPv
 800157a8 __dl__FPv
 80015a24 open__13JKRMemArchiveFlUl
+80015b94 open__13JKRMemArchiveFPvUlUl
 80017094 request__7JKRTaskFPFPv_vPvPv
 80018ed4 print__10JUTConsoleFPCc
 8001ab48 panic_f__12JUTExceptionFPCciPCce
@@ -107,8 +110,10 @@
 800ffaf4 __shl2i
 800ffe28 exit
 
+8010241c toupper
 801024e8 isdigit
 801032e4 memcmp
+80103414 memmove
 801038e0 snprintf
 80103988 vsnprintf
 80103a28 vprintf
