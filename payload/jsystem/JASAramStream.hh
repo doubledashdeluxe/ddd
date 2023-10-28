@@ -41,6 +41,7 @@ private:
 
     bool headerLoad(s32 entrynum, u32 aramBufferSize, s32 aramBlockCount);
     REPLACE bool load();
+    bool openFile(s32 entrynum);
 
     static s32 ChannelProc(void *userData);
     static void HeaderLoad(void *userData);

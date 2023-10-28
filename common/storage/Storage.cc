@@ -19,15 +19,18 @@ Storage::FileHandle::~FileHandle() {
     close();
 }
 
-void Storage::FileHandle::open(const char *path, u32 mode) {
+bool Storage::FileHandle::open(const char *path, u32 mode) {
     assert(path);
     assert(mode == Mode::Read || mode == Mode::WriteAlways || mode == Mode::WriteNew);
+
+    close();
 
     StorageHandle storage(path);
     m_file = storage.openFile(path + strlen(storage.prefix()), mode);
     if (m_file) {
         m_file->m_handle = this;
     }
+    return m_file;
 }
 
 void Storage::FileHandle::close() {
@@ -89,14 +92,17 @@ Storage::DirHandle::~DirHandle() {
     close();
 }
 
-void Storage::DirHandle::open(const char *path) {
+bool Storage::DirHandle::open(const char *path) {
     assert(path);
+
+    close();
 
     StorageHandle storage(path);
     m_dir = storage.openDir(path + strlen(storage.prefix()));
     if (m_dir) {
         m_dir->m_handle = this;
     }
+    return m_dir;
 }
 
 void Storage::DirHandle::close() {

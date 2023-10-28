@@ -8,3 +8,4 @@ void *memset(void *s, int c, size_t n);
 size_t strlcpy(char *dst, const char *src, size_t size);
 size_t strlen(const char *s);
 int strncmp(const char *s1, const char *s2, size_t n);
+char *strrchr(const char *s, int c);

@@ -11,6 +11,7 @@ extern "C" {
 #include <payload/Lock.hh>
 extern "C" {
 #include <stdio.h>
+#include <string.h>
 }
 
 JASAramStream::JASAramStream() {}
@@ -42,15 +43,11 @@ bool JASAramStream::headerLoad(s32 entrynum, u32 aramBufferSize, s32 aramBlockCo
         return false;
     }
 
-    Array<char, 256> path;
-    if (!DVDConvertEntrynumToPath(entrynum, path.values(), path.count())) {
+    if (!openFile(entrynum)) {
         s_fatalErrorFlag = true;
         return false;
     }
 
-    Array<char, 256> dvdPath;
-    snprintf(dvdPath.values(), dvdPath.count(), "dvd:%s", path);
-    m_file.open(dvdPath.values(), Storage::Mode::Read);
     if (!m_file.read(s_readBuffer, 0x40, 0x0)) {
         s_fatalErrorFlag = true;
         return false;
@@ -171,6 +168,30 @@ bool JASAramStream::load() {
     }
 
     return true;
+}
+
+bool JASAramStream::openFile(s32 entrynum) {
+    Array<char, 256> path;
+    if (!DVDConvertEntrynumToPath(entrynum, path.values(), path.count())) {
+        return false;
+    }
+
+    const char *bare = strrchr(path.values(), '/');
+    bare = bare ? bare + 1 : path.values();
+
+    Array<char, 256> mainPath;
+    snprintf(mainPath.values(), mainPath.count(), "main:/ddd/assets/%s", bare);
+    if (m_file.open(mainPath.values(), Storage::Mode::Read)) {
+        return true;
+    }
+
+    Array<char, 256> dvdPath;
+    snprintf(dvdPath.values(), dvdPath.count(), "dvd:%s", path.values());
+    if (m_file.open(dvdPath.values(), Storage::Mode::Read)) {
+        return true;
+    }
+
+    return false;
 }
 
 void JASAramStream::HeaderLoad(void *userData) {

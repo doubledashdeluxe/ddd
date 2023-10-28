@@ -12,6 +12,7 @@
 8001ab48 panic_f__12JUTExceptionFPCciPCce
 8001cda0 setPreUserCallback__12JUTExceptionFPFUsP9OSContextUlUl_v
 80023e24 setRenderMode__8JUTVideoFPC15GXRenderModeObj
+800905cc CreateThread__6JASDvdFllUl
 8009162c sendCmdMsg__13JASTaskThreadFPFPv_vPvUl
 80094770 RejectCallback__9JASDriverFPFPv_lPv
 8009482c RegisterSubFrameCallback__9JASDriverFPFPv_lPv
@@ -107,6 +108,7 @@
 801038e0 snprintf
 80103988 vsnprintf
 80103a28 vprintf
+80106c88 strrchr
 80106cec strchr
 80106d58 strncmp
 80107088 strlen
