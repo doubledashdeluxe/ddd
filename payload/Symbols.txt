@@ -11,6 +11,7 @@
 80014c3c free__7JKRHeapFPv
 800157a8 __dl__FPv
 80015a24 open__13JKRMemArchiveFlUl
+80017094 request__7JKRTaskFPFPv_vPvPv
 80018ed4 print__10JUTConsoleFPCc
 8001ab48 panic_f__12JUTExceptionFPCciPCce
 8001cda0 setPreUserCallback__12JUTExceptionFPFUsP9OSContextUlUl_v
@@ -122,6 +123,8 @@
 801cc5bc main
 801ceb3c LoadKeepData__6ResMgrFv
 801cf914 Call__7LogoAppFv
+801d02f8 StartAudio__6SystemFPv
+801d0388 Init__6SystemFv
 801d3704 Ask__9CardAgentFll
 801d9358 Call__11SequenceAppFl
 
@@ -144,4 +147,5 @@
 
 803c5fe0 s_systemRecord
 803d5498 s_instance__Q29GameAudio4Main
+803d5bcc s_loadTask__6System
 803d5be0 s_currentApp__6AppMgr
