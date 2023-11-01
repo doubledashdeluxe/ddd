@@ -13,4 +13,4 @@ private:
 
     u8 _00[0x2c - 0x00];
 };
-static_assert(sizeof(MovieApp) == 0x2c);
+size_assert(MovieApp, 0x2c);

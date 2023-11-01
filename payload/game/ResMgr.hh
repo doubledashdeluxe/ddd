@@ -9,4 +9,4 @@ public:
 private:
     ResMgr();
 };
-static_assert(sizeof(ResMgr) == 0x1);
+size_assert(ResMgr, 0x1);

@@ -13,4 +13,4 @@ public:
 private:
     u8 _00[0x6c - 0x00];
 };
-static_assert(sizeof(JKRHeap) == 0x6c);
+size_assert(JKRHeap, 0x6c);

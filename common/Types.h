@@ -27,4 +27,5 @@ enum {
 #define offsetof(type, member) ((size_t)&(((type *)0)->member))
 // clang-format on
 #define alignas(alignment) __attribute__((aligned(alignment)))
-#define static_assert(cond) __static_assert((cond), #cond)
+#define size_assert(type, size) \
+    __static_assert((sizeof(type) == size), "sizeof(" #type ") == " #size ")")

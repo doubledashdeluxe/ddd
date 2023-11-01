@@ -7,21 +7,21 @@ typedef struct DVDFileInfo {
     u32 length;
     u8 _38[0x3c - 0x38];
 } DVDFileInfo;
-static_assert(sizeof(DVDFileInfo) == 0x3c);
+size_assert(DVDFileInfo, 0x3c);
 
 typedef struct DVDDir {
     u32 entrynum;
     u32 location;
     u32 next;
 } DVDDir;
-static_assert(sizeof(DVDDir) == 0xc);
+size_assert(DVDDir, 0xc);
 
 typedef struct DVDDirEntry {
     u32 entrynum;
     BOOL isDir;
     char *name;
 } DVDDirEntry;
-static_assert(sizeof(DVDDirEntry) == 0xc);
+size_assert(DVDDirEntry, 0xc);
 
 BOOL DVDOpen(const char *fileName, DVDFileInfo *fileInfo);
 s32 DVDReadPrio(DVDFileInfo *fileInfo, void *addr, s32 length, s32 offset, s32 prio);

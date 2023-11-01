@@ -46,4 +46,4 @@ protected:
     u8 _58[0x60 - 0x58];
     u32 m_mountDirection;
 };
-static_assert(sizeof(JKRArchive) == 0x64);
+size_assert(JKRArchive, 0x64);

@@ -11,4 +11,4 @@ public:
 private:
     u8 _00[0xa4 - 0x00];
 };
-static_assert(sizeof(JKRAram) == 0xa4);
+size_assert(JKRAram, 0xa4);

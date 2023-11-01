@@ -60,4 +60,4 @@ private:
     u16 m_gameFlag;
     u8 _008[0x614 - 0x008];
 };
-static_assert(sizeof(SystemRecord) == 0x614);
+size_assert(SystemRecord, 0x614);

@@ -26,4 +26,4 @@ private:
     int m_outputFlag;
     u8 _5C[0x6C - 0x5C];
 };
-static_assert(sizeof(JUTConsole) == 0x6C);
+size_assert(JUTConsole, 0x6C);

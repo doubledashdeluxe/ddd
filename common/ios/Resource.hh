@@ -99,7 +99,7 @@ protected:
 #endif
         } user;
     };
-    static_assert(sizeof(Request) == 0x40);
+    size_assert(Request, 0x40);
 
     static void Sync(Request &request);
 

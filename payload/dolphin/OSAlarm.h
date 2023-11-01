@@ -6,7 +6,7 @@ typedef struct OSAlarm {
     u8 _00[0x28 - 0x00];
     void *userData;
 } OSAlarm;
-static_assert(sizeof(OSAlarm) == 0x2c);
+size_assert(OSAlarm, 0x2c);
 
 typedef void (*OSAlarmHandler)(OSAlarm *alarm, OSContext *context);
 

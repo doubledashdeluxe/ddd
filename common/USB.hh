@@ -117,7 +117,7 @@ public:
         u8 numConfigurations;
         u8 _12[0x14 - 0x12];
     };
-    static_assert(sizeof(DeviceDescriptor) == 0x14);
+    size_assert(DeviceDescriptor, 0x14);
 
     struct ConfigDescriptor {
         u8 length;
@@ -130,7 +130,7 @@ public:
         u8 maxPower;
         u8 _9[0xc - 0x9];
     };
-    static_assert(sizeof(ConfigDescriptor) == 0xc);
+    size_assert(ConfigDescriptor, 0xc);
 
     struct InterfaceDescriptor {
         u8 length;
@@ -144,7 +144,7 @@ public:
         u8 interfaceIndex;
         u8 _9[0xc - 0x9];
     };
-    static_assert(sizeof(InterfaceDescriptor) == 0xc);
+    size_assert(InterfaceDescriptor, 0xc);
 
     struct EndpointDescriptor {
         u8 length;
@@ -162,7 +162,7 @@ public:
         u8 interval;
         u8 _7[0x8 - 0x7];
     };
-    static_assert(sizeof(EndpointDescriptor) == 0x8);
+    size_assert(EndpointDescriptor, 0x8);
 
     struct DeviceInfo {
         u32 id;
@@ -172,7 +172,7 @@ public:
         InterfaceDescriptor interfaceDescriptor;
         EndpointDescriptor endpointDescriptors[16];
     };
-    static_assert(sizeof(DeviceInfo) == 0xc0);
+    size_assert(DeviceInfo, 0xc0);
 
     class Handler {
     public:
@@ -270,7 +270,7 @@ private:
         u8 _14[0x20 - 0x14];
         IOS::Resource::IoctlvPair pairs[4];
     };
-    static_assert(sizeof(Transfer) == 0x40);
+    size_assert(Transfer, 0x40);
 
     class Resource : protected IOS::Resource {
     public:
@@ -282,7 +282,7 @@ private:
             u8 interfaceNumber;
             u8 alternateSettingCount;
         };
-        static_assert(sizeof(DeviceEntry) == 0xc);
+        size_assert(DeviceEntry, 0xc);
 
         bool getVersion(u32 &version);
         s32 getDeviceChange(Array<DeviceEntry, 0x20> &deviceEntries);

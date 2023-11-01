@@ -24,4 +24,4 @@ private:
 
     u8 _00[0x4c - 0x00];
 };
-static_assert(sizeof(SequenceApp) == 0x4c);
+size_assert(SequenceApp, 0x4c);

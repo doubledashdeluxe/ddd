@@ -12,4 +12,4 @@ private:
 
     u8 _00[0x3c - 0x00];
 };
-static_assert(sizeof(LogoApp) == 0x3c);
+size_assert(LogoApp, 0x3c);

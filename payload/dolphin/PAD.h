@@ -35,7 +35,7 @@ typedef struct PADStatus {
     u8 analogB;
     s8 err;
 } PADStatus;
-static_assert(sizeof(PADStatus) == 0xc);
+size_assert(PADStatus, 0xc);
 
 u32 REPLACED(PADRead)(PADStatus *status);
 REPLACE u32 PADRead(PADStatus *status);

@@ -16,4 +16,4 @@ private:
 
     static JKRTask *s_loadTask;
 };
-static_assert(sizeof(System) == 0x1);
+size_assert(System, 0x1);

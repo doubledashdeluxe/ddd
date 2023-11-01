@@ -36,4 +36,4 @@ private:
     static u32 s_videoMode;
     static u32 s_videoFrameMode;
 };
-static_assert(sizeof(KartLocale) == 0x1);
+size_assert(KartLocale, 0x1);

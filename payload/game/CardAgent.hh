@@ -9,4 +9,4 @@ public:
 private:
     CardAgent();
 };
-static_assert(sizeof(CardAgent) == 0x1);
+size_assert(CardAgent, 0x1);

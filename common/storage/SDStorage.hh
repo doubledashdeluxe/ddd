@@ -43,7 +43,7 @@ private:
         u8 val[4];
         u32 _14;
     };
-    static_assert(sizeof(RegOp) == 0x18);
+    size_assert(RegOp, 0x18);
 
     class HCR {
     public:
@@ -60,7 +60,7 @@ private:
         u8 dataTransferWidth : 1;
         u8 : 1;
     };
-    static_assert(sizeof(HostControl1) == 0x1);
+    size_assert(HostControl1, 0x1);
 
     class Command {
     public:
@@ -119,7 +119,7 @@ private:
         u32 isDma;
         u32 _20;
     };
-    static_assert(sizeof(Request) == 0x24);
+    size_assert(Request, 0x24);
 
     struct Status {
         u32 : 11;
@@ -130,7 +130,7 @@ private:
         bool wasRemoved : 1;
         bool wasAdded : 1;
     };
-    static_assert(sizeof(Status) == 0x4);
+    size_assert(Status, 0x4);
 
     class CardHandle {
     public:

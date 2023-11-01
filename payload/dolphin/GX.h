@@ -17,4 +17,4 @@ typedef struct GXRenderModeObj {
     u8 sample_pattern[12][2];
     u8 vfilter[7];
 } GXRenderModeObj;
-static_assert(sizeof(GXRenderModeObj) == 0x3c);
+size_assert(GXRenderModeObj, 0x3c);

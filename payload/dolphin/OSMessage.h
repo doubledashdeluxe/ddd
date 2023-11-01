@@ -7,7 +7,7 @@ typedef void *OSMessage;
 typedef struct OSMessageQueue {
     u8 _00[0x20 - 0x00];
 } OSMessageQueue;
-static_assert(sizeof(OSMessageQueue) == 0x20);
+size_assert(OSMessageQueue, 0x20);
 
 enum {
     OS_MESSAGE_NOBLOCK = 0,

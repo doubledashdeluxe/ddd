@@ -7,7 +7,7 @@ typedef struct EXIControl {
     u32 _20;
     u8 _24[0x40 - 0x24];
 } EXIControl;
-static_assert(sizeof(EXIControl) == 0x40);
+size_assert(EXIControl, 0x40);
 
 extern u32 exiProbeStartTimes[2];
 

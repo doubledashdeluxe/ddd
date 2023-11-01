@@ -12,4 +12,4 @@ public:
 private:
     JASDvd();
 };
-static_assert(sizeof(JASDvd) == 0x1);
+size_assert(JASDvd, 0x1);

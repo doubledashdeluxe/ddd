@@ -81,4 +81,4 @@ private:
     static bool s_fatalErrorFlag;
     static Array<char, 256> s_name; // Added
 };
-static_assert(sizeof(JASAramStream) == 0x1e8);
+size_assert(JASAramStream, 0x1e8);

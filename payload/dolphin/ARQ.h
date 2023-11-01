@@ -15,7 +15,7 @@ typedef struct ARQRequest {
     u32 length;
     ARQCallback callback;
 } ARQRequest;
-static_assert(sizeof(ARQRequest) == 0x20);
+size_assert(ARQRequest, 0x20);
 
 REPLACE void ARQInit();
 REPLACE void ARQPostRequest(ARQRequest *task, u32 owner, u32 type, u32 priority, u32 source,

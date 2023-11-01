@@ -11,4 +11,4 @@ public:
 protected:
     u8 _04[0x38 - 0x04];
 };
-static_assert(sizeof(JKRFileLoader) == 0x38);
+size_assert(JKRFileLoader, 0x38);

@@ -16,7 +16,7 @@ typedef struct {
         } file;
     };
 } FstEntry;
-static_assert(sizeof(FstEntry) == 0xc);
+size_assert(FstEntry, 0xc);
 
 extern char *FstStringStart;
 extern FstEntry *FstStart;

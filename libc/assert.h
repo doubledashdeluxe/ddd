@@ -10,3 +10,5 @@ void Assert(const char *file, s32 line, const char *expression);
             Assert(__FILE__, __LINE__, #expression); \
         } \
     } while (false)
+
+#define static_assert(cond) __static_assert((cond), #cond)

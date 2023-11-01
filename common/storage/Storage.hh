@@ -197,4 +197,4 @@ private:
     static Array<OSMessage, 1> s_messages;
 #endif
 };
-static_assert(sizeof(Storage) == 0x20);
+size_assert(Storage, 0x20);

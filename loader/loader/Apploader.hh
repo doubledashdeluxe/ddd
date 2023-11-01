@@ -27,7 +27,7 @@ private:
         u32 trailer;
         u8 _1c[0x20 - 0x1c];
     };
-    static_assert(sizeof(ApploaderHeader) == 0x20);
+    size_assert(ApploaderHeader, 0x20);
 
     static bool IsDiscIDValid();
     static void Report(const char *format, ...);

@@ -19,4 +19,4 @@ public:
 private:
     u8 _00[0xA4 - 0x00];
 };
-static_assert(sizeof(JUTException) == 0xA4);
+size_assert(JUTException, 0xA4);

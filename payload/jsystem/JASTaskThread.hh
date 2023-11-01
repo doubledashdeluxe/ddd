@@ -11,4 +11,4 @@ public:
 private:
     u8 _00[0x88 - 0x00];
 };
-static_assert(sizeof(JASTaskThread) == 0x88);
+size_assert(JASTaskThread, 0x88);

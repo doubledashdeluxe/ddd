@@ -40,4 +40,4 @@ private:
     u8 *m_files;
     bool m_ownsMemory;
 };
-static_assert(sizeof(JKRMemArchive) == 0x70);
+size_assert(JKRMemArchive, 0x70);

@@ -11,4 +11,4 @@ public:
 private:
     u8 _00[0x98 - 0x00];
 };
-static_assert(sizeof(JKRTask) == 0x98);
+size_assert(JKRTask, 0x98);

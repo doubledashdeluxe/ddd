@@ -17,6 +17,6 @@ private:
 
     static Main *s_instance;
 };
-static_assert(sizeof(Main) == 0xa8);
+size_assert(Main, 0xa8);
 
 } // namespace GameAudio

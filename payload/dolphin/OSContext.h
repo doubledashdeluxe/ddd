@@ -7,6 +7,6 @@ typedef struct OSContext {
     u32 srr0;
     u8 _19c[0x2c8 - 0x19c];
 } OSContext;
-static_assert(sizeof(OSContext) == 0x2c8);
+size_assert(OSContext, 0x2c8);
 
 void OSLoadContext(OSContext *context);
