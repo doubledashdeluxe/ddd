@@ -82,7 +82,7 @@ void *USB::Run(void *param) {
     while (true) {
         Array<Resource::DeviceEntry, 0x20> deviceEntries;
         s32 result = backend->resource->getDeviceChange(deviceEntries);
-        assert(result >= 0 && result <= deviceEntries.count());
+        assert(result >= 0 && result <= static_cast<s32>(deviceEntries.count()));
         u32 deviceEntryCount = result;
         Lock<Mutex> lock(*s_mutex);
 

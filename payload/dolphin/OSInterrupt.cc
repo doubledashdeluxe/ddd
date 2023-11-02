@@ -47,7 +47,11 @@ extern "C" REPLACE void OSInterruptInit() {
 
 extern "C" u32 REPLACED(OSSetInterruptMask)(u32 mask, u32 interrupts);
 extern "C" REPLACE u32 OSSetInterruptMask(u32 mask, u32 interrupts) {
+#ifdef __CWCC__
     if (__cntlzw(mask) != 27) {
+#else
+    if (__builtin_clz(mask) != 27) {
+#endif
         return REPLACED(OSSetInterruptMask)(mask, interrupts);
     }
 
@@ -176,7 +180,11 @@ extern "C" REPLACE void OSDispatchInterrupt(u8 /* exception */, OSContext *conte
     u32 interrupt;
     for (const u32 *priority = InterruptPriorities;; priority++) {
         if (interrupts & *priority) {
+#ifdef __CWCC__
             interrupt = __cntlzw(interrupts & *priority);
+#else
+            interrupt = __builtin_clz(interrupts & *priority);
+#endif
             break;
         }
     }

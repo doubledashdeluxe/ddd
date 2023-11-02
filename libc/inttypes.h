@@ -7,3 +7,5 @@
 #define UINT8_MAX 0xff
 #define UINT16_MAX 0xffff
 #define UINT32_MAX 0xffffffff
+
+#define PRIu64 "llu"

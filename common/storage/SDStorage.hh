@@ -147,15 +147,15 @@ private:
 
     SDStorage();
 
-    void poll();
-    u32 priority();
-    const char *prefix();
+    void poll() override;
+    u32 priority() override;
+    const char *prefix() override;
 
-    u32 sectorSize();
-    bool read(u32 firstSector, u32 sectorCount, void *buffer);
-    bool write(u32 firstSector, u32 sectorCount, const void *buffer);
-    bool erase(u32 firstSector, u32 sectorCount);
-    bool sync();
+    u32 sectorSize() override;
+    bool read(u32 firstSector, u32 sectorCount, void *buffer) override;
+    bool write(u32 firstSector, u32 sectorCount, const void *buffer) override;
+    bool erase(u32 firstSector, u32 sectorCount) override;
+    bool sync() override;
 
     bool transfer(bool isWrite, u32 firstSector, u32 sectorCount, void *buffer);
 #ifdef PAYLOAD

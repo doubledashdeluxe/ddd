@@ -14,9 +14,9 @@ extern "C" {
 class USB {
 public:
     class Device;
-    struct Transfer;
 
 private:
+    struct Transfer;
     class Resource;
 
 public:
@@ -176,19 +176,19 @@ public:
 
     class Handler {
     public:
-        Handler();
-
         void poll();
 
         virtual void onRemove(Device *device) = 0;
         virtual bool onAdd(const DeviceInfo *deviceInfo, Device *device) = 0;
         virtual void notify() = 0;
 
+    protected:
+        Handler();
+        ~Handler();
+
     private:
         void pollRemove();
         void pollAdd();
-
-        ~Handler();
 
         Handler *m_next;
     };
@@ -340,14 +340,14 @@ private:
         VENResource();
         ~VENResource();
 
-        bool getDeviceInfo(u32 id, u8 alternateSetting, DeviceInfo &deviceInfo);
-        bool setAlternateSetting(u32 id, u8 alternateSetting);
+        bool getDeviceInfo(u32 id, u8 alternateSetting, DeviceInfo &deviceInfo) override;
+        bool setAlternateSetting(u32 id, u8 alternateSetting) override;
         bool intrTransfer(u32 id, Transfer *transfer, void *data, u16 length, u8 endpointDirection,
-                u8 endpointNumber);
+                u8 endpointNumber) override;
         bool isoTransfer(u32 id, Transfer *transfer, void *data, u16 *packetSizes, u8 packets,
-                u8 endpointDirection, u8 endpointNumber);
+                u8 endpointDirection, u8 endpointNumber) override;
         bool bulkTransfer(u32 id, Transfer *transfer, void *data, u16 length, u8 endpointDirection,
-                u8 endpointNumber);
+                u8 endpointNumber) override;
     };
 
     class HIDResource : public Resource {
@@ -355,14 +355,14 @@ private:
         HIDResource();
         ~HIDResource();
 
-        bool getDeviceInfo(u32 id, u8 alternateSetting, DeviceInfo &deviceInfo);
-        bool setAlternateSetting(u32 id, u8 alternateSetting);
+        bool getDeviceInfo(u32 id, u8 alternateSetting, DeviceInfo &deviceInfo) override;
+        bool setAlternateSetting(u32 id, u8 alternateSetting) override;
         bool intrTransfer(u32 id, Transfer *transfer, void *data, u16 length, u8 endpointDirection,
-                u8 endpointNumber);
+                u8 endpointNumber) override;
         bool isoTransfer(u32 id, Transfer *transfer, void *data, u16 *packetSizes, u8 packets,
-                u8 endpointDirection, u8 endpointNumber);
+                u8 endpointDirection, u8 endpointNumber) override;
         bool bulkTransfer(u32 id, Transfer *transfer, void *data, u16 length, u8 endpointDirection,
-                u8 endpointNumber);
+                u8 endpointNumber) override;
     };
 
     struct Backend {

@@ -8,6 +8,7 @@ extern "C" {
 
 extern "C" s64 systemTimeOffset;
 
+#ifdef __CWCC__
 extern "C" void OSSetTime(s64 time) {
     Lock<NoInterrupts> lock;
 
@@ -17,3 +18,4 @@ extern "C" void OSSetTime(s64 time) {
     asm("mttbl %0; mttbu %1; mttbl %2" : : "r"(0), "r"(hi), "r"(lo));
     EXIProbeReset();
 }
+#endif

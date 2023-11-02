@@ -34,7 +34,11 @@ VI::Color VI::readFromXFB(u16 x, u16 y) {
     }
 
     u32 val = m_xfb[y * (m_xfbWidth / 2) + x / 2];
-    Color color = {val >> 24, val >> 16, val >> 8, val >> 0};
+    Color color;
+    color.y0 = val >> 24;
+    color.u = val >> 16;
+    color.y1 = val >> 8;
+    color.v = val >> 0;
     return color;
 }
 
@@ -85,8 +89,8 @@ VI::VI() {
     }
     hsw = 0x2828;
     hsr = 0x10f5;
-    tfbl = 1 << 28 | reinterpret_cast<u32>(m_xfb) >> 5;
-    bfbl = 1 << 28 | reinterpret_cast<u32>(m_xfb) >> 5;
+    tfbl = 1 << 28 | reinterpret_cast<uintptr_t>(m_xfb) >> 5;
+    bfbl = 1 << 28 | reinterpret_cast<uintptr_t>(m_xfb) >> 5;
 }
 
 VI *VI::s_instance = nullptr;

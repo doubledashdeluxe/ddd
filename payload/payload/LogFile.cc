@@ -8,6 +8,7 @@ extern "C" {
 #include <dolphin/OSTime.h>
 
 #include <ctype.h>
+#include <inttypes.h>
 #include <stdio.h>
 #include <string.h>
 }
@@ -29,7 +30,7 @@ void LogFile::VPrintf(const char *format, va_list vlist) {
     }
     u64 seconds = Clock::TicksToSeconds(currentTime - s_startTime);
     u32 milliseconds = Clock::TicksToMilliseconds(currentTime - s_startTime) % 1000;
-    u32 length = snprintf(s_buffers[s_index].values() + s_offset, maxLength, "[%llu.%03u] ",
+    u32 length = snprintf(s_buffers[s_index].values() + s_offset, maxLength, "[%" PRIu64 ".%03u] ",
             seconds, milliseconds);
     if (length >= maxLength) {
         s_offset = s_buffers[0].count();
@@ -59,8 +60,12 @@ void *LogFile::Run(void * /* param */) {
         OSTicksToCalendarTime(OSGetTime(), &time);
 
         Array<char, 256> path;
-        snprintf(path.values(), path.count(), "main:/ddd/logs/%04d-%02d-%02d-%02d-%02d-%02d.log",
-                time.year, time.mon + 1, time.mday, time.hour, time.min, time.sec);
+        s32 length = snprintf(path.values(), path.count(),
+                "main:/ddd/logs/%04d-%02d-%02d-%02d-%02d-%02d.log", time.year, time.mon + 1,
+                time.mday, time.hour, time.min, time.sec);
+        if (length < 0 || static_cast<size_t>(length) >= path.count()) {
+            continue;
+        }
 
         Storage::FileHandle file(path.values(), Storage::Mode::WriteAlways);
 
@@ -107,7 +112,11 @@ void LogFile::RemoveOldLogFiles() {
         }
 
         Array<char, 256> path;
-        snprintf(path.values(), path.count(), "main:/ddd/logs/%s", nodeInfo.name.values());
+        s32 length =
+                snprintf(path.values(), path.count(), "main:/ddd/logs/%s", nodeInfo.name.values());
+        if (length < 0 || static_cast<size_t>(length) >= path.count()) {
+            continue;
+        }
 
         if (!Storage::Remove(path.values(), Storage::Mode::RemoveExisting)) {
             DEBUG("Failed to remove the log file '%s'!", path.values());

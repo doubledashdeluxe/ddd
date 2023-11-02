@@ -79,7 +79,7 @@ BOOL DVDConvertEntrynumToPath(s32 entrynum, char *path, u32 maxlen) {
             location++;
             continue;
         }
-        if (FstStart[location].dir.next <= entrynum) {
+        if ((s32)FstStart[location].dir.next <= entrynum) {
             location = FstStart[location].dir.next;
             continue;
         }

@@ -75,6 +75,7 @@ common_cflags = [
 ]
 common_ccflags = [
     '-Cpp_exceptions', 'off',
+    '-d', 'override=',
     '-enum', 'int',
     '-fp', 'hard',
     '-gccdep',
@@ -123,9 +124,92 @@ target_ccflags = {
         '-Ipayload',
     ],
 }
+common_ncflags = [
+    '-fdata-sections',
+    '-ffunction-sections',
+    '-fsanitize=undefined',
+    '-isystem', '.',
+    '-isystem', 'vendor',
+    '-O2',
+    '-std=c2x',
+    '-Wall',
+    '-Werror=implicit-function-declaration',
+    '-Werror=incompatible-pointer-types',
+    '-Werror=vla',
+    '-Wextra',
+]
+common_nccflags = [
+    '-D', 'lest_FEATURE_AUTO_REGISTER',
+    '-fdata-sections',
+    '-ffunction-sections',
+    '-fsanitize=undefined',
+    '-fno-sanitize=vptr', # Order matters
+    '-isystem', '.',
+    '-isystem', 'vendor',
+    '-O2',
+    '-std=c++17',
+    '-Wall',
+    '-Werror=vla',
+    '-Wextra',
+    '-Wsuggest-override',
+]
+target_ncflags = {
+    'vendor': [],
+    'libc': [],
+    'common': [],
+    'loader': [
+        '-D', 'LOADER',
+        '-iquote', 'loader',
+        '-isystem', 'loader',
+    ],
+    'payload': [
+        '-D', 'PAYLOAD',
+        '-iquote', 'payload',
+        '-isystem', 'payload',
+    ],
+}
+target_nccflags = {
+    'vendor': [],
+    'libc': [],
+    'common': [],
+    'loader': [
+        '-D', 'LOADER',
+        '-iquote', 'loader',
+        '-isystem', 'loader',
+    ],
+    'payload': [
+        '-D', 'PAYLOAD',
+        '-iquote', 'payload',
+        '-isystem', 'payload',
+    ],
+}
+if 'win' in sys.platform or 'msys' in sys.platform:
+    common_ncflags += [
+        '-fsanitize-undefined-trap-on-error',
+    ]
+    common_nccflags += [
+        '-fsanitize-undefined-trap-on-error',
+    ]
+else:
+    common_ncflags += [
+        '-fsanitize=address',
+    ]
+    common_nccflags += [
+        '-fsanitize=address',
+    ]
 if args.ci:
-    common_cflags += ['-w', 'error']
-    common_ccflags += ['-w', 'error']
+    common_cflags += [
+        '-w', 'error',
+    ]
+    common_ccflags += [
+        '-w', 'error',
+    ]
+    common_ncflags += [
+        '-Werror',
+    ]
+    common_nccflags += [
+        '-Werror',
+    ]
 
 n.rule(
     'bin2c',
@@ -199,6 +283,32 @@ n.rule(
 )
 n.newline()
 
+if 'win' in sys.platform or 'msys' in sys.platform:
+    nc_command = 'gcc.exe -MD -MT $out -MF $out.d $cflags -c $in -o $out'
+else:
+    nc_command = 'gcc -MD -MT $out -MF $out.d $cflags -c $in -o $out'
+n.rule(
+    'nc',
+    command = nc_command,
+    depfile = '$out.d',
+    deps = 'gcc',
+    description = 'NC $out',
+)
+n.newline()
+
+if 'win' in sys.platform or 'msys' in sys.platform:
+    ncc_command = 'g++.exe -MD -MT $out -MF $out.d $ccflags -c $in -o $out'
+else:
+    ncc_command = 'g++ -MD -MT $out -MF $out.d $ccflags -c $in -o $out'
+n.rule(
+    'ncc',
+    command = ncc_command,
+    depfile = '$out.d',
+    deps = 'gcc',
+    description = 'NCC $out',
+)
+n.newline()
+
 n.rule(
     'patch',
     command = f'{sys.executable} $patch $in $out',
@@ -259,24 +369,24 @@ n.newline()
 
 code_in_files = {
     'vendor': [
-        *sorted(glob.glob('vendor/**/*.c', recursive=True)),
-        *sorted(glob.glob('vendor/**/*.cc', recursive=True)),
+        *sorted(glob.glob(os.path.join('vendor', '**', '*.c'), recursive=True)),
+        *sorted(glob.glob(os.path.join('vendor', '**', '*.cc'), recursive=True)),
     ],
     'libc': [
-        *sorted(glob.glob('libc/**/*.c', recursive=True)),
-        *sorted(glob.glob('libc/**/*.cc', recursive=True)),
+        *sorted(glob.glob(os.path.join('libc', '**', '*.c'), recursive=True)),
+        *sorted(glob.glob(os.path.join('libc', '**', '*.cc'), recursive=True)),
     ],
     'common': [
-        *sorted(glob.glob('common/**/*.c', recursive=True)),
-        *sorted(glob.glob('common/**/*.cc', recursive=True)),
+        *sorted(glob.glob(os.path.join('common', '**', '*.c'), recursive=True)),
+        *sorted(glob.glob(os.path.join('common', '**', '*.cc'), recursive=True)),
     ],
     'loader': [
-        *sorted(glob.glob('loader/**/*.c', recursive=True)),
-        *sorted(glob.glob('loader/**/*.cc', recursive=True)),
+        *sorted(glob.glob(os.path.join('loader', '**', '*.c'), recursive=True)),
+        *sorted(glob.glob(os.path.join('loader', '**', '*.cc'), recursive=True)),
     ],
     'payload': [
-        *sorted(glob.glob('payload/**/*.c', recursive=True)),
-        *sorted(glob.glob('payload/**/*.cc', recursive=True)),
+        *sorted(glob.glob(os.path.join('payload', '**', '*.c'), recursive=True)),
+        *sorted(glob.glob(os.path.join('payload', '**', '*.cc'), recursive=True)),
     ],
 }
 code_out_files = {target: [] for target in code_in_files}
@@ -486,6 +596,33 @@ n.build(
     implicit = '$cp',
 )
 n.newline()
+
+native_code_in_files = {
+    **code_in_files,
+}
+native_code_out_files = {target: [] for target in native_code_in_files}
+for target in native_code_in_files:
+    for in_file in native_code_in_files[target]:
+        _, ext = os.path.splitext(in_file)
+        out_file = os.path.join('$builddir', 'native', in_file + '.o')
+        native_code_out_files[target] += [out_file]
+        n.build(
+            out_file,
+            f'n{ext[1:]}',
+            in_file,
+            variables = {
+                'cflags': ' '.join([
+                    *common_ncflags,
+                    *target_ncflags[target],
+                ]),
+                'ccflags': ' '.join([
+                    *common_nccflags,
+                    *target_nccflags[target],
+                ]),
+            },
+            order_only = protobuf_h_files if target == 'payload' else [],
+        )
+        n.newline()
 
 if args.dry:
     with open('build.ninja', 'w') as out_file:

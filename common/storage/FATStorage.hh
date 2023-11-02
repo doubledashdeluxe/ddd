@@ -16,12 +16,12 @@ protected:
         File();
 
     private:
-        void close();
-        bool read(void *dst, u32 size, u32 offset);
-        bool write(const void *src, u32 size, u32 offset);
-        bool sync();
-        bool size(u64 &size);
-        Storage *storage();
+        void close() override;
+        bool read(void *dst, u32 size, u32 offset) override;
+        bool write(const void *src, u32 size, u32 offset) override;
+        bool sync() override;
+        bool size(u64 &size) override;
+        Storage *storage() override;
 
         FATStorage *m_storage;
         FIL m_fFile;
@@ -34,9 +34,9 @@ protected:
         Dir();
 
     private:
-        void close();
-        bool read(NodeInfo &nodeInfo);
-        Storage *storage();
+        void close() override;
+        bool read(NodeInfo &nodeInfo) override;
+        Storage *storage() override;
 
         FATStorage *m_storage;
         DIR m_fDir;
@@ -45,17 +45,18 @@ protected:
     };
 
     FATStorage();
+    ~FATStorage();
 
     void remove();
     bool add();
 
-    Storage::File *openFile(const char *path, u32 mode);
+    Storage::File *openFile(const char *path, u32 mode) override;
 
-    Storage::Dir *openDir(const char *path);
-    bool createDir(const char *path, u32 mode);
+    Storage::Dir *openDir(const char *path) override;
+    bool createDir(const char *path, u32 mode) override;
 
-    bool rename(const char *srcPath, const char *dstPath);
-    bool remove(const char *path, u32 mode);
+    bool rename(const char *srcPath, const char *dstPath) override;
+    bool remove(const char *path, u32 mode) override;
 
     virtual u32 sectorSize() = 0;
     virtual bool read(u32 firstSector, u32 sectorCount, void *buffer) = 0;
@@ -66,8 +67,6 @@ protected:
     bool convertPath(const char *path, Array<char, 256> &fPath);
 
 private:
-    ~FATStorage();
-
     template <typename N>
     static N *FindNode(Array<N, 32> &nodes) {
         for (u32 i = 0; i < nodes.count(); i++) {

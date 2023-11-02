@@ -23,9 +23,13 @@ enum {
     TRUE = 1,
 };
 
+#ifdef __CWCC__
 // clang-format off
 #define offsetof(type, member) ((size_t)&(((type *)0)->member))
 // clang-format on
 #define alignas(alignment) __attribute__((aligned(alignment)))
 #define size_assert(type, size) \
-    __static_assert((sizeof(type) == size), "sizeof(" #type ") == " #size ")")
+    __static_assert((sizeof(type) == size), "sizeof(" #type ") == " #size)
+#else
+#define size_assert(type, size)
+#endif

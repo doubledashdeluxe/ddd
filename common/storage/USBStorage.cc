@@ -205,7 +205,7 @@ bool USBStorage::scsiTransfer(USB::Device *device, bool isWrite, u32 size, void 
         }
     } else {
         for (u32 offset = 0; offset < size; offset += m_buffer.count()) {
-            u32 chunkSize = Min(size - offset, m_buffer.count());
+            u32 chunkSize = Min<u32>(size - offset, m_buffer.count());
             if (isWrite) {
                 memcpy(m_buffer.values(), reinterpret_cast<u8 *>(data) + offset, chunkSize);
             }

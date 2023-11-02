@@ -135,6 +135,7 @@ public:
 
 protected:
     Storage();
+    ~Storage();
 
     void notify();
     void remove();
@@ -177,8 +178,6 @@ private:
         Storage *m_storage;
         const char *m_prefix;
     };
-
-    ~Storage();
 
 #ifdef PAYLOAD
     static void *Poll(void *param);

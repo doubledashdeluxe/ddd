@@ -18,9 +18,9 @@ private:
     WUP028();
     ~WUP028();
 
-    void onRemove(USB::Device *device);
-    bool onAdd(const USB::DeviceInfo *deviceInfo, USB::Device *device);
-    void notify();
+    void onRemove(USB::Device *device) override;
+    bool onAdd(const USB::DeviceInfo *deviceInfo, USB::Device *device) override;
+    void notify() override;
 
     void *poll();
     void *transfer();

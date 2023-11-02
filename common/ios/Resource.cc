@@ -4,6 +4,7 @@
 #include "common/Memory.hh"
 
 extern "C" {
+#include <stdio.h>
 #include <string.h>
 }
 
@@ -64,7 +65,8 @@ s32 Resource::ioctlv(u32 ioctlv, u32 inputCount, u32 outputCount, IoctlvPair *pa
 
     for (u32 i = inputCount; i < inputCount + outputCount; i++) {
         if (pairs[i].data && pairs[i].size != 0) {
-            pairs[i].data = Memory::PhysicalToVirtual<void *>(reinterpret_cast<u32>(pairs[i].data));
+            pairs[i].data =
+                    Memory::PhysicalToVirtual<void *>(reinterpret_cast<uintptr_t>(pairs[i].data));
             DCache::Invalidate(pairs[i].data, pairs[i].size);
         }
     }
@@ -78,7 +80,7 @@ bool Resource::ok() const {
 
 s32 Resource::open(const char *path, u32 mode) {
     alignas(0x20) char alignedPath[0x40];
-    strlcpy(alignedPath, path, sizeof(alignedPath));
+    snprintf(alignedPath, sizeof(alignedPath), "%s", path);
 
     DCache::Flush(alignedPath, sizeof(alignedPath));
 

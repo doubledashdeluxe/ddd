@@ -10,9 +10,9 @@ extern "C" {
 void Patcher::Run() {
     for (size_t i = 0; i < PatchCount; i++) {
         const Patch &patch = Patches[i];
-        u32 fromAddress = reinterpret_cast<u32>(patch.from);
-        u32 toAddress = reinterpret_cast<u32>(patch.to);
-        u32 thunkAddress = reinterpret_cast<u32>(patch.thunk);
+        uintptr_t fromAddress = reinterpret_cast<uintptr_t>(patch.from);
+        uintptr_t toAddress = reinterpret_cast<uintptr_t>(patch.to);
+        uintptr_t thunkAddress = reinterpret_cast<uintptr_t>(patch.thunk);
 
         if (patch.thunk) {
             patch.thunk[0] = *reinterpret_cast<u32 *>(patch.from);

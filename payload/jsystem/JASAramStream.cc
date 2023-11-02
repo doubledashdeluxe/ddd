@@ -66,7 +66,7 @@ bool JASAramStream::headerLoad(s32 entrynum, u32 aramBufferSize, s32 aramBlockCo
     m_aramBlockCount = aramBufferSize / s_blockSize / m_channelCount;
     m_aramChannelBlockCount = m_aramBlockCount - 1;
     m_aramLoadBlockCount = m_aramChannelBlockCount;
-    if (aramBlockCount < 0 || aramBlockCount > m_aramLoadBlockCount) {
+    if (aramBlockCount < 0 || static_cast<u32>(aramBlockCount) > m_aramLoadBlockCount) {
         aramBlockCount = m_aramLoadBlockCount;
     }
 
@@ -180,46 +180,56 @@ bool JASAramStream::openFile(s32 entrynum) {
     bare = bare ? bare + 1 : path.values();
 
     Array<char, 256> filePath;
-    snprintf(filePath.values(), filePath.count(), "main:/ddd/assets/%s", bare);
-    if (m_file.open(filePath.values(), Storage::Mode::Read)) {
-        return true;
+    s32 length = snprintf(filePath.values(), filePath.count(), "main:/ddd/assets/%s", bare);
+    if (length >= 0 && static_cast<size_t>(length) < filePath.count()) {
+        if (m_file.open(filePath.values(), Storage::Mode::Read)) {
+            return true;
+        }
     }
 
     if (!strncmp(bare, "FINALLAP_", strlen("FINALLAP_")) && s_name[0] != '\0') {
-        snprintf(filePath.values(), filePath.count(), "main:/ddd/assets/%s/%s", bare,
+        length = snprintf(filePath.values(), filePath.count(), "main:/ddd/assets/%s/%s", bare,
                 s_name.values());
-        if (m_file.open(filePath.values(), Storage::Mode::Read)) {
-            return true;
+        if (length >= 0 && static_cast<size_t>(length) < filePath.count()) {
+            if (m_file.open(filePath.values(), Storage::Mode::Read)) {
+                return true;
+            }
         }
     }
 
     Array<char, 256> name('\0');
     Array<char, 256> dirPath;
-    snprintf(dirPath.values(), dirPath.count(), "main:/ddd/assets/%s", bare);
-    Storage::DirHandle dir(dirPath.values());
-    Storage::NodeInfo nodeInfo;
-    for (u32 bestScore = 0; dir.read(nodeInfo);) {
-        u32 score = OSGetTime() % 1024;
-        if (score >= bestScore) {
-            name = nodeInfo.name;
-            bestScore = score;
+    length = snprintf(dirPath.values(), dirPath.count(), "main:/ddd/assets/%s", bare);
+    if (length >= 0 && static_cast<size_t>(length) < dirPath.count()) {
+        Storage::DirHandle dir(dirPath.values());
+        Storage::NodeInfo nodeInfo;
+        for (u32 bestScore = 0; dir.read(nodeInfo);) {
+            u32 score = OSGetTime() % 1024;
+            if (score >= bestScore) {
+                name = nodeInfo.name;
+                bestScore = score;
+            }
+        }
+        if (name[0] != '\0') {
+            if (!strncmp(bare, "COURSE_", strlen("COURSE_"))) {
+                s_name = name;
+            }
+
+            length = snprintf(filePath.values(), filePath.count(), "main:/ddd/assets/%s/%s", bare,
+                    name.values());
+            if (length >= 0 && static_cast<size_t>(length) < filePath.count()) {
+                if (m_file.open(filePath.values(), Storage::Mode::Read)) {
+                    return true;
+                }
+            }
         }
     }
-    if (name[0] != '\0') {
-        if (!strncmp(bare, "COURSE_", strlen("COURSE_"))) {
-            s_name = name;
-        }
 
-        snprintf(filePath.values(), filePath.count(), "main:/ddd/assets/%s/%s", bare,
-                name.values());
+    length = snprintf(filePath.values(), filePath.count(), "dvd:%s", path.values());
+    if (length >= 0 && static_cast<size_t>(length) < filePath.count()) {
         if (m_file.open(filePath.values(), Storage::Mode::Read)) {
             return true;
         }
-    }
-
-    snprintf(filePath.values(), filePath.count(), "dvd:%s", path.values());
-    if (m_file.open(filePath.values(), Storage::Mode::Read)) {
-        return true;
     }
 
     return false;

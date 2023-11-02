@@ -15,12 +15,12 @@ private:
         File();
 
     private:
-        void close();
-        bool read(void *dst, u32 size, u32 offset);
-        bool write(const void *src, u32 size, u32 offset);
-        bool sync();
-        bool size(u64 &size);
-        Storage *storage();
+        void close() override;
+        bool read(void *dst, u32 size, u32 offset) override;
+        bool write(const void *src, u32 size, u32 offset) override;
+        bool sync() override;
+        bool size(u64 &size) override;
+        Storage *storage() override;
 
         DVDStorage *m_storage;
         DVDFileInfo m_fileInfo;
@@ -33,9 +33,9 @@ private:
         Dir();
 
     private:
-        void close();
-        bool read(NodeInfo &nodeInfo);
-        Storage *storage();
+        void close() override;
+        bool read(NodeInfo &nodeInfo) override;
+        Storage *storage() override;
 
         DVDStorage *m_storage;
         DVDDir m_dir;
@@ -45,17 +45,17 @@ private:
 
     DVDStorage();
 
-    void poll();
-    u32 priority();
-    const char *prefix();
+    void poll() override;
+    u32 priority() override;
+    const char *prefix() override;
 
-    Storage::File *openFile(const char *path, u32 mode);
+    Storage::File *openFile(const char *path, u32 mode) override;
 
-    Storage::Dir *openDir(const char *path);
-    bool createDir(const char *path, u32 mode);
+    Storage::Dir *openDir(const char *path) override;
+    bool createDir(const char *path, u32 mode) override;
 
-    bool rename(const char *srcPath, const char *dstPath);
-    bool remove(const char *path, u32 mode);
+    bool rename(const char *srcPath, const char *dstPath) override;
+    bool remove(const char *path, u32 mode) override;
 
     template <typename N>
     static N *FindNode(Array<N, 32> &nodes) {

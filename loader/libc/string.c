@@ -1,5 +1,7 @@
 #include <string.h>
 
+#include <common/Types.h>
+
 void *memcpy(void *dest, const void *src, size_t n) {
     u8 *d = dest;
     const u8 *s = src;

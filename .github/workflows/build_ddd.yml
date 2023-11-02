@@ -19,9 +19,7 @@ jobs:
       - name: Install Ninja
         run: sudo apt-get install ninja-build
       - name: Install LLD
-        run: |
-          sudo apt-get install lld-15
-          sudo update-alternatives --install /usr/bin/ld.lld ld.lld /usr/bin/ld.lld-15 15
+        run: sudo update-alternatives --install /usr/bin/ld.lld ld.lld /usr/bin/ld.lld-15 15
       - name: Install Python
         uses: actions/setup-python@v4
         with:
@@ -105,8 +103,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Install clang-format
-        run: sudo apt-get install clang-format-15
       - name: Format
         run: |
           dirs="common libc loader payload"

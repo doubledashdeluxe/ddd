@@ -36,7 +36,7 @@ bool DI::Read(void *dst, u32 size, u32 offset) {
     dicmdbuf0 = 0xa8000000;
     dicmdbuf1 = offset >> 2;
     dicmdbuf2 = size;
-    dimar = reinterpret_cast<u32>(dst) & 0x1fffffff;
+    dimar = reinterpret_cast<uintptr_t>(dst) & 0x1fffffff;
     dilength = size;
     dicr = 0x3;
     DCache::Invalidate(dst, size);

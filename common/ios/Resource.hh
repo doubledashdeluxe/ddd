@@ -68,25 +68,25 @@ protected:
                 u32 mode;
             } open;
             struct {
-                u32 output;
-                u32 outputSize;
+                uintptr_t output;
+                size_t outputSize;
             } read;
             struct {
-                u32 input;
-                u32 inputSize;
+                uintptr_t input;
+                size_t inputSize;
             } write;
             struct {
                 u32 ioctl;
-                u32 input;
-                u32 inputSize;
-                u32 output;
-                u32 outputSize;
+                uintptr_t input;
+                size_t inputSize;
+                uintptr_t output;
+                size_t outputSize;
             } ioctl;
             struct {
                 u32 ioctlv;
                 u32 inputCount;
                 u32 outputCount;
-                u32 pairs;
+                uintptr_t pairs;
             } ioctlv;
         };
         struct {

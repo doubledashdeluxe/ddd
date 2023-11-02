@@ -73,7 +73,7 @@ bool SDStorage::transfer(bool isWrite, u32 firstSector, u32 sectorCount, void *b
                 buffer, nullptr);
     } else {
         while (sectorCount > 0) {
-            u32 chunkSectorCount = Min(sectorCount, m_buffer.count() / SectorSize);
+            u32 chunkSectorCount = Min<u32>(sectorCount, m_buffer.count() / SectorSize);
             if (isWrite) {
                 memcpy(m_buffer.values(), buffer, chunkSectorCount * SectorSize);
             }
@@ -231,7 +231,7 @@ bool SDStorage::getStatus(Status &status) {
     }
 
     DEBUG("Got status 0x%x\n", out);
-    memcpy(&status, &out, sizeof(status));
+    memcpy(&status, &out, sizeof(out));
     return true;
 }
 

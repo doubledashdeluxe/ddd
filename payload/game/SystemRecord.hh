@@ -21,7 +21,7 @@ public:
             Pakkun = 1 << 10,   // Piranha Pipes
             Teressa = 1 << 11,  // Boo Pipes
             Extra = 1 << 12,    // Parade Kart
-            All = ~(~0 << 13),
+            All = (1 << 13) - 1,
         };
 
     private:
@@ -41,7 +41,7 @@ public:
             SpecialEnding = 1 << 6, // Special Ending
             MiniLuigi = 1 << 7,     // Luigi's Mansion
             MiniMario = 1 << 8,     // Tilt-A-Kart
-            All = ~(~0 << 9),
+            All = (1 << 9) - 1,
         };
 
     private:

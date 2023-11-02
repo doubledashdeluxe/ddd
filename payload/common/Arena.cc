@@ -7,15 +7,15 @@ extern "C" {
 
 void *MEM1Arena::alloc(size_t size, s32 align) {
     if (align >= 0) {
-        u32 lo = reinterpret_cast<u32>(OSGetArenaLo());
-        lo = AlignUp<u32>(lo, align);
+        uintptr_t lo = reinterpret_cast<uintptr_t>(OSGetArenaLo());
+        lo = AlignUp<uintptr_t>(lo, align);
         void *ptr = reinterpret_cast<void *>(lo);
         lo += size;
         OSSetArenaLo(reinterpret_cast<void *>(lo));
         return ptr;
     } else {
-        u32 hi = reinterpret_cast<u32>(OSGetArenaHi());
-        hi = AlignDown<u32>(hi, -align);
+        uintptr_t hi = reinterpret_cast<uintptr_t>(OSGetArenaHi());
+        hi = AlignDown<uintptr_t>(hi, -align);
         hi -= size;
         OSSetArenaHi(reinterpret_cast<void *>(hi));
         void *ptr = reinterpret_cast<void *>(hi);

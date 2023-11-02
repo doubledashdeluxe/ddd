@@ -228,7 +228,8 @@ bool FATStorage::remove(const char *path, u32 mode) {
 }
 
 bool FATStorage::convertPath(const char *path, Array<char, 256> &fPath) {
-    return snprintf(fPath.values(), fPath.count(), "%u:/%s", m_volumeId, path) < fPath.count();
+    s32 length = snprintf(fPath.values(), fPath.count(), "%u:/%s", m_volumeId, path);
+    return length < static_cast<s32>(fPath.count());
 }
 
 extern "C" DSTATUS disk_status(BYTE /* pdrv */) {

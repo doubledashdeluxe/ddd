@@ -3,7 +3,7 @@
 #include "common/Console.hh"
 
 struct Context {
-    u32 mem2ArenaLo;
-    u32 mem2ArenaHi;
+    uintptr_t mem2ArenaLo;
+    uintptr_t mem2ArenaHi;
     Console *console;
 };

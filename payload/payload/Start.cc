@@ -10,7 +10,9 @@ extern "C" {
 #include <stdlib.h>
 }
 
+#ifdef __CWCC__
 #pragma section RX "first"
+#endif
 
 extern "C" void __init_registers(void);
 extern "C" void __init_hardware(void);
@@ -37,6 +39,7 @@ extern "C" void RunPayload(Context *context) {
     Payload::Run();
 }
 
+#ifdef __CWCC__
 extern "C" __declspec(section "first") asm void Start(Context *context) {
     // clang-format off
 
@@ -63,3 +66,4 @@ extern "C" __declspec(section "first") asm void Start(Context *context) {
 
     // clang-format on
 }
+#endif

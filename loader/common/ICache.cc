@@ -2,6 +2,7 @@
 
 #include <common/Align.hh>
 
+#ifdef __CWCC__
 void ICache::Invalidate(void *start, size_t size) {
     if (size == 0) {
         return;
@@ -15,3 +16,4 @@ void ICache::Invalidate(void *start, size_t size) {
     } while (size > 0);
     asm("sync; isync");
 }
+#endif

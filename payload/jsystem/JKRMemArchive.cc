@@ -23,9 +23,12 @@ bool JKRMemArchive::open(s32 entrynum, u32 mountDirection) {
     }
 
     Array<char, 256> filePath;
-    snprintf(filePath.values(), filePath.count(), "dvd:%s", path.values());
-    Storage::FileHandle file(filePath.values(), Storage::Mode::Read);
+    s32 length = snprintf(filePath.values(), filePath.count(), "dvd:%s", path.values());
+    if (length < 0 || static_cast<size_t>(length) >= filePath.count()) {
+        return false;
+    }
 
+    Storage::FileHandle file(filePath.values(), Storage::Mode::Read);
     u64 fileSize;
     if (!file.size(fileSize)) {
         return false;
@@ -191,13 +194,16 @@ bool JKRMemArchive::addSubdir(u64 &archiveSize, const char *bare, Array<char, 25
         DEBUG("Added %s to %s (%llx)\n", relative.values(), bare, archiveSize - oldArchiveSize);
     }
 
-    u32 length = strlen(relative.values());
     Array<char, 256> dirPath;
-    snprintf(dirPath.values(), dirPath.count(), "main:/ddd/assets/%s%s", bare, relative.values());
+    s32 length = snprintf(dirPath.values(), dirPath.count(), "main:/ddd/assets/%s%s", bare,
+            relative.values());
+    if (length < 0 || static_cast<size_t>(length) >= dirPath.count()) {
+        return false;
+    }
     Storage::NodeInfo nodeInfo;
     for (Storage::DirHandle dir(dirPath.values()); dir.read(nodeInfo);) {
-        snprintf(relative.values() + length, relative.count() - length, "/%s",
-                nodeInfo.name.values());
+        snprintf(relative.values() + strlen(relative.values()),
+                relative.count() - strlen(relative.values()), "/%s", nodeInfo.name.values());
         if (nodeInfo.type == Storage::NodeType::Dir) {
             if (!addSubdir(archiveSize, bare, relative)) {
                 return false;
@@ -240,17 +246,20 @@ bool JKRMemArchive::addSubfile(u64 &archiveSize, const char *bare,
         }
         Bytes::WriteBE<u16>(node, 0x00, fileCount);
         Bytes::WriteBE<u8>(node, 0x04, 0x11);
-        Bytes::WriteBE<u32>(node, 0x08, m_tree - m_archive);
+        Bytes::WriteBE<u32>(node, 0x08, m_tree - reinterpret_cast<u8 *>(m_archive));
         Bytes::WriteBE<u32>(node, 0x0c, 0);
 
         Bytes::WriteBE<u16>(m_tree, 0x18, fileCount + 1);
     }
 
     Array<char, 256> subfilePath;
-    snprintf(subfilePath.values(), subfilePath.count(), "main:/ddd/assets/%s%s", bare,
+    s32 length = snprintf(subfilePath.values(), subfilePath.count(), "main:/ddd/assets/%s%s", bare,
             relative.values());
-    Storage::FileHandle subfile(subfilePath.values(), Storage::Mode::Read);
+    if (length < 0 || static_cast<size_t>(length) >= subfilePath.count()) {
+        return false;
+    }
 
+    Storage::FileHandle subfile(subfilePath.values(), Storage::Mode::Read);
     u64 subfileSize;
     if (!subfile.size(subfileSize)) {
         return false;
@@ -378,7 +387,7 @@ bool JKRMemArchive::addNode(u64 &archiveSize, const char *name, u8 *&dir, u8 *&n
     if (!allocAt(archiveSize, archiveSize + nameSize, m_names + namesSize, dir, node)) {
         return false;
     }
-    strlcpy(m_names + namesSize, name, nameLength + 1);
+    snprintf(m_names + namesSize, nameLength + 1, "%s", name);
 
     Bytes::WriteBE<u16>(dir, 0x0a, Bytes::ReadBE<u16>(dir, 0x0a) + 1);
 
@@ -471,7 +480,7 @@ bool JKRMemArchive::allocAt(u64 &archiveSize, u64 newArchiveSize, void *ptr, u8 
 
 void JKRMemArchive::move(u64 archiveSize, void *ptr, s32 offset, u8 *&dir, u8 *&node) {
     memmove(reinterpret_cast<u8 *>(ptr) + offset, ptr,
-            archiveSize - (reinterpret_cast<u8 *>(ptr) - m_archive));
+            archiveSize - (reinterpret_cast<u8 *>(ptr) - reinterpret_cast<u8 *>(m_archive)));
     m_tree = m_tree >= ptr ? m_tree + offset : m_tree;
     m_files = m_files >= ptr ? m_files + offset : m_files;
     m_dirs = m_dirs >= ptr ? m_dirs + offset : m_dirs;

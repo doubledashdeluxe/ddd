@@ -228,7 +228,7 @@ Loader::PayloadEntryFunc Loader::Run() {
         // Enable OSReport over EXI
         consoleType = 0x10000006;
     }
-    arenaLo = reinterpret_cast<u32>(payloadDst) + payloadSize;
+    arenaLo = reinterpret_cast<uintptr_t>(payloadDst) + payloadSize;
 
     INFO("Starting payload...");
     PayloadEntryFunc payloadEntry = reinterpret_cast<PayloadEntryFunc>(payloadDst);

@@ -18,5 +18,5 @@ const u8 *Font::GetGlyph(char c) {
         return font[i];
     }
 
-    return font[' '];
+    return font[static_cast<unsigned char>(' ')];
 }

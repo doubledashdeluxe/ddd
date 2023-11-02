@@ -2,6 +2,7 @@
 
 #include <common/Align.hh>
 
+#ifdef __CWCC__
 void DCache::Store(const void *start, size_t size) {
     if (size == 0) {
         return;
@@ -42,3 +43,4 @@ void DCache::Invalidate(void *start, size_t size) {
         size -= 0x20;
     } while (size > 0);
 }
+#endif

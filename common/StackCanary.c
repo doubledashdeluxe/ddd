@@ -3,6 +3,7 @@
 #define IABR 1010
 #define IABR_BE_BIT 30
 
+#ifdef __CWCC__
 // clang-format off
 asm void StackCanary_Init(void) {
     nofralloc
@@ -23,3 +24,4 @@ asm u32 StackCanary_Canary(void) {
     blr
 }
 // clang-format on
+#endif

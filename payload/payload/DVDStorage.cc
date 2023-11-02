@@ -6,6 +6,7 @@
 
 extern "C" {
 #include <assert.h>
+#include <stdio.h>
 #include <string.h>
 }
 
@@ -63,7 +64,7 @@ bool DVDStorage::Dir::read(NodeInfo &nodeInfo) {
     } else {
         nodeInfo.type = NodeType::File;
     }
-    strlcpy(nodeInfo.name.values(), entry.name, nodeInfo.name.count());
+    snprintf(nodeInfo.name.values(), nodeInfo.name.count(), "%s", entry.name);
     return true;
 }
 

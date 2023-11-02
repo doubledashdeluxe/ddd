@@ -27,6 +27,7 @@ BOOL DVDOpen(const char *fileName, DVDFileInfo *fileInfo);
 s32 DVDReadPrio(DVDFileInfo *fileInfo, void *addr, s32 length, s32 offset, s32 prio);
 BOOL DVDClose(DVDFileInfo *fileInfo);
 
+BOOL DVDFastOpenDir(s32 entrynum, DVDDir *dir);
 BOOL DVDOpenDir(const char *dirName, DVDDir *dir);
 BOOL DVDReadDir(DVDDir *dir, DVDDirEntry *dirent);
 BOOL DVDCloseDir(DVDDir *dir);

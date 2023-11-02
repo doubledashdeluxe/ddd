@@ -11,7 +11,7 @@ public:
             None = 0 << 0,
             OSReport = 1 << 0,
             Console = 1 << 1,
-            All = ~(~0 << 2),
+            All = (1 << 2) - 1,
         };
 
     private:

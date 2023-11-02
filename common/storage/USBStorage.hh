@@ -47,19 +47,19 @@ private:
     USBStorage();
     ~USBStorage();
 
-    void onRemove(USB::Device *device);
-    bool onAdd(const USB::DeviceInfo *deviceInfo, USB::Device *device);
-    void notify();
+    void onRemove(USB::Device *device) override;
+    bool onAdd(const USB::DeviceInfo *deviceInfo, USB::Device *device) override;
+    void notify() override;
 
-    void poll();
-    u32 priority();
-    const char *prefix();
+    void poll() override;
+    u32 priority() override;
+    const char *prefix() override;
 
-    u32 sectorSize();
-    bool read(u32 firstSector, u32 sectorCount, void *buffer);
-    bool write(u32 firstSector, u32 sectorCount, const void *buffer);
-    bool erase(u32 firstSector, u32 sectorCount);
-    bool sync();
+    u32 sectorSize() override;
+    bool read(u32 firstSector, u32 sectorCount, void *buffer) override;
+    bool write(u32 firstSector, u32 sectorCount, const void *buffer) override;
+    bool erase(u32 firstSector, u32 sectorCount) override;
+    bool sync() override;
 
     bool testUnitReady(USB::Device *device, u8 lun);
     bool inquiry(USB::Device *device, u8 lun, u8 &type);

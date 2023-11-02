@@ -9,7 +9,7 @@ public:
 
 class MEM1Arena : public Arena {
 public:
-    void *alloc(size_t size, s32 align);
+    void *alloc(size_t size, s32 align) override;
 
     static void Init();
     static MEM1Arena *Instance();
@@ -23,7 +23,7 @@ private:
 
 class MEM2Arena : public Arena {
 public:
-    void *alloc(size_t size, s32 align);
+    void *alloc(size_t size, s32 align) override;
 
     static void Init(u32 lo, u32 hi);
     static MEM2Arena *Instance();

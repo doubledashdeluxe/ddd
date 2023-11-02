@@ -3,9 +3,11 @@
 #include <common/Types.h>
 #include <payload/Replace.h>
 
-typedef void (*ARQCallback)(u32 pointerToARQRequest);
+typedef struct ARQRequest ARQRequest;
 
-typedef struct ARQRequest {
+typedef void (*ARQCallback)(ARQRequest *task);
+
+struct ARQRequest {
     struct ARQRequest *next;
     u32 owner;
     u32 type;
@@ -14,7 +16,7 @@ typedef struct ARQRequest {
     u32 dest;
     u32 length;
     ARQCallback callback;
-} ARQRequest;
+};
 size_assert(ARQRequest, 0x20);
 
 REPLACE void ARQInit();

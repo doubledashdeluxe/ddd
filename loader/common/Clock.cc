@@ -1,5 +1,6 @@
 #include <common/Clock.hh>
 
+#ifdef __CWCC__
 void Clock::WaitMilliseconds(u32 milliseconds) {
     u32 duration = MillisecondsToTicks(milliseconds);
     u32 start;
@@ -8,3 +9,4 @@ void Clock::WaitMilliseconds(u32 milliseconds) {
         asm volatile("mfspr %0, 268" : "=r"(current));
     }
 }
+#endif
