@@ -22,6 +22,10 @@ The used compiler is [NXP 'CodeWarrior Special Edition' for MPC55xx/MPC56xx v2.1
 
 You can then simply run `build.py` to build the project. The `out` directory will contain the generated binary.
 
+## Running tests
+
+You can launch `test.py` to build and run all tests.
+
 ## Contributing
 
 If you are working on something, please comment on the relevant issue (or open a new one if necessary).

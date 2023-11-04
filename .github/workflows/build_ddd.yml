@@ -41,7 +41,7 @@ jobs:
       - name: Prepare tools
         run: bash tools/prepare.sh cache/CW55xx_v2_10_SE.exe
       - name: Build
-        run: python build.py --ci
+        run: python build.py --ci -- app
       - name: Upload result
         uses: actions/upload-artifact@v3
         with:
@@ -78,7 +78,7 @@ jobs:
       - name: Prepare tools
         run: bash tools/prepare.sh cache/CW55xx_v2_10_SE.exe
       - name: Build
-        run: python build.py --ci
+        run: python build.py --ci -- app
       - name: Upload result
         uses: actions/upload-artifact@v3
         with:
@@ -96,6 +96,38 @@ jobs:
       - name: Compare
         run: cmp ddd-linux/boot.dol ddd-windows/boot.dol
 
+  test-linux:
+    name: Test on Linux
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Install Ninja
+        run: sudo apt-get install ninja-build
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - name: Test
+        run: python test.py --ci -- tests
+
+  test-windows:
+    name: Test on Windows
+    runs-on: windows-2022
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - name: Install Ninja
+        run: pip install ninja
+      - name: Test
+        run: python test.py --ci -- tests
+
   format-linux:
     name: Format on Linux
     runs-on: ubuntu-22.04
@@ -105,5 +137,5 @@ jobs:
         uses: actions/checkout@v3
       - name: Format
         run: |
-          dirs="common libc loader payload"
+          dirs="common libc loader payload tests"
           find $dirs -regex '.*\.\(c\|h\|cc\|hh\)' | xargs clang-format-15 --dry-run -Werror

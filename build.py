@@ -153,6 +153,10 @@ common_nccflags = [
     '-Wextra',
     '-Wsuggest-override',
 ]
+common_nldflags = [
+    '-fsanitize=undefined',
+    '-fno-sanitize=vptr',
+]
 target_ncflags = {
     'vendor': [],
     'libc': [],
@@ -190,11 +194,17 @@ if 'win' in sys.platform or 'msys' in sys.platform:
     common_nccflags += [
         '-fsanitize-undefined-trap-on-error',
     ]
+    common_nldflags += [
+        '-fsanitize-undefined-trap-on-error',
+    ]
 else:
     common_ncflags += [
         '-fsanitize=address',
     ]
     common_nccflags += [
+        '-fsanitize=address',
+    ]
+    common_nldflags += [
         '-fsanitize=address',
     ]
 if args.ci:
@@ -309,6 +319,28 @@ n.rule(
 )
 n.newline()
 
+if 'win' in sys.platform or 'msys' in sys.platform:
+    nld_command = 'g++.exe $ldflags $in -o $out'
+else:
+    nld_command = 'g++ $ldflags $in -o $out'
+n.rule(
+    'nld',
+    command = nld_command,
+    description = 'NLD $out',
+)
+n.newline()
+
+if 'win' in sys.platform or 'msys' in sys.platform:
+    nobjcopy_command = 'objcopy.exe $objcopyflags $in $out'
+else:
+    nobjcopy_command = 'objcopy $objcopyflags $in $out'
+n.rule(
+    'nobjcopy',
+    command = nobjcopy_command,
+    description = 'NOBJCOPY $out',
+)
+n.newline()
+
 n.rule(
     'patch',
     command = f'{sys.executable} $patch $in $out',
@@ -415,7 +447,7 @@ for target in code_in_files:
         n.newline()
 
 n.build(
-    os.path.join('$builddir', 'payload', f'payload.o'),
+    os.path.join('$builddir', 'payload', 'payload.o'),
     'ld',
     [
         *code_out_files['vendor'],
@@ -597,8 +629,24 @@ n.build(
 )
 n.newline()
 
+n.build(
+    'app',
+    'phony',
+    [
+        os.path.join('$outdir', 'boot.dol'),
+        os.path.join('$outdir', 'meta.xml'),
+    ],
+)
+n.newline()
+
 native_code_in_files = {
     **code_in_files,
+    'tests': [
+        *sorted(glob.glob(os.path.join('tests', 'libc', '**', '*.cc'), recursive=True)),
+        *sorted(glob.glob(os.path.join('tests', 'common', '**', '*.cc'), recursive=True)),
+        *sorted(glob.glob(os.path.join('tests', 'loader', '**', '*.cc'), recursive=True)),
+        *sorted(glob.glob(os.path.join('tests', 'payload', '**', '*.cc'), recursive=True)),
+    ]
 }
 native_code_out_files = {target: [] for target in native_code_in_files}
 for target in native_code_in_files:
@@ -606,6 +654,7 @@ for target in native_code_in_files:
         _, ext = os.path.splitext(in_file)
         out_file = os.path.join('$builddir', 'native', in_file + '.o')
         native_code_out_files[target] += [out_file]
+        flags_target = in_file.split(os.path.sep)[1] if target == 'tests' else target
         n.build(
             out_file,
             f'n{ext[1:]}',
@@ -613,16 +662,69 @@ for target in native_code_in_files:
             variables = {
                 'cflags': ' '.join([
                     *common_ncflags,
-                    *target_ncflags[target],
+                    *target_ncflags[flags_target],
                 ]),
                 'ccflags': ' '.join([
                     *common_nccflags,
-                    *target_nccflags[target],
+                    *target_nccflags[flags_target],
                 ]),
             },
             order_only = protobuf_h_files if target == 'payload' else [],
         )
         n.newline()
+
+native_weak_code_out_files = {target: [] for target in native_code_out_files}
+for target in native_code_out_files:
+    if target == 'tests':
+        continue
+    for out_file in native_code_out_files[target]:
+        base, _ = os.path.splitext(out_file)
+        weak_out_file = f'{base}W.o'
+        native_weak_code_out_files[target] += [weak_out_file]
+        n.build(
+            weak_out_file,
+            'nobjcopy',
+            out_file,
+            variables = {
+                'objcopyflags': ' '.join([
+                    '--weaken',
+                ]),
+            },
+        )
+    n.newline()
+
+test_binaries = []
+for out_file in native_code_out_files['tests']:
+    base, _ = os.path.splitext(out_file)
+    base, _ = os.path.splitext(base)
+    target = out_file.split(os.path.sep)[3]
+    test_binary = os.path.join('$outdir', os.path.join(*base.split(os.path.sep)[2:]))
+    test_binaries += [test_binary]
+    n.build(
+        test_binary,
+        'nld',
+        [
+            *native_weak_code_out_files['vendor'],
+            *native_weak_code_out_files['common'],
+            *(native_weak_code_out_files['loader'] if target == 'loader' else []),
+            *(native_weak_code_out_files['payload'] if target == 'payload' else []),
+            out_file,
+        ],
+        variables = {
+            'ldflags': ' '.join([
+                *common_nldflags,
+                '-Wl,--gc-sections',
+            ]),
+        },
+    )
+    n.newline()
+
+n.build(
+    'tests',
+    'phony',
+    test_binaries,
+)
+n.newline()
 
 if args.dry:
     with open('build.ninja', 'w') as out_file:
@@ -643,4 +745,5 @@ else:
     returncode = proc.returncode
 
 os.remove(out_file.name)
-sys.exit(returncode)
+if returncode != 0:
+    sys.exit(returncode)
