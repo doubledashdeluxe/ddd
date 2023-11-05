@@ -200,10 +200,12 @@ bool JKRMemArchive::addSubdir(u64 &archiveSize, const char *bare, Array<char, 25
     if (length < 0 || static_cast<size_t>(length) >= dirPath.count()) {
         return false;
     }
+
+    length = strlen(relative.values());
     Storage::NodeInfo nodeInfo;
     for (Storage::DirHandle dir(dirPath.values()); dir.read(nodeInfo);) {
-        snprintf(relative.values() + strlen(relative.values()),
-                relative.count() - strlen(relative.values()), "/%s", nodeInfo.name.values());
+        snprintf(relative.values() + length, relative.count() - length, "/%s",
+                nodeInfo.name.values());
         if (nodeInfo.type == Storage::NodeType::Dir) {
             if (!addSubdir(archiveSize, bare, relative)) {
                 return false;
