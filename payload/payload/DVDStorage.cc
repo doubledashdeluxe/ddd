@@ -132,4 +132,4 @@ bool DVDStorage::remove(const char * /* path */, u32 /* mode */) {
     return false;
 }
 
-DVDStorage *DVDStorage::s_instance;
+DVDStorage *DVDStorage::s_instance = nullptr;
