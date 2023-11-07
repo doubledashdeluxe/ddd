@@ -6,7 +6,7 @@ class Loader {
 public:
     typedef void (*PayloadEntryFunc)(Context *context);
 
-    static PayloadEntryFunc Run();
+    static PayloadEntryFunc Run(Context *context);
 
     static void *Start();
     static void *End();

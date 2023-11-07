@@ -1,5 +1,6 @@
 #include "Payload.hh"
 
+#include "payload/ArchiveStorage.hh"
 #include "payload/DVDStorage.hh"
 #include "payload/Lock.hh"
 #include "payload/LogFile.hh"
@@ -112,7 +113,7 @@ size_t Payload::BssSectionSize() {
     return payload_bss_end - payload_bss_start;
 }
 
-void Payload::Run() {
+void Payload::Run(Context *context) {
     INFO(" done.\n");
 
     INFO("Initializing IOS...");
@@ -133,6 +134,10 @@ void Payload::Run() {
 
     INFO("Initializing DVD storage...");
     DVDStorage::Init();
+    INFO(" done.\n");
+
+    INFO("Initializing common archive storage...");
+    ArchiveStorage::Init("carc:", context->commonArchive, context->commonArchiveSize);
     INFO(" done.\n");
 
     INFO("Initializing USB storage...");

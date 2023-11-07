@@ -36,7 +36,7 @@ extern "C" void RunPayload(Context *context) {
     DBInit();
     OSInit();
 
-    Payload::Run();
+    Payload::Run(context);
 }
 
 #ifdef __CWCC__

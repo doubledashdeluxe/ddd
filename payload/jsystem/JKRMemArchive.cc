@@ -79,8 +79,10 @@ bool JKRMemArchive::open(s32 entrynum, u32 mountDirection) {
     if (strncmp(path.values(), "/Course/", strlen("/Course/"))) {
         const char *bare = strrchr(path.values(), '/');
         bare = bare ? bare + 1 : path.values();
-        Array<char, 256> relative('\0');
-        addSubdir(fileSize, bare, relative);
+        if (!addSubnodes(fileSize, "carc:/", bare)) {
+            return false;
+        }
+        addSubnodes(fileSize, "main:/ddd/assets/", bare);
     }
 
     return true;
@@ -108,8 +110,10 @@ bool JKRMemArchive::open(void *archive, u32 /* r5 */, u32 memBreakFlag) {
     u8 *dir = m_dirs;
     Array<char, 256> bare;
     snprintf(bare.values(), bare.count(), "%s.arc", m_names + Bytes::ReadBE<u16>(dir, 0x06));
-    Array<char, 256> relative('\0');
-    addSubdir(archiveSize, bare.values(), relative);
+    if (!addSubnodes(archiveSize, "carc:/", bare.values())) {
+        return false;
+    }
+    addSubnodes(archiveSize, "main:/ddd/assets/", bare.values());
 
     return true;
 }
@@ -139,7 +143,13 @@ bool JKRMemArchive::parseTree(u32 treeSize) {
     return true;
 }
 
-bool JKRMemArchive::addSubdir(u64 &archiveSize, const char *bare, Array<char, 256> &relative) {
+bool JKRMemArchive::addSubnodes(u64 &archiveSize, const char *prefix, const char *bare) {
+    Array<char, 256> relative('\0');
+    return addSubdir(archiveSize, prefix, bare, relative);
+}
+
+bool JKRMemArchive::addSubdir(u64 &archiveSize, const char *prefix, const char *bare,
+        Array<char, 256> &relative) {
     u64 oldArchiveSize = archiveSize;
 
     const char *name;
@@ -195,8 +205,8 @@ bool JKRMemArchive::addSubdir(u64 &archiveSize, const char *bare, Array<char, 25
     }
 
     Array<char, 256> dirPath;
-    s32 length = snprintf(dirPath.values(), dirPath.count(), "main:/ddd/assets/%s%s", bare,
-            relative.values());
+    s32 length =
+            snprintf(dirPath.values(), dirPath.count(), "%s%s%s", prefix, bare, relative.values());
     if (length < 0 || static_cast<size_t>(length) >= dirPath.count()) {
         return false;
     }
@@ -207,11 +217,11 @@ bool JKRMemArchive::addSubdir(u64 &archiveSize, const char *bare, Array<char, 25
         snprintf(relative.values() + length, relative.count() - length, "/%s",
                 nodeInfo.name.values());
         if (nodeInfo.type == Storage::NodeType::Dir) {
-            if (!addSubdir(archiveSize, bare, relative)) {
+            if (!addSubdir(archiveSize, prefix, bare, relative)) {
                 return false;
             }
         } else {
-            if (!addSubfile(archiveSize, bare, relative)) {
+            if (!addSubfile(archiveSize, prefix, bare, relative)) {
                 return false;
             }
         }
@@ -220,7 +230,7 @@ bool JKRMemArchive::addSubdir(u64 &archiveSize, const char *bare, Array<char, 25
     return true;
 }
 
-bool JKRMemArchive::addSubfile(u64 &archiveSize, const char *bare,
+bool JKRMemArchive::addSubfile(u64 &archiveSize, const char *prefix, const char *bare,
         const Array<char, 256> &relative) {
     u64 oldArchiveSize = archiveSize;
 
@@ -255,7 +265,7 @@ bool JKRMemArchive::addSubfile(u64 &archiveSize, const char *bare,
     }
 
     Array<char, 256> subfilePath;
-    s32 length = snprintf(subfilePath.values(), subfilePath.count(), "main:/ddd/assets/%s%s", bare,
+    s32 length = snprintf(subfilePath.values(), subfilePath.count(), "%s%s%s", prefix, bare,
             relative.values());
     if (length < 0 || static_cast<size_t>(length) >= subfilePath.count()) {
         return false;

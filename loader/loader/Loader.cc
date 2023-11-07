@@ -34,6 +34,9 @@ extern "C" const size_t payloadE_size;
 extern "C" const u8 payloadJ[];
 extern "C" const size_t payloadJ_size;
 
+extern "C" const u8 commonArchive[];
+extern "C" const size_t commonArchive_size;
+
 extern "C" u32 discID[8];
 extern "C" u32 consoleType;
 extern "C" u32 arenaLo;
@@ -128,7 +131,7 @@ size_t Loader::BssSectionSize() {
     return loader_bss_end - loader_bss_start;
 }
 
-Loader::PayloadEntryFunc Loader::Run() {
+Loader::PayloadEntryFunc Loader::Run(Context *context) {
     // Use compat MMIO ranges for DI/SI/EXI/AI
     aipprot &= ~0x1;
 
@@ -137,9 +140,6 @@ Loader::PayloadEntryFunc Loader::Run() {
 
     // Reset the DSP: libogc apps like the HBC cannot initialize it properly, but the SDK can.
     aicr = 0;
-
-    MEM1Arena::Init();
-    MEM2Arena::Init(0x91000000, 0x93400000);
 
     VI::Init();
 
@@ -222,6 +222,12 @@ Loader::PayloadEntryFunc Loader::Run() {
     memcpy(payloadDst, payloadSrc, payloadSize);
     DCache::Flush(payloadDst, payloadSize);
     ICache::Invalidate(payloadDst, payloadSize);
+    INFO(" done.\n");
+
+    INFO("Copying common archive...");
+    context->commonArchive = MEM2Arena::Instance()->alloc(commonArchive_size, 0x20);
+    context->commonArchiveSize = commonArchive_size;
+    memcpy(context->commonArchive, &commonArchive, commonArchive_size);
     INFO(" done.\n");
 
     if (Platform::IsDolphin()) {

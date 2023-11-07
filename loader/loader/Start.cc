@@ -22,8 +22,10 @@ extern "C" void RunLoader() {
         (*ctor)();
     }
 
-    Loader::PayloadEntryFunc payloadEntry = Loader::Run();
+    MEM1Arena::Init();
+    MEM2Arena::Init(0x91000000, 0x93400000);
     Context *context = new (MEM2Arena::Instance(), 0x4) Context;
+    Loader::PayloadEntryFunc payloadEntry = Loader::Run(context);
     context->mem2ArenaLo = reinterpret_cast<uintptr_t>(MEM2Arena::Instance()->alloc(0x0, 0x4));
     context->mem2ArenaHi = reinterpret_cast<uintptr_t>(MEM2Arena::Instance()->alloc(0x0, -0x4));
     context->console = Console::Instance();

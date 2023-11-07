@@ -27,8 +27,11 @@ private:
     REPLACE bool open(void *archive, u32 r5, u32 memBreakFlag);
 
     bool parseTree(u32 treeSize);
-    bool addSubdir(u64 &archiveSize, const char *bare, Array<char, 256> &relative);
-    bool addSubfile(u64 &archiveSize, const char *bare, const Array<char, 256> &relative);
+    bool addSubnodes(u64 &archiveSize, const char *prefix, const char *bare);
+    bool addSubdir(u64 &archiveSize, const char *prefix, const char *bare,
+            Array<char, 256> &relative);
+    bool addSubfile(u64 &archiveSize, const char *prefix, const char *bare,
+            const Array<char, 256> &relative);
     bool searchNode(const Array<char, 256> &relative, const char *&name, u8 *&dir, u8 *&node,
             bool &exists);
     bool addNode(u64 &archiveSize, const char *name, u8 *&dir, u8 *&node);

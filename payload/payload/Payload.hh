@@ -1,10 +1,10 @@
 #pragma once
 
-#include <common/Types.hh>
+#include <common/Context.hh>
 
 class Payload {
 public:
-    static void Run();
+    static void Run(Context *context);
 
     static void *Start();
     static void *End();

@@ -40,6 +40,7 @@ n.newline()
 
 n.variable('bin2c', os.path.join('tools', 'bin2c.py'))
 n.variable('cp', os.path.join('tools', 'cp.py'))
+n.variable('dir2arc', os.path.join('tools', 'dir2arc.py'))
 n.variable('elf2bin', os.path.join('tools', 'elf2bin.py'))
 n.variable('elf2dol', os.path.join('tools', 'elf2dol.py'))
 n.variable('file_patcher', os.path.join('tools', 'file_patcher.py'))
@@ -262,6 +263,13 @@ n.rule(
 n.newline()
 
 n.rule(
+    'dir2arc',
+    command = f'{sys.executable} $dir2arc $in_dir $out',
+    description = 'DIR2ARC $out',
+)
+n.newline()
+
+n.rule(
     'elf2bin',
     command = f'{sys.executable} $elf2bin $in $out',
     description = 'ELF2BIN $out',
@@ -377,6 +385,53 @@ n.build(
     ]
 )
 n.newline()
+
+asset_arc_files = []
+for in_dir in glob.glob(os.path.join('assets', '*')):
+    in_files = sorted(glob.glob(os.path.join(in_dir, '**'), recursive=True))
+    arc_file = os.path.join('$builddir', in_dir + '.arc')
+    asset_arc_files += [arc_file]
+    n.build(
+        arc_file,
+        'dir2arc',
+        in_files,
+        variables = {
+            'in_dir': in_dir,
+        },
+    )
+    n.newline()
+
+asset_c_files = []
+for arc_file in asset_arc_files:
+    c_file = os.path.splitext(arc_file)[0] + '.c'
+    asset_c_files += [c_file]
+    n.build(
+        c_file,
+        'bin2c',
+        arc_file,
+        variables = {
+            'name': os.path.splitext(os.path.basename(arc_file))[0].lower() + 'Archive',
+        },
+        implicit = '$bin2c',
+    )
+    n.newline()
+
+asset_o_files = []
+for c_file in asset_c_files:
+    o_file = os.path.splitext(c_file)[0] + '.o'
+    asset_o_files += [o_file]
+    n.build(
+        o_file,
+        'c',
+        c_file,
+        variables = {
+            'cflags': ' '.join([
+                *common_ccflags,
+                *target_ccflags['loader'],
+            ]),
+        },
+    )
+    n.newline()
 
 protobuf_proto_files = sorted(glob.glob('protobuf/*.proto'))
 protobuf_h_files = []
@@ -599,6 +654,7 @@ n.build(
         *code_out_files['libc'],
         *code_out_files['common'],
         *code_out_files['loader'],
+        *asset_o_files,
         *[os.path.join('$builddir', 'payload', f'payload{region}.o') for region in ['P', 'E', 'J']],
     ],
     variables = {
