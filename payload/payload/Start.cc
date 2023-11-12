@@ -29,13 +29,13 @@ extern "C" void RunPayload(Context *context) {
 
     Patcher::Run();
 
-    MEM1Arena::Init();
     MEM2Arena::Init(context->mem2ArenaLo, context->mem2ArenaHi);
     Console::Init(context->console);
 
     DBInit();
     OSInit();
 
+    MEM1Arena::Init();
     Payload::Run(context);
 }
 
