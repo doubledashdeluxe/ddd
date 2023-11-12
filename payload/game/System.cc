@@ -27,4 +27,8 @@ void System::Init() {
     SequenceApp::Call(SceneType::Title);
 }
 
+JFWDisplay *System::GetDisplay() {
+    return s_display;
+}
+
 void System::StartAudio(void * /* userData */) {}

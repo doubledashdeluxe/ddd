@@ -1,12 +1,14 @@
 #pragma once
 
 #include <common/Types.hh>
+#include <jsystem/J2DGraphContext.hh>
 #include <jsystem/JKRArchive.hh>
 #include <jsystem/JKRHeap.hh>
 
 class Scene {
-private:
-    u8 _0[0x8 - 0x0];
+protected:
+    JKRArchive *m_archive;
+    J2DGraphContext *m_graphContext;
 
 public:
     Scene(JKRArchive *archive, JKRHeap *heap);

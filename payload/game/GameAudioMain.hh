@@ -1,5 +1,7 @@
 #pragma once
 
+#include "game/SoundID.hh"
+
 #include <common/Types.hh>
 
 namespace GameAudio {
@@ -7,6 +9,10 @@ namespace GameAudio {
 class Main {
 public:
     bool isWaveLoaded(s32 id);
+    void startSequenceBgm(u32 soundID);
+    u32 getPlayingSequenceID();
+    void startSystemSe(u32 soundID);
+    void fadeOutAll(u32 duration);
 
     static Main *Instance();
 

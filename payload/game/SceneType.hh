@@ -13,6 +13,7 @@ public:
         GhostLoadSave = 0x7,
         LanEntry = 0x8,
         Secret = 0x9,
+        None = 0xb,
     };
 
 private:

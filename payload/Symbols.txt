@@ -7,10 +7,12 @@
 800056c0 Localize__10KartLocaleFv
 
 8000a7d8 MainRamToAram__7JKRAramFPCUcUlUllUlP7JKRHeaplPUl
+80014594 GetGlbResource__13JKRFileLoaderFPCcP13JKRFileLoader
 80014bc4 alloc__7JKRHeapFUll
 80014c3c free__7JKRHeapFPv
 80014d10 resize__7JKRHeapFPvUl
 80014e14 FindFromRoot__7JKRHeapFPv
+800155a8 __nw__FUl
 8001563c __nw__FUlP7JKRHeapl
 800157a8 __dl__FPv
 80015a24 open__13JKRMemArchiveFlUl
@@ -20,6 +22,15 @@
 8001ab48 panic_f__12JUTExceptionFPCciPCce
 8001cda0 setPreUserCallback__12JUTExceptionFPFUsP9OSContextUlUl_v
 80023e24 setRenderMode__8JUTVideoFPC15GXRenderModeObj
+80028d84 appendChild__7J2DPaneFP7J2DPane
+8002e058 GetTypeID__10J2DPictureFv
+8002ffc0 __ct__9J2DScreenFv
+80030068 __dt__9J2DScreenFv
+80030170 set__9J2DScreenFPCcUlP10JKRArchive
+80030f4c draw__9J2DScreenFffPC15J2DGraphContext
+80031774 animation__9J2DScreenFv
+8003875c Load__20J2DAnmLoaderDataBaseFPCv
+800432fc animation__11J2DMaterialFv
 800905cc CreateThread__6JASDvdFllUl
 8009162c sendCmdMsg__13JASTaskThreadFPFPv_vPvUl
 80094770 RejectCallback__9JASDriverFPFPv_lPv
@@ -109,6 +120,7 @@
 800ff904 __mod2u
 800ff9e8 __mod2i
 800ffaf4 __shl2i
+800ffb18 __shr2u
 800ffe28 exit
 
 8010241c toupper
@@ -124,25 +136,47 @@
 80107088 strlen
 
 80114ad8 isWaveLoaded__Q29GameAudio4MainFl
+80115140 startSequenceBgm__Q29GameAudio4MainFUl
+801154c8 getPlayingSequenceID__Q29GameAudio4MainFv
+80115ea4 startSystemSe__Q29GameAudio4MainFUl
+80116900 fadeOutAll__Q29GameAudio4MainFUl
 8012cfbc __ct__5SceneFP10JKRArchiveP7JKRHeap
 8012cfd8 __dt__5SceneFv
+80139480 Instance__12Kart2DCommonFv
+8013f0cc loadData__12SceneFactoryFlP7JKRHeap
 8013f6e8 createScene__12SceneFactoryFlP7JKRHeap
 801573fc reset__9SceneMenuFv
+801737cc stateNextBattle__14SceneMapSelectFv
+80173d50 __ct__12BattleName2DFP10JKRArchive
+80173e34 getBattleNameTexture__12BattleName2DFUl
 80189bb0 setHeapGroup__8SysDebugFPCcP7JKRHeap
 80189bb4 setDefaultHeapGroup__8SysDebugFP7JKRHeap
 801af940 Create__8MovieAppFv
 801cc5bc main
 801ceb3c LoadKeepData__6ResMgrFv
+801cebac LoadCourseData__6ResMgrFUlUl
 801cf914 Call__7LogoAppFv
 801d02f8 StartAudio__6SystemFPv
 801d0388 Init__6SystemFv
 801d3704 Ask__9CardAgentFll
 801d9358 Call__11SequenceAppFl
+801d98ac ready__11SequenceAppFl
+801e7124 __ct__14MenuBackgroundFP10JKRArchive
+801e71a8 calc__14MenuBackgroundFv
+801e7210 __ct__13MenuTitleLineFP10JKRArchive
+801e73a0 drop__13MenuTitleLineFUl
+801e7480 lift__13MenuTitleLineFv
+801e748c calc__13MenuTitleLineFv
+
+8035c638 s_gamePads__11KartGamePad
+8035c648 s_kartPads__11KartGamePad
 
 80371e08 Ecb
 
+803bad54 s_instance__12SequenceInfo
 803d3248 s_videoMode__10KartLocale
 803d324c s_videoFrameMode__10KartLocale
+803d3b0c s_nextScene__11SequenceApp
 
 803d4d50 s_loadThread__13JASAramStream
 803d4d54 s_readBuffer__13JASAramStream
@@ -158,6 +192,12 @@
 
 803c5fe0 s_systemRecord
 803d5498 s_instance__Q29GameAudio4Main
-803d5bcc s_loadTask__6System
+803d5578 s_instance__12SceneFactory
+803d5600 s_instance__12BattleName2D
 803d5630 s_manager__8SysDebug
+803d5bb0 s_display__6System
+803d5bcc s_loadTask__6System
 803d5be0 s_currentApp__6AppMgr
+803d5c60 s_instance__11SequenceApp
+803d5cd0 s_instance__14MenuBackground
+803d5cd8 s_instance__13MenuTitleLine
