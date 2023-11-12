@@ -56,6 +56,7 @@
 800b15a8 ARGetSize
 800b2fec ARQInit
 800b305c ARQPostRequest
+800bf31c GXInitTexObj
 800bf904 GXInitTlutObj
 800c3970 EXIImm
 800c3d58 EXISync
