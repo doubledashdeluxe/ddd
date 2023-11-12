@@ -70,6 +70,7 @@ private:
 
     Array<File, 32> m_files;
     Array<Dir, 32> m_dirs;
+    alignas(0x20) Array<u8, 0x10000> m_buffer;
 
     static DVDStorage *s_instance;
 };

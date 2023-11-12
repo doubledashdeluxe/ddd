@@ -1,5 +1,6 @@
 #include "DVDStorage.hh"
 
+#include <common/Algorithm.hh>
 #include <common/Align.hh>
 #include <common/Arena.hh>
 #include <common/Memory.hh>
@@ -11,7 +12,7 @@ extern "C" {
 }
 
 void DVDStorage::Init() {
-    s_instance = new (MEM2Arena::Instance(), 0x20) DVDStorage;
+    s_instance = new (MEM1Arena::Instance(), 0x20) DVDStorage;
 }
 
 DVDStorage::File::File() : m_storage(nullptr) {}
@@ -22,11 +23,24 @@ void DVDStorage::File::close() {
 }
 
 bool DVDStorage::File::read(void *dst, u32 size, u32 offset) {
-    assert(Memory::IsAligned(dst, 0x20));
     assert(IsAligned(size, 0x20));
     assert(IsAligned(offset, 0x20));
 
-    return DVDReadPrio(&m_fileInfo, dst, size, offset, 2);
+    if (Memory::IsMEM1(dst) && Memory::IsAligned(dst, 0x20)) {
+        return DVDReadPrio(&m_fileInfo, dst, size, offset, 2);
+    } else {
+        while (size > 0) {
+            u32 chunkSize = Min<u32>(size, m_storage->m_buffer.count());
+            if (!DVDReadPrio(&m_fileInfo, m_storage->m_buffer.values(), chunkSize, offset, 2)) {
+                return false;
+            }
+            memcpy(dst, m_storage->m_buffer.values(), chunkSize);
+            dst = reinterpret_cast<u8 *>(dst) + chunkSize;
+            size -= chunkSize;
+            offset += chunkSize;
+        }
+        return true;
+    }
 }
 
 bool DVDStorage::File::write(const void * /* src */, u32 /* size */, u32 /* offset */) {
