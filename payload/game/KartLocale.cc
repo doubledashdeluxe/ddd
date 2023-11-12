@@ -10,3 +10,7 @@ void KartLocale::Localize() {
     s_videoMode = videoMode == 0 ? VideoMode::NTSC : VideoMode::PAL;
     s_videoFrameMode = (dcr >> 8 & 3) == 0 ? VideoFrameMode::SixtyHz : VideoFrameMode::FiftyHz;
 }
+
+const char *KartLocale::LanguageName() {
+    return LanguageNames[s_language];
+}

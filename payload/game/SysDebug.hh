@@ -6,6 +6,7 @@ class SysDebug {
 public:
     void setHeapGroup(const char *group, JKRHeap *heap);
     void setDefaultHeapGroup(JKRHeap *heap);
+    void createHeapInfo(JKRHeap *heap, const char *name);
 
     static SysDebug *GetManager();
 

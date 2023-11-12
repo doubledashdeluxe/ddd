@@ -7,6 +7,9 @@
 800056c0 Localize__10KartLocaleFv
 
 8000a7d8 MainRamToAram__7JKRAramFPCUcUlUllUlP7JKRHeaplPUl
+8000db44 Mount__10JKRArchiveFPCcUlP7JKRHeapUl
+8000db98 Mount__10JKRArchiveFPvP7JKRHeapUl
+8001287c Create__10JKRExpHeapFPvUlP7JKRHeapb
 80014594 GetGlbResource__13JKRFileLoaderFPCcP13JKRFileLoader
 80014bc4 alloc__7JKRHeapFUll
 80014c3c free__7JKRHeapFPv
@@ -17,6 +20,7 @@
 800157a8 __dl__FPv
 80015a24 open__13JKRMemArchiveFlUl
 80015b94 open__13JKRMemArchiveFPvUlUl
+80015f40 Create__12JKRSolidHeapFUlP7JKRHeapb
 80017094 request__7JKRTaskFPFPv_vPvPv
 80018ed4 print__10JUTConsoleFPCc
 8001ab48 panic_f__12JUTExceptionFPCciPCce
@@ -152,8 +156,12 @@
 80173e34 getBattleNameTexture__12BattleName2DFUl
 80189bb0 setHeapGroup__8SysDebugFPCcP7JKRHeap
 80189bb4 setDefaultHeapGroup__8SysDebugFP7JKRHeap
+80189c64 createHeapInfo__8SysDebugFP7JKRHeapPCc
 801af940 Create__8MovieAppFv
 801cc5bc main
+801ce300 GetCrsArcName__6ResMgrFUl
+801ce530 Create__6ResMgrFP7JKRHeap
+801ce7d8 LoadCourseData__6ResMgrFPv
 801ceb3c LoadKeepData__6ResMgrFv
 801cebac LoadCourseData__6ResMgrFUlUl
 801cf914 Call__7LogoAppFv
@@ -169,15 +177,22 @@
 801e7480 lift__13MenuTitleLineFv
 801e748c calc__13MenuTitleLineFv
 
+80346c20 LanguageNames__10KartLocale
 8035c638 s_gamePads__11KartGamePad
 8035c648 s_kartPads__11KartGamePad
 
 80371e08 Ecb
 
 803bad54 s_instance__12SequenceInfo
+803bb27c s_instance__8RaceInfo
+803bd5c8 s_loaders__6ResMgr
+803bdc2c s_aramResArgs__6ResMgr
+
 803d3248 s_videoMode__10KartLocale
 803d324c s_videoFrameMode__10KartLocale
 803d3b0c s_nextScene__11SequenceApp
+
+803d4980 s_language__10KartLocale
 
 803d4d50 s_loadThread__13JASAramStream
 803d4d54 s_readBuffer__13JASAramStream
@@ -196,6 +211,16 @@
 803d5578 s_instance__12SceneFactory
 803d5600 s_instance__12BattleName2D
 803d5630 s_manager__8SysDebug
+803d5b68 s_keepHeap__6ResMgr
+803d5b6c s_courseHeap__6ResMgr
+803d5b78 s_loadFlag__6ResMgr
+803d5b7c s_loadingFlag__6ResMgr
+803d5b84 s_courseID__6ResMgr
+803d5b88 s_courseOrder__6ResMgr
+803d5b8c s_mountCourseID__6ResMgr
+803d5b90 s_mountCourseOrder__6ResMgr
+803d5b94 s_courseName__6ResMgr
+803d5b98 s_staffGhost__6ResMgr
 803d5bb0 s_display__6System
 803d5bcc s_loadTask__6System
 803d5be0 s_currentApp__6AppMgr

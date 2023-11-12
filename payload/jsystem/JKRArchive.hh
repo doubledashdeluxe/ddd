@@ -34,6 +34,9 @@ public:
     ~JKRArchive();
     // ...
 
+    static JKRArchive *Mount(const char *path, u32 mountMode, JKRHeap *heap, u32 mountDirection);
+    static JKRArchive *Mount(void *archive, JKRHeap *heap, u32 mountDirection);
+
 protected:
     JKRHeap *m_heap;
     u8 m_mountMode;
