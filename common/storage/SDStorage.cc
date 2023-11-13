@@ -26,8 +26,6 @@ bool SDStorage::CardHandle::ok() const {
     return m_storage;
 }
 
-SDStorage::SDStorage() : IOS::Resource("/dev/sdio/slot0", IOS::Mode::None) {}
-
 u32 SDStorage::priority() {
     return 1;
 }

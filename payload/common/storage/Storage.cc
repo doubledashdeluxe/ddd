@@ -15,7 +15,7 @@ void Storage::Init() {
     OSResumeThread(thread);
 }
 
-Storage::Storage() : m_next(nullptr) {}
+Storage::Storage() : m_next(nullptr), m_isContained(false) {}
 
 void Storage::notify() {
     OSSendMessage(&s_queue, this, OS_MESSAGE_NOBLOCK);
@@ -23,6 +23,7 @@ void Storage::notify() {
 
 void Storage::remove() {
     Lock<NoInterrupts> lock;
+    m_isContained = false;
     Storage **next;
     for (next = &s_head; *next != this; next = &(*next)->m_next) {}
     *next = m_next;
@@ -34,6 +35,7 @@ void Storage::add() {
     for (next = &s_head; *next && (*next)->priority() >= priority(); next = &(*next)->m_next) {}
     m_next = *next;
     *next = this;
+    m_isContained = true;
 }
 
 Storage::StorageHandle::StorageHandle(const char *path) : m_storage(nullptr), m_prefix(nullptr) {

@@ -137,6 +137,7 @@ protected:
     Storage();
     ~Storage();
 
+    bool isContained() const;
     void notify();
     void remove();
     void add();
@@ -184,10 +185,11 @@ private:
 #endif
 
     Storage *m_next;
+    bool m_isContained;
 #ifdef PAYLOAD
     Mutex m_mutex;
 #else
-    u8 _08[0x20 - 0x08];
+    u8 _0c[0x24 - 0x0c];
 #endif
 
     static Storage *s_head;
@@ -196,4 +198,4 @@ private:
     static Array<OSMessage, 1> s_messages;
 #endif
 };
-size_assert(Storage, 0x20);
+size_assert(Storage, 0x24);

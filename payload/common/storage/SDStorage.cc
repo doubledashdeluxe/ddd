@@ -9,35 +9,40 @@ extern "C" {
 
 void SDStorage::Init() {
     s_instance = new (MEM2Arena::Instance(), 0x20) SDStorage;
-    OSInitMessageQueue(&s_queue, s_messages.values(), s_messages.count());
+}
+
+SDStorage::SDStorage() : IOS::Resource("/dev/sdio/slot0", IOS::Mode::None) {
+    OSInitMessageQueue(&m_queue, m_messages.values(), m_messages.count());
+    m_pollCallback = &SDStorage::pollAdd;
+    notify();
+    OSReceiveMessage(&m_queue, nullptr, OS_MESSAGE_BLOCK);
+    void *param = this;
     Array<u8, 4 * 1024> *stack = new (MEM2Arena::Instance(), 0x8) Array<u8, 4 * 1024>;
     OSThread *thread = new (MEM2Arena::Instance(), 0x4) OSThread;
-    OSCreateThread(thread, Run, nullptr, stack->values() + stack->count(), stack->count(), 10, 0);
+    OSCreateThread(thread, Run, param, stack->values() + stack->count(), stack->count(), 10, 0);
     OSResumeThread(thread);
 }
 
 void SDStorage::poll() {
     (this->*m_pollCallback)();
-    OSSendMessage(&s_queue, nullptr, OS_MESSAGE_NOBLOCK);
+    OSSendMessage(&m_queue, nullptr, OS_MESSAGE_NOBLOCK);
 }
 
 void *SDStorage::run() {
     while (true) {
-        Status addedStatus;
-        memset(&addedStatus, 0, sizeof(addedStatus));
-        addedStatus.wasAdded = true;
-        waitFor(addedStatus);
-        m_pollCallback = &SDStorage::pollAdd;
+        Status status;
+        memset(&status, 0, sizeof(status));
+        if (isContained()) {
+            status.wasRemoved = true;
+            waitFor(status);
+            m_pollCallback = &SDStorage::pollRemove;
+        } else {
+            status.wasAdded = true;
+            waitFor(status);
+            m_pollCallback = &SDStorage::pollAdd;
+        }
         notify();
-        OSReceiveMessage(&s_queue, nullptr, OS_MESSAGE_BLOCK);
-
-        Status removedStatus;
-        memset(&removedStatus, 0, sizeof(removedStatus));
-        removedStatus.wasRemoved = true;
-        waitFor(removedStatus);
-        m_pollCallback = &SDStorage::pollRemove;
-        notify();
-        OSReceiveMessage(&s_queue, nullptr, OS_MESSAGE_BLOCK);
+        OSReceiveMessage(&m_queue, nullptr, OS_MESSAGE_BLOCK);
     }
 }
 
@@ -103,9 +108,6 @@ void SDStorage::pollRemove() {
     remove();
 }
 
-void *SDStorage::Run(void * /* param */) {
-    return s_instance->run();
+void *SDStorage::Run(void *param) {
+    return reinterpret_cast<SDStorage *>(param)->run();
 }
-
-OSMessageQueue SDStorage::s_queue;
-Array<OSMessage, 1> SDStorage::s_messages;

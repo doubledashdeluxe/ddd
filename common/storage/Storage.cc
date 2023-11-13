@@ -232,6 +232,10 @@ bool Storage::Remove(const char *path, u32 mode) {
     return storage.remove(path + strlen(storage.prefix()), mode);
 }
 
+bool Storage::isContained() const {
+    return m_isContained;
+}
+
 const char *Storage::StorageHandle::prefix() {
     return m_prefix ? m_prefix : "";
 }

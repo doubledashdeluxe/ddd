@@ -185,12 +185,12 @@ private:
     u16 m_rca;
     bool m_isSDHC;
     alignas(0x20) Array<u8, 0x4000> m_buffer;
+#ifdef PAYLOAD
+    OSMessageQueue m_queue;
+    Array<OSMessage, 1> m_messages;
+#endif
 
     static const u32 SectorSize;
 
     static SDStorage *s_instance;
-#ifdef PAYLOAD
-    static OSMessageQueue s_queue;
-    static Array<OSMessage, 1> s_messages;
-#endif
 };
