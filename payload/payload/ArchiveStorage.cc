@@ -79,12 +79,15 @@ ArchiveStorage::ArchiveStorage(const char *prefix, void *archive, u32 archiveSiz
     : m_next(s_head), m_prefix(prefix), m_archive(reinterpret_cast<u8 *>(archive)),
       m_archiveSize(archiveSize) {
     if (m_archive.isValid(m_archiveSize)) {
+        OSInitMessageQueue(&m_initQueue, m_initMessages.values(), m_initMessages.count());
         notify();
+        OSReceiveMessage(&m_initQueue, nullptr, OS_MESSAGE_BLOCK);
     }
 }
 
 void ArchiveStorage::poll() {
     add();
+    OSSendMessage(&m_initQueue, nullptr, OS_MESSAGE_NOBLOCK);
 }
 
 u32 ArchiveStorage::priority() {

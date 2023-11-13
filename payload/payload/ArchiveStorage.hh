@@ -74,6 +74,8 @@ private:
     u32 m_archiveSize;
     Array<File, 32> m_files;
     Array<Dir, 32> m_dirs;
+    OSMessageQueue m_initQueue;
+    Array<OSMessage, 1> m_initMessages;
 
     static ArchiveStorage *s_head;
 };
