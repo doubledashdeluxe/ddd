@@ -87,11 +87,14 @@ Storage *DVDStorage::Dir::storage() {
 }
 
 DVDStorage::DVDStorage() {
+    OSInitMessageQueue(&m_initQueue, m_initMessages.values(), m_initMessages.count());
     notify();
+    OSReceiveMessage(&m_initQueue, nullptr, OS_MESSAGE_BLOCK);
 }
 
 void DVDStorage::poll() {
     add();
+    OSSendMessage(&m_initQueue, nullptr, OS_MESSAGE_NOBLOCK);
 }
 
 u32 DVDStorage::priority() {
