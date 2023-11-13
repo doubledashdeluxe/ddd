@@ -69,11 +69,16 @@ void USB::Init() {
         for (u32 j = 0; j < backends[i]->devices.count(); j++) {
             backends[i]->devices[j].m_resource = backends[i]->resource;
         }
+        OSInitMessageQueue(&backends[i]->initQueue, backends[i]->initMessages.values(),
+                backends[i]->initMessages.count());
         void *param = backends[i];
         Array<u8, 4 * 1024> *stack = new (MEM2Arena::Instance(), 0x8) Array<u8, 4 * 1024>;
         OSThread *thread = new (MEM2Arena::Instance(), 0x4) OSThread;
         OSCreateThread(thread, Run, param, stack->values() + stack->count(), stack->count(), 9, 0);
         OSResumeThread(thread);
+    }
+    for (u32 i = 0; i < backends.count(); i++) {
+        OSReceiveMessage(&backends[i]->initQueue, nullptr, OS_MESSAGE_BLOCK);
     }
 }
 
@@ -92,6 +97,8 @@ void *USB::Run(void *param) {
         HandleAdditions(backend, deviceEntryCount, deviceEntries);
 
         assert(backend->resource->attachFinish());
+
+        OSSendMessage(&backend->initQueue, nullptr, OS_MESSAGE_NOBLOCK);
     }
 }
 

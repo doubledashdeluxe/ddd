@@ -368,6 +368,10 @@ private:
     struct Backend {
         Array<Device, 0x20> devices;
         Resource *resource;
+#ifdef PAYLOAD
+        OSMessageQueue initQueue;
+        Array<OSMessage, 1> initMessages;
+#endif
     };
 
     USB();
