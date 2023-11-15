@@ -32,6 +32,8 @@ public:
     Scene *REPLACED(createScene)(s32 sceneType, JKRHeap *heap);
     REPLACE Scene *createScene(s32 sceneType, JKRHeap *heap);
 
+    static SceneFactory *Create();
+    static void Destroy();
     static SceneFactory *Instance();
 
 private:

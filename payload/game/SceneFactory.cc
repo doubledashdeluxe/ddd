@@ -33,6 +33,16 @@ Scene *SceneFactory::createScene(s32 sceneType, JKRHeap *heap) {
     return scene;
 }
 
+SceneFactory *SceneFactory::Create() {
+    s_instance = new SceneFactory;
+    return s_instance;
+}
+
+void SceneFactory::Destroy() {
+    delete s_instance;
+    s_instance = nullptr;
+}
+
 SceneFactory *SceneFactory::Instance() {
     return s_instance;
 }

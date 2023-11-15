@@ -11,6 +11,13 @@ MenuTitleLine *MenuTitleLine::Create(JKRArchive *archive, JKRHeap *heap) {
     return s_instance;
 }
 
+void MenuTitleLine::Destroy() {
+    delete s_instance;
+    s_instance = nullptr;
+}
+
 MenuTitleLine *MenuTitleLine::Instance() {
     return s_instance;
 }
+
+MenuTitleLine::~MenuTitleLine() {}

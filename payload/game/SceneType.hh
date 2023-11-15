@@ -14,6 +14,8 @@ public:
         LanEntry = 0x8,
         Secret = 0x9,
         None = 0xb,
+        PackSelect = 0xd, // Added
+        Max = 0xe,
     };
 
 private:

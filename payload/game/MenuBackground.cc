@@ -11,6 +11,13 @@ MenuBackground *MenuBackground::Create(JKRArchive *archive) {
     return s_instance;
 }
 
+void MenuBackground::Destroy() {
+    delete s_instance;
+    s_instance = nullptr;
+}
+
 MenuBackground *MenuBackground::Instance() {
     return s_instance;
 }
+
+MenuBackground::~MenuBackground() {}

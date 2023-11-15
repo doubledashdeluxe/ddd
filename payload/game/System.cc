@@ -27,6 +27,10 @@ void System::Init() {
     SequenceApp::Call(SceneType::Title);
 }
 
+JKRHeap *System::GetAppHeap() {
+    return s_appHeap;
+}
+
 JFWDisplay *System::GetDisplay() {
     return s_display;
 }

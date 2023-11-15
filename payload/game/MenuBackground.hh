@@ -8,6 +8,7 @@ public:
     void calc();
 
     static MenuBackground *Create(JKRArchive *archive);
+    static void Destroy();
     static MenuBackground *Instance();
 
 private:

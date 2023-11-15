@@ -20,6 +20,7 @@ public:
     void calc();
 
     static MenuTitleLine *Create(JKRArchive *archive, JKRHeap *heap);
+    static void Destroy();
     static MenuTitleLine *Instance();
 
 private:

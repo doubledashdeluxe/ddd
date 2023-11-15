@@ -6,6 +6,7 @@ class JKRHeap {
 public:
     void *alloc(u32 size, s32 align);
     void free(void *ptr);
+    void freeAll();
     s32 resize(void *ptr, u32 size);
 
     static JKRHeap *GetSystemHeap();
