@@ -23,8 +23,13 @@ void ResMgr::Create(JKRHeap *parentHeap) {
     }
     s_loaders[ArchiveId::System] = JKRArchive::Mount(DOL::BinarySectionStart(), parentHeap,
             JKRArchive::MountDirection::Head);
-    s_keepHeap = JKRSolidHeap::Create(0x780000, parentHeap, false);
+
+    size_t keepHeapSize = 0xd80000;
+    void *keepHeap = MEM2Arena::Instance()->alloc(keepHeapSize, 0x4);
+    JKRHeap *keepHeapParentHeap = JKRExpHeap::Create(keepHeap, keepHeapSize, parentHeap, false);
+    s_keepHeap = JKRSolidHeap::Create(UINT32_MAX, keepHeapParentHeap, false);
     SysDebug::GetManager()->createHeapInfo(s_keepHeap, "MRAM.arc");
+
     size_t size = 0x280000;
     void *ptr = MEM2Arena::Instance()->alloc(size, 0x4);
     JKRHeap *courseParentHeap = JKRExpHeap::Create(ptr, size, parentHeap, false);

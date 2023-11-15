@@ -3,6 +3,8 @@
 #include "jsystem/JKRFileLoader.hh"
 #include "jsystem/JKRHeap.hh"
 
+#include <payload/Replace.hh>
+
 class JKRArchive : public JKRFileLoader {
 public:
     class MountMode {
@@ -34,7 +36,12 @@ public:
     ~JKRArchive();
     // ...
 
-    static JKRArchive *Mount(const char *path, u32 mountMode, JKRHeap *heap, u32 mountDirection);
+    // clang-format off
+    static JKRArchive *REPLACED(Mount)(const char *path, u32 mountMode, JKRHeap *heap,
+            u32 mountDirection);
+    // clang-format on
+    REPLACE static JKRArchive *Mount(const char *path, u32 mountMode, JKRHeap *heap,
+            u32 mountDirection);
     static JKRArchive *Mount(void *archive, JKRHeap *heap, u32 mountDirection);
 
 protected:

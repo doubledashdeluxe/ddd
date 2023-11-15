@@ -23,7 +23,7 @@ extern "C" void RunLoader() {
     }
 
     MEM1Arena::Init();
-    MEM2Arena::Init(0x91000000, 0x93400000);
+    MEM2Arena::Init(0x90a24000, 0x93400000);
     Context *context = new (MEM2Arena::Instance(), 0x4) Context;
     Loader::PayloadEntryFunc payloadEntry = Loader::Run(context);
     context->mem2ArenaLo = reinterpret_cast<uintptr_t>(MEM2Arena::Instance()->alloc(0x0, 0x4));

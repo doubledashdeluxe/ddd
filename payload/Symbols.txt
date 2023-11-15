@@ -6,7 +6,9 @@
 
 800056c0 Localize__10KartLocaleFv
 
+8000a5d8 __ct__7JKRAramFUlUll
 8000a7d8 MainRamToAram__7JKRAramFPCUcUlUllUlP7JKRHeaplPUl
+8000c138 __ct__11JKRAramHeapFUlUl
 8000db44 Mount__10JKRArchiveFPCcUlP7JKRHeapUl
 8000db98 Mount__10JKRArchiveFPvP7JKRHeapUl
 8001287c Create__10JKRExpHeapFPvUlP7JKRHeapb
@@ -21,6 +23,7 @@
 80015a24 open__13JKRMemArchiveFlUl
 80015b94 open__13JKRMemArchiveFPvUlUl
 80015f40 Create__12JKRSolidHeapFUlP7JKRHeapb
+80016890 __ct__9JKRThreadFUlll
 80017094 request__7JKRTaskFPFPv_vPvPv
 80018ed4 print__10JUTConsoleFPCc
 8001ab48 panic_f__12JUTExceptionFPCciPCce
@@ -178,6 +181,7 @@
 801e748c calc__13MenuTitleLineFv
 
 80346c20 LanguageNames__10KartLocale
+80347af8 __vt__7JKRAram
 8035c638 s_gamePads__11KartGamePad
 8035c648 s_kartPads__11KartGamePad
 
@@ -194,6 +198,7 @@
 
 803d4980 s_language__10KartLocale
 
+803d4aa0 s_systemHeap__7JKRHeap
 803d4d50 s_loadThread__13JASAramStream
 803d4d54 s_readBuffer__13JASAramStream
 803d4d58 s_blockSize__13JASAramStream
