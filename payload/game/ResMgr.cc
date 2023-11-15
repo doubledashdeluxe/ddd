@@ -30,7 +30,7 @@ void ResMgr::Create(JKRHeap *parentHeap) {
     s_keepHeap = JKRSolidHeap::Create(UINT32_MAX, keepHeapParentHeap, false);
     SysDebug::GetManager()->createHeapInfo(s_keepHeap, "MRAM.arc");
 
-    s_courseHeap = JKRSolidHeap::Create(0x280000, parentHeap, false);
+    s_courseHeap = JKRSolidHeap::Create(0x500000, parentHeap, false);
     SysDebug::GetManager()->createHeapInfo(s_courseHeap, "Crs.arc");
 }
 
