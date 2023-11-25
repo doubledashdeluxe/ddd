@@ -1,5 +1,6 @@
 #pragma once
 
+#include <jsystem/J2DPicture.hh>
 #include <jsystem/J2DScreen.hh>
 
 class MenuTitleLine {
@@ -7,7 +8,8 @@ public:
     class Title {
     public:
         enum {
-            SelectMap = 7,
+            SelectMap = 0x7,
+            Max = 0xb,
         };
 
     private:
@@ -15,6 +17,7 @@ public:
     };
 
     void drop(u32 title);
+    void drop(const char *title);
     void lift();
     void draw(const J2DGraphContext *graphContext);
     void calc();
@@ -27,9 +30,11 @@ private:
     MenuTitleLine(JKRArchive *archive);
     ~MenuTitleLine();
 
-    u8 _000[0x008 - 0x000];
+    u32 m_state;
+    u32 m_title;
     J2DScreen m_screen;
-    u8 _120[0x160 - 0x120];
+    J2DPicture *m_titlePictures[2];
+    u8 _128[0x160 - 0x128];
 
     static MenuTitleLine *s_instance;
 };

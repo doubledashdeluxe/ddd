@@ -1,9 +1,11 @@
 #pragma once
 
-#include <jsystem/ResTIMG.hh>
+#include <jsystem/J2DPicture.hh>
 
 class Kart2DCommon {
 public:
+    void changeNumberTexture(s32 number, J2DPicture **pictures, u8 pictureCount, bool padWithZeros,
+            bool fillWithHyphens);
     ResTIMG *getBattleIcon(u32 index);
 
     static Kart2DCommon *Instance();

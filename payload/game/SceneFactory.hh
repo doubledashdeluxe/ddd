@@ -11,6 +11,7 @@ public:
     class ArchiveType {
     public:
         enum {
+            Menu = 0x1,
             MapSelect = 0x4,
             GhostData = 0x6,
             TitleLine = 0x8,

@@ -12,10 +12,11 @@ private:
     u8 _000[0x028 - 0x000];
 
 public:
-    bool m_hasMapIndex;
+    bool m_fromPause;
+    u8 m_packIndex; // Added
 
 private:
-    u8 _029[0x038 - 0x029];
+    u8 _02a[0x038 - 0x02a];
     u32 m_battleMode;
 
 public:

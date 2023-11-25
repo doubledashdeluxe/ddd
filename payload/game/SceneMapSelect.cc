@@ -101,10 +101,8 @@ SceneMapSelect::SceneMapSelect(JKRArchive *archive, JKRHeap *heap) : Scene(archi
 SceneMapSelect::~SceneMapSelect() {}
 
 void SceneMapSelect::init() {
-    m_mapCount = 6;
-    m_mapIndex = 0;
-
-    u32 battleMode = SequenceInfo::Instance().getBattleMode();
+    SequenceInfo &sequenceInfo = SequenceInfo::Instance();
+    u32 battleMode = sequenceInfo.getBattleMode();
     u32 index = battleMode == 0 ? 0 : battleMode ^ 3;
     ResTIMG *texture = Kart2DCommon::Instance()->getBattleIcon(index);
     J2DPicture *picture = m_mainScreen.search("BtlPict")->downcast<J2DPicture>();
@@ -114,22 +112,20 @@ void SceneMapSelect::init() {
     picture = m_mainScreen.search("SubM")->downcast<J2DPicture>();
     picture->changeTexture(texture, 0);
 
-    SequenceInfo &sequenceInfo = SequenceInfo::Instance();
-    if (sequenceInfo.m_hasMapIndex) {
+    m_mapCount = 6;
+    m_mapIndex = 0;
+    if (sequenceInfo.m_fromPause) {
         m_mapIndex = sequenceInfo.m_mapIndex;
-        SequenceInfo::Instance().m_hasMapIndex = false;
+        sequenceInfo.m_fromPause = false;
         System::GetDisplay()->startFadeIn(15);
         if (GameAudio::Main::Instance()->getPlayingSequenceID() != SoundID::JA_BGM_SELECT) {
             GameAudio::Main::Instance()->startSequenceBgm(SoundID::JA_BGM_SELECT);
         }
-        SequenceApp::Instance()->ready(SceneType::Menu);
+        SequenceApp::Instance()->ready(SceneType::PackSelect);
     }
-
     m_rowCount = (m_mapCount + 3 - 1) / 3;
     m_rowIndex = m_mapIndex / 3;
-    if (m_rowCount >= 2 && m_rowIndex == m_rowCount - 1) {
-        m_rowIndex--;
-    }
+    m_rowIndex = Min(m_rowIndex, m_rowCount - Min<u32>(m_rowCount, 2));
 
     slideIn();
 }
@@ -387,7 +383,7 @@ void SceneMapSelect::stateIdle() {
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE_LITTLE);
         selectIn();
     } else if (button.risingEdge() & PAD_BUTTON_B) {
-        m_nextScene = SceneType::Menu;
+        m_nextScene = SceneType::PackSelect;
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CANCEL_LITTLE);
         slideOut();
     } else if (button.repeat() & JUTGamePad::PAD_MSTICK_UP) {
@@ -402,10 +398,10 @@ void SceneMapSelect::stateIdle() {
     } else if (button.repeat() & JUTGamePad::PAD_MSTICK_DOWN) {
         if (m_mapIndex + 3 < m_mapCount) {
             GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CURSOL);
-            if (m_mapIndex / 3 == m_rowIndex) {
-                moveDown();
-            } else {
+            if (m_mapIndex / 3 == m_rowIndex + 1) {
                 scrollDown();
+            } else {
+                moveDown();
             }
         }
     } else if (button.repeat() & JUTGamePad::PAD_MSTICK_LEFT) {
@@ -580,7 +576,7 @@ void SceneMapSelect::showArrows(s32 rowOffset) {
             m_arrowAlphas[0] -= 51;
         }
     }
-    if (m_rowIndex + rowOffset != m_rowCount - 1 && m_rowIndex + rowOffset != m_rowCount - 2) {
+    if (m_rowIndex + rowOffset + 2 < m_rowCount) {
         if (m_arrowAlphas[1] < 255) {
             m_arrowAlphas[1] += 51;
         }

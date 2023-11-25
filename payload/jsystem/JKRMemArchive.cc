@@ -82,6 +82,9 @@ bool JKRMemArchive::open(s32 entrynum, u32 mountDirection) {
         if (!addSubnodes(fileSize, "carc:/", bare)) {
             return false;
         }
+        if (!addSubnodes(fileSize, "larc:/", bare)) {
+            return false;
+        }
         addSubnodes(fileSize, "main:/ddd/assets/", bare);
     }
 

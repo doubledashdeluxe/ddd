@@ -7,6 +7,10 @@
 #include "game/System.hh"
 #include "game/SystemRecord.hh"
 
+s32 SequenceApp::prevScene() const {
+    return m_prevScene;
+}
+
 void SequenceApp::setNextScene(s32 sceneType) {
     s_nextScene = sceneType;
     m_state = 0;

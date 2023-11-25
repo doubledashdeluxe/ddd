@@ -157,6 +157,7 @@
 8013f0cc loadData__12SceneFactoryFlP7JKRHeap
 8013f6e8 createScene__12SceneFactoryFlP7JKRHeap
 801573fc reset__9SceneMenuFv
+80163cb0 setRaceData__9SceneMenuFv
 80165634 __ct__17CharacterSelect3DFP7JKRHeap
 801665c4 __dt__17CharacterSelect3DFv
 801737cc stateNextBattle__14SceneMapSelectFv
@@ -169,6 +170,7 @@
 801cc4a4 __ct__7GameAppFUlPCcPv
 801cc548 __dt__7GameAppFv
 801cc5bc main
+801cdb54 ctrlRace__7RaceAppFv
 801ce300 GetCrsArcName__6ResMgrFUl
 801ce530 Create__6ResMgrFP7JKRHeap
 801ce7d8 LoadCourseData__6ResMgrFPv
@@ -186,6 +188,7 @@
 801d983c reset__11SequenceAppFv
 801d98ac ready__11SequenceAppFl
 801d9990 createScene__11SequenceAppFl
+801de664 changeNumberTexture__12Kart2DCommonFlPP10J2DPictureUcbb
 801e7124 __ct__14MenuBackgroundFP10JKRArchive
 801e71a8 calc__14MenuBackgroundFv
 801e7210 __ct__13MenuTitleLineFP10JKRArchive

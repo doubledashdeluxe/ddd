@@ -9,6 +9,7 @@
 #include <common/ICache.hh>
 #include <common/Log.hh>
 #include <common/Platform.hh>
+#include <common/SC.hh>
 
 extern "C" {
 #include <string.h>
@@ -36,6 +37,19 @@ extern "C" const size_t payloadJ_size;
 
 extern "C" const u8 commonArchive[];
 extern "C" const size_t commonArchive_size;
+
+extern "C" const u8 japaneseArchive[];
+extern "C" const size_t japaneseArchive_size;
+extern "C" const u8 englishArchive[];
+extern "C" const size_t englishArchive_size;
+extern "C" const u8 germanArchive[];
+extern "C" const size_t germanArchive_size;
+extern "C" const u8 frenchArchive[];
+extern "C" const size_t frenchArchive_size;
+extern "C" const u8 spanishArchive[];
+extern "C" const size_t spanishArchive_size;
+extern "C" const u8 italianArchive[];
+extern "C" const size_t italianArchive_size;
 
 extern "C" u32 discID[8];
 extern "C" u32 consoleType;
@@ -230,6 +244,31 @@ Loader::PayloadEntryFunc Loader::Run(Context *context) {
     memcpy(context->commonArchive, &commonArchive, commonArchive_size);
     INFO(" done.\n");
 
+    INFO("Copying localized archive...");
+    u32 language = GetLanguage();
+    const u8 *localizedArchives[] = {
+            japaneseArchive,
+            englishArchive,
+            germanArchive,
+            frenchArchive,
+            spanishArchive,
+            italianArchive,
+    };
+    size_t localizedArchiveSizes[] = {
+            japaneseArchive_size,
+            englishArchive_size,
+            germanArchive_size,
+            frenchArchive_size,
+            spanishArchive_size,
+            italianArchive_size,
+    };
+    const u8 *localizedArchive = localizedArchives[language];
+    size_t localizedArchiveSize = localizedArchiveSizes[language];
+    context->localizedArchive = MEM2Arena::Instance()->alloc(localizedArchiveSize, 0x20);
+    context->localizedArchiveSize = localizedArchiveSize;
+    memcpy(context->localizedArchive, localizedArchive, localizedArchiveSize);
+    INFO(" done.\n");
+
     if (Platform::IsDolphin()) {
         // Enable OSReport over EXI
         consoleType = 0x10000006;
@@ -239,4 +278,27 @@ Loader::PayloadEntryFunc Loader::Run(Context *context) {
     INFO("Starting payload...");
     PayloadEntryFunc payloadEntry = reinterpret_cast<PayloadEntryFunc>(payloadDst);
     return payloadEntry;
+}
+
+u32 Loader::GetLanguage() {
+    if ((discID[0] & 0xff) == 'J') {
+        return Language::Japanese;
+    }
+
+    if ((discID[0] & 0xff) == 'P') {
+        u8 language;
+        SC sc;
+        if (sc.get("IPL.LNG", language)) {
+            switch (language) {
+            case Language::English:
+            case Language::German:
+            case Language::French:
+            case Language::Spanish:
+            case Language::Italian:
+                return language;
+            }
+        }
+    }
+
+    return Language::English;
 }

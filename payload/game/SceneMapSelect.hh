@@ -8,7 +8,7 @@
 class SceneMapSelect : public Scene {
 public:
     SceneMapSelect(JKRArchive *archive, JKRHeap *heap);
-    ~SceneMapSelect();
+    ~SceneMapSelect() override;
     void init() override;
     void draw() override;
     void calc() override;

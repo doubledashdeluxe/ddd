@@ -1,6 +1,7 @@
 #include "SceneFactory.hh"
 
 #include "game/SceneMapSelect.hh"
+#include "game/ScenePackSelect.hh"
 #include "game/SysDebug.hh"
 
 JKRArchive *SceneFactory::archive(u32 archiveType) {
@@ -8,13 +9,19 @@ JKRArchive *SceneFactory::archive(u32 archiveType) {
 }
 
 void SceneFactory::loadData(s32 sceneType, JKRHeap *heap) {
-    REPLACED(loadData)(sceneType, heap);
-
     switch (sceneType) {
     case SceneType::MapSelect:
+        REPLACED(loadData)(SceneType::PackSelect, heap);
         REPLACED(loadData)(SceneType::GhostLoadSave, heap);
-        break;
+        return;
+    case SceneType::PackSelect:
+        REPLACED(loadData)(SceneType::Menu, heap);
+        REPLACED(loadData)(SceneType::PackSelect, heap);
+        REPLACED(loadData)(SceneType::GhostLoadSave, heap);
+        return;
     }
+
+    REPLACED(loadData)(sceneType, heap);
 }
 
 Scene *SceneFactory::createScene(s32 sceneType, JKRHeap *heap) {
@@ -25,6 +32,10 @@ Scene *SceneFactory::createScene(s32 sceneType, JKRHeap *heap) {
         sysDebug->setHeapGroup("MapSelect", heap);
         m_battleName2D = BattleName2D::Create(m_archives[ArchiveType::BattleName]);
         scene = new (heap, 0x0) SceneMapSelect(m_archives[ArchiveType::MapSelect], heap);
+        break;
+    case SceneType::PackSelect:
+        sysDebug->setHeapGroup("PackSelect", heap);
+        scene = new (heap, 0x0) ScenePackSelect(m_archives[ArchiveType::Menu], heap);
         break;
     default:
         return REPLACED(createScene)(sceneType, heap);

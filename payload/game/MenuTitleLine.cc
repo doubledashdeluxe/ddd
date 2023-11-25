@@ -1,5 +1,13 @@
 #include "MenuTitleLine.hh"
 
+void MenuTitleLine::drop(const char *title) {
+    m_title = Title::Max;
+    m_titlePictures[0]->changeTexture(title, 0);
+    m_titlePictures[0]->m_isVisible = true;
+    m_titlePictures[1]->m_isVisible = false;
+    m_state = 1;
+}
+
 void MenuTitleLine::draw(const J2DGraphContext *graphContext) {
     m_screen.draw(0.0f, 0.0f, graphContext);
 }

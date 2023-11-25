@@ -2,6 +2,21 @@
 
 #include <common/Types.h>
 
+int memcmp(const void *s1, const void *s2, size_t n) {
+    const u8 *p1 = s1, *p2 = s2;
+    for (size_t i = 0; i < n; i++) {
+        if (p1[i] < p2[i]) {
+            return -1;
+        }
+
+        if (p1[i] > p2[i]) {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
 void *memcpy(void *dest, const void *src, size_t n) {
     u8 *d = dest;
     const u8 *s = src;

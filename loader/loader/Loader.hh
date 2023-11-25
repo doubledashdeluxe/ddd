@@ -31,5 +31,22 @@ public:
     static size_t BssSectionSize();
 
 private:
+    class Language {
+    public:
+        enum {
+            Japanese = 0,
+            English = 1,
+            German = 2,
+            French = 3,
+            Spanish = 4,
+            Italian = 5,
+        };
+
+    private:
+        Language();
+    };
+
     Loader();
+
+    static u32 GetLanguage();
 };

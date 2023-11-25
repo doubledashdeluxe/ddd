@@ -10,6 +10,7 @@
 class SequenceApp : public GameApp {
 public:
     bool ready(s32 sceneType);
+    s32 prevScene() const;
     void setNextScene(s32 sceneType);
 
     static void REPLACED(Call)(s32 sceneType);

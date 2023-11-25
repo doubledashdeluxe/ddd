@@ -1,6 +1,7 @@
 #pragma once
 
 #include "jsystem/J2DPane.hh"
+#include "jsystem/ResTIMG.hh"
 
 class J2DPicture : public J2DPane {
 public:

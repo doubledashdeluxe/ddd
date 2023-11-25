@@ -140,6 +140,10 @@ void Payload::Run(Context *context) {
     ArchiveStorage::Init("carc:", context->commonArchive, context->commonArchiveSize);
     INFO(" done.\n");
 
+    INFO("Initializing localized archive storage...");
+    ArchiveStorage::Init("larc:", context->localizedArchive, context->localizedArchiveSize);
+    INFO(" done.\n");
+
     INFO("Initializing USB storage...");
     USBStorage::Init();
     INFO(" done.\n");

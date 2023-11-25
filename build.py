@@ -387,7 +387,7 @@ n.build(
 n.newline()
 
 asset_arc_files = []
-for in_dir in glob.glob(os.path.join('assets', '*')):
+for in_dir in sorted(glob.glob(os.path.join('assets', '*'))):
     in_files = sorted(glob.glob(os.path.join(in_dir, '**'), recursive=True))
     arc_file = os.path.join('$builddir', in_dir + '.arc')
     asset_arc_files += [arc_file]
