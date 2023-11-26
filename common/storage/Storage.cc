@@ -143,6 +143,15 @@ void Storage::Dir::close() {
     }
 }
 
+Storage::Observer::Observer() : m_next(s_headObserver) {
+    assert(!s_head);
+    s_headObserver = this;
+}
+
+Storage::Observer *Storage::Observer::next() {
+    return m_next;
+}
+
 bool Storage::ReadFile(const char *path, void *dst, u32 size, u32 *readSize) {
     FileHandle file(path, Mode::Read);
     u64 fileSize;
@@ -281,3 +290,4 @@ bool Storage::StorageHandle::remove(const char *path, u32 mode) {
 }
 
 Storage *Storage::s_head = nullptr;
+Storage::Observer *Storage::s_headObserver = nullptr;

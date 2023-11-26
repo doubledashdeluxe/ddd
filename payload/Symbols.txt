@@ -142,6 +142,7 @@
 80106c88 strrchr
 80106cec strchr
 80106d58 strncmp
+80106dc0 strcmp
 80107088 strlen
 
 80114ad8 isWaveLoaded__Q29GameAudio4MainFl

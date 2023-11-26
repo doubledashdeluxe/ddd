@@ -23,19 +23,41 @@ void Storage::notify() {
 
 void Storage::remove() {
     Lock<NoInterrupts> lock;
+    bool hasOldMain = s_head == this && s_head->priority() > 0;
     m_isContained = false;
     Storage **next;
     for (next = &s_head; *next != this; next = &(*next)->m_next) {}
     *next = m_next;
+    bool hasNewMain = s_head && s_head->priority() > 0;
+    for (Observer *observer = s_headObserver; observer; observer = observer->next()) {
+        if (hasOldMain) {
+            observer->onRemove("main:");
+            if (hasNewMain) {
+                observer->onAdd("main:");
+            }
+        }
+        observer->onRemove(prefix());
+    }
 }
 
 void Storage::add() {
     Lock<NoInterrupts> lock;
+    bool hasOldMain = s_head && s_head->priority() > 0;
     Storage **next;
     for (next = &s_head; *next && (*next)->priority() >= priority(); next = &(*next)->m_next) {}
     m_next = *next;
     *next = this;
     m_isContained = true;
+    bool hasNewMain = s_head == this && s_head->priority() > 0;
+    for (Observer *observer = s_headObserver; observer; observer = observer->next()) {
+        observer->onAdd(prefix());
+        if (hasNewMain) {
+            if (hasOldMain) {
+                observer->onRemove("main:");
+            }
+            observer->onAdd("main:");
+        }
+    }
 }
 
 Storage::StorageHandle::StorageHandle(const char *path) : m_storage(nullptr), m_prefix(nullptr) {

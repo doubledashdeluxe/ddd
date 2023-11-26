@@ -1,6 +1,7 @@
 #include "Payload.hh"
 
 #include "payload/ArchiveStorage.hh"
+#include "payload/AssetsDirCreator.hh"
 #include "payload/DVDStorage.hh"
 #include "payload/Lock.hh"
 #include "payload/LogFile.hh"
@@ -126,6 +127,10 @@ void Payload::Run(Context *context) {
 
     INFO("Initializing WUP-028...");
     WUP028::Init();
+    INFO(" done.\n");
+
+    INFO("Initializing assets directory creator...");
+    AssetsDirCreator::Init();
     INFO(" done.\n");
 
     INFO("Initializing storage...");

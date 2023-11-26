@@ -123,6 +123,18 @@ public:
         friend class StorageHandle;
     };
 
+    class Observer {
+    public:
+        Observer();
+        Observer *next();
+
+        virtual void onAdd(const char *prefix) = 0;
+        virtual void onRemove(const char *prefix) = 0;
+
+    private:
+        Observer *m_next;
+    };
+
     static void Init();
 
     static bool ReadFile(const char *path, void *dst, u32 size, u32 *readSize);
@@ -193,6 +205,7 @@ private:
 #endif
 
     static Storage *s_head;
+    static Observer *s_headObserver;
 #ifdef PAYLOAD
     static OSMessageQueue s_queue;
     static Array<OSMessage, 1> s_messages;
