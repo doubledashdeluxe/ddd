@@ -1,8 +1,9 @@
 #include "SDStorage.hh"
 
-#include <common/Algorithm.hh>
-#include <common/Log.hh>
-#include <common/Memory.hh>
+#include "common/Algorithm.hh"
+#include "common/DCache.hh"
+#include "common/Log.hh"
+#include "common/Memory.hh"
 
 extern "C" {
 #include <assert.h>
@@ -82,6 +83,7 @@ bool SDStorage::transfer(bool isWrite, u32 firstSector, u32 sectorCount, void *b
             }
             if (!isWrite) {
                 memcpy(buffer, m_buffer.values(), chunkSectorCount * SectorSize);
+                DCache::Flush(buffer, chunkSectorCount * SectorSize);
             }
             firstSector += chunkSectorCount;
             sectorCount -= chunkSectorCount;
