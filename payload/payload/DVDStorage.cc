@@ -3,6 +3,7 @@
 #include <common/Algorithm.hh>
 #include <common/Align.hh>
 #include <common/Arena.hh>
+#include <common/DCache.hh>
 #include <common/Memory.hh>
 
 extern "C" {
@@ -35,6 +36,7 @@ bool DVDStorage::File::read(void *dst, u32 size, u32 offset) {
                 return false;
             }
             memcpy(dst, m_storage->m_buffer.values(), chunkSize);
+            DCache::Flush(dst, chunkSize);
             dst = reinterpret_cast<u8 *>(dst) + chunkSize;
             size -= chunkSize;
             offset += chunkSize;
