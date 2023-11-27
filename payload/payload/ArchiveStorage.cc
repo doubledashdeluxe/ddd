@@ -2,6 +2,7 @@
 
 #include <common/Arena.hh>
 #include <common/Bytes.hh>
+#include <common/DCache.hh>
 
 extern "C" {
 #include <stdio.h>
@@ -29,6 +30,7 @@ bool ArchiveStorage::File::read(void *dst, u32 size, u32 offset) {
     }
 
     memcpy(dst, reinterpret_cast<const u8 *>(file) + offset, size);
+    DCache::Flush(dst, size);
     return true;
 }
 
