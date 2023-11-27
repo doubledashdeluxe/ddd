@@ -3,6 +3,7 @@
 #include "common/Algorithm.hh"
 #include "common/Bytes.hh"
 #include "common/Clock.hh"
+#include "common/DCache.hh"
 #include "common/Log.hh"
 #include "common/Memory.hh"
 
@@ -215,6 +216,7 @@ bool USBStorage::scsiTransfer(USB::Device *device, bool isWrite, u32 size, void 
             }
             if (!isWrite) {
                 memcpy(reinterpret_cast<u8 *>(data) + offset, m_buffer.values(), chunkSize);
+                DCache::Flush(reinterpret_cast<u8 *>(data) + offset, chunkSize);
             }
         }
     }
