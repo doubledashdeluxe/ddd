@@ -10,18 +10,18 @@ extern "C" {
 extern "C" u32 userInterruptMask;
 extern "C" u32 osInterruptMask;
 
-extern "C" u32 intsr;
-extern "C" u32 intmr;
+extern "C" volatile u32 intsr;
+extern "C" volatile u32 intmr;
 
-extern "C" u16 miirqflag;
+extern "C" volatile u16 miirqflag;
 
-extern "C" u16 dspcsr;
+extern "C" volatile u16 dspcsr;
 
-extern "C" u32 exi0csr;
-extern "C" u32 exi1csr;
-extern "C" u32 exi2csr;
+extern "C" volatile u32 exi0csr;
+extern "C" volatile u32 exi1csr;
+extern "C" volatile u32 exi2csr;
 
-extern "C" u32 aicr;
+extern "C" volatile u32 aicr;
 
 static const u32 InterruptPriorities[12] = {
         0x100,
