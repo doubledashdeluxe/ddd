@@ -7,8 +7,19 @@ class Array {
 public:
     Array() {}
 
+    Array(const T (&values)[N]) {
+        *this = values;
+    }
+
     Array(T value) {
         fill(value);
+    }
+
+    Array &operator=(const T (&values)[N]) {
+        for (size_t index = 0; index < N; index++) {
+            m_values[index] = values[index];
+        }
+        return *this;
     }
 
     size_t count() const {

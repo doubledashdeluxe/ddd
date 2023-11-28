@@ -48,5 +48,6 @@ private:
 
     Loader();
 
+    static bool IsDiscIDValid();
     static u32 GetLanguage();
 };

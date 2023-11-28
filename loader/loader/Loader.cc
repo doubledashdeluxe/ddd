@@ -159,7 +159,6 @@ Loader::PayloadEntryFunc Loader::Run(Context *context) {
 
     Console::Init(VI::Instance());
     INFO("Double Dash Deluxe Loader\n");
-    INFO("\n");
 
     if (iosVersion >> 16 != 58 && iosVersion >> 16 != 59) {
         ERROR("In order for Double Dash Deluxe to work, IOS58 (or IOS59) must be installed.\n");
@@ -178,34 +177,41 @@ Loader::PayloadEntryFunc Loader::Run(Context *context) {
         }
     }
 
-    bool diWasReset = false;
-    Apploader::GameEntryFunc gameEntry;
-    while (!(gameEntry = Apploader::LoadAndRun())) {
-        if (!DI::IsInserted()) {
-            if (Platform::IsDolphin()) {
-                if (diWasReset) {
-                    INFO("\n");
+    Apploader::GameEntryFunc gameEntry = nullptr;
+    while (true) {
+        if (DI::ReadDiscID()) {
+            Array<char, 5> discIDString('\0');
+            memcpy(discIDString.values(), &discID[0], discIDString.count() - 1);
+            if (IsDiscIDValid()) {
+                INFO("Mario Kart: Double Dash!! disc found (disc id %s).\n", discIDString);
+                gameEntry = Apploader::LoadAndRun(discID[0] & 0xff);
+                if (gameEntry) {
+                    break;
                 }
-                INFO("Insert the Mario Kart: Double Dash!! disc by right-clicking the game\n");
-                INFO("in the game list and select \"Change Disc\".\n");
-                INFO("\n");
-                INFO("To avoid this in the future, select \"Set as Default ISO\" as well.\n");
-                INFO("\n");
             } else {
-                INFO("Please insert a Mario Kart: Double Dash!! disc.\n");
+                ERROR("This is not Mario Kart: Double Dash!! (disc id %s).\n", discIDString);
             }
-
-            while (!DI::IsInserted()) {
+            while (DI::ReadDiscID()) {
                 Clock::WaitMilliseconds(100);
             }
+        } else {
+            if (DI::IsInserted()) {
+                INFO("Resetting disc interface...");
+                DI::Reset();
+                INFO(" done.\n");
+            } else {
+                if (Platform::IsDolphin()) {
+                    WARN("Insert the Mario Kart: Double Dash!! disc by right-clicking the game\n");
+                    WARN("in the game list and selecting \"Change Disc\".\n");
+                    WARN("To avoid this in the future, select \"Set as Default ISO\" as well.\n");
+                } else {
+                    WARN("Please insert a Mario Kart: Double Dash!! disc.\n");
+                }
+                while (!DI::IsInserted()) {
+                    Clock::WaitMilliseconds(100);
+                }
+            }
         }
-
-        Clock::WaitMilliseconds(100);
-
-        INFO("Resetting disc interface...");
-        DI::Reset();
-        INFO(" done.\n");
-        diWasReset = true;
     }
 
     void *payloadDst;
@@ -278,6 +284,21 @@ Loader::PayloadEntryFunc Loader::Run(Context *context) {
     INFO("Starting payload...");
     PayloadEntryFunc payloadEntry = reinterpret_cast<PayloadEntryFunc>(payloadDst);
     return payloadEntry;
+}
+
+bool Loader::IsDiscIDValid() {
+    if (memcmp(&discID[0], "GM4", strlen("GM4"))) {
+        return false;
+    }
+
+    switch (discID[0] & 0xff) {
+    case 'P':
+    case 'E':
+    case 'J':
+        return true;
+    default:
+        return false;
+    }
 }
 
 u32 Loader::GetLanguage() {
