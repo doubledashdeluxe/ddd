@@ -25,6 +25,8 @@ def pack_hash16(name):
 def pack_file(path, name, node_index, files, nodes, names):
     with open(path, 'rb') as file:
         file = file.read()
+    if path.endswith('.txt'):
+        file = file.replace(b'\r\n', b'\n')
     nodes[node_index * 0x14:(node_index + 1) * 0x14] = b''.join([
         pack_u16(node_index),
         pack_hash16(name),
