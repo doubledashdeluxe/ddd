@@ -155,56 +155,56 @@ bool JKRMemArchive::addSubdir(u64 &archiveSize, const char *prefix, const char *
         Array<char, 256> &relative) {
     u64 oldArchiveSize = archiveSize;
 
-    const char *name;
-    u8 *dir, *node = m_nodes;
-    bool exists = true;
     if (relative[0] != '\0') {
+        const char *name;
+        u8 *dir, *node = m_nodes;
+        bool exists;
         if (!searchNode(relative, name, dir, node, exists)) {
             return false;
         }
-    }
 
-    if (exists) {
-        bool isDir = Bytes::ReadBE<u8>(node, 0x04) & 0x2;
-        if (!isDir) {
-            return false;
-        }
-    } else {
-        if (!relocate(archiveSize, dir, node)) {
-            return false;
-        }
-
-        u32 dirCount = Bytes::ReadBE<u32>(m_tree, 0x00);
-        u32 nodeCount = Bytes::ReadBE<u32>(m_tree, 0x08);
-
-        if (!addNode(archiveSize, name, dir, node)) {
-            return false;
-        }
-        Bytes::WriteBE<u16>(node, 0x00, UINT16_MAX);
-        Bytes::WriteBE<u8>(node, 0x04, 0x02);
-        Bytes::WriteBE<u32>(node, 0x08, dirCount);
-        Bytes::WriteBE<u32>(node, 0x0c, 0x10);
-
-        dir = m_dirs + dirCount * 0x10;
-        if (!allocAt(archiveSize, archiveSize + 0x10, dir, dir, node)) {
-            return false;
-        }
-        dir = m_dirs + dirCount * 0x10;
-        for (u32 i = 0; i < 4; i++) {
-            if (i < strlen(name)) {
-                dir[i] = toupper(name[i]);
-            } else {
-                dir[i] = '\0';
+        if (exists) {
+            bool isDir = Bytes::ReadBE<u8>(node, 0x04) & 0x2;
+            if (!isDir) {
+                return false;
             }
+        } else {
+            if (!relocate(archiveSize, dir, node)) {
+                return false;
+            }
+
+            u32 dirCount = Bytes::ReadBE<u32>(m_tree, 0x00);
+            u32 nodeCount = Bytes::ReadBE<u32>(m_tree, 0x08);
+
+            if (!addNode(archiveSize, name, dir, node)) {
+                return false;
+            }
+            Bytes::WriteBE<u16>(node, 0x00, UINT16_MAX);
+            Bytes::WriteBE<u8>(node, 0x04, 0x02);
+            Bytes::WriteBE<u32>(node, 0x08, dirCount);
+            Bytes::WriteBE<u32>(node, 0x0c, 0x10);
+
+            dir = m_dirs + dirCount * 0x10;
+            if (!allocAt(archiveSize, archiveSize + 0x10, dir, dir, node)) {
+                return false;
+            }
+            dir = m_dirs + dirCount * 0x10;
+            for (u32 i = 0; i < 4; i++) {
+                if (i < strlen(name)) {
+                    dir[i] = toupper(name[i]);
+                } else {
+                    dir[i] = '\0';
+                }
+            }
+            Bytes::WriteBE<u32>(dir, 0x04, Bytes::ReadBE<u16>(node, 0x06));
+            Bytes::WriteBE<u16>(dir, 0x08, Bytes::ReadBE<u16>(node, 0x02));
+            Bytes::WriteBE<u16>(dir, 0x0a, 0);
+            Bytes::WriteBE<u32>(dir, 0x0c, nodeCount);
+
+            Bytes::WriteBE<u32>(m_tree, 0x00, dirCount + 1);
+
+            DEBUG("Added %s to %s (%llx)\n", relative.values(), bare, archiveSize - oldArchiveSize);
         }
-        Bytes::WriteBE<u32>(dir, 0x04, Bytes::ReadBE<u16>(node, 0x06));
-        Bytes::WriteBE<u16>(dir, 0x08, Bytes::ReadBE<u16>(node, 0x02));
-        Bytes::WriteBE<u16>(dir, 0x0a, 0);
-        Bytes::WriteBE<u32>(dir, 0x0c, nodeCount);
-
-        Bytes::WriteBE<u32>(m_tree, 0x00, dirCount + 1);
-
-        DEBUG("Added %s to %s (%llx)\n", relative.values(), bare, archiveSize - oldArchiveSize);
     }
 
     Array<char, 256> dirPath;
