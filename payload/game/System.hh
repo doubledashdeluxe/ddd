@@ -11,6 +11,7 @@ public:
     REPLACE static void Init();
     static JFWDisplay *GetDisplay();
     static JKRHeap *GetAppHeap();
+    static JKRTask *GetLoadTask();
 
 private:
     System();

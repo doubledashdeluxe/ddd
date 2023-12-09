@@ -11,6 +11,7 @@
 
 #include <common/Algorithm.hh>
 #include <jsystem/J2DAnmLoaderDataBase.hh>
+#include <payload/CourseManager.hh>
 
 extern "C" {
 #include <stdio.h>
@@ -116,16 +117,11 @@ void ScenePackSelect::init() {
     picture = m_modeScreen.search("SubM")->downcast<J2DPicture>();
     picture->changeTexture(texture, 0);
 
-    m_packCount = 2;
-    m_packIndex = 0;
-    if (SequenceApp::Instance()->prevScene() == SceneType::MapSelect) {
-        m_packIndex = sequenceInfo.m_packIndex;
-        SequenceApp::Instance()->ready(SceneType::Menu);
+    if (CourseManager::Instance()->lock()) {
+        slideIn();
+    } else {
+        wait();
     }
-    m_rowIndex = m_packIndex;
-    m_rowIndex = Min(m_rowIndex, m_packCount - Min<u32>(m_packCount, 3));
-
-    slideIn();
 }
 
 void ScenePackSelect::draw() {
@@ -210,7 +206,20 @@ void ScenePackSelect::calc() {
     m_arrowScreen.animation();
 }
 
+void ScenePackSelect::wait() {
+    m_state = &ScenePackSelect::stateWait;
+}
+
 void ScenePackSelect::slideIn() {
+    m_packCount = CourseManager::Instance()->battlePackCount();
+    m_packIndex = 0;
+    if (SequenceApp::Instance()->prevScene() == SceneType::MapSelect) {
+        m_packIndex = SequenceInfo::Instance().m_packIndex;
+        SequenceApp::Instance()->ready(SceneType::Menu);
+    }
+    m_rowIndex = m_packIndex;
+    m_rowIndex = Min(m_rowIndex, m_packCount - Min<u32>(m_packCount, 3));
+
     MenuTitleLine::Instance()->drop("SelectPack.bti");
     m_modeAnmTransformFrame = 0;
     m_mainAnmTransformFrame = 0;
@@ -256,6 +265,12 @@ void ScenePackSelect::scrollDown() {
 
 void ScenePackSelect::nextScene() {
     m_state = &ScenePackSelect::stateNextScene;
+}
+
+void ScenePackSelect::stateWait() {
+    if (CourseManager::Instance()->lock()) {
+        slideIn();
+    }
 }
 
 void ScenePackSelect::stateSlideIn() {
@@ -350,23 +365,22 @@ void ScenePackSelect::stateNextScene() {
 }
 
 void ScenePackSelect::refreshPacks() {
+    CourseManager *courseManager = CourseManager::Instance();
     for (u32 i = 0; i < 4; i++) {
         u32 packIndex = m_rowIndex + i;
+        if (packIndex >= m_packCount) {
+            break;
+        }
+        const CourseManager::Pack &pack = courseManager->battlePack(packIndex);
         Array<char, 9> tag;
         snprintf(tag.values(), tag.count(), "Eplay%u", i + 1);
         J2DPicture *picture = m_mainScreen.search(tag.values())->downcast<J2DPicture>();
-        const char *textures[] = {
-                "AllStages.bti",
-                "VanillaStages.bti",
-                "CustomStages.bti",
-        };
-        picture->changeTexture(textures[packIndex % 3], 0);
-        u32 mapCounts[] = {6, 6, 0};
+        picture->changeTexture(reinterpret_cast<ResTIMG *>(pack.nameImage()), 0);
         Array<J2DPicture *, 3> pictures;
         pictures[0] = m_countScreens[i].search("Eplay3")->downcast<J2DPicture>();
         pictures[1] = m_countScreens[i].search("Eplay2")->downcast<J2DPicture>();
         pictures[2] = m_countScreens[i].search("Eplay1")->downcast<J2DPicture>();
-        Kart2DCommon::Instance()->changeNumberTexture(mapCounts[packIndex % 3], pictures.values(),
+        Kart2DCommon::Instance()->changeNumberTexture(pack.courseCount(), pictures.values(),
                 pictures.count(), false, false);
     }
 }

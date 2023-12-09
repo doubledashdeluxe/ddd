@@ -17,6 +17,7 @@ extern "C" {
 }
 #include <jsystem/J2DAnmLoaderDataBase.hh>
 #include <jsystem/J2DPicture.hh>
+#include <payload/CourseManager.hh>
 
 extern "C" {
 #include <stdio.h>
@@ -112,7 +113,7 @@ void SceneMapSelect::init() {
     picture = m_mainScreen.search("SubM")->downcast<J2DPicture>();
     picture->changeTexture(texture, 0);
 
-    m_mapCount = 6;
+    m_mapCount = CourseManager::Instance()->battleCourseCount(sequenceInfo.m_packIndex);
     m_mapIndex = 0;
     if (sequenceInfo.m_fromPause) {
         m_mapIndex = sequenceInfo.m_mapIndex;
@@ -484,14 +485,17 @@ void SceneMapSelect::stateSelectOut() {
 }
 
 void SceneMapSelect::stateSelect() {
+    SequenceInfo &sequenceInfo = SequenceInfo::Instance();
+    CourseManager *courseManager = CourseManager::Instance();
     const JUTGamePad::CButton &button = KartGamePad::GamePad(0)->button();
     if (button.risingEdge() & PAD_BUTTON_A) {
         m_nextScene = SceneType::None;
         GameAudio::Main::Instance()->fadeOutAll(15);
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE);
         System::GetDisplay()->startFadeOut(15);
-        u32 courseIds[] = {0x3a, 0x36, 0x35, 0x3b, 0x34, 0x38};
-        ResMgr::LoadCourseData(courseIds[m_mapIndex % 6], 2);
+        const CourseManager::Course *course =
+                &courseManager->battleCourse(sequenceInfo.m_packIndex, m_mapIndex);
+        ResMgr::LoadExtendedCourseData(course, 2);
         SequenceInfo::Instance().m_mapIndex = m_mapIndex;
         slideOut();
     } else if (button.risingEdge() & PAD_BUTTON_B) {
@@ -538,15 +542,19 @@ void SceneMapSelect::stateNextScene() {
 }
 
 void SceneMapSelect::refreshMaps() {
+    SequenceInfo &sequenceInfo = SequenceInfo::Instance();
+    CourseManager *courseManager = CourseManager::Instance();
     for (u32 i = 0; i < m_mapScreens.count(); i++) {
         u32 mapIndex = m_rowIndex * 3 + i;
-        Array<char, 32> texture;
-        snprintf(texture.values(), texture.count(), "BattleMapSnap%u.bti", mapIndex % 6 + 1);
+        if (mapIndex >= m_mapCount) {
+            break;
+        }
+        const CourseManager::Course &course =
+                courseManager->battleCourse(sequenceInfo.m_packIndex, mapIndex);
         J2DPicture *picture = m_mapScreens[i].search("MapPict")->downcast<J2DPicture>();
-        picture->changeTexture(texture.values(), 0);
-        snprintf(texture.values(), texture.count(), "Mozi_Map%u.bti", mapIndex % 6 + 1);
+        picture->changeTexture(reinterpret_cast<ResTIMG *>(course.thumbnail()), 0);
         picture = m_mapScreens[i].search("Name")->downcast<J2DPicture>();
-        picture->changeTexture(texture.values(), 0);
+        picture->changeTexture(reinterpret_cast<ResTIMG *>(course.nameImage()), 0);
     }
 }
 

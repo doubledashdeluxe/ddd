@@ -5,6 +5,22 @@
 
 class KartLocale {
 public:
+    class Language {
+    public:
+        enum {
+            English = 0,
+            French = 1,
+            German = 2,
+            Italian = 3,
+            Japanese = 4,
+            Spanish = 5,
+            Max = 6,
+        };
+
+    private:
+        Language();
+    };
+
     class VideoMode {
     public:
         enum {
@@ -29,7 +45,10 @@ public:
 
     static void REPLACED(Localize)();
     REPLACE static void Localize();
-    static const char *LanguageName();
+    static u32 GetLanguage();
+    static const char *GetLanguageName();
+    static const char *GetLanguageName(u32 language);
+    static u32 GetVideoFrameMode();
 
 private:
     KartLocale();

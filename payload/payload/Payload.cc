@@ -2,6 +2,7 @@
 
 #include "payload/ArchiveStorage.hh"
 #include "payload/AssetsDirCreator.hh"
+#include "payload/CourseManager.hh"
 #include "payload/DVDStorage.hh"
 #include "payload/Lock.hh"
 #include "payload/LogFile.hh"
@@ -131,6 +132,10 @@ void Payload::Run(Context *context) {
 
     INFO("Initializing assets directory creator...");
     AssetsDirCreator::Init();
+    INFO(" done.\n");
+
+    INFO("Initializing course manager...");
+    CourseManager::Init();
     INFO(" done.\n");
 
     INFO("Initializing storage...");

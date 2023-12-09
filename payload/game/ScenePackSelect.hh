@@ -16,6 +16,7 @@ public:
 private:
     typedef void (ScenePackSelect::*State)();
 
+    void wait();
     void slideIn();
     void slideOut();
     void idle();
@@ -23,6 +24,7 @@ private:
     void scrollDown();
     void nextScene();
 
+    void stateWait();
     void stateSlideIn();
     void stateSlideOut();
     void stateIdle();

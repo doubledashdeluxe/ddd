@@ -8,7 +8,8 @@ class SceneMenu : public Scene {
 public:
     SceneMenu(JKRArchive *archive, JKRHeap *heap);
     ~SceneMenu() override;
-    void init() override;
+    void REPLACED(init)();
+    REPLACE void init() override;
     void draw() override;
     void calc() override;
 
@@ -16,7 +17,7 @@ private:
     void REPLACED(reset)();
     REPLACE void reset();
 
-    u8 _0000[0x20f0 - 0x000c];
+    u8 _000c[0x20f0 - 0x000c];
     u32 m_nextScene;
     u8 _20f4[0x22c0 - 0x20f4];
 };

@@ -12,7 +12,33 @@ extern "C" {
 #include <string.h>
 }
 
-bool JKRMemArchive::open(s32 entrynum, u32 mountDirection) {
+JKRMemArchive::JKRMemArchive(s32 entrynum, u32 mountDirection, bool patchesAllowed)
+    : JKRArchive(entrynum, MountMode::Mem) {
+    m_isMounted = false;
+    m_mountDirection = mountDirection;
+    if (open(entrynum, mountDirection, patchesAllowed)) {
+        memcpy(&m_signature, "RARC", strlen("RARC"));
+        u8 *dir = m_dirs;
+        m_name = m_names + Bytes::ReadBE<u32>(dir, 0x04);
+        s_volumeList.prepend(&m_link);
+        m_isMounted = true;
+    }
+}
+
+JKRMemArchive::JKRMemArchive(void *archive, u32 mountDirection, bool patchesAllowed)
+    : JKRArchive(reinterpret_cast<intptr_t>(archive), MountMode::Mem) {
+    m_isMounted = false;
+    m_mountDirection = mountDirection;
+    if (open(archive, mountDirection, patchesAllowed)) {
+        memcpy(&m_signature, "RARC", strlen("RARC"));
+        u8 *dir = m_dirs;
+        m_name = m_names + Bytes::ReadBE<u32>(dir, 0x04);
+        s_volumeList.prepend(&m_link);
+        m_isMounted = true;
+    }
+}
+
+bool JKRMemArchive::open(s32 entrynum, u32 mountDirection, bool patchesAllowed) {
     m_mountMode = MountMode::None;
     m_mountDirection = mountDirection;
     m_ownsMemory = false;
@@ -76,7 +102,7 @@ bool JKRMemArchive::open(s32 entrynum, u32 mountDirection) {
     m_mountMode = MountMode::Mem;
     m_ownsMemory = true;
 
-    if (strncmp(path.values(), "/Course/", strlen("/Course/"))) {
+    if (patchesAllowed) {
         const char *bare = strrchr(path.values(), '/');
         bare = bare ? bare + 1 : path.values();
         if (!addSubnodes(fileSize, "carc:/", bare)) {
@@ -91,7 +117,11 @@ bool JKRMemArchive::open(s32 entrynum, u32 mountDirection) {
     return true;
 }
 
-bool JKRMemArchive::open(void *archive, u32 /* r5 */, u32 memBreakFlag) {
+bool JKRMemArchive::open(void *archive, u32 mountDirection, bool patchesAllowed) {
+    m_mountMode = MountMode::None;
+    m_mountDirection = mountDirection;
+    m_ownsMemory = false;
+
     m_archive = archive;
     u8 *header = reinterpret_cast<u8 *>(m_archive);
     u32 treeOffset = Bytes::ReadBE<u32>(header, 0x08);
@@ -107,16 +137,20 @@ bool JKRMemArchive::open(void *archive, u32 /* r5 */, u32 memBreakFlag) {
 
     m_heap = JKRHeap::FindFromRoot(this);
     m_mountMode = MountMode::Mem;
-    m_ownsMemory = memBreakFlag == MemBreakFlag::Break;
 
-    u64 archiveSize = 0;
-    u8 *dir = m_dirs;
-    Array<char, 256> bare;
-    snprintf(bare.values(), bare.count(), "%s.arc", m_names + Bytes::ReadBE<u16>(dir, 0x06));
-    if (!addSubnodes(archiveSize, "carc:/", bare.values())) {
-        return false;
+    if (patchesAllowed) {
+        u64 archiveSize = 0;
+        u8 *dir = m_dirs;
+        Array<char, 256> bare;
+        snprintf(bare.values(), bare.count(), "%s.arc", m_names + Bytes::ReadBE<u32>(dir, 0x04));
+        if (!addSubnodes(archiveSize, "carc:/", bare.values())) {
+            return false;
+        }
+        if (!addSubnodes(archiveSize, "larc:/", bare.values())) {
+            return false;
+        }
+        addSubnodes(archiveSize, "main:/ddd/assets/", bare.values());
     }
-    addSubnodes(archiveSize, "main:/ddd/assets/", bare.values());
 
     return true;
 }

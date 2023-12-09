@@ -57,6 +57,7 @@ public:
         bool isFile() const;
         char *getName(char *names) const;
         Dir getDir(Tree tree) const;
+        u32 getFileOffset() const;
         void *getFile(u8 *files) const;
         u32 getFileSize() const;
 
@@ -70,8 +71,10 @@ public:
     bool isValid(u32 archiveSize) const;
     bool isHeaderValid(u32 archiveSize) const;
     u8 *get() const;
+    u32 getTreeOffset() const;
     Tree getTree() const;
     u32 getTreeSize() const;
+    u32 getFilesOffset() const;
     u8 *getFiles() const;
     u32 getFilesSize() const;
 

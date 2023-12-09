@@ -18,13 +18,13 @@ public:
         MemBreakFlag();
     };
 
-    JKRMemArchive(s32 entrynum, u32 mountDirection);
-    JKRMemArchive(void *archive, u32 r5, u32 memBreakFlag);
+    JKRMemArchive(s32 entrynum, u32 mountDirection, bool patchesAllowed);
+    JKRMemArchive(void *archive, u32 mountDirection, bool patchesAllowed);
     ~JKRMemArchive();
 
 private:
-    REPLACE bool open(s32 entrynum, u32 mountDirection);
-    REPLACE bool open(void *archive, u32 r5, u32 memBreakFlag);
+    bool open(s32 entrynum, u32 mountDirection, bool patchesAllowed);
+    bool open(void *archive, u32 mountDirection, bool patchesAllowed);
 
     bool parseTree(u32 treeSize);
     bool addSubnodes(u64 &archiveSize, const char *prefix, const char *bare);

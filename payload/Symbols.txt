@@ -9,6 +9,7 @@
 8000a5d8 __ct__7JKRAramFUlUll
 8000a7d8 MainRamToAram__7JKRAramFPCUcUlUllUlP7JKRHeaplPUl
 8000c138 __ct__11JKRAramHeapFUlUl
+8000ceb0 __ct__10JKRArchiveFlUl
 8000db44 Mount__10JKRArchiveFPCcUlP7JKRHeapUl
 8000db98 Mount__10JKRArchiveFPvP7JKRHeapUl
 8001287c Create__10JKRExpHeapFPvUlP7JKRHeapb
@@ -21,11 +22,10 @@
 800155a8 __nw__FUl
 8001563c __nw__FUlP7JKRHeapl
 800157a8 __dl__FPv
-80015a24 open__13JKRMemArchiveFlUl
-80015b94 open__13JKRMemArchiveFPvUlUl
 80015f40 Create__12JKRSolidHeapFUlP7JKRHeapb
 80016890 __ct__9JKRThreadFUlll
 80017094 request__7JKRTaskFPFPv_vPvPv
+800179a0 prepend__10JSUPtrListFP10JSUPtrLink
 80018ed4 print__10JUTConsoleFPCc
 8001ab48 panic_f__12JUTExceptionFPCciPCce
 8001cda0 setPreUserCallback__12JUTExceptionFPFUsP9OSContextUlUl_v
@@ -152,18 +152,22 @@
 80116900 fadeOutAll__Q29GameAudio4MainFUl
 8012cfbc __ct__5SceneFP10JKRArchiveP7JKRHeap
 8012cfd8 __dt__5SceneFv
+8012d6ec init__10SceneTitleFv
 80139480 Instance__12Kart2DCommonFv
 8013f014 __ct__12SceneFactoryFv
 8013f044 __dt__12SceneFactoryFv
 8013f0cc loadData__12SceneFactoryFlP7JKRHeap
 8013f6e8 createScene__12SceneFactoryFlP7JKRHeap
 801573fc reset__9SceneMenuFv
+80157c08 init__9SceneMenuFv
 80163cb0 setRaceData__9SceneMenuFv
 80165634 __ct__17CharacterSelect3DFP7JKRHeap
 801665c4 __dt__17CharacterSelect3DFv
 801737cc stateNextBattle__14SceneMapSelectFv
 80173d50 __ct__12BattleName2DFP10JKRArchive
 80173e34 getBattleNameTexture__12BattleName2DFUl
+8017b280 getCourseBGM__6CourseCFv
+8017b3e0 getFinalLapBGM__6CourseCFv
 80189bb0 setHeapGroup__8SysDebugFPCcP7JKRHeap
 80189bb4 setDefaultHeapGroup__8SysDebugFP7JKRHeap
 80189c64 createHeapInfo__8SysDebugFP7JKRHeapPCc
@@ -177,6 +181,9 @@
 801ce7d8 LoadCourseData__6ResMgrFPv
 801ceb3c LoadKeepData__6ResMgrFv
 801cebac LoadCourseData__6ResMgrFUlUl
+801ced5c IsFinishedLoadingArc__6ResMgrFUl
+801cf524 GetPtr__6ResMgrFUlPCc
+801cf560 GetResSize__6ResMgrFUlPCv
 801cf914 Call__7LogoAppFv
 801d02f8 StartAudio__6SystemFPv
 801d0388 Init__6SystemFv
@@ -199,10 +206,13 @@
 
 80346c20 LanguageNames__10KartLocale
 80347af8 __vt__7JKRAram
+80347e70 __vt__13JKRMemArchive
 8035c638 s_gamePads__11KartGamePad
 8035c648 s_kartPads__11KartGamePad
 
 80371e08 Ecb
+
+803ae998 s_volumeList__13JKRFileLoader
 
 803bad54 s_instance__12SequenceInfo
 803bb27c s_instance__8RaceInfo
@@ -217,6 +227,8 @@
 803d4980 s_language__10KartLocale
 
 803d4aa0 s_systemHeap__7JKRHeap
+803d4aa4 s_currentHeap__7JKRHeap
+803d4aa8 s_rootHeap__7JKRHeap
 803d4d50 s_loadThread__13JASAramStream
 803d4d54 s_readBuffer__13JASAramStream
 803d4d58 s_blockSize__13JASAramStream

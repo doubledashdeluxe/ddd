@@ -270,8 +270,12 @@ Archive::Dir Archive::Node::getDir(Tree tree) const {
     return tree.getDir(Bytes::ReadBE<u32>(m_node, 0x08));
 }
 
+u32 Archive::Node::getFileOffset() const {
+    return Bytes::ReadBE<u32>(m_node, 0x08);
+}
+
 void *Archive::Node::getFile(u8 *files) const {
-    return files + Bytes::ReadBE<u32>(m_node, 0x08);
+    return files + getFileOffset();
 }
 
 u32 Archive::Node::getFileSize() const {
@@ -337,16 +341,24 @@ u8 *Archive::get() const {
     return m_archive;
 }
 
+u32 Archive::getTreeOffset() const {
+    return Bytes::ReadBE<u32>(m_archive, 0x08);
+}
+
 Archive::Tree Archive::getTree() const {
-    return Tree(m_archive + Bytes::ReadBE<u32>(m_archive, 0x08));
+    return Tree(m_archive + getTreeOffset());
 }
 
 u32 Archive::getTreeSize() const {
     return Bytes::ReadBE<u32>(m_archive, 0x0c);
 }
 
+u32 Archive::getFilesOffset() const {
+    return Bytes::ReadBE<u32>(m_archive, 0x08) + Bytes::ReadBE<u32>(m_archive, 0x0c);
+}
+
 u8 *Archive::getFiles() const {
-    return m_archive + Bytes::ReadBE<u32>(m_archive, 0x08) + Bytes::ReadBE<u32>(m_archive, 0x0c);
+    return m_archive + getFilesOffset();
 }
 
 u32 Archive::getFilesSize() const {

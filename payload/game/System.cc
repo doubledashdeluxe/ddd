@@ -8,6 +8,7 @@
 extern "C" {
 #include <dolphin/VI.h>
 }
+#include <payload/CourseManager.hh>
 
 void System::Init() {
     REPLACED(Init)();
@@ -23,16 +24,25 @@ void System::Init() {
     }
 
     ResMgr::LoadKeepData();
+    while (!ResMgr::IsFinishedLoadingArc(ResMgr::ArchiveId::MRAM)) {
+        VIWaitForRetrace();
+    }
+
+    CourseManager::Instance()->start();
 
     SequenceApp::Call(SceneType::Title);
+}
+
+JFWDisplay *System::GetDisplay() {
+    return s_display;
 }
 
 JKRHeap *System::GetAppHeap() {
     return s_appHeap;
 }
 
-JFWDisplay *System::GetDisplay() {
-    return s_display;
+JKRTask *System::GetLoadTask() {
+    return s_loadTask;
 }
 
 void System::StartAudio(void * /* userData */) {}

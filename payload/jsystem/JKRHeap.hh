@@ -10,12 +10,16 @@ public:
     s32 resize(void *ptr, u32 size);
 
     static JKRHeap *GetSystemHeap();
+    static JKRHeap *GetCurrentHeap();
+    static JKRHeap *GetRootHeap();
     static JKRHeap *FindFromRoot(void *ptr);
 
 private:
     u8 _00[0x6c - 0x00];
 
     static JKRHeap *s_systemHeap;
+    static JKRHeap *s_currentHeap;
+    static JKRHeap *s_rootHeap;
 };
 size_assert(JKRHeap, 0x6c);
 

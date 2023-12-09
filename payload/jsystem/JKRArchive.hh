@@ -36,18 +36,19 @@ public:
     ~JKRArchive();
     // ...
 
-    // clang-format off
-    static JKRArchive *REPLACED(Mount)(const char *path, u32 mountMode, JKRHeap *heap,
-            u32 mountDirection);
-    // clang-format on
     REPLACE static JKRArchive *Mount(const char *path, u32 mountMode, JKRHeap *heap,
             u32 mountDirection);
-    static JKRArchive *Mount(void *archive, JKRHeap *heap, u32 mountDirection);
+    REPLACE static JKRArchive *Mount(void *archive, JKRHeap *heap, u32 mountDirection);
+    static JKRArchive *Mount(const char *path, JKRHeap *heap, u32 mountDirection,
+            bool patchesAllowed);
+    static JKRArchive *Mount(s32 entrynum, JKRHeap *heap, u32 mountDirection, bool patchesAllowed);
+    static JKRArchive *Mount(void *archive, JKRHeap *heap, u32 mountDirection, bool patchesAllowed);
 
 protected:
     JKRHeap *m_heap;
     u8 m_mountMode;
-    u8 _3d[0x44 - 0x3d];
+    u8 _3d[0x40 - 0x3d];
+    s32 m_entrynum;
     u8 *m_tree;
     u8 *m_dirs;
     u8 *m_nodes;
