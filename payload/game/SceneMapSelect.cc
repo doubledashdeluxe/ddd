@@ -325,6 +325,7 @@ void SceneMapSelect::selectIn() {
             m_thumbnailAnmTevRegKeyFrames[i] = 0;
         }
     }
+    showMaps(0);
     m_state = &SceneMapSelect::stateSelectIn;
 }
 
@@ -497,6 +498,7 @@ void SceneMapSelect::stateSelectIn() {
     } else if (m_gridAnmTransformFrame > 25 && m_gridAnmTransformFrame < 29) {
         m_gridAnmTransformFrame++;
     }
+    showMaps(0);
     hideArrows();
     if (m_selectAnmTransformFrame == 9) {
         select();
@@ -558,6 +560,7 @@ void SceneMapSelect::stateSpin() {
             refreshMaps();
             GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CURSOL);
         }
+        showMaps(0);
     } else {
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_RANDOM_KETTEI);
         selectIn();
