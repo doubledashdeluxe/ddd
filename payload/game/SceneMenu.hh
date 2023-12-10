@@ -16,6 +16,8 @@ public:
 private:
     void REPLACED(reset)();
     REPLACE void reset();
+    void REPLACED(setRaceData)();
+    REPLACE void setRaceData();
 
     u8 _000c[0x20f0 - 0x000c];
     u32 m_nextScene;

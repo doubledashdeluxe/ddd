@@ -8,6 +8,9 @@ public:
     u32 getRaceLevel() const;
     s16 getAwardKartNo() const;
 
+    bool isRace() const;
+    bool isBattle() const;
+
     static RaceInfo &Instance();
 
 private:

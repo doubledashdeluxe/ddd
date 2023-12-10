@@ -5,6 +5,8 @@
 #include "game/KartGamePad.hh"
 #include "game/MenuBackground.hh"
 #include "game/MenuTitleLine.hh"
+#include "game/RaceInfo.hh"
+#include "game/RaceMode.hh"
 #include "game/SceneFactory.hh"
 #include "game/SequenceApp.hh"
 #include "game/SequenceInfo.hh"
@@ -106,16 +108,27 @@ ScenePackSelect::ScenePackSelect(JKRArchive *archive, JKRHeap *heap) : Scene(arc
 ScenePackSelect::~ScenePackSelect() {}
 
 void ScenePackSelect::init() {
-    SequenceInfo &sequenceInfo = SequenceInfo::Instance();
-    u32 battleMode = sequenceInfo.getBattleMode();
-    u32 index = battleMode == 0 ? 0 : battleMode ^ 3;
-    ResTIMG *texture = Kart2DCommon::Instance()->getBattleIcon(index);
-    J2DPicture *picture = m_modeScreen.search("BtlPict")->downcast<J2DPicture>();
-    picture->changeTexture(texture, 0);
-
-    texture = BattleName2D::Instance()->getBattleNameTexture(battleMode);
-    picture = m_modeScreen.search("SubM")->downcast<J2DPicture>();
-    picture->changeTexture(texture, 0);
+    J2DPicture *iconPicture = m_modeScreen.search("BtlPict")->downcast<J2DPicture>();
+    J2DPicture *namePicture = m_modeScreen.search("SubM")->downcast<J2DPicture>();
+    RaceInfo &raceInfo = RaceInfo::Instance();
+    switch (raceInfo.getRaceMode()) {
+    case RaceMode::Balloon:
+        iconPicture->changeTexture("Cup_Pict_Balloon.bti", 0);
+        namePicture->changeTexture("Mozi_Battle1.bti", 0);
+        break;
+    case RaceMode::Bomb:
+        iconPicture->changeTexture("Cup_Pict_Bomb.bti", 0);
+        namePicture->changeTexture("Mozi_Battle3.bti", 0);
+        break;
+    case RaceMode::Escape:
+        iconPicture->changeTexture("Cup_Pict_Shine.bti", 0);
+        namePicture->changeTexture("Mozi_Battle2.bti", 0);
+        break;
+    default:
+        iconPicture->changeTexture("Cup_Pict_LAN.bti", 0);
+        namePicture->changeTexture("Entry_Versus.bti", 0);
+        break;
+    }
 
     if (CourseManager::Instance()->lock()) {
         slideIn();
@@ -211,7 +224,11 @@ void ScenePackSelect::wait() {
 }
 
 void ScenePackSelect::slideIn() {
-    m_packCount = CourseManager::Instance()->battlePackCount();
+    if (RaceInfo::Instance().isRace()) {
+        m_packCount = CourseManager::Instance()->racePackCount();
+    } else {
+        m_packCount = CourseManager::Instance()->battlePackCount();
+    }
     m_packIndex = 0;
     if (SequenceApp::Instance()->prevScene() == SceneType::MapSelect) {
         m_packIndex = SequenceInfo::Instance().m_packIndex;
@@ -371,16 +388,21 @@ void ScenePackSelect::refreshPacks() {
         if (packIndex >= m_packCount) {
             break;
         }
-        const CourseManager::Pack &pack = courseManager->battlePack(packIndex);
+        const CourseManager::Pack *pack;
+        if (RaceInfo::Instance().isRace()) {
+            pack = &courseManager->racePack(packIndex);
+        } else {
+            pack = &courseManager->battlePack(packIndex);
+        }
         Array<char, 9> tag;
         snprintf(tag.values(), tag.count(), "Eplay%u", i + 1);
         J2DPicture *picture = m_mainScreen.search(tag.values())->downcast<J2DPicture>();
-        picture->changeTexture(reinterpret_cast<ResTIMG *>(pack.nameImage()), 0);
+        picture->changeTexture(reinterpret_cast<ResTIMG *>(pack->nameImage()), 0);
         Array<J2DPicture *, 3> pictures;
         pictures[0] = m_countScreens[i].search("Eplay3")->downcast<J2DPicture>();
         pictures[1] = m_countScreens[i].search("Eplay2")->downcast<J2DPicture>();
         pictures[2] = m_countScreens[i].search("Eplay1")->downcast<J2DPicture>();
-        Kart2DCommon::Instance()->changeNumberTexture(pack.courseCount(), pictures.values(),
+        Kart2DCommon::Instance()->changeNumberTexture(pack->courseCount(), pictures.values(),
                 pictures.count(), false, false);
     }
 }

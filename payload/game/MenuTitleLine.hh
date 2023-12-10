@@ -8,6 +8,7 @@ public:
     class Title {
     public:
         enum {
+            SelectCourse = 0x4,
             SelectMap = 0x7,
             Max = 0xb,
         };

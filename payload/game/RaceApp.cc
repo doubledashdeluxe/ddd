@@ -1,11 +1,20 @@
 #include "RaceApp.hh"
 
+#include "game/RaceInfo.hh"
+#include "game/RaceMode.hh"
 #include "game/SceneType.hh"
 
 void RaceApp::ctrlRace() {
     REPLACED(ctrlRace)();
 
-    if (m_nextScene == SceneType::PackSelect) {
+    switch (m_nextScene) {
+    case SceneType::CourseSelect:
+        if (RaceInfo::Instance().getRaceMode() == RaceMode::VS) {
+            m_nextScene = SceneType::MapSelect;
+        }
+        break;
+    case SceneType::PackSelect:
         m_nextScene = SceneType::MapSelect;
+        break;
     }
 }

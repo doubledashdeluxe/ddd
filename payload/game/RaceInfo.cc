@@ -1,5 +1,7 @@
 #include "RaceInfo.hh"
 
+#include "game/RaceMode.hh"
+
 u32 RaceInfo::getRaceMode() const {
     return m_raceMode;
 }
@@ -10,6 +12,29 @@ u32 RaceInfo::getRaceLevel() const {
 
 s16 RaceInfo::getAwardKartNo() const {
     return m_awardKartNo;
+}
+
+bool RaceInfo::isRace() const {
+    switch (m_raceMode) {
+    case RaceMode::TA:
+    case RaceMode::GP:
+    case RaceMode::VS:
+        return true;
+    default:
+        return false;
+    }
+}
+
+bool RaceInfo::isBattle() const {
+    switch (m_raceMode) {
+    case RaceMode::Balloon:
+    case RaceMode::Robbery:
+    case RaceMode::Bomb:
+    case RaceMode::Escape:
+        return true;
+    default:
+        return false;
+    }
 }
 
 RaceInfo &RaceInfo::Instance() {

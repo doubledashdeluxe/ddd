@@ -69,6 +69,7 @@ private:
     Array<J2DAnmBase *, 9> m_highlightAnmTransforms;
     Array<J2DAnmBase *, 9> m_highlightAnmColors;
     Array<J2DAnmBase *, 9> m_thumbnailAnmTevRegKeys;
+    J2DAnmBase *m_nameAnmTransform;
     Array<J2DAnmBase *, 9> m_nameAnmTevRegKeys;
     J2DAnmBase *m_arrowAnmTransform;
     u8 m_mainAnmTransformFrame;
@@ -80,6 +81,7 @@ private:
     Array<u8, 9> m_highlightAnmTransformFrames;
     Array<u8, 9> m_highlightAnmColorFrames;
     Array<u8, 9> m_thumbnailAnmTevRegKeyFrames;
+    u8 m_nameAnmTransformFrame;
     Array<u8, 9> m_nameAnmTevRegKeyFrames;
     u8 m_arrowAnmTransformFrame;
     Array<u8, 9> m_mapAlphas;

@@ -1,10 +1,11 @@
 #include "SceneMapSelect.hh"
 
 #include "game/GameAudioMain.hh"
-#include "game/Kart2DCommon.hh"
 #include "game/KartGamePad.hh"
 #include "game/MenuBackground.hh"
 #include "game/MenuTitleLine.hh"
+#include "game/RaceInfo.hh"
+#include "game/RaceMode.hh"
 #include "game/ResMgr.hh"
 #include "game/SceneFactory.hh"
 #include "game/SequenceApp.hh"
@@ -78,6 +79,10 @@ SceneMapSelect::SceneMapSelect(JKRArchive *archive, JKRHeap *heap) : Scene(archi
         m_thumbnailAnmTevRegKeys[i]->searchUpdateMaterialID(&m_mapScreens[i]);
         m_mapScreens[i].search("MapPict")->setAnimation(m_thumbnailAnmTevRegKeys[i]);
     }
+    m_nameAnmTransform = J2DAnmLoaderDataBase::Load("SelectMap1.bck", m_archive);
+    for (u32 i = 0; i < 9; i++) {
+        m_mapScreens[i].search("NName")->setAnimation(m_nameAnmTransform);
+    }
     for (u32 i = 0; i < m_nameAnmTevRegKeys.count(); i++) {
         m_nameAnmTevRegKeys[i] = J2DAnmLoaderDataBase::Load("SelectMap1.brk", m_archive);
         m_nameAnmTevRegKeys[i]->searchUpdateMaterialID(&m_mapScreens[i]);
@@ -102,18 +107,34 @@ SceneMapSelect::SceneMapSelect(JKRArchive *archive, JKRHeap *heap) : Scene(archi
 SceneMapSelect::~SceneMapSelect() {}
 
 void SceneMapSelect::init() {
+    J2DPicture *iconPicture = m_mainScreen.search("BtlPict")->downcast<J2DPicture>();
+    J2DPicture *namePicture = m_mainScreen.search("SubM")->downcast<J2DPicture>();
+    RaceInfo &raceInfo = RaceInfo::Instance();
+    switch (raceInfo.getRaceMode()) {
+    case RaceMode::Balloon:
+        iconPicture->changeTexture("Cup_Pict_Balloon.bti", 0);
+        namePicture->changeTexture("Mozi_Battle1.bti", 0);
+        break;
+    case RaceMode::Bomb:
+        iconPicture->changeTexture("Cup_Pict_Bomb.bti", 0);
+        namePicture->changeTexture("Mozi_Battle3.bti", 0);
+        break;
+    case RaceMode::Escape:
+        iconPicture->changeTexture("Cup_Pict_Shine.bti", 0);
+        namePicture->changeTexture("Mozi_Battle2.bti", 0);
+        break;
+    default:
+        iconPicture->changeTexture("Cup_Pict_LAN.bti", 0);
+        namePicture->changeTexture("Entry_Versus.bti", 0);
+        break;
+    }
+
     SequenceInfo &sequenceInfo = SequenceInfo::Instance();
-    u32 battleMode = sequenceInfo.getBattleMode();
-    u32 index = battleMode == 0 ? 0 : battleMode ^ 3;
-    ResTIMG *texture = Kart2DCommon::Instance()->getBattleIcon(index);
-    J2DPicture *picture = m_mainScreen.search("BtlPict")->downcast<J2DPicture>();
-    picture->changeTexture(texture, 0);
-
-    texture = BattleName2D::Instance()->getBattleNameTexture(battleMode);
-    picture = m_mainScreen.search("SubM")->downcast<J2DPicture>();
-    picture->changeTexture(texture, 0);
-
-    m_mapCount = CourseManager::Instance()->battleCourseCount(sequenceInfo.m_packIndex);
+    if (RaceInfo::Instance().isRace()) {
+        m_mapCount = CourseManager::Instance()->raceCourseCount(sequenceInfo.m_packIndex);
+    } else {
+        m_mapCount = CourseManager::Instance()->battleCourseCount(sequenceInfo.m_packIndex);
+    }
     m_mapIndex = 0;
     if (sequenceInfo.m_fromPause) {
         m_mapIndex = sequenceInfo.m_mapIndex;
@@ -187,6 +208,7 @@ void SceneMapSelect::calc() {
     for (u32 i = 0; i < m_thumbnailAnmTevRegKeys.count(); i++) {
         m_thumbnailAnmTevRegKeys[i]->m_frame = m_thumbnailAnmTevRegKeyFrames[i];
     }
+    m_nameAnmTransform->m_frame = m_nameAnmTransformFrame;
     for (u32 i = 0; i < m_nameAnmTevRegKeys.count(); i++) {
         m_nameAnmTevRegKeys[i]->m_frame = m_nameAnmTevRegKeyFrames[i];
     }
@@ -215,7 +237,11 @@ void SceneMapSelect::calc() {
 }
 
 void SceneMapSelect::slideIn() {
-    MenuTitleLine::Instance()->drop(MenuTitleLine::Title::SelectMap);
+    if (RaceInfo::Instance().isRace()) {
+        MenuTitleLine::Instance()->drop(MenuTitleLine::Title::SelectCourse);
+    } else {
+        MenuTitleLine::Instance()->drop(MenuTitleLine::Title::SelectMap);
+    }
     m_mainAnmTransformFrame = 0;
     m_selectAnmTransformFrame = 0;
     if (m_mapIndex / 3 == m_rowIndex) {
@@ -224,6 +250,7 @@ void SceneMapSelect::slideIn() {
         m_gridAnmTransformFrame = 10;
     }
     m_thumbnailAnmTevRegKeyFrames.fill(1);
+    m_nameAnmTransformFrame = RaceInfo::Instance().isRace() ? 0 : 6;
     for (u32 i = 0; i < m_mapAlphas.count(); i++) {
         u32 mapIndex = m_rowIndex * 3 + i;
         if (i < 6 && mapIndex < m_mapCount) {
@@ -493,8 +520,12 @@ void SceneMapSelect::stateSelect() {
         GameAudio::Main::Instance()->fadeOutAll(15);
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE);
         System::GetDisplay()->startFadeOut(15);
-        const CourseManager::Course *course =
-                &courseManager->battleCourse(sequenceInfo.m_packIndex, m_mapIndex);
+        const CourseManager::Course *course;
+        if (RaceInfo::Instance().isRace()) {
+            course = &courseManager->raceCourse(sequenceInfo.m_packIndex, m_mapIndex);
+        } else {
+            course = &courseManager->battleCourse(sequenceInfo.m_packIndex, m_mapIndex);
+        }
         ResMgr::LoadExtendedCourseData(course, 2);
         SequenceInfo::Instance().m_mapIndex = m_mapIndex;
         slideOut();
@@ -549,12 +580,16 @@ void SceneMapSelect::refreshMaps() {
         if (mapIndex >= m_mapCount) {
             break;
         }
-        const CourseManager::Course &course =
-                courseManager->battleCourse(sequenceInfo.m_packIndex, mapIndex);
+        const CourseManager::Course *course;
+        if (RaceInfo::Instance().isRace()) {
+            course = &courseManager->raceCourse(sequenceInfo.m_packIndex, mapIndex);
+        } else {
+            course = &courseManager->battleCourse(sequenceInfo.m_packIndex, mapIndex);
+        }
         J2DPicture *picture = m_mapScreens[i].search("MapPict")->downcast<J2DPicture>();
-        picture->changeTexture(reinterpret_cast<ResTIMG *>(course.thumbnail()), 0);
+        picture->changeTexture(reinterpret_cast<ResTIMG *>(course->thumbnail()), 0);
         picture = m_mapScreens[i].search("Name")->downcast<J2DPicture>();
-        picture->changeTexture(reinterpret_cast<ResTIMG *>(course.nameImage()), 0);
+        picture->changeTexture(reinterpret_cast<ResTIMG *>(course->nameImage()), 0);
     }
 }
 
