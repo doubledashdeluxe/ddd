@@ -285,7 +285,7 @@ void SceneMapSelect::moveUp() {
 }
 
 void SceneMapSelect::moveDown() {
-    m_mapIndex += 3;
+    m_mapIndex = Min(m_mapIndex + 3, m_mapCount - 1);
     m_gridAnmTransformFrame = 22;
     m_state = &SceneMapSelect::stateMoveDown;
 }
@@ -305,7 +305,7 @@ void SceneMapSelect::scrollUp() {
 }
 
 void SceneMapSelect::scrollDown() {
-    m_mapIndex += 3;
+    m_mapIndex = Min(m_mapIndex + 3, m_mapCount - 1);
     m_gridAnmTransformFrame = 30;
     m_state = &SceneMapSelect::stateScrollDown;
 }
@@ -415,7 +415,7 @@ void SceneMapSelect::stateIdle() {
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CANCEL_LITTLE);
         slideOut();
     } else if (button.repeat() & JUTGamePad::PAD_MSTICK_UP) {
-        if (m_mapIndex >= 3) {
+        if (m_mapIndex / 3 >= 1) {
             GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CURSOL);
             if (m_mapIndex / 3 == m_rowIndex) {
                 scrollUp();
@@ -424,7 +424,7 @@ void SceneMapSelect::stateIdle() {
             }
         }
     } else if (button.repeat() & JUTGamePad::PAD_MSTICK_DOWN) {
-        if (m_mapIndex + 3 < m_mapCount) {
+        if (m_mapIndex / 3 + 1 < (m_mapCount + 3 - 1) / 3) {
             GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CURSOL);
             if (m_mapIndex / 3 == m_rowIndex + 1) {
                 scrollDown();
