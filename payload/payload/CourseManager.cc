@@ -49,16 +49,15 @@ u32 CourseManager::Course::musicID() const {
     return m_musicID;
 }
 
-CourseManager::DefaultPack::DefaultPack(Ring<u32, MaxCourseCount> courseIndices, const char *name)
-    : Pack(courseIndices) {
-    m_name = name;
-}
+CourseManager::DefaultPack::DefaultPack(Ring<u32, MaxCourseCount> courseIndices,
+        Array<char, 32> name)
+    : Pack(courseIndices), m_name(name) {}
 
 CourseManager::DefaultPack::~DefaultPack() {}
 
 const char *CourseManager::DefaultPack::name() const {
     Array<char, 32> path;
-    snprintf(path.values(), path.count(), "/packnames/%s.txt", m_name);
+    snprintf(path.values(), path.count(), "/packnames/%s.txt", m_name.values());
     char *name = reinterpret_cast<char *>(ResMgr::GetPtr(ResMgr::ArchiveId::MRAM, path.values()));
     u32 size = ResMgr::GetResSize(ResMgr::ArchiveId::MRAM, name);
     name[size - 1] = '\0';
@@ -75,7 +74,7 @@ const char *CourseManager::DefaultPack::version() const {
 
 void *CourseManager::DefaultPack::nameImage() const {
     Array<char, 32> name;
-    snprintf(name.values(), name.count(), "%s.bti", m_name);
+    snprintf(name.values(), name.count(), "%s.bti", m_name.values());
     return JKRFileLoader::GetGlbResource(name.values(), nullptr);
 }
 
@@ -919,7 +918,7 @@ void CourseManager::addDefaultPacks(const Ring<UniquePtr<Course>, MaxCourseCount
             packs.popBack();
         }
         packs.pushFront();
-        Pack *pack = new (m_heap, 0x4) DefaultPack(courseIndices[i], names[i].values());
+        Pack *pack = new (m_heap, 0x4) DefaultPack(courseIndices[i], names[i]);
         packs.front()->reset(pack);
     }
 }

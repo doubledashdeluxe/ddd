@@ -86,7 +86,7 @@ private:
 
     class DefaultPack : public Pack {
     public:
-        DefaultPack(Ring<u32, MaxCourseCount> courseIndices, const char *name);
+        DefaultPack(Ring<u32, MaxCourseCount> courseIndices, Array<char, 32> name);
         ~DefaultPack() override;
 
         const char *name() const override;
@@ -95,7 +95,7 @@ private:
         void *nameImage() const override;
 
     private:
-        const char *m_name;
+        Array<char, 32> m_name;
     };
 
     class CustomPack : public Pack {
