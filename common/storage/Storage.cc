@@ -171,43 +171,8 @@ bool Storage::ReadFile(const char *path, void *dst, u32 size, u32 *readSize) {
 bool Storage::WriteFile(const char *path, const void *src, u32 size, u32 mode) {
     assert(mode == Mode::WriteAlways || mode == Mode::WriteNew);
 
-    if (mode == Mode::WriteAlways) {
-        StorageHandle storage(path);
-
-        Array<char, 256> newPath;
-        snprintf(newPath.values(), newPath.count(), "%s.new", path);
-        Array<char, 256> oldPath;
-        snprintf(oldPath.values(), oldPath.count(), "%s.old", path);
-
-        {
-            FileHandle file(newPath.values(), Mode::WriteAlways);
-            if (!file.write(src, size, 0)) {
-                DEBUG("Failed to write to %s\n", newPath.values());
-                return false;
-            }
-        }
-
-        if (!Remove(oldPath.values(), true)) {
-            DEBUG("Failed to remove %s\n", oldPath.values());
-            return false;
-        }
-
-        if (!Rename(path, oldPath.values())) {
-            DEBUG("Failed to rename %s to %s\n", path, oldPath.values());
-            // Ignore
-        }
-
-        if (!Rename(newPath.values(), path)) {
-            DEBUG("Failed to rename %s to %s\n", newPath.values(), path);
-            return false;
-        }
-
-        Remove(oldPath.values(), true); // Not a big deal if this fails
-        return true;
-    } else {
-        FileHandle file(path, mode);
-        return file.write(src, size, 0);
-    }
+    FileHandle file(path, mode);
+    return file.write(src, size, 0);
 }
 
 bool Storage::CreateDir(const char *path, u32 mode) {
