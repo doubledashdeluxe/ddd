@@ -23,7 +23,7 @@ void Storage::Init() {
 Storage::Storage(Mutex *mutex) : m_next(nullptr), m_isContained(false), m_mutex(mutex) {}
 
 void Storage::notify() {
-    OSSendMessage(&s_queue, this, OS_MESSAGE_NOBLOCK);
+    OSSendMessage(&s_queue, this, OS_MESSAGE_BLOCK);
 }
 
 void Storage::remove() {
