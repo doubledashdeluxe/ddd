@@ -11,6 +11,8 @@ void USBStorage::Init() {
     s_instance = new (MEM2Arena::Instance(), 0x20) USBStorage;
 }
 
+USBStorage::USBStorage() : FATStorage(&m_mutex), m_device(nullptr) {}
+
 void USBStorage::onRemove(USB::Device *device) {
     assert(device == m_device);
     FATStorage::remove();

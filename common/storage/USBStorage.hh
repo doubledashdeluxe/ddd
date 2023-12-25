@@ -3,6 +3,10 @@
 #include "common/USB.hh"
 #include "common/storage/FATStorage.hh"
 
+#ifdef PAYLOAD
+#include <payload/Mutex.hh>
+#endif
+
 class USBStorage : private USB::Handler, private FATStorage {
 public:
     static void Init();
@@ -82,6 +86,9 @@ private:
     alignas(0x20) Array<u8, 0x1f> m_csw;
     alignas(0x20) Array<u8, 0xd> m_cbw;
     alignas(0x20) Array<u8, 0x4000> m_buffer;
+#ifdef PAYLOAD
+    Mutex m_mutex;
+#endif
 
     static USBStorage *s_instance;
 };

@@ -15,7 +15,7 @@ void Storage::Init() {
     OSResumeThread(thread);
 }
 
-Storage::Storage() : m_next(nullptr), m_isContained(false) {}
+Storage::Storage(Mutex *mutex) : m_next(nullptr), m_isContained(false), m_mutex(mutex) {}
 
 void Storage::notify() {
     OSSendMessage(&s_queue, this, OS_MESSAGE_NOBLOCK);
@@ -78,7 +78,7 @@ Storage::StorageHandle::StorageHandle(const char *path) : m_storage(nullptr), m_
         }
     }
     if (m_storage) {
-        m_storage->m_mutex.lock();
+        m_storage->m_mutex->lock();
     }
 }
 
@@ -89,7 +89,7 @@ Storage::StorageHandle::StorageHandle(const FileHandle &file)
         m_storage = file.m_file->storage();
     }
     if (m_storage) {
-        m_storage->m_mutex.lock();
+        m_storage->m_mutex->lock();
     }
 }
 
@@ -100,13 +100,13 @@ Storage::StorageHandle::StorageHandle(const DirHandle &dir)
         m_storage = dir.m_dir->storage();
     }
     if (m_storage) {
-        m_storage->m_mutex.lock();
+        m_storage->m_mutex->lock();
     }
 }
 
 Storage::StorageHandle::~StorageHandle() {
     if (m_storage) {
-        m_storage->m_mutex.unlock();
+        m_storage->m_mutex->unlock();
     }
 }
 
@@ -116,7 +116,7 @@ void *Storage::Poll(void * /* param */) {
         OSReceiveMessage(&s_queue, &msg, OS_MESSAGE_BLOCK);
         Storage *storage = reinterpret_cast<Storage *>(msg);
 
-        Lock<Mutex> lock(storage->m_mutex);
+        Lock<Mutex> lock(*storage->m_mutex);
         storage->poll();
     }
 }

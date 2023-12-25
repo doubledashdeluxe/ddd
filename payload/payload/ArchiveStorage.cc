@@ -78,8 +78,8 @@ Storage *ArchiveStorage::Dir::storage() {
 }
 
 ArchiveStorage::ArchiveStorage(const char *prefix, void *archive, u32 archiveSize)
-    : m_next(s_head), m_prefix(prefix), m_archive(reinterpret_cast<u8 *>(archive)),
-      m_archiveSize(archiveSize) {
+    : Storage(&m_mutex), m_next(s_head), m_prefix(prefix),
+      m_archive(reinterpret_cast<u8 *>(archive)), m_archiveSize(archiveSize) {
     if (m_archive.isValid(m_archiveSize)) {
         OSInitMessageQueue(&m_initQueue, m_initMessages.values(), m_initMessages.count());
         notify();

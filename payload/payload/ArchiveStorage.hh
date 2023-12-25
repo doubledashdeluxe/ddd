@@ -1,6 +1,7 @@
 #pragma once
 
 #include "payload/Archive.hh"
+#include "payload/Mutex.hh"
 
 #include <common/storage/Storage.hh>
 
@@ -68,6 +69,7 @@ private:
         return nullptr;
     }
 
+    Mutex m_mutex;
     ArchiveStorage *m_next;
     const char *m_prefix;
     Archive m_archive;

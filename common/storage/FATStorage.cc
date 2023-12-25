@@ -86,7 +86,7 @@ Storage *FATStorage::Dir::storage() {
     return m_storage;
 }
 
-FATStorage::FATStorage() {}
+FATStorage::FATStorage(Mutex *mutex) : Storage(mutex) {}
 
 void FATStorage::remove() {
     for (u32 i = 0; i < m_files.count(); i++) {

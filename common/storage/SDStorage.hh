@@ -3,6 +3,10 @@
 #include "common/ios/Resource.hh"
 #include "common/storage/FATStorage.hh"
 
+#ifdef PAYLOAD
+#include <payload/Mutex.hh>
+#endif
+
 class SDStorage : private IOS::Resource, private FATStorage {
 public:
     static void Init();
@@ -186,6 +190,7 @@ private:
     bool m_isSDHC;
     alignas(0x20) Array<u8, 0x4000> m_buffer;
 #ifdef PAYLOAD
+    Mutex m_mutex;
     OSMessageQueue m_queue;
     Array<OSMessage, 1> m_messages;
 #endif

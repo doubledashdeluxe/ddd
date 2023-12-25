@@ -88,7 +88,7 @@ Storage *DVDStorage::Dir::storage() {
     return m_storage;
 }
 
-DVDStorage::DVDStorage() {
+DVDStorage::DVDStorage() : Storage(&m_mutex) {
     OSInitMessageQueue(&m_initQueue, m_initMessages.values(), m_initMessages.count());
     notify();
     OSReceiveMessage(&m_initQueue, nullptr, OS_MESSAGE_BLOCK);

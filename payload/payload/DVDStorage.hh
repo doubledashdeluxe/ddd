@@ -1,5 +1,7 @@
 #pragma once
 
+#include "payload/Mutex.hh"
+
 #include <common/storage/Storage.hh>
 extern "C" {
 #include <dolphin/DVD.h>
@@ -68,6 +70,7 @@ private:
         return nullptr;
     }
 
+    Mutex m_mutex;
     Array<File, 32> m_files;
     Array<Dir, 32> m_dirs;
     alignas(0x20) Array<u8, 0x10000> m_buffer;

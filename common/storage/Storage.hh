@@ -7,8 +7,9 @@ extern "C" {
 #include <dolphin/OSMessage.h>
 #include <dolphin/OSThread.h>
 }
-#include <payload/Mutex.hh>
 #endif
+
+class Mutex;
 
 class Storage {
 public:
@@ -146,7 +147,7 @@ public:
     static bool Remove(const char *path, u32 mode);
 
 protected:
-    Storage();
+    Storage(Mutex *mutex);
     ~Storage();
 
     bool isContained() const;
@@ -198,11 +199,7 @@ private:
 
     Storage *m_next;
     bool m_isContained;
-#ifdef PAYLOAD
-    Mutex m_mutex;
-#else
-    u8 _0c[0x24 - 0x0c];
-#endif
+    Mutex *m_mutex;
 
     static Storage *s_head;
     static Observer *s_headObserver;
@@ -211,4 +208,3 @@ private:
     static Array<OSMessage, 1> s_messages;
 #endif
 };
-size_assert(Storage, 0x24);

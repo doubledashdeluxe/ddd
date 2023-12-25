@@ -11,7 +11,7 @@ void SDStorage::Init() {
     s_instance = new (MEM2Arena::Instance(), 0x20) SDStorage;
 }
 
-SDStorage::SDStorage() : IOS::Resource("/dev/sdio/slot0", IOS::Mode::None) {
+SDStorage::SDStorage() : IOS::Resource("/dev/sdio/slot0", IOS::Mode::None), FATStorage(&m_mutex) {
     OSInitMessageQueue(&m_queue, m_messages.values(), m_messages.count());
     m_pollCallback = &SDStorage::pollAdd;
     notify();
