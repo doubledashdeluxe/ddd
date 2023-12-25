@@ -1,5 +1,5 @@
 #include <common/Algorithm.hh>
-#include <vendor/lest.hpp>
+#include <lest.hpp>
 
 static lest::tests specification;
 
