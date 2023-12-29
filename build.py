@@ -122,8 +122,7 @@ target_ccflags = {
     ],
 }
 common_ncflags = [
-    '-fdata-sections',
-    '-ffunction-sections',
+    '-flto=auto',
     '-fsanitize=undefined',
     '-isystem', '.',
     '-isystem', 'vendor',
@@ -137,8 +136,7 @@ common_ncflags = [
 ]
 common_nccflags = [
     '-D', 'lest_FEATURE_AUTO_REGISTER',
-    '-fdata-sections',
-    '-ffunction-sections',
+    '-flto=auto',
     '-fsanitize=undefined',
     '-fno-sanitize=vptr', # Order matters
     '-isystem', '.',
@@ -151,6 +149,7 @@ common_nccflags = [
     '-Wsuggest-override',
 ]
 common_nldflags = [
+    '-flto=auto',
     '-fsanitize=undefined',
     '-fno-sanitize=vptr',
 ]
@@ -327,17 +326,6 @@ n.rule(
     'nld',
     command = nld_command,
     description = 'NLD $out',
-)
-n.newline()
-
-if 'win' in sys.platform or 'msys' in sys.platform:
-    nobjcopy_command = 'objcopy.exe $objcopyflags $in $out'
-else:
-    nobjcopy_command = 'objcopy $objcopyflags $in $out'
-n.rule(
-    'nobjcopy',
-    command = nobjcopy_command,
-    description = 'NOBJCOPY $out',
 )
 n.newline()
 
@@ -721,26 +709,6 @@ for target in native_code_in_files:
         )
         n.newline()
 
-native_weak_code_out_files = {target: [] for target in native_code_out_files}
-for target in native_code_out_files:
-    if target == 'tests':
-        continue
-    for out_file in native_code_out_files[target]:
-        base, _ = os.path.splitext(out_file)
-        weak_out_file = f'{base}W.o'
-        native_weak_code_out_files[target] += [weak_out_file]
-        n.build(
-            weak_out_file,
-            'nobjcopy',
-            out_file,
-            variables = {
-                'objcopyflags': ' '.join([
-                    '--weaken',
-                ]),
-            },
-        )
-    n.newline()
-
 test_binaries = []
 for out_file in native_code_out_files['tests']:
     base, _ = os.path.splitext(out_file)
@@ -752,16 +720,16 @@ for out_file in native_code_out_files['tests']:
         test_binary,
         'nld',
         [
-            *native_weak_code_out_files['vendor'],
-            *native_weak_code_out_files['common'],
-            *(native_weak_code_out_files['loader'] if target == 'loader' else []),
-            *(native_weak_code_out_files['payload'] if target == 'payload' else []),
             out_file,
+            *native_code_out_files['vendor'],
+            *native_code_out_files['common'],
+            *(native_code_out_files['loader'] if target == 'loader' else []),
+            *(native_code_out_files['payload'] if target == 'payload' else []),
         ],
         variables = {
             'ldflags': ' '.join([
                 *common_nldflags,
-                '-Wl,--gc-sections',
+                '-Wl,--allow-multiple-definition',
             ]),
         },
     )
