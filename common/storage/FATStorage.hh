@@ -84,9 +84,6 @@ private:
     Array<Dir, 32> m_dirs;
 
     static Array<FATStorage *, FF_VOLUMES> s_volumes;
-#ifdef PAYLOAD
-    static Mutex s_mutex;
-#endif
 
     friend DRESULT disk_read(BYTE pdrv, BYTE *buff, LBA_t sector, UINT count);
     friend DRESULT disk_write(BYTE pdrv, const BYTE *buff, LBA_t sector, UINT count);

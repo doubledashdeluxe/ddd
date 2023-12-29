@@ -2,20 +2,27 @@
 
 #include <common/Arena.hh>
 #include <common/Log.hh>
+extern "C" {
+#include <dolphin/OSMessage.h>
+#include <dolphin/OSThread.h>
+}
+#include <payload/Mutex.hh>
 
 extern "C" {
 #include <string.h>
 }
 
 void SDStorage::Init() {
+    s_mutex = new (MEM2Arena::Instance(), 0x4) Mutex;
     s_instance = new (MEM2Arena::Instance(), 0x20) SDStorage;
 }
 
-SDStorage::SDStorage() : IOS::Resource("/dev/sdio/slot0", IOS::Mode::None), FATStorage(&m_mutex) {
-    OSInitMessageQueue(&m_queue, m_messages.values(), m_messages.count());
+SDStorage::SDStorage() : IOS::Resource("/dev/sdio/slot0", IOS::Mode::None), FATStorage(s_mutex) {
+    Array<OSMessage, 1> *messages = new (MEM2Arena::Instance(), 0x4) Array<OSMessage, 1>;
+    OSInitMessageQueue(&s_queue, messages->values(), messages->count());
     m_pollCallback = &SDStorage::pollAdd;
     notify();
-    OSReceiveMessage(&m_queue, nullptr, OS_MESSAGE_BLOCK);
+    OSReceiveMessage(&s_queue, nullptr, OS_MESSAGE_BLOCK);
     void *param = this;
     Array<u8, 4 * 1024> *stack = new (MEM2Arena::Instance(), 0x8) Array<u8, 4 * 1024>;
     OSThread *thread = new (MEM2Arena::Instance(), 0x4) OSThread;
@@ -25,7 +32,7 @@ SDStorage::SDStorage() : IOS::Resource("/dev/sdio/slot0", IOS::Mode::None), FATS
 
 void SDStorage::poll() {
     (this->*m_pollCallback)();
-    OSSendMessage(&m_queue, nullptr, OS_MESSAGE_NOBLOCK);
+    OSSendMessage(&s_queue, nullptr, OS_MESSAGE_NOBLOCK);
 }
 
 void *SDStorage::run() {
@@ -42,7 +49,7 @@ void *SDStorage::run() {
             m_pollCallback = &SDStorage::pollAdd;
         }
         notify();
-        OSReceiveMessage(&m_queue, nullptr, OS_MESSAGE_BLOCK);
+        OSReceiveMessage(&s_queue, nullptr, OS_MESSAGE_BLOCK);
     }
 }
 
@@ -111,3 +118,6 @@ void SDStorage::pollRemove() {
 void *SDStorage::Run(void *param) {
     return reinterpret_cast<SDStorage *>(param)->run();
 }
+
+Mutex *SDStorage::s_mutex;
+OSMessageQueue SDStorage::s_queue;

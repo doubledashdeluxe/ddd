@@ -1,6 +1,10 @@
 #include <common/USB.hh>
 
 #include <common/Arena.hh>
+extern "C" {
+#include <dolphin/OSMessage.h>
+#include <dolphin/OSThread.h>
+}
 #include <payload/Lock.hh>
 
 extern "C" {
@@ -60,8 +64,9 @@ void USB::Init() {
     s_hidBackend = new (MEM2Arena::Instance(), 0x4) Backend;
     s_venBackend->resource = new (MEM2Arena::Instance(), 0x20) VENResource;
     s_hidBackend->resource = new (MEM2Arena::Instance(), 0x20) HIDResource;
-    OSInitMessageQueue(&s_queue, s_messages.values(), s_messages.count());
     s_mutex = new (MEM2Arena::Instance(), 0x4) Mutex;
+    Array<OSMessage, 1> *messages = new (MEM2Arena::Instance(), 0x4) Array<OSMessage, 1>;
+    OSInitMessageQueue(&s_queue, messages->values(), messages->count());
     Array<Backend *, 2> backends;
     backends[0] = s_venBackend;
     backends[1] = s_hidBackend;
@@ -69,8 +74,9 @@ void USB::Init() {
         for (u32 j = 0; j < backends[i]->devices.count(); j++) {
             backends[i]->devices[j].m_resource = backends[i]->resource;
         }
-        OSInitMessageQueue(&backends[i]->initQueue, backends[i]->initMessages.values(),
-                backends[i]->initMessages.count());
+        backends[i]->initQueue = new (MEM2Arena::Instance(), 0x4) OSMessageQueue;
+        Array<OSMessage, 1> *initMessages = new (MEM2Arena::Instance(), 0x4) Array<OSMessage, 1>;
+        OSInitMessageQueue(backends[i]->initQueue, initMessages->values(), initMessages->count());
         void *param = backends[i];
         Array<u8, 4 * 1024> *stack = new (MEM2Arena::Instance(), 0x8) Array<u8, 4 * 1024>;
         OSThread *thread = new (MEM2Arena::Instance(), 0x4) OSThread;
@@ -78,7 +84,7 @@ void USB::Init() {
         OSResumeThread(thread);
     }
     for (u32 i = 0; i < backends.count(); i++) {
-        OSReceiveMessage(&backends[i]->initQueue, nullptr, OS_MESSAGE_BLOCK);
+        OSReceiveMessage(backends[i]->initQueue, nullptr, OS_MESSAGE_BLOCK);
     }
 }
 
@@ -98,7 +104,7 @@ void *USB::Run(void *param) {
 
         assert(backend->resource->attachFinish());
 
-        OSSendMessage(&backend->initQueue, nullptr, OS_MESSAGE_NOBLOCK);
+        OSSendMessage(backend->initQueue, nullptr, OS_MESSAGE_NOBLOCK);
     }
 }
 
@@ -190,5 +196,4 @@ void USB::HandleAdditions(Backend *backend, u32 deviceEntryCount,
 }
 
 OSMessageQueue USB::s_queue;
-Array<OSMessage, 1> USB::s_messages;
-Mutex *USB::s_mutex = nullptr;
+Mutex *USB::s_mutex;

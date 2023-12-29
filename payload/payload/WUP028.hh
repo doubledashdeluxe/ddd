@@ -4,6 +4,8 @@
 
 #include <common/USB.hh>
 extern "C" {
+#include <dolphin/OSMessage.h>
+#include <dolphin/OSThread.h>
 #include <dolphin/PAD.h>
 }
 

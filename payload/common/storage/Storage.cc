@@ -1,6 +1,10 @@
 #include <common/storage/Storage.hh>
 
 #include <common/Arena.hh>
+extern "C" {
+#include <dolphin/OSMessage.h>
+#include <dolphin/OSThread.h>
+}
 #include <payload/Lock.hh>
 
 extern "C" {
@@ -8,7 +12,8 @@ extern "C" {
 }
 
 void Storage::Init() {
-    OSInitMessageQueue(&s_queue, s_messages.values(), s_messages.count());
+    Array<OSMessage, 1> *messages = new (MEM2Arena::Instance(), 0x4) Array<OSMessage, 1>;
+    OSInitMessageQueue(&s_queue, messages->values(), messages->count());
     Array<u8, 4 * 1024> *stack = new (MEM2Arena::Instance(), 0x8) Array<u8, 4 * 1024>;
     OSThread *thread = new (MEM2Arena::Instance(), 0x4) OSThread;
     OSCreateThread(thread, Poll, nullptr, stack->values() + stack->count(), stack->count(), 11, 0);
@@ -122,4 +127,3 @@ void *Storage::Poll(void * /* param */) {
 }
 
 OSMessageQueue Storage::s_queue;
-Array<OSMessage, 1> Storage::s_messages;

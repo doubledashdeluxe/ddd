@@ -2,14 +2,10 @@
 
 #include "common/Array.hh"
 
-#ifdef PAYLOAD
-extern "C" {
-#include <dolphin/OSMessage.h>
-#include <dolphin/OSThread.h>
-}
-#endif
-
 class Mutex;
+extern "C" {
+struct OSMessageQueue;
+}
 
 class Storage {
 public:
@@ -193,9 +189,7 @@ private:
         const char *m_prefix;
     };
 
-#ifdef PAYLOAD
     static void *Poll(void *param);
-#endif
 
     Storage *m_next;
     bool m_isContained;
@@ -203,8 +197,5 @@ private:
 
     static Storage *s_head;
     static Observer *s_headObserver;
-#ifdef PAYLOAD
     static OSMessageQueue s_queue;
-    static Array<OSMessage, 1> s_messages;
-#endif
 };

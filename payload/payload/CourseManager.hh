@@ -5,6 +5,10 @@
 #include <common/Ring.hh>
 #include <common/UniquePtr.hh>
 #include <common/storage/Storage.hh>
+extern "C" {
+#include <dolphin/OSMessage.h>
+#include <dolphin/OSThread.h>
+}
 #include <game/KartLocale.hh>
 #include <jsystem/JKRHeap.hh>
 

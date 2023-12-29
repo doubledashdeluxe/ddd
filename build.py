@@ -104,11 +104,9 @@ target_cflags = {
     'libc': [],
     'common': [],
     'loader': [
-        '-d', 'LOADER',
         '-Iloader',
     ],
     'payload': [
-        '-d', 'PAYLOAD',
         '-Ipayload',
     ],
 }
@@ -117,11 +115,9 @@ target_ccflags = {
     'libc': [],
     'common': [],
     'loader': [
-        '-d', 'LOADER',
         '-Iloader',
     ],
     'payload': [
-        '-d', 'PAYLOAD',
         '-Ipayload',
     ],
 }
@@ -163,12 +159,10 @@ target_ncflags = {
     'libc': [],
     'common': [],
     'loader': [
-        '-D', 'LOADER',
         '-iquote', 'loader',
         '-isystem', 'loader',
     ],
     'payload': [
-        '-D', 'PAYLOAD',
         '-iquote', 'payload',
         '-isystem', 'payload',
     ],
@@ -178,12 +172,10 @@ target_nccflags = {
     'libc': [],
     'common': [],
     'loader': [
-        '-D', 'LOADER',
         '-iquote', 'loader',
         '-isystem', 'loader',
     ],
     'payload': [
-        '-D', 'PAYLOAD',
         '-iquote', 'payload',
         '-isystem', 'payload',
     ],

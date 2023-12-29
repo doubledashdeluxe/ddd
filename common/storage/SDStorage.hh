@@ -3,9 +3,9 @@
 #include "common/ios/Resource.hh"
 #include "common/storage/FATStorage.hh"
 
-#ifdef PAYLOAD
-#include <payload/Mutex.hh>
-#endif
+extern "C" {
+struct OSMessageQueue;
+}
 
 class SDStorage : private IOS::Resource, private FATStorage {
 public:
@@ -162,12 +162,10 @@ private:
     bool sync() override;
 
     bool transfer(bool isWrite, u32 firstSector, u32 sectorCount, void *buffer);
-#ifdef PAYLOAD
     void *run();
     bool waitFor(Status status);
     void pollAdd();
     void pollRemove();
-#endif
 
     bool enable4BitBus();
     bool setCardBlockLength(u32 blockLength);
@@ -181,21 +179,16 @@ private:
             u32 blockSize, void *buffer, u32 *response);
     bool getStatus(Status &status);
 
-#ifdef PAYLOAD
     static void *Run(void *param);
-#endif
 
     PollCallback m_pollCallback;
     u16 m_rca;
     bool m_isSDHC;
     alignas(0x20) Array<u8, 0x4000> m_buffer;
-#ifdef PAYLOAD
-    Mutex m_mutex;
-    OSMessageQueue m_queue;
-    Array<OSMessage, 1> m_messages;
-#endif
 
     static const u32 SectorSize;
 
     static SDStorage *s_instance;
+    static Mutex *s_mutex;
+    static OSMessageQueue s_queue;
 };

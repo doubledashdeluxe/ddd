@@ -34,6 +34,7 @@ extern "C" void RunPayload(Context *context) {
 
     DBInit();
     OSInit();
+    __init_user();
 
     MEM1Arena::Init();
     Payload::Run(context);
@@ -60,7 +61,6 @@ extern "C" __declspec(section "first") asm void Start(Context *context) {
     mr r3, r30
     bl RunPayload
 
-    bl __init_user
     bl main
     bl exit
 

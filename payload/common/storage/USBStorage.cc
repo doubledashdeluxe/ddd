@@ -2,16 +2,18 @@
 
 #include <common/Arena.hh>
 #include <common/Log.hh>
+#include <payload/Mutex.hh>
 
 extern "C" {
 #include <assert.h>
 }
 
 void USBStorage::Init() {
+    s_mutex = new (MEM2Arena::Instance(), 0x4) Mutex;
     s_instance = new (MEM2Arena::Instance(), 0x20) USBStorage;
 }
 
-USBStorage::USBStorage() : FATStorage(&m_mutex), m_device(nullptr) {}
+USBStorage::USBStorage() : FATStorage(s_mutex), m_device(nullptr) {}
 
 void USBStorage::onRemove(USB::Device *device) {
     assert(device == m_device);
@@ -102,3 +104,5 @@ void USBStorage::notify() {
 void USBStorage::poll() {
     Handler::poll();
 }
+
+Mutex *USBStorage::s_mutex;

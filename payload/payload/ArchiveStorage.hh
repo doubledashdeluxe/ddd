@@ -4,6 +4,9 @@
 #include "payload/Mutex.hh"
 
 #include <common/storage/Storage.hh>
+extern "C" {
+#include <dolphin/OSMessage.h>
+}
 
 class ArchiveStorage : private Storage {
 public:

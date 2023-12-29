@@ -5,6 +5,7 @@
 #include <common/storage/Storage.hh>
 extern "C" {
 #include <dolphin/DVD.h>
+#include <dolphin/OSMessage.h>
 }
 
 class DVDStorage : private Storage {

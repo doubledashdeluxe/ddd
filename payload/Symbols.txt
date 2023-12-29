@@ -121,6 +121,7 @@
 800eff6c SIProbe
 800f0744 DBInit
 
+800ff0e0 __register_global_object
 800ff1a4 __destroy_arr
 800ff21c __construct_array
 800ff504 __ptmf_scall
