@@ -24,3 +24,4 @@ private:
 size_assert(JKRHeap, 0x6c);
 
 void *operator new(size_t size, JKRHeap *heap, s32 alignment);
+void *operator new[](size_t size, JKRHeap *heap, s32 alignment);

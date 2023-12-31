@@ -136,13 +136,14 @@ common_ncflags = [
 ]
 common_nccflags = [
     '-D', 'lest_FEATURE_AUTO_REGISTER',
+    '-fcheck-new',
     '-flto=auto',
     '-fsanitize=undefined',
     '-fno-sanitize=vptr', # Order matters
     '-isystem', '.',
     '-isystem', 'vendor',
     '-O2',
-    '-std=c++17',
+    '-std=c++20',
     '-Wall',
     '-Werror=vla',
     '-Wextra',
@@ -165,6 +166,11 @@ target_ncflags = {
         '-iquote', 'payload',
         '-isystem', 'payload',
     ],
+    'tests': [
+        '-iquote', 'tests',
+        '-isystem', 'tests',
+    ],
+    'helpers': [],
 }
 target_nccflags = {
     'vendor': [],
@@ -178,6 +184,11 @@ target_nccflags = {
         '-iquote', 'payload',
         '-isystem', 'payload',
     ],
+    'tests': [
+        '-iquote', 'tests',
+        '-isystem', 'tests',
+    ],
+    'helpers': [],
 }
 if 'win' in sys.platform or 'msys' in sys.platform:
     common_ncflags += [
@@ -682,7 +693,10 @@ native_code_in_files = {
         *sorted(glob.glob(os.path.join('tests', 'common', '**', '*.cc'), recursive=True)),
         *sorted(glob.glob(os.path.join('tests', 'loader', '**', '*.cc'), recursive=True)),
         *sorted(glob.glob(os.path.join('tests', 'payload', '**', '*.cc'), recursive=True)),
-    ]
+    ],
+    'helpers': [
+        *sorted(glob.glob(os.path.join('tests', 'helpers', '**', '*.cc'), recursive=True)),
+    ],
 }
 native_code_out_files = {target: [] for target in native_code_in_files}
 for target in native_code_in_files:
@@ -690,7 +704,6 @@ for target in native_code_in_files:
         _, ext = os.path.splitext(in_file)
         out_file = os.path.join('$builddir', 'native', in_file + '.o')
         native_code_out_files[target] += [out_file]
-        flags_target = in_file.split(os.path.sep)[1] if target == 'tests' else target
         n.build(
             out_file,
             f'n{ext[1:]}',
@@ -698,11 +711,13 @@ for target in native_code_in_files:
             variables = {
                 'cflags': ' '.join([
                     *common_ncflags,
-                    *target_ncflags[flags_target],
+                    *target_ncflags[target],
+                    *(target_ncflags[in_file.split(os.path.sep)[1]] if target == 'tests' else []),
                 ]),
                 'ccflags': ' '.join([
                     *common_nccflags,
-                    *target_nccflags[flags_target],
+                    *target_nccflags[target],
+                    *(target_nccflags[in_file.split(os.path.sep)[1]] if target == 'tests' else []),
                 ]),
             },
             order_only = protobuf_h_files if target == 'payload' else [],
@@ -725,6 +740,7 @@ for out_file in native_code_out_files['tests']:
             *native_code_out_files['common'],
             *(native_code_out_files['loader'] if target == 'loader' else []),
             *(native_code_out_files['payload'] if target == 'payload' else []),
+            *native_code_out_files['helpers'],
         ],
         variables = {
             'ldflags': ' '.join([

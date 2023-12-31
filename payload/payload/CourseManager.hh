@@ -1,6 +1,7 @@
 #pragma once
 
 #include "payload/FileArchive.hh"
+#include "payload/ZIPFile.hh"
 
 #include <common/Ring.hh>
 #include <common/UniquePtr.hh>
@@ -52,9 +53,9 @@ public:
         virtual const char *version() const = 0;
         virtual void *thumbnail() const = 0;
         virtual void *nameImage() const = 0;
-        virtual void *loadLogo(JKRHeap *heap) const = 0;
-        virtual void *loadStaffGhost(JKRHeap *heap) const = 0;
-        virtual void *loadCourse(u32 courseOrder, u32 raceLevel, JKRHeap *heap) const = 0;
+        virtual void *loadLogo() const = 0;
+        virtual void *loadStaffGhost() const = 0;
+        virtual void *loadCourse(u32 courseOrder, u32 raceLevel) const = 0;
         virtual bool isDefault() const = 0;
         virtual bool isCustom() const = 0;
 
@@ -68,6 +69,7 @@ public:
     void start();
     bool lock();
     void unlock();
+    void freeAll();
 
     u32 racePackCount() const;
     u32 battlePackCount() const;
@@ -130,9 +132,9 @@ private:
         const char *version() const override;
         void *thumbnail() const override;
         void *nameImage() const override;
-        void *loadLogo(JKRHeap *heap) const override;
-        void *loadStaffGhost(JKRHeap *heap) const override;
-        void *loadCourse(u32 courseOrder, u32 raceLevel, JKRHeap *heap) const override;
+        void *loadLogo() const override;
+        void *loadStaffGhost() const override;
+        void *loadCourse(u32 courseOrder, u32 raceLevel) const override;
         bool isDefault() const override;
         bool isCustom() const override;
 
@@ -145,7 +147,7 @@ private:
     public:
         CustomCourse(Array<u8, 32> archiveHash, Array<u8, 32> bolHash, u32 courseID, u32 musicID,
                 char *name, char *author, char *version, u8 *thumbnail, u8 *nameImage,
-                Array<char, 256> path);
+                Array<char, 256> path, Array<char, 128> prefix);
         ~CustomCourse() override;
 
         const char *name() const override;
@@ -153,9 +155,9 @@ private:
         const char *version() const override;
         void *thumbnail() const override;
         void *nameImage() const override;
-        void *loadLogo(JKRHeap *heap) const override;
-        void *loadStaffGhost(JKRHeap *heap) const override;
-        void *loadCourse(u32 courseOrder, u32 raceLevel, JKRHeap *heap) const override;
+        void *loadLogo() const override;
+        void *loadStaffGhost() const override;
+        void *loadCourse(u32 courseOrder, u32 raceLevel) const override;
         bool isDefault() const override;
         bool isCustom() const override;
 
@@ -166,6 +168,23 @@ private:
         UniquePtr<u8> m_thumbnail;
         UniquePtr<u8> m_nameImage;
         Array<char, 256> m_path;
+        Array<char, 128> m_prefix;
+    };
+
+    struct INIStream {
+        UniquePtr<u8> ini;
+        u32 iniSize;
+        u32 iniOffset;
+    };
+
+    struct CourseINI {
+        Array<UniquePtr<char>, KartLocale::Language::Max> localizedNames;
+        UniquePtr<char> fallbackName;
+        Array<UniquePtr<char>, KartLocale::Language::Max> localizedAuthors;
+        UniquePtr<char> fallbackAuthor;
+        UniquePtr<char> version;
+        UniquePtr<char> defaultCourseName;
+        UniquePtr<char> defaultMusicName;
     };
 
     CourseManager();
@@ -194,6 +213,9 @@ private:
     void addDefaultBattlePacks();
     void addDefaultPacks(const Ring<UniquePtr<Course>, MaxCourseCount> &courses,
             Ring<UniquePtr<Pack>, MaxPackCount> &packs, const char *base, const char *type);
+    UniquePtr<char> &getLocalizedEntry(
+            Array<UniquePtr<char>, KartLocale::Language::Max> &localizedEntries,
+            UniquePtr<char> &fallbackEntry);
     bool loadSubfile(FileArchive &archive, const char *filePath, void *subfile, u32 size) const;
     void *loadSubfile(const char *archivePath, const char *filePath, JKRHeap *heap,
             u32 *size = nullptr) const;
@@ -205,8 +227,20 @@ private:
             u32 *size = nullptr) const;
     void *loadLocalizedSubfile(FileArchive &archive, const char *filePathPattern, JKRHeap *heap,
             u32 *size = nullptr) const;
+    void *loadFile(const char *zipPath, const char *filePath, JKRHeap *heap,
+            u32 *size = nullptr) const;
+    void *loadFile(ZIPFile &zipFile, const char *filePath, JKRHeap *heap,
+            u32 *size = nullptr) const;
+    void *loadLocalizedFile(const char *zipPath, const char *prefix, const char *suffix,
+            JKRHeap *heap, u32 *size = nullptr) const;
+    void *loadLocalizedFile(ZIPFile &zipFile, const char *prefix, const char *suffix, JKRHeap *heap,
+            u32 *size = nullptr) const;
 
     static void *Run(void *param);
+    static char *ReadINI(char *str, int num, void *stream);
+    static int HandleCourseINI(void *user, const char *section, const char *name,
+            const char *value);
+    static bool GetDefaultCourseID(const char *name, u32 &courseID);
     static void SortCoursesByName(Ring<UniquePtr<Course>, MaxCourseCount> &courses);
     static void DeduplicateCourses(Ring<UniquePtr<Course>, MaxCourseCount> &courses);
     static void SortPacksByName(Ring<UniquePtr<Pack>, MaxPackCount> &packs);
@@ -224,6 +258,7 @@ private:
     bool m_nextIsLocked;
     bool m_hasChanged;
     JKRHeap *m_heap;
+    JKRHeap *m_courseHeap;
     Array<u32, KartLocale::Language::Max> m_languages;
     Ring<UniquePtr<Course>, MaxCourseCount> m_raceCourses;
     Ring<UniquePtr<Course>, MaxCourseCount> m_battleCourses;

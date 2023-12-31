@@ -36,6 +36,7 @@ public:
     public:
         enum {
             Read,
+            ReadWrite,
             WriteAlways,
             WriteNew,
             RemoveAlways,
@@ -57,6 +58,7 @@ public:
         bool read(void *dst, u32 size, u32 offset);
         bool write(const void *src, u32 size, u32 offset);
         bool sync();
+        bool truncate(u64 size);
         bool size(u64 &size);
 
     private:
@@ -95,6 +97,7 @@ public:
         virtual bool read(void *dst, u32 size, u32 offset) = 0;
         virtual bool write(const void *src, u32 size, u32 offset) = 0;
         virtual bool sync() = 0;
+        virtual bool truncate(u64 size) = 0;
         virtual bool size(u64 &size) = 0;
         virtual Storage *storage() = 0;
 
@@ -185,9 +188,16 @@ private:
         StorageHandle(const StorageHandle &);
         StorageHandle &operator=(const StorageHandle &);
 
+        void acquireWithoutLocking(const char *path);
+        void acquireWithoutLocking(const FileHandle &file);
+        void acquireWithoutLocking(const DirHandle &dir);
+
         Storage *m_storage;
         const char *m_prefix;
     };
+
+    void removeWithoutLocking();
+    void addWithoutLocking();
 
     static void *Poll(void *param);
 

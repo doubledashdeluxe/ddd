@@ -7,9 +7,13 @@
 #include <common/Log.hh>
 #include <game/CourseID.hh>
 #include <game/ResMgr.hh>
-#include <jsystem/JKRExpHeap.hh>
-
 extern "C" {
+#include <inih/ini.h>
+}
+#include <jsystem/JKRExpHeap.hh>
+extern "C" {
+#include <monocypher/monocypher.h>
+
 #include <stdio.h>
 #include <string.h>
 }
@@ -133,23 +137,22 @@ void *CourseManager::DefaultCourse::nameImage() const {
     return JKRFileLoader::GetGlbResource(m_nameImage, nullptr);
 }
 
-void *CourseManager::DefaultCourse::loadLogo(JKRHeap *heap) const {
+void *CourseManager::DefaultCourse::loadLogo() const {
     const char *base = ResMgr::GetCrsArcName(m_courseID);
     const char *languageName = KartLocale::GetLanguageName();
     Array<char, 256> path;
     snprintf(path.values(), path.count(), "dvd:/CourseName/%s/%s_name.bti", languageName, base);
-    return FileLoader::Load(path.values(), heap);
+    return FileLoader::Load(path.values(), s_instance->m_courseHeap);
 }
 
-void *CourseManager::DefaultCourse::loadStaffGhost(JKRHeap *heap) const {
+void *CourseManager::DefaultCourse::loadStaffGhost() const {
     const char *base = ResMgr::GetCrsArcName(m_courseID);
     Array<char, 256> path;
     snprintf(path.values(), path.count(), "dvd:/StaffGhosts/%s.ght", base);
-    return FileLoader::Load(path.values(), heap);
+    return FileLoader::Load(path.values(), s_instance->m_courseHeap);
 }
 
-void *CourseManager::DefaultCourse::loadCourse(u32 courseOrder, u32 raceLevel,
-        JKRHeap *heap) const {
+void *CourseManager::DefaultCourse::loadCourse(u32 courseOrder, u32 raceLevel) const {
     const char *base = ResMgr::GetCrsArcName(m_courseID);
     const char *suffix = courseOrder == 1 ? "L" : "";
     Array<char, 256> path;
@@ -158,7 +161,7 @@ void *CourseManager::DefaultCourse::loadCourse(u32 courseOrder, u32 raceLevel,
     } else {
         snprintf(path.values(), path.count(), "dvd:/Course/%s%s.arc", base, suffix);
     }
-    return FileLoader::Load(path.values(), heap);
+    return FileLoader::Load(path.values(), s_instance->m_courseHeap);
 }
 
 bool CourseManager::DefaultCourse::isDefault() const {
@@ -171,9 +174,10 @@ bool CourseManager::DefaultCourse::isCustom() const {
 
 CourseManager::CustomCourse::CustomCourse(Array<u8, 32> archiveHash, Array<u8, 32> bolHash,
         u32 courseID, u32 musicID, char *name, char *author, char *version, u8 *thumbnail,
-        u8 *nameImage, Array<char, 256> path)
+        u8 *nameImage, Array<char, 256> path, Array<char, 128> prefix)
     : Course(archiveHash, bolHash, courseID, musicID), m_name(name), m_author(author),
-      m_version(version), m_thumbnail(thumbnail), m_nameImage(nameImage), m_path(path) {}
+      m_version(version), m_thumbnail(thumbnail), m_nameImage(nameImage), m_path(path),
+      m_prefix(prefix) {}
 
 CourseManager::CustomCourse::~CustomCourse() {}
 
@@ -197,17 +201,24 @@ void *CourseManager::CustomCourse::nameImage() const {
     return m_nameImage.get();
 }
 
-void *CourseManager::CustomCourse::loadLogo(JKRHeap *heap) const {
-    return s_instance->loadLocalizedSubfile(m_path.values(), "/%s/Logo.bti", heap);
+void *CourseManager::CustomCourse::loadLogo() const {
+    Array<char, 256> logoPrefix;
+    snprintf(logoPrefix.values(), logoPrefix.count(), "/%scourse_images/", m_prefix.values());
+    return s_instance->loadLocalizedFile(m_path.values(), logoPrefix.values(),
+            "/track_big_logo.bti", s_instance->m_courseHeap);
 }
 
-void *CourseManager::CustomCourse::loadStaffGhost(JKRHeap *heap) const {
-    return s_instance->loadSubfile(m_path.values(), "/StaffGhost.ght", heap);
+void *CourseManager::CustomCourse::loadStaffGhost() const {
+    Array<char, 256> staffGhostPath;
+    snprintf(staffGhostPath.values(), staffGhostPath.count(), "/%sstaffghost.ght",
+            m_prefix.values());
+    return s_instance->loadFile(m_path.values(), staffGhostPath.values(), s_instance->m_courseHeap);
 }
 
-void *CourseManager::CustomCourse::loadCourse(u32 /* courseOrder */, u32 /* raceLevel */,
-        JKRHeap *heap) const {
-    return s_instance->loadSubfile(m_path.values(), "/Course.arc", heap);
+void *CourseManager::CustomCourse::loadCourse(u32 /* courseOrder */, u32 /* raceLevel */) const {
+    Array<char, 256> coursePath;
+    snprintf(coursePath.values(), coursePath.count(), "/%strack.arc", m_prefix.values());
+    return s_instance->loadFile(m_path.values(), coursePath.values(), s_instance->m_courseHeap);
 }
 
 bool CourseManager::CustomCourse::isDefault() const {
@@ -219,9 +230,12 @@ bool CourseManager::CustomCourse::isCustom() const {
 }
 
 void CourseManager::start() {
-    size_t heapSize = 0x400000;
+    size_t heapSize = 0x500000;
     void *heap = MEM2Arena::Instance()->alloc(heapSize, 0x4);
     m_heap = JKRExpHeap::Create(heap, heapSize, JKRHeap::GetRootHeap(), false);
+    size_t courseHeapSize = 0x500000;
+    void *courseHeap = MEM2Arena::Instance()->alloc(courseHeapSize, 0x4);
+    m_courseHeap = JKRExpHeap::Create(courseHeap, courseHeapSize, JKRHeap::GetRootHeap(), false);
     OSResumeThread(&m_thread);
     OSReceiveMessage(&m_initQueue, nullptr, OS_MESSAGE_BLOCK);
 }
@@ -244,6 +258,10 @@ void CourseManager::unlock() {
     m_nextIsLocked = false;
     m_currIsLocked = false;
     OSSendMessage(&m_queue, nullptr, OS_MESSAGE_NOBLOCK);
+}
+
+void CourseManager::freeAll() {
+    m_courseHeap->freeAll();
 }
 
 u32 CourseManager::racePackCount() const {
@@ -347,6 +365,7 @@ void *CourseManager::run() {
             OSSendMessage(&m_initQueue, nullptr, OS_MESSAGE_NOBLOCK);
         }
 
+        m_courseHeap->freeAll();
         m_raceCourses.reset();
         m_battleCourses.reset();
         m_racePacks.reset();
@@ -637,65 +656,140 @@ void CourseManager::addCustomCourses(Array<char, 256> &path) {
 
 void CourseManager::addCustomCourse(const Array<char, 256> &path) {
     bool ok;
-    FileArchive archive(m_heap, -0x20, path.values(), ok);
+    ZIPFile zipFile(path.values(), ok);
     if (!ok) {
         return;
     }
-    Array<u8, 32> archiveHash;
-    if (!loadSubfile(archive, "/ArchiveHash.bin", archiveHash.values(), archiveHash.count())) {
+
+    ZIPFile::CDNode cdNode;
+    ZIPFile::LocalNode localNode;
+    INIStream courseINIStream;
+    courseINIStream.ini.reset(reinterpret_cast<u8 *>(
+            zipFile.readFile("trackinfo.ini", m_heap, -0x4, cdNode, localNode)));
+    if (!courseINIStream.ini.get()) {
         return;
     }
-    Array<u8, 32> bolHash;
-    if (!loadSubfile(archive, "/BolHash.bin", bolHash.values(), bolHash.count())) {
+    courseINIStream.iniSize = cdNode.uncompressedSize;
+    courseINIStream.iniOffset = 0x0;
+
+    Array<char, 128> prefix;
+    u32 prefixLength = strlen(cdNode.path.get()) - strlen("trackinfo.ini");
+    if (prefixLength > prefix.count()) {
         return;
     }
-    u8 courseID;
-    if (!loadSubfile(archive, "/CourseID.bin", &courseID, sizeof(courseID))) {
+    prefix[prefixLength] = '\0';
+    memcpy(prefix.values(), cdNode.path.get(), prefixLength);
+
+    CourseINI courseINI;
+    if (ini_parse_stream(ReadINI, &courseINIStream, HandleCourseINI, &courseINI)) {
         return;
     }
-    u8 musicID;
-    if (!loadSubfile(archive, "/MusicID.bin", &musicID, sizeof(musicID))) {
+
+    UniquePtr<char> name(
+            getLocalizedEntry(courseINI.localizedNames, courseINI.fallbackName).release());
+    if (!name.get()) {
         return;
     }
-    u32 nameSize;
-    UniquePtr<char> name(reinterpret_cast<char *>(
-            loadLocalizedSubfile(archive, "/%s/Name.txt", m_heap, &nameSize)));
-    if (!name.get() || nameSize <= 1) {
+    UniquePtr<char> author(
+            getLocalizedEntry(courseINI.localizedAuthors, courseINI.fallbackAuthor).release());
+    UniquePtr<char> version(courseINI.version.release());
+
+    u32 courseID;
+    if (!courseINI.defaultCourseName.get() ||
+            !GetDefaultCourseID(courseINI.defaultCourseName.get(), courseID)) {
         return;
     }
-    name.get()[nameSize - 1] = '\0';
-    u32 authorSize;
-    UniquePtr<char> author(reinterpret_cast<char *>(
-            loadLocalizedSubfile(archive, "/%s/Author.txt", m_heap, &authorSize)));
-    if (author.get()) {
-        if (authorSize <= 1) {
-            author.reset();
-        } else {
-            author.get()[authorSize - 1] = '\0';
-        }
+
+    u32 musicID;
+    if (!courseINI.defaultMusicName.get() ||
+            !GetDefaultCourseID(courseINI.defaultMusicName.get(), musicID)) {
+        musicID = courseID;
     }
-    u32 versionSize;
-    UniquePtr<char> version(
-            reinterpret_cast<char *>(loadSubfile(archive, "/Version.txt", m_heap, &versionSize)));
-    if (version.get()) {
-        if (versionSize <= 1) {
-            version.reset();
-        } else {
-            version.get()[versionSize - 1] = '\0';
-        }
-    }
+
+    Array<char, 256> thumbnailPrefix;
+    snprintf(thumbnailPrefix.values(), thumbnailPrefix.count(), "/%scourse_images/",
+            prefix.values());
     u32 thumbnailSize;
-    UniquePtr<u8> thumbnail(
-            reinterpret_cast<u8 *>(loadSubfile(archive, "/Thumbnail.bti", m_heap, &thumbnailSize)));
+    UniquePtr<u8> thumbnail(reinterpret_cast<u8 *>(loadLocalizedFile(zipFile,
+            thumbnailPrefix.values(), "/track_image.bti", m_heap, &thumbnailSize)));
     if (!thumbnail.get() || thumbnailSize < 0x20) {
         return;
     }
+
+    Array<char, 256> nameImagePrefix;
+    snprintf(nameImagePrefix.values(), nameImagePrefix.count(), "/%scourse_images/",
+            prefix.values());
     u32 nameImageSize;
-    UniquePtr<u8> nameImage(reinterpret_cast<u8 *>(
-            loadLocalizedSubfile(archive, "/%s/NameImage.bti", m_heap, &nameImageSize)));
+    UniquePtr<u8> nameImage(reinterpret_cast<u8 *>(loadLocalizedFile(zipFile,
+            nameImagePrefix.values(), "/track_name.bti", m_heap, &nameImageSize)));
     if (!nameImage.get() || nameImageSize < 0x20) {
         return;
     }
+
+    Array<u8, 32> archiveHash;
+    Array<u8, 32> bolHash;
+    Array<char, 256> hashesPath;
+    snprintf(hashesPath.values(), hashesPath.count(), "/%shashes.bin", prefix.values());
+    u32 hashesSize;
+    UniquePtr<u8> hashes(
+            reinterpret_cast<u8 *>(loadFile(zipFile, hashesPath.values(), m_heap, &hashesSize)));
+    if (hashes.get() && hashesSize == 64) {
+        memcpy(archiveHash.values(), hashes.get() + 0, archiveHash.count());
+        memcpy(bolHash.values(), hashes.get() + 32, bolHash.count());
+    } else {
+        Array<char, 256> coursePath;
+        snprintf(coursePath.values(), coursePath.count(), "/%strack.arc", prefix.values());
+        u32 courseSize;
+        UniquePtr<u8> course(reinterpret_cast<u8 *>(
+                loadFile(zipFile, coursePath.values(), m_courseHeap, &courseSize)));
+        if (!course.get()) {
+            return;
+        }
+        crypto_blake2b(archiveHash.values(), archiveHash.count(), course.get(), courseSize);
+
+        Archive archive(course.get());
+        if (!archive.isValid(courseSize)) {
+            return;
+        }
+        const char *base = ResMgr::GetCrsArcName(courseID);
+        Array<char, 256> bolPath;
+        snprintf(bolPath.values(), bolPath.count(), "/%s_course.bol", base);
+        const char *name;
+        Archive::Dir dir(nullptr);
+        Archive::Node node(nullptr);
+        bool exists;
+        if (!archive.getTree().search(bolPath.values(), name, dir, node, exists)) {
+            return;
+        }
+        if (!exists || !node.isFile()) {
+            for (u32 bolCourseID = CourseID::BabyLuigi; bolCourseID <= CourseID::Mini8;
+                    bolCourseID++) {
+                base = ResMgr::GetCrsArcName(bolCourseID);
+                snprintf(bolPath.values(), bolPath.count(), "/%s_course.bol", base);
+                if (!archive.getTree().search(bolPath.values(), name, dir, node, exists)) {
+                    return;
+                }
+                if (exists && node.isFile()) {
+                    break;
+                }
+            }
+        }
+        if (!exists || !node.isFile()) {
+            return;
+        }
+        u8 *bol = reinterpret_cast<u8 *>(node.getFile(archive.getFiles()));
+        u32 bolSize = node.getFileSize();
+        crypto_blake2b(bolHash.values(), bolHash.count(), bol, bolSize);
+
+        Array<u8, 64> hashes;
+        memcpy(hashes.values() + 0, archiveHash.values(), archiveHash.count());
+        memcpy(hashes.values() + 32, bolHash.values(), bolHash.count());
+        if (!zipFile.writeFile(hashesPath.values(), hashes.values(), hashes.count(), m_heap, 0x4,
+                    cdNode, localNode)) {
+            return;
+        }
+    }
+
     Ring<UniquePtr<Course>, MaxCourseCount> *courses = nullptr;
     switch (courseID) {
     case CourseID::BabyLuigi:
@@ -732,7 +826,7 @@ void CourseManager::addCustomCourse(const Array<char, 256> &path) {
     courses->pushBack();
     Course *course = new (m_heap, 0x4)
             CustomCourse(archiveHash, bolHash, courseID, musicID, name.release(), author.release(),
-                    version.release(), thumbnail.release(), nameImage.release(), path);
+                    version.release(), thumbnail.release(), nameImage.release(), path, prefix);
     courses->back()->reset(course);
 }
 
@@ -923,6 +1017,17 @@ void CourseManager::addDefaultPacks(const Ring<UniquePtr<Course>, MaxCourseCount
     }
 }
 
+UniquePtr<char> &CourseManager::getLocalizedEntry(
+        Array<UniquePtr<char>, KartLocale::Language::Max> &localizedEntries,
+        UniquePtr<char> &fallbackEntry) {
+    for (u32 i = 0; i < KartLocale::Language::Max; i++) {
+        if (localizedEntries[m_languages[i]].get()) {
+            return localizedEntries[m_languages[i]];
+        }
+    }
+    return fallbackEntry;
+}
+
 bool CourseManager::loadSubfile(FileArchive &archive, const char *filePath, void *file,
         u32 size) const {
     bool ok;
@@ -1005,8 +1110,173 @@ void *CourseManager::loadLocalizedSubfile(FileArchive &archive, const char *file
     return nullptr;
 }
 
+void *CourseManager::loadFile(const char *zipPath, const char *filePath, JKRHeap *heap,
+        u32 *size) const {
+    bool ok;
+    ZIPFile zipFile(zipPath, ok);
+    if (!ok) {
+        return nullptr;
+    }
+    return loadFile(zipFile, filePath, heap, size);
+}
+
+void *CourseManager::loadFile(ZIPFile &zipFile, const char *filePath, JKRHeap *heap,
+        u32 *size) const {
+    ZIPFile::CDNode cdNode;
+    ZIPFile::LocalNode localNode;
+    void *file = zipFile.readFile(filePath, heap, 0x20, cdNode, localNode);
+    if (!file) {
+        return nullptr;
+    }
+    if (size) {
+        *size = cdNode.uncompressedSize;
+    }
+    return file;
+}
+
+void *CourseManager::loadLocalizedFile(const char *zipPath, const char *prefix, const char *suffix,
+        JKRHeap *heap, u32 *size) const {
+    bool ok;
+    ZIPFile zipFile(zipPath, ok);
+    if (!ok) {
+        return nullptr;
+    }
+    return loadLocalizedFile(zipFile, prefix, suffix, heap, size);
+}
+
+void *CourseManager::loadLocalizedFile(ZIPFile &zipFile, const char *prefix, const char *suffix,
+        JKRHeap *heap, u32 *size) const {
+    for (u32 i = 0; i < m_languages.count(); i++) {
+        const char *languageName = KartLocale::GetLanguageName(m_languages[i]);
+        Array<char, 256> filePath;
+        snprintf(filePath.values(), filePath.count(), "%s%s%s", prefix, languageName, suffix);
+        void *file = loadFile(zipFile, filePath.values(), heap, size);
+        if (file) {
+            return file;
+        }
+    }
+    return nullptr;
+}
+
 void *CourseManager::Run(void *param) {
     return reinterpret_cast<CourseManager *>(param)->run();
+}
+
+char *CourseManager::ReadINI(char *str, int num, void *stream) {
+    INIStream *iniStream = reinterpret_cast<INIStream *>(stream);
+    if (iniStream->iniOffset == iniStream->iniSize || num < 2) {
+        return nullptr;
+    }
+
+    char *s;
+    for (s = str; num > 1 && iniStream->iniOffset < iniStream->iniSize; num--) {
+        char c = iniStream->ini.get()[iniStream->iniOffset++];
+        *s++ = c;
+        if (c == '\n') {
+            break;
+        }
+    }
+    *s = '\0';
+    return str;
+}
+
+int CourseManager::HandleCourseINI(void *user, const char *section, const char *name,
+        const char *value) {
+    if (strcmp(section, "Config")) {
+        return 1;
+    }
+
+    UniquePtr<char> *field = nullptr;
+    CourseINI *courseINI = reinterpret_cast<CourseINI *>(user);
+    if (!strncmp(name, "trackname_", strlen("trackname_"))) {
+        for (u32 i = 0; i < KartLocale::Language::Max; i++) {
+            if (!strcmp(name + strlen("trackname_"), KartLocale::GetLanguageName(i))) {
+                field = &courseINI->localizedNames[i];
+                break;
+            }
+        }
+    } else if (!strcmp(name, "trackname")) {
+        field = &courseINI->fallbackName;
+    } else if (!strncmp(name, "author_", strlen("author_"))) {
+        for (u32 i = 0; i < KartLocale::Language::Max; i++) {
+            if (!strcmp(name + strlen("author_"), KartLocale::GetLanguageName(i))) {
+                field = &courseINI->localizedAuthors[i];
+                break;
+            }
+        }
+    } else if (!strcmp(name, "author")) {
+        field = &courseINI->fallbackAuthor;
+    } else if (!strcmp(name, "version")) {
+        field = &courseINI->version;
+    } else if (!strcmp(name, "replaces")) {
+        field = &courseINI->defaultCourseName;
+    } else if (!strcmp(name, "auxiliary_audio_track")) {
+        field = &courseINI->defaultMusicName;
+    }
+    if (!field) {
+        return 1;
+    }
+    u32 valueLength = strlen(value);
+    field->reset(new (s_instance->m_heap, 0x4) char[valueLength + 1]);
+    if (!field->get()) {
+        return 1;
+    }
+    field->get()[valueLength] = '\0';
+    memcpy(field->get(), value, valueLength);
+    return 1;
+}
+
+bool CourseManager::GetDefaultCourseID(const char *name, u32 &courseID) {
+    if (!strcmp(name, "Baby Park")) {
+        courseID = CourseID::BabyLuigi;
+    } else if (!strcmp(name, "Peach Beach")) {
+        courseID = CourseID::Peach;
+    } else if (!strcmp(name, "Daisy Cruiser")) {
+        courseID = CourseID::Daisy;
+    } else if (!strcmp(name, "Luigi Circuit")) {
+        courseID = CourseID::Luigi;
+    } else if (!strcmp(name, "Mario Circuit")) {
+        courseID = CourseID::Mario;
+    } else if (!strcmp(name, "Yoshi Circuit")) {
+        courseID = CourseID::Yoshi;
+    } else if (!strcmp(name, "Mushroom Bridge")) {
+        courseID = CourseID::Nokonoko;
+    } else if (!strcmp(name, "Mushroom City")) {
+        courseID = CourseID::Patapata;
+    } else if (!strcmp(name, "Waluigi Stadium")) {
+        courseID = CourseID::Waluigi;
+    } else if (!strcmp(name, "Wario Colosseum")) {
+        courseID = CourseID::Wario;
+    } else if (!strcmp(name, "Dino Jungle")) {
+        courseID = CourseID::Diddy;
+    } else if (!strcmp(name, "Dino Dino Jungle")) {
+        courseID = CourseID::Diddy;
+    } else if (!strcmp(name, "DK Mountain")) {
+        courseID = CourseID::Donkey;
+    } else if (!strcmp(name, "Bowser Castle")) {
+        courseID = CourseID::Koopa;
+    } else if (!strcmp(name, "Rainbow Road")) {
+        courseID = CourseID::Rainbow;
+    } else if (!strcmp(name, "Dry Dry Desert")) {
+        courseID = CourseID::Desert;
+    } else if (!strcmp(name, "Sherbet Land")) {
+        courseID = CourseID::Snow;
+    } else if (!strcmp(name, "Luigi's Mansion")) {
+        courseID = CourseID::Mini1;
+    } else if (!strcmp(name, "Nintendo Gamecube")) {
+        courseID = CourseID::Mini2;
+    } else if (!strcmp(name, "Block City")) {
+        courseID = CourseID::Mini3;
+    } else if (!strcmp(name, "Tilt-a-Kart")) {
+        courseID = CourseID::Mini5;
+    } else if (!strcmp(name, "Cookie Land")) {
+        courseID = CourseID::Mini7;
+    } else if (!strcmp(name, "Pipe Plaza")) {
+        courseID = CourseID::Mini8;
+    } else {
+        return false;
+    }
+    return true;
 }
 
 void CourseManager::SortCoursesByName(Ring<UniquePtr<Course>, MaxCourseCount> &courses) {

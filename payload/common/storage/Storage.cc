@@ -1,5 +1,6 @@
 #include <common/storage/Storage.hh>
 
+#ifdef __CWCC__
 #include <common/Arena.hh>
 extern "C" {
 #include <dolphin/OSMessage.h>
@@ -20,68 +21,23 @@ void Storage::Init() {
     OSResumeThread(thread);
 }
 
-Storage::Storage(Mutex *mutex) : m_next(nullptr), m_isContained(false), m_mutex(mutex) {}
-
 void Storage::notify() {
     OSSendMessage(&s_queue, this, OS_MESSAGE_BLOCK);
 }
 
 void Storage::remove() {
     Lock<NoInterrupts> lock;
-    bool hasOldMain = s_head == this && s_head->priority() > 0;
-    m_isContained = false;
-    Storage **next;
-    for (next = &s_head; *next != this; next = &(*next)->m_next) {}
-    *next = m_next;
-    bool hasNewMain = s_head && s_head->priority() > 0;
-    for (Observer *observer = s_headObserver; observer; observer = observer->next()) {
-        if (hasOldMain) {
-            observer->onRemove("main:");
-            if (hasNewMain) {
-                observer->onAdd("main:");
-            }
-        }
-        observer->onRemove(prefix());
-    }
+    removeWithoutLocking();
 }
 
 void Storage::add() {
     Lock<NoInterrupts> lock;
-    bool hasOldMain = s_head && s_head->priority() > 0;
-    Storage **next;
-    for (next = &s_head; *next && (*next)->priority() >= priority(); next = &(*next)->m_next) {}
-    m_next = *next;
-    *next = this;
-    m_isContained = true;
-    bool hasNewMain = s_head == this && s_head->priority() > 0;
-    for (Observer *observer = s_headObserver; observer; observer = observer->next()) {
-        observer->onAdd(prefix());
-        if (hasNewMain) {
-            if (hasOldMain) {
-                observer->onRemove("main:");
-            }
-            observer->onAdd("main:");
-        }
-    }
+    addWithoutLocking();
 }
 
 Storage::StorageHandle::StorageHandle(const char *path) : m_storage(nullptr), m_prefix(nullptr) {
     Lock<NoInterrupts> lock;
-    if (s_head && s_head->priority() > 0) {
-        if (!strncmp(path, "main:", strlen("main:"))) {
-            m_storage = s_head;
-            m_prefix = "main:";
-        }
-    }
-    if (!m_storage) {
-        for (Storage *storage = s_head; storage; storage = storage->m_next) {
-            if (!strncmp(path, storage->prefix(), strlen(storage->prefix()))) {
-                m_storage = storage;
-                m_prefix = storage->prefix();
-                break;
-            }
-        }
-    }
+    acquireWithoutLocking(path);
     if (m_storage) {
         m_storage->m_mutex->lock();
     }
@@ -90,9 +46,7 @@ Storage::StorageHandle::StorageHandle(const char *path) : m_storage(nullptr), m_
 Storage::StorageHandle::StorageHandle(const FileHandle &file)
     : m_storage(nullptr), m_prefix(nullptr) {
     Lock<NoInterrupts> lock;
-    if (file.m_file) {
-        m_storage = file.m_file->storage();
-    }
+    acquireWithoutLocking(file);
     if (m_storage) {
         m_storage->m_mutex->lock();
     }
@@ -101,9 +55,7 @@ Storage::StorageHandle::StorageHandle(const FileHandle &file)
 Storage::StorageHandle::StorageHandle(const DirHandle &dir)
     : m_storage(nullptr), m_prefix(nullptr) {
     Lock<NoInterrupts> lock;
-    if (dir.m_dir) {
-        m_storage = dir.m_dir->storage();
-    }
+    acquireWithoutLocking(dir);
     if (m_storage) {
         m_storage->m_mutex->lock();
     }
@@ -127,3 +79,4 @@ void *Storage::Poll(void * /* param */) {
 }
 
 OSMessageQueue Storage::s_queue;
+#endif

@@ -46,6 +46,14 @@ bool FATStorage::File::sync() {
     return f_sync(&m_fFile) == FR_OK;
 }
 
+bool FATStorage::File::truncate(u64 size) {
+    if (f_lseek(&m_fFile, size) != FR_OK) {
+        return false;
+    }
+
+    return f_truncate(&m_fFile) == FR_OK;
+}
+
 bool FATStorage::File::size(u64 &size) {
     size = f_size(&m_fFile);
     return true;
@@ -149,6 +157,9 @@ Storage::File *FATStorage::openFile(const char *path, u32 mode) {
     switch (mode) {
     case Mode::Read:
         fMode = FA_READ;
+        break;
+    case Mode::ReadWrite:
+        fMode = FA_READ | FA_WRITE;
         break;
     case Mode::WriteAlways:
         fMode = FA_CREATE_ALWAYS | FA_WRITE;

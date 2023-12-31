@@ -53,6 +53,10 @@ bool DVDStorage::File::sync() {
     return false;
 }
 
+bool DVDStorage::File::truncate(u64 /* size */) {
+    return false;
+}
+
 bool DVDStorage::File::size(u64 &size) {
     size = AlignUp(m_fileInfo.length, 0x20);
     return true;

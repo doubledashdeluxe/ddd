@@ -56,9 +56,9 @@ extern "C" REPLACE u32 OSSetInterruptMask(u32 mask, u32 interrupts) {
     }
 
     if (interrupts & 1 << (31 - 27)) {
-        intmr &= ~(1 << 14);
+        intmr = intmr & ~(1 << 14);
     } else {
-        intmr |= 1 << 14;
+        intmr = intmr | 1 << 14;
     }
     return mask & ~(1 << (31 - 27));
 }

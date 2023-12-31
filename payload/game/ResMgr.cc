@@ -31,7 +31,7 @@ void ResMgr::Create(JKRHeap *parentHeap) {
     s_keepHeap = JKRExpHeap::Create(keepHeap, keepHeapSize, parentHeap, false);
     SysDebug::GetManager()->createHeapInfo(s_keepHeap, "MRAM.arc");
 
-    s_courseHeap = JKRSolidHeap::Create(0x500000, parentHeap, false);
+    s_courseHeap = JKRSolidHeap::Create(0x280000, parentHeap, false);
     SysDebug::GetManager()->createHeapInfo(s_courseHeap, "Crs.arc");
 }
 
@@ -44,7 +44,7 @@ void ResMgr::LoadExtendedCourseData(const CourseManager::Course *course, u32 cou
     s_musicID = course->musicID();
     s_courseID = course->courseID();
     s_courseOrder = courseOrder;
-    s_courseHeap->freeAll();
+    CourseManager::Instance()->freeAll();
     s_loadFlag &= ~(1 << ArchiveId::Course);
     s_loaders[ArchiveId::Course] = nullptr;
     void *userData = const_cast<CourseManager::Course *>(course);
@@ -82,10 +82,10 @@ void ResMgr::LoadExtendedCourseData(void *userData) {
     s_loadingFlag |= 1 << ArchiveId::Course;
 
     const CourseManager::Course *course = reinterpret_cast<CourseManager::Course *>(userData);
-    s_courseName = course->loadLogo(s_courseHeap);
-    s_staffGhost = course->loadStaffGhost(s_courseHeap);
+    s_courseName = course->loadLogo();
+    s_staffGhost = course->loadStaffGhost();
     u32 raceLevel = RaceInfo::Instance().getRaceLevel();
-    void *courseArchive = course->loadCourse(s_courseOrder, raceLevel, s_courseHeap);
+    void *courseArchive = course->loadCourse(s_courseOrder, raceLevel);
     s_loaders[ArchiveId::Course] =
             JKRArchive::Mount(courseArchive, s_courseHeap, JKRArchive::MountDirection::Head, false);
 

@@ -22,6 +22,7 @@
 800155a8 __nw__FUl
 8001563c __nw__FUlP7JKRHeapl
 800157a8 __dl__FPv
+800157cc __dla__FPv
 80015f40 Create__12JKRSolidHeapFUlP7JKRHeapb
 80016890 __ct__9JKRThreadFUlll
 80017094 request__7JKRTaskFPFPv_vPvPv
@@ -121,7 +122,6 @@
 800eff6c SIProbe
 800f0744 DBInit
 
-800ff0e0 __register_global_object
 800ff1a4 __destroy_arr
 800ff21c __construct_array
 800ff504 __ptmf_scall
@@ -134,7 +134,9 @@
 800ffe28 exit
 
 8010241c toupper
+801024cc isspace
 801024e8 isdigit
+801028bc strncasecmp
 801032e4 memcmp
 80103414 memmove
 801038e0 snprintf

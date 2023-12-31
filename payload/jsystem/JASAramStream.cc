@@ -84,7 +84,7 @@ bool JASAramStream::headerLoad(s32 entrynum, u32 aramBufferSize, s32 aramBlockCo
     }
 
     Lock<NoInterrupts> lock;
-    m_aramFreeBlockCount++;
+    m_aramFreeBlockCount = m_aramFreeBlockCount + 1;
 
     return true;
 }
@@ -92,7 +92,7 @@ bool JASAramStream::headerLoad(s32 entrynum, u32 aramBufferSize, s32 aramBlockCo
 bool JASAramStream::load() {
     {
         Lock<NoInterrupts> lock;
-        m_aramFreeBlockCount--;
+        m_aramFreeBlockCount = m_aramFreeBlockCount - 1;
     }
 
     if (s_fatalErrorFlag) {

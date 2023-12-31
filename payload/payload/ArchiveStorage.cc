@@ -42,6 +42,10 @@ bool ArchiveStorage::File::sync() {
     return false;
 }
 
+bool ArchiveStorage::File::truncate(u64 /* size */) {
+    return false;
+}
+
 bool ArchiveStorage::File::size(u64 &size) {
     size = m_node.getFileSize();
     return true;

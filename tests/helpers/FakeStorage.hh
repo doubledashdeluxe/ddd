@@ -1,21 +1,25 @@
 #pragma once
 
-#include "payload/Mutex.hh"
-
 #include <common/storage/Storage.hh>
-extern "C" {
-#include <dolphin/DVD.h>
-#include <dolphin/OSMessage.h>
-}
 
-class DVDStorage : private Storage {
+#include <memory>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <vector>
+
+class FakeStorage : private Storage {
 public:
-    static void Init();
+    FakeStorage();
+    ~FakeStorage();
 
 private:
+    typedef void (FakeStorage::*PollCallback)();
+
     class File : public Storage::File {
     public:
-        File();
+        File(FakeStorage *storage, std::string path);
+        ~File();
 
     private:
         void close() override;
@@ -26,28 +30,24 @@ private:
         bool size(u64 &size) override;
         Storage *storage() override;
 
-        DVDStorage *m_storage;
-        DVDFileInfo m_fileInfo;
-
-        friend class DVDStorage;
+        FakeStorage *m_storage;
+        std::string m_path;
     };
 
     class Dir : public Storage::Dir {
     public:
-        Dir();
+        Dir(FakeStorage *storage, std::string path);
+        ~Dir();
 
     private:
         void close() override;
         bool read(NodeInfo &nodeInfo) override;
         Storage *storage() override;
 
-        DVDStorage *m_storage;
-        DVDDir m_dir;
-
-        friend class DVDStorage;
+        FakeStorage *m_storage;
+        std::string m_path;
+        size_t m_index = 0;
     };
-
-    DVDStorage();
 
     void poll() override;
     u32 priority() override;
@@ -61,23 +61,13 @@ private:
     bool rename(const char *srcPath, const char *dstPath) override;
     bool remove(const char *path, u32 mode) override;
 
-    template <typename N>
-    static N *FindNode(Array<N, 32> &nodes) {
-        for (u32 i = 0; i < nodes.count(); i++) {
-            if (!nodes[i].m_storage) {
-                return &nodes[i];
-            }
-        }
+    bool hasFile(const std::string &path);
+    bool hasDir(const std::string &path);
+    bool hasParentDir(const std::string &path);
 
-        return nullptr;
-    }
-
-    Mutex m_mutex;
-    Array<File, 32> m_files;
-    Array<Dir, 32> m_dirs;
-    alignas(0x20) Array<u8, 0x10000> m_buffer;
-    OSMessageQueue m_initQueue;
-    Array<OSMessage, 1> m_initMessages;
-
-    static DVDStorage *s_instance;
+    PollCallback m_pollCallback;
+    std::unordered_map<std::string, std::vector<u8>> m_files;
+    std::unordered_set<std::string> m_dirs;
+    std::unordered_map<std::string, std::unique_ptr<File>> m_openFiles;
+    std::unordered_map<std::string, std::unique_ptr<Dir>> m_openDirs;
 };

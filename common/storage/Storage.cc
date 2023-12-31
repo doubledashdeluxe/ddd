@@ -21,7 +21,8 @@ Storage::FileHandle::~FileHandle() {
 
 bool Storage::FileHandle::open(const char *path, u32 mode) {
     assert(path);
-    assert(mode == Mode::Read || mode == Mode::WriteAlways || mode == Mode::WriteNew);
+    assert(mode == Mode::Read || mode == Mode::ReadWrite || mode == Mode::WriteAlways ||
+            mode == Mode::WriteNew);
 
     close();
 
@@ -71,6 +72,15 @@ bool Storage::FileHandle::sync() {
     }
 
     return m_file->sync();
+}
+
+bool Storage::FileHandle::truncate(u64 size) {
+    StorageHandle storage(*this);
+    if (!m_file) {
+        return false;
+    }
+
+    return m_file->truncate(size);
 }
 
 bool Storage::FileHandle::size(u64 &size) {
@@ -206,9 +216,43 @@ bool Storage::Remove(const char *path, u32 mode) {
     return storage.remove(path + strlen(storage.prefix()), mode);
 }
 
+Storage::Storage(Mutex *mutex) : m_next(nullptr), m_isContained(false), m_mutex(mutex) {}
+
+Storage::~Storage() {}
+
 bool Storage::isContained() const {
     return m_isContained;
 }
+
+#ifndef __CWCC__
+void Storage::notify() {
+    poll();
+}
+
+void Storage::remove() {
+    removeWithoutLocking();
+}
+
+void Storage::add() {
+    addWithoutLocking();
+}
+
+Storage::StorageHandle::StorageHandle(const char *path) : m_storage(nullptr), m_prefix(nullptr) {
+    acquireWithoutLocking(path);
+}
+
+Storage::StorageHandle::StorageHandle(const FileHandle &file)
+    : m_storage(nullptr), m_prefix(nullptr) {
+    acquireWithoutLocking(file);
+}
+
+Storage::StorageHandle::StorageHandle(const DirHandle &dir)
+    : m_storage(nullptr), m_prefix(nullptr) {
+    acquireWithoutLocking(dir);
+}
+
+Storage::StorageHandle::~StorageHandle() {}
+#endif
 
 const char *Storage::StorageHandle::prefix() {
     return m_prefix ? m_prefix : "";
@@ -252,6 +296,73 @@ bool Storage::StorageHandle::remove(const char *path, u32 mode) {
     }
 
     return m_storage->remove(path, mode);
+}
+
+void Storage::StorageHandle::acquireWithoutLocking(const char *path) {
+    if (s_head && s_head->priority() > 0) {
+        if (!strncmp(path, "main:", strlen("main:"))) {
+            m_storage = s_head;
+            m_prefix = "main:";
+        }
+    }
+    if (!m_storage) {
+        for (Storage *storage = s_head; storage; storage = storage->m_next) {
+            if (!strncmp(path, storage->prefix(), strlen(storage->prefix()))) {
+                m_storage = storage;
+                m_prefix = storage->prefix();
+                break;
+            }
+        }
+    }
+}
+
+void Storage::StorageHandle::acquireWithoutLocking(const FileHandle &file) {
+    if (file.m_file) {
+        m_storage = file.m_file->storage();
+    }
+}
+
+void Storage::StorageHandle::acquireWithoutLocking(const DirHandle &dir) {
+    if (dir.m_dir) {
+        m_storage = dir.m_dir->storage();
+    }
+}
+
+void Storage::removeWithoutLocking() {
+    bool hasOldMain = s_head == this && s_head->priority() > 0;
+    m_isContained = false;
+    Storage **next;
+    for (next = &s_head; *next != this; next = &(*next)->m_next) {}
+    *next = m_next;
+    bool hasNewMain = s_head && s_head->priority() > 0;
+    for (Observer *observer = s_headObserver; observer; observer = observer->next()) {
+        if (hasOldMain) {
+            observer->onRemove("main:");
+            if (hasNewMain) {
+                observer->onAdd("main:");
+            }
+        }
+        observer->onRemove(prefix());
+    }
+}
+
+void Storage::addWithoutLocking() {
+    bool hasOldMain = s_head && s_head->priority() > 0;
+    Storage **next;
+    for (next = &s_head; *next && (*next)->priority() >= priority(); next = &(*next)->m_next) {}
+    m_next = *next;
+    *next = this;
+    m_isContained = true;
+    bool hasNewMain = s_head == this && s_head->priority() > 0;
+    for (Observer *observer = s_headObserver; observer; observer = observer->next()) {
+        observer->onAdd(prefix());
+        if (hasNewMain) {
+            if (hasOldMain) {
+                observer->onRemove("main:");
+            }
+            observer->onAdd("main:");
+        }
+    }
 }
 
 Storage *Storage::s_head = nullptr;
