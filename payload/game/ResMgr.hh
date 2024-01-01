@@ -7,6 +7,29 @@
 
 class ResMgr {
 public:
+    class CourseDataID {
+    public:
+        enum {
+            CourseBmd = 0x0,
+            CourseBco = 0x1,
+            CourseBol = 0x2,
+            CourseBtk = 0x3,
+            CourseBtk2 = 0x4,
+            CourseBtk3 = 0x5,
+            CourseBtp = 0x6,
+            CourseBrk = 0x7,
+            SkyBmd = 0x8,
+            SkyBtk = 0x9,
+            SkyBrk = 0xa,
+            MapBti = 0xb,
+            CourseName = 0xc,
+            StaffGhost = 0xd,
+        };
+
+    private:
+        CourseDataID();
+    };
+
     class ArchiveID {
     public:
         enum {
@@ -26,6 +49,7 @@ public:
     static void LoadExtendedCourseData(const CourseManager::Course *course, u32 courseOrder);
     static const char *GetCrsArcName(u32 courseID);
     static bool IsFinishedLoadingArc(u32 archiveID);
+    REPLACE static void *GetPtr(u32 courseDataID);
     static void *GetPtr(u32 archiveID, const char *path);
     static u32 GetResSize(u32 archiveID, const void *ptr);
     static u32 GetMusicID();

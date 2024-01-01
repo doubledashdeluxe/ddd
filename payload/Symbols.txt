@@ -185,6 +185,7 @@
 801ceb3c LoadKeepData__6ResMgrFv
 801cebac LoadCourseData__6ResMgrFUlUl
 801ced5c IsFinishedLoadingArc__6ResMgrFUl
+801cf310 GetPtr__6ResMgrFUl
 801cf524 GetPtr__6ResMgrFUlPCc
 801cf560 GetResSize__6ResMgrFUlPCv
 801cf914 Call__7LogoAppFv
