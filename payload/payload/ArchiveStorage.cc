@@ -42,6 +42,10 @@ bool ArchiveStorage::File::sync() {
     return false;
 }
 
+bool ArchiveStorage::File::truncate(u64 /* size */) {
+    return false;
+}
+
 bool ArchiveStorage::File::size(u64 &size) {
     size = m_node.getFileSize();
     return true;
@@ -78,8 +82,8 @@ Storage *ArchiveStorage::Dir::storage() {
 }
 
 ArchiveStorage::ArchiveStorage(const char *prefix, void *archive, u32 archiveSize)
-    : m_next(s_head), m_prefix(prefix), m_archive(reinterpret_cast<u8 *>(archive)),
-      m_archiveSize(archiveSize) {
+    : Storage(&m_mutex), m_next(s_head), m_prefix(prefix),
+      m_archive(reinterpret_cast<u8 *>(archive)), m_archiveSize(archiveSize) {
     if (m_archive.isValid(m_archiveSize)) {
         OSInitMessageQueue(&m_initQueue, m_initMessages.values(), m_initMessages.count());
         notify();

@@ -1,5 +1,6 @@
 #include "ResMgr.hh"
 
+#include "game/CourseID.hh"
 #include "game/KartLocale.hh"
 #include "game/RaceInfo.hh"
 #include "game/SysDebug.hh"
@@ -23,7 +24,7 @@ void ResMgr::Create(JKRHeap *parentHeap) {
     for (u32 i = 0; i < 0x40; i++) {
         s_aramResArgs[i].status = 2;
     }
-    s_loaders[ArchiveId::System] = JKRArchive::Mount(DOL::BinarySectionStart(), parentHeap,
+    s_loaders[ArchiveID::System] = JKRArchive::Mount(DOL::BinarySectionStart(), parentHeap,
             JKRArchive::MountDirection::Head, true);
 
     size_t keepHeapSize = 0xd80000;
@@ -31,7 +32,7 @@ void ResMgr::Create(JKRHeap *parentHeap) {
     s_keepHeap = JKRExpHeap::Create(keepHeap, keepHeapSize, parentHeap, false);
     SysDebug::GetManager()->createHeapInfo(s_keepHeap, "MRAM.arc");
 
-    s_courseHeap = JKRSolidHeap::Create(0x500000, parentHeap, false);
+    s_courseHeap = JKRSolidHeap::Create(0x280000, parentHeap, false);
     SysDebug::GetManager()->createHeapInfo(s_courseHeap, "Crs.arc");
 }
 
@@ -44,15 +45,15 @@ void ResMgr::LoadExtendedCourseData(const CourseManager::Course *course, u32 cou
     s_musicID = course->musicID();
     s_courseID = course->courseID();
     s_courseOrder = courseOrder;
-    s_courseHeap->freeAll();
-    s_loadFlag &= ~(1 << ArchiveId::Course);
-    s_loaders[ArchiveId::Course] = nullptr;
+    CourseManager::Instance()->freeAll();
+    s_loadFlag &= ~(1 << ArchiveID::Course);
+    s_loaders[ArchiveID::Course] = nullptr;
     void *userData = const_cast<CourseManager::Course *>(course);
     System::GetLoadTask()->request(LoadExtendedCourseData, userData, nullptr);
 }
 
 void ResMgr::LoadCourseData(void * /* userData */) {
-    s_loadingFlag |= 1 << ArchiveId::Course;
+    s_loadingFlag |= 1 << ArchiveID::Course;
 
     const char *base = GetCrsArcName(s_courseID);
     const char *languageName = KartLocale::GetLanguageName();
@@ -69,30 +70,94 @@ void ResMgr::LoadCourseData(void * /* userData */) {
     } else {
         snprintf(path.values(), path.count(), "Course/%s%s.arc", base, suffix);
     }
-    s_loaders[ArchiveId::Course] =
+    s_loaders[ArchiveID::Course] =
             JKRArchive::Mount(path.values(), s_courseHeap, JKRArchive::MountDirection::Head, false);
 
     s_mountCourseID = s_courseID;
     s_mountCourseOrder = s_courseOrder;
-    s_loadingFlag &= ~(1 << ArchiveId::Course);
-    s_loadFlag |= 1 << ArchiveId::Course;
+    s_loadingFlag &= ~(1 << ArchiveID::Course);
+    s_loadFlag |= 1 << ArchiveID::Course;
 }
 
 void ResMgr::LoadExtendedCourseData(void *userData) {
-    s_loadingFlag |= 1 << ArchiveId::Course;
+    s_loadingFlag |= 1 << ArchiveID::Course;
 
     const CourseManager::Course *course = reinterpret_cast<CourseManager::Course *>(userData);
-    s_courseName = course->loadLogo(s_courseHeap);
-    s_staffGhost = course->loadStaffGhost(s_courseHeap);
+    s_courseName = course->loadLogo();
+    s_staffGhost = course->loadStaffGhost();
     u32 raceLevel = RaceInfo::Instance().getRaceLevel();
-    void *courseArchive = course->loadCourse(s_courseOrder, raceLevel, s_courseHeap);
-    s_loaders[ArchiveId::Course] =
+    void *courseArchive = course->loadCourse(s_courseOrder, raceLevel);
+    s_loaders[ArchiveID::Course] =
             JKRArchive::Mount(courseArchive, s_courseHeap, JKRArchive::MountDirection::Head, false);
 
     s_mountCourseID = s_courseID;
     s_mountCourseOrder = s_courseOrder;
-    s_loadingFlag &= ~(1 << ArchiveId::Course);
-    s_loadFlag |= 1 << ArchiveId::Course;
+    s_loadingFlag &= ~(1 << ArchiveID::Course);
+    s_loadFlag |= 1 << ArchiveID::Course;
+}
+
+void *ResMgr::GetPtr(u32 courseDataID) {
+    const char *name;
+    switch (courseDataID) {
+    case CourseDataID::CourseBmd:
+        name = "course.bmd";
+        break;
+    case CourseDataID::CourseBco:
+        name = "course.bco";
+        break;
+    case CourseDataID::CourseBol:
+        name = "course.bol";
+        break;
+    case CourseDataID::CourseBtk:
+        name = "course.btk";
+        break;
+    case CourseDataID::CourseBtk2:
+        name = "course_02.btk";
+        break;
+    case CourseDataID::CourseBtk3:
+        name = "course_03.btk";
+        break;
+    case CourseDataID::CourseBtp:
+        name = "course.btp";
+        break;
+    case CourseDataID::CourseBrk:
+        name = "course.brk";
+        break;
+    case CourseDataID::SkyBmd:
+        name = "sky.bmd";
+        break;
+    case CourseDataID::SkyBtk:
+        name = "sky.btk";
+        break;
+    case CourseDataID::SkyBrk:
+        name = "sky.brk";
+        break;
+    case CourseDataID::MapBti:
+        name = "map.bti";
+        break;
+    case CourseDataID::CourseName:
+        return s_courseName;
+    case CourseDataID::StaffGhost:
+        return s_staffGhost;
+    default:
+        return nullptr;
+    }
+    const char *base = GetCrsArcName(s_courseID);
+    Array<char, 32> path;
+    snprintf(path.values(), path.count(), "%s_%s", base, name);
+    void *ptr = GetPtr(ArchiveID::Course, path.values());
+    if (ptr) {
+        return ptr;
+    }
+    for (u32 courseID = CourseID::BabyLuigi; courseID <= CourseID::Mini8; courseID++) {
+        base = GetCrsArcName(courseID);
+        snprintf(path.values(), path.count(), "%s_%s", base, name);
+        void *ptr = GetPtr(ArchiveID::Course, path.values());
+        if (ptr) {
+            return ptr;
+        }
+    }
+    return nullptr;
 }
 
 u32 ResMgr::GetMusicID() {

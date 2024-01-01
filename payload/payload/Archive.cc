@@ -6,6 +6,7 @@
 
 extern "C" {
 #include <string.h>
+#include <strings.h>
 }
 
 Archive::Tree::Tree(u8 *tree) : m_tree(tree) {}
@@ -84,10 +85,6 @@ bool Archive::Tree::isHeaderValid(u32 treeSize) const {
         return false;
     }
 
-    if (namesSize < 1 || getNames()[namesSize - 1] != '\0') {
-        return false;
-    }
-
     return true;
 }
 
@@ -131,7 +128,7 @@ bool Archive::Tree::search(const char *path, const char *&name, Dir &dir, Node &
         u32 i;
         for (i = 0; i < dir.getNodeCount(); i++) {
             node = dir.getNode(i, *this);
-            if (!strncmp(node.getName(getNames()), name, nameLength)) {
+            if (!strncasecmp(node.getName(getNames()), name, nameLength)) {
                 break;
             }
         }
@@ -162,7 +159,17 @@ bool Archive::Dir::isValid(Tree tree) const {
         return false;
     }
 
-    if (Bytes::ReadBE<u32>(m_dir, 0x04) >= tree.getNamesSize() - 1) {
+    u32 nameOffset = Bytes::ReadBE<u32>(m_dir, 0x04);
+    if (nameOffset >= tree.getNamesSize()) {
+        return false;
+    }
+    const char *n = tree.getNames() + nameOffset;
+    for (u32 o = nameOffset; o < tree.getNamesSize(); o++, n++) {
+        if (*n == '\0') {
+            break;
+        }
+    }
+    if (*n != '\0') {
         return false;
     }
 
@@ -211,11 +218,21 @@ bool Archive::Node::isValid(Tree tree, u32 filesSize) const {
         return false;
     }
 
-    if (!isDir() && !isFile()) {
+    if (isDir() && isFile()) {
         return false;
     }
 
-    if ((Bytes::ReadBE<u32>(m_node, 0x04) & 0xffffff) >= tree.getNamesSize() - 1) {
+    u32 nameOffset = Bytes::ReadBE<u32>(m_node, 0x04) & 0xffffff;
+    if (nameOffset >= tree.getNamesSize()) {
+        return false;
+    }
+    const char *n = tree.getNames() + nameOffset;
+    for (u32 o = nameOffset; o < tree.getNamesSize(); o++, n++) {
+        if (*n == '\0') {
+            break;
+        }
+    }
+    if (*n != '\0') {
         return false;
     }
 
@@ -255,7 +272,7 @@ u16 Archive::Node::getNameHash() const {
 }
 
 bool Archive::Node::isDir() const {
-    return Bytes::ReadBE<u8>(m_node, 0x04) & 0x2;
+    return Bytes::ReadBE<u8>(m_node, 0x04) & 0x2 && Bytes::ReadBE<u32>(m_node, 0x08) != 0xffffffff;
 }
 
 bool Archive::Node::isFile() const {

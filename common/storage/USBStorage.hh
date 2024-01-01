@@ -84,4 +84,5 @@ private:
     alignas(0x20) Array<u8, 0x4000> m_buffer;
 
     static USBStorage *s_instance;
+    static Mutex *s_mutex;
 };

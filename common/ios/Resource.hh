@@ -2,11 +2,9 @@
 
 #include "common/Types.hh"
 
-#ifdef PAYLOAD
 extern "C" {
-#include <dolphin/OSThread.h>
+struct OSContext;
 }
-#endif
 
 namespace IOS {
 
@@ -37,9 +35,7 @@ public:
     s32 ioctlv(u32 ioctlv, u32 inputCount, u32 outputCount, IoctlvPair *pairs);
     bool ok() const;
 
-#ifdef PAYLOAD
     static void Init();
-#endif
 
 protected:
     class Command {
@@ -90,13 +86,8 @@ protected:
             } ioctlv;
         };
         struct {
-#ifdef PAYLOAD
             Request *next;
-            OSThreadQueue queue;
-            u8 _0c[0x20 - 0x0c];
-#else
-            u8 _00[0x20 - 0x00];
-#endif
+            u8 _04[0x20 - 0x04];
         } user;
     };
     size_assert(Request, 0x40);
@@ -109,17 +100,13 @@ private:
     s32 open(const char *path, u32 mode);
     s32 close();
 
-#ifdef PAYLOAD
     static void HandleInterrupt(s16 interrupt, OSContext *context);
-#endif
 
 protected:
     s32 m_fd;
 
 private:
-#ifdef PAYLOAD
     static Request *s_request;
-#endif
 };
 
 } // namespace IOS

@@ -1,5 +1,5 @@
 #include <common/Dolphin.hh>
-#include <vendor/lest.hpp>
+#include <lest.hpp>
 
 #include <cstring>
 

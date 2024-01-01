@@ -24,7 +24,7 @@ void System::Init() {
     }
 
     ResMgr::LoadKeepData();
-    while (!ResMgr::IsFinishedLoadingArc(ResMgr::ArchiveId::MRAM)) {
+    while (!ResMgr::IsFinishedLoadingArc(ResMgr::ArchiveID::MRAM)) {
         VIWaitForRetrace();
     }
 

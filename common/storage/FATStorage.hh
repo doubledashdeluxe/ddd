@@ -20,6 +20,7 @@ protected:
         bool read(void *dst, u32 size, u32 offset) override;
         bool write(const void *src, u32 size, u32 offset) override;
         bool sync() override;
+        bool truncate(u64 size) override;
         bool size(u64 &size) override;
         Storage *storage() override;
 
@@ -44,7 +45,7 @@ protected:
         friend class FATStorage;
     };
 
-    FATStorage();
+    FATStorage(Mutex *mutex);
     ~FATStorage();
 
     void remove();
@@ -84,9 +85,6 @@ private:
     Array<Dir, 32> m_dirs;
 
     static Array<FATStorage *, FF_VOLUMES> s_volumes;
-#ifdef PAYLOAD
-    static Mutex s_mutex;
-#endif
 
     friend DRESULT disk_read(BYTE pdrv, BYTE *buff, LBA_t sector, UINT count);
     friend DRESULT disk_write(BYTE pdrv, const BYTE *buff, LBA_t sector, UINT count);

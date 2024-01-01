@@ -1,5 +1,5 @@
 #include <common/Ring.hh>
-#include <vendor/lest.hpp>
+#include <lest.hpp>
 
 static lest::tests specification;
 

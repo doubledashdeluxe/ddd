@@ -4,6 +4,7 @@
 #include <common/SC.hh>
 extern "C" {
 #include <dolphin/EXIBios.h>
+#include <dolphin/OSAlarm.h>
 #include <dolphin/OSThread.h>
 #include <dolphin/OSTime.h>
 }

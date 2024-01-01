@@ -2,13 +2,10 @@
 
 #include "common/Array.hh"
 
-#ifdef PAYLOAD
+class Mutex;
 extern "C" {
-#include <dolphin/OSMessage.h>
-#include <dolphin/OSThread.h>
+struct OSMessageQueue;
 }
-#include <payload/Mutex.hh>
-#endif
 
 class Storage {
 public:
@@ -39,6 +36,7 @@ public:
     public:
         enum {
             Read,
+            ReadWrite,
             WriteAlways,
             WriteNew,
             RemoveAlways,
@@ -60,6 +58,7 @@ public:
         bool read(void *dst, u32 size, u32 offset);
         bool write(const void *src, u32 size, u32 offset);
         bool sync();
+        bool truncate(u64 size);
         bool size(u64 &size);
 
     private:
@@ -98,6 +97,7 @@ public:
         virtual bool read(void *dst, u32 size, u32 offset) = 0;
         virtual bool write(const void *src, u32 size, u32 offset) = 0;
         virtual bool sync() = 0;
+        virtual bool truncate(u64 size) = 0;
         virtual bool size(u64 &size) = 0;
         virtual Storage *storage() = 0;
 
@@ -146,7 +146,7 @@ public:
     static bool Remove(const char *path, u32 mode);
 
 protected:
-    Storage();
+    Storage(Mutex *mutex);
     ~Storage();
 
     bool isContained() const;
@@ -188,27 +188,24 @@ private:
         StorageHandle(const StorageHandle &);
         StorageHandle &operator=(const StorageHandle &);
 
+        void acquireWithoutLocking(const char *path);
+        void acquireWithoutLocking(const FileHandle &file);
+        void acquireWithoutLocking(const DirHandle &dir);
+
         Storage *m_storage;
         const char *m_prefix;
     };
 
-#ifdef PAYLOAD
+    void removeWithoutLocking();
+    void addWithoutLocking();
+
     static void *Poll(void *param);
-#endif
 
     Storage *m_next;
     bool m_isContained;
-#ifdef PAYLOAD
-    Mutex m_mutex;
-#else
-    u8 _0c[0x24 - 0x0c];
-#endif
+    Mutex *m_mutex;
 
     static Storage *s_head;
     static Observer *s_headObserver;
-#ifdef PAYLOAD
     static OSMessageQueue s_queue;
-    static Array<OSMessage, 1> s_messages;
-#endif
 };
-size_assert(Storage, 0x24);

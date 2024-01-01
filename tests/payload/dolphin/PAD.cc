@@ -1,8 +1,8 @@
 extern "C" {
 #include <dolphin/PAD.h>
 }
+#include <lest.hpp>
 #include <payload/WUP028.hh>
-#include <vendor/lest.hpp>
 
 #include <cstring>
 

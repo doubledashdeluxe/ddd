@@ -3,13 +3,10 @@
 #include "common/Array.hh"
 #include "common/ios/Resource.hh"
 
-#ifdef PAYLOAD
+class Mutex;
 extern "C" {
-#include <dolphin/OSMessage.h>
-#include <dolphin/OSThread.h>
+struct OSMessageQueue;
 }
-#include <payload/Mutex.hh>
-#endif
 
 class USB {
 public:
@@ -368,17 +365,12 @@ private:
     struct Backend {
         Array<Device, 0x20> devices;
         Resource *resource;
-#ifdef PAYLOAD
-        OSMessageQueue initQueue;
-        Array<OSMessage, 1> initMessages;
-#endif
+        OSMessageQueue *initQueue;
     };
 
     USB();
 
-#ifdef PAYLOAD
     static void *Run(void *param);
-#endif
     static void PrintDeviceEntries(u32 deviceEntryCount,
             const Array<Resource::DeviceEntry, 0x20> &deviceEntries);
     static void CheckDeviceEntries(u32 deviceEntryCount,
@@ -396,9 +388,6 @@ private:
     static Device *s_additionDevice;
     static Backend *s_venBackend;
     static Backend *s_hidBackend;
-#ifdef PAYLOAD
     static OSMessageQueue s_queue;
-    static Array<OSMessage, 1> s_messages;
     static Mutex *s_mutex;
-#endif
 };

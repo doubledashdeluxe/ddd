@@ -2,17 +2,14 @@
 
 #include "common/Types.hh"
 
-#ifdef PAYLOAD
 extern "C" {
-#include <dolphin/OSAlarm.h>
+struct OSAlarm;
+struct OSContext;
 }
-#endif
 
 class Clock {
 public:
-#ifdef PAYLOAD
     static void Init();
-#endif
 
     static s64 TicksToMilliseconds(s64 ticks);
     static s64 TicksToSeconds(s64 ticks);
@@ -24,10 +21,8 @@ public:
 private:
     Clock();
 
-#ifdef PAYLOAD
     static bool ReadRTC(u32 &rtc);
     static bool ReadCounterBias(u32 &counterBias);
 
     static void HandleAlarm(OSAlarm *alarm, OSContext *context);
-#endif
 };

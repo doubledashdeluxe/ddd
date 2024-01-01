@@ -13,8 +13,6 @@ extern "C" {
 #include <string.h>
 }
 
-USBStorage::USBStorage() : m_device(nullptr) {}
-
 u32 USBStorage::priority() {
     return 2;
 }

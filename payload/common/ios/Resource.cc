@@ -46,8 +46,9 @@ void Resource::Sync(Request &request) {
         s_request = &request;
     }
 
-    OSInitThreadQueue(&request.user.queue);
-    OSSleepThread(&request.user.queue);
+    OSThreadQueue *queue = reinterpret_cast<OSThreadQueue *>(request.user._04);
+    OSInitThreadQueue(queue);
+    OSSleepThread(queue);
 }
 
 void Resource::HandleInterrupt(s16 /* interrupt */, OSContext * /* context */) {
@@ -58,7 +59,8 @@ void Resource::HandleInterrupt(s16 /* interrupt */, OSContext * /* context */) {
         ppcirqflag = 1 << 30;
 
         DCache::Invalidate(reply, offsetof(Request, user));
-        OSWakeupThread(&reply->user.queue);
+        OSThreadQueue *queue = reinterpret_cast<OSThreadQueue *>(reply->user._04);
+        OSWakeupThread(queue);
 
         ppcctrl = IY2 | IY1 | X2;
     }

@@ -104,11 +104,9 @@ target_cflags = {
     'libc': [],
     'common': [],
     'loader': [
-        '-d', 'LOADER',
         '-Iloader',
     ],
     'payload': [
-        '-d', 'PAYLOAD',
         '-Ipayload',
     ],
 }
@@ -117,17 +115,14 @@ target_ccflags = {
     'libc': [],
     'common': [],
     'loader': [
-        '-d', 'LOADER',
         '-Iloader',
     ],
     'payload': [
-        '-d', 'PAYLOAD',
         '-Ipayload',
     ],
 }
 common_ncflags = [
-    '-fdata-sections',
-    '-ffunction-sections',
+    '-flto=auto',
     '-fsanitize=undefined',
     '-isystem', '.',
     '-isystem', 'vendor',
@@ -141,20 +136,21 @@ common_ncflags = [
 ]
 common_nccflags = [
     '-D', 'lest_FEATURE_AUTO_REGISTER',
-    '-fdata-sections',
-    '-ffunction-sections',
+    '-fcheck-new',
+    '-flto=auto',
     '-fsanitize=undefined',
     '-fno-sanitize=vptr', # Order matters
     '-isystem', '.',
     '-isystem', 'vendor',
     '-O2',
-    '-std=c++17',
+    '-std=c++20',
     '-Wall',
     '-Werror=vla',
     '-Wextra',
     '-Wsuggest-override',
 ]
 common_nldflags = [
+    '-flto=auto',
     '-fsanitize=undefined',
     '-fno-sanitize=vptr',
 ]
@@ -163,30 +159,36 @@ target_ncflags = {
     'libc': [],
     'common': [],
     'loader': [
-        '-D', 'LOADER',
         '-iquote', 'loader',
         '-isystem', 'loader',
     ],
     'payload': [
-        '-D', 'PAYLOAD',
         '-iquote', 'payload',
         '-isystem', 'payload',
     ],
+    'tests': [
+        '-iquote', 'tests',
+        '-isystem', 'tests',
+    ],
+    'helpers': [],
 }
 target_nccflags = {
     'vendor': [],
     'libc': [],
     'common': [],
     'loader': [
-        '-D', 'LOADER',
         '-iquote', 'loader',
         '-isystem', 'loader',
     ],
     'payload': [
-        '-D', 'PAYLOAD',
         '-iquote', 'payload',
         '-isystem', 'payload',
     ],
+    'tests': [
+        '-iquote', 'tests',
+        '-isystem', 'tests',
+    ],
+    'helpers': [],
 }
 if 'win' in sys.platform or 'msys' in sys.platform:
     common_ncflags += [
@@ -335,17 +337,6 @@ n.rule(
     'nld',
     command = nld_command,
     description = 'NLD $out',
-)
-n.newline()
-
-if 'win' in sys.platform or 'msys' in sys.platform:
-    nobjcopy_command = 'objcopy.exe $objcopyflags $in $out'
-else:
-    nobjcopy_command = 'objcopy $objcopyflags $in $out'
-n.rule(
-    'nobjcopy',
-    command = nobjcopy_command,
-    description = 'NOBJCOPY $out',
 )
 n.newline()
 
@@ -702,7 +693,10 @@ native_code_in_files = {
         *sorted(glob.glob(os.path.join('tests', 'common', '**', '*.cc'), recursive=True)),
         *sorted(glob.glob(os.path.join('tests', 'loader', '**', '*.cc'), recursive=True)),
         *sorted(glob.glob(os.path.join('tests', 'payload', '**', '*.cc'), recursive=True)),
-    ]
+    ],
+    'helpers': [
+        *sorted(glob.glob(os.path.join('tests', 'helpers', '**', '*.cc'), recursive=True)),
+    ],
 }
 native_code_out_files = {target: [] for target in native_code_in_files}
 for target in native_code_in_files:
@@ -710,7 +704,6 @@ for target in native_code_in_files:
         _, ext = os.path.splitext(in_file)
         out_file = os.path.join('$builddir', 'native', in_file + '.o')
         native_code_out_files[target] += [out_file]
-        flags_target = in_file.split(os.path.sep)[1] if target == 'tests' else target
         n.build(
             out_file,
             f'n{ext[1:]}',
@@ -718,36 +711,18 @@ for target in native_code_in_files:
             variables = {
                 'cflags': ' '.join([
                     *common_ncflags,
-                    *target_ncflags[flags_target],
+                    *target_ncflags[target],
+                    *(target_ncflags[in_file.split(os.path.sep)[1]] if target == 'tests' else []),
                 ]),
                 'ccflags': ' '.join([
                     *common_nccflags,
-                    *target_nccflags[flags_target],
+                    *target_nccflags[target],
+                    *(target_nccflags[in_file.split(os.path.sep)[1]] if target == 'tests' else []),
                 ]),
             },
             order_only = protobuf_h_files if target == 'payload' else [],
         )
         n.newline()
-
-native_weak_code_out_files = {target: [] for target in native_code_out_files}
-for target in native_code_out_files:
-    if target == 'tests':
-        continue
-    for out_file in native_code_out_files[target]:
-        base, _ = os.path.splitext(out_file)
-        weak_out_file = f'{base}W.o'
-        native_weak_code_out_files[target] += [weak_out_file]
-        n.build(
-            weak_out_file,
-            'nobjcopy',
-            out_file,
-            variables = {
-                'objcopyflags': ' '.join([
-                    '--weaken',
-                ]),
-            },
-        )
-    n.newline()
 
 test_binaries = []
 for out_file in native_code_out_files['tests']:
@@ -760,16 +735,17 @@ for out_file in native_code_out_files['tests']:
         test_binary,
         'nld',
         [
-            *native_weak_code_out_files['vendor'],
-            *native_weak_code_out_files['common'],
-            *(native_weak_code_out_files['loader'] if target == 'loader' else []),
-            *(native_weak_code_out_files['payload'] if target == 'payload' else []),
             out_file,
+            *native_code_out_files['vendor'],
+            *native_code_out_files['common'],
+            *(native_code_out_files['loader'] if target == 'loader' else []),
+            *(native_code_out_files['payload'] if target == 'payload' else []),
+            *native_code_out_files['helpers'],
         ],
         variables = {
             'ldflags': ' '.join([
                 *common_nldflags,
-                '-Wl,--gc-sections',
+                '-Wl,--allow-multiple-definition',
             ]),
         },
     )

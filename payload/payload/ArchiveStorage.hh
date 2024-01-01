@@ -1,8 +1,12 @@
 #pragma once
 
 #include "payload/Archive.hh"
+#include "payload/Mutex.hh"
 
 #include <common/storage/Storage.hh>
+extern "C" {
+#include <dolphin/OSMessage.h>
+}
 
 class ArchiveStorage : private Storage {
 public:
@@ -18,6 +22,7 @@ private:
         bool read(void *dst, u32 size, u32 offset) override;
         bool write(const void *src, u32 size, u32 offset) override;
         bool sync() override;
+        bool truncate(u64 size) override;
         bool size(u64 &size) override;
         Storage *storage() override;
 
@@ -68,6 +73,7 @@ private:
         return nullptr;
     }
 
+    Mutex m_mutex;
     ArchiveStorage *m_next;
     const char *m_prefix;
     Archive m_archive;

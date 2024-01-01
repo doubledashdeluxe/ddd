@@ -53,6 +53,10 @@ bool DVDStorage::File::sync() {
     return false;
 }
 
+bool DVDStorage::File::truncate(u64 /* size */) {
+    return false;
+}
+
 bool DVDStorage::File::size(u64 &size) {
     size = AlignUp(m_fileInfo.length, 0x20);
     return true;
@@ -88,7 +92,7 @@ Storage *DVDStorage::Dir::storage() {
     return m_storage;
 }
 
-DVDStorage::DVDStorage() {
+DVDStorage::DVDStorage() : Storage(&m_mutex) {
     OSInitMessageQueue(&m_initQueue, m_initMessages.values(), m_initMessages.count());
     notify();
     OSReceiveMessage(&m_initQueue, nullptr, OS_MESSAGE_BLOCK);

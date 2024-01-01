@@ -22,6 +22,7 @@
 800155a8 __nw__FUl
 8001563c __nw__FUlP7JKRHeapl
 800157a8 __dl__FPv
+800157cc __dla__FPv
 80015f40 Create__12JKRSolidHeapFUlP7JKRHeapb
 80016890 __ct__9JKRThreadFUlll
 80017094 request__7JKRTaskFPFPv_vPvPv
@@ -133,7 +134,9 @@
 800ffe28 exit
 
 8010241c toupper
+801024cc isspace
 801024e8 isdigit
+801028bc strncasecmp
 801032e4 memcmp
 80103414 memmove
 801038e0 snprintf
@@ -182,6 +185,7 @@
 801ceb3c LoadKeepData__6ResMgrFv
 801cebac LoadCourseData__6ResMgrFUlUl
 801ced5c IsFinishedLoadingArc__6ResMgrFUl
+801cf310 GetPtr__6ResMgrFUl
 801cf524 GetPtr__6ResMgrFUlPCc
 801cf560 GetResSize__6ResMgrFUlPCv
 801cf914 Call__7LogoAppFv
