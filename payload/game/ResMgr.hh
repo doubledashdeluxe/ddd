@@ -7,7 +7,7 @@
 
 class ResMgr {
 public:
-    class ArchiveId {
+    class ArchiveID {
     public:
         enum {
             MRAM = 0x0,
@@ -16,7 +16,7 @@ public:
         };
 
     private:
-        ArchiveId();
+        ArchiveID();
     };
 
     REPLACE static void Create(JKRHeap *parentHeap);

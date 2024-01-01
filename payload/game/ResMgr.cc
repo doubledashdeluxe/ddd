@@ -23,7 +23,7 @@ void ResMgr::Create(JKRHeap *parentHeap) {
     for (u32 i = 0; i < 0x40; i++) {
         s_aramResArgs[i].status = 2;
     }
-    s_loaders[ArchiveId::System] = JKRArchive::Mount(DOL::BinarySectionStart(), parentHeap,
+    s_loaders[ArchiveID::System] = JKRArchive::Mount(DOL::BinarySectionStart(), parentHeap,
             JKRArchive::MountDirection::Head, true);
 
     size_t keepHeapSize = 0xd80000;
@@ -45,14 +45,14 @@ void ResMgr::LoadExtendedCourseData(const CourseManager::Course *course, u32 cou
     s_courseID = course->courseID();
     s_courseOrder = courseOrder;
     CourseManager::Instance()->freeAll();
-    s_loadFlag &= ~(1 << ArchiveId::Course);
-    s_loaders[ArchiveId::Course] = nullptr;
+    s_loadFlag &= ~(1 << ArchiveID::Course);
+    s_loaders[ArchiveID::Course] = nullptr;
     void *userData = const_cast<CourseManager::Course *>(course);
     System::GetLoadTask()->request(LoadExtendedCourseData, userData, nullptr);
 }
 
 void ResMgr::LoadCourseData(void * /* userData */) {
-    s_loadingFlag |= 1 << ArchiveId::Course;
+    s_loadingFlag |= 1 << ArchiveID::Course;
 
     const char *base = GetCrsArcName(s_courseID);
     const char *languageName = KartLocale::GetLanguageName();
@@ -69,30 +69,30 @@ void ResMgr::LoadCourseData(void * /* userData */) {
     } else {
         snprintf(path.values(), path.count(), "Course/%s%s.arc", base, suffix);
     }
-    s_loaders[ArchiveId::Course] =
+    s_loaders[ArchiveID::Course] =
             JKRArchive::Mount(path.values(), s_courseHeap, JKRArchive::MountDirection::Head, false);
 
     s_mountCourseID = s_courseID;
     s_mountCourseOrder = s_courseOrder;
-    s_loadingFlag &= ~(1 << ArchiveId::Course);
-    s_loadFlag |= 1 << ArchiveId::Course;
+    s_loadingFlag &= ~(1 << ArchiveID::Course);
+    s_loadFlag |= 1 << ArchiveID::Course;
 }
 
 void ResMgr::LoadExtendedCourseData(void *userData) {
-    s_loadingFlag |= 1 << ArchiveId::Course;
+    s_loadingFlag |= 1 << ArchiveID::Course;
 
     const CourseManager::Course *course = reinterpret_cast<CourseManager::Course *>(userData);
     s_courseName = course->loadLogo();
     s_staffGhost = course->loadStaffGhost();
     u32 raceLevel = RaceInfo::Instance().getRaceLevel();
     void *courseArchive = course->loadCourse(s_courseOrder, raceLevel);
-    s_loaders[ArchiveId::Course] =
+    s_loaders[ArchiveID::Course] =
             JKRArchive::Mount(courseArchive, s_courseHeap, JKRArchive::MountDirection::Head, false);
 
     s_mountCourseID = s_courseID;
     s_mountCourseOrder = s_courseOrder;
-    s_loadingFlag &= ~(1 << ArchiveId::Course);
-    s_loadFlag |= 1 << ArchiveId::Course;
+    s_loadingFlag &= ~(1 << ArchiveID::Course);
+    s_loadFlag |= 1 << ArchiveID::Course;
 }
 
 u32 ResMgr::GetMusicID() {
