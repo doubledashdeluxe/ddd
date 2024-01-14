@@ -37,11 +37,13 @@ void ResMgr::Create(JKRHeap *parentHeap) {
 }
 
 void ResMgr::LoadCourseData(u32 courseID, u32 courseOrder) {
+    delete s_loaders[ArchiveID::Course];
     s_musicID = courseID;
     REPLACED(LoadCourseData)(courseID, courseOrder);
 }
 
 void ResMgr::LoadExtendedCourseData(const CourseManager::Course *course, u32 courseOrder) {
+    delete s_loaders[ArchiveID::Course];
     s_musicID = course->musicID();
     s_courseID = course->courseID();
     s_courseOrder = courseOrder;
