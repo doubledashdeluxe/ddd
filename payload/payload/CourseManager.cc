@@ -1,5 +1,6 @@
 #include "CourseManager.hh"
 
+#include "payload/Archive.hh"
 #include "payload/FileLoader.hh"
 #include "payload/Lock.hh"
 
@@ -16,6 +17,7 @@ extern "C" {
 
 #include <stdio.h>
 #include <string.h>
+#include <strings.h>
 }
 
 CourseManager::Pack::Pack(Ring<u32, MaxCourseCount> courseIndices)
@@ -23,12 +25,12 @@ CourseManager::Pack::Pack(Ring<u32, MaxCourseCount> courseIndices)
 
 CourseManager::Pack::~Pack() {}
 
-u32 CourseManager::Pack::courseCount() const {
-    return m_courseIndices.count();
+const Ring<u32, CourseManager::MaxCourseCount> &CourseManager::Pack::courseIndices() const {
+    return m_courseIndices;
 }
 
-u32 CourseManager::Pack::courseIndex(u32 index) const {
-    return m_courseIndices[index];
+Ring<u32, CourseManager::MaxCourseCount> &CourseManager::Pack::courseIndices() {
+    return m_courseIndices;
 }
 
 CourseManager::Course::Course(Array<u8, 32> archiveHash, Array<u8, 32> bolHash, u32 courseID,
@@ -281,19 +283,19 @@ const CourseManager::Pack &CourseManager::battlePack(u32 index) const {
 }
 
 u32 CourseManager::raceCourseCount(u32 packIndex) const {
-    return m_racePacks[packIndex]->courseCount();
+    return m_racePacks[packIndex]->courseIndices().count();
 }
 
 u32 CourseManager::battleCourseCount(u32 packIndex) const {
-    return m_battlePacks[packIndex]->courseCount();
+    return m_battlePacks[packIndex]->courseIndices().count();
 }
 
 const CourseManager::Course &CourseManager::raceCourse(u32 packIndex, u32 index) const {
-    return *m_raceCourses[m_racePacks[packIndex]->courseIndex(index)];
+    return *m_raceCourses[m_racePacks[packIndex]->courseIndices()[index]];
 }
 
 const CourseManager::Course &CourseManager::battleCourse(u32 packIndex, u32 index) const {
-    return *m_battleCourses[m_battlePacks[packIndex]->courseIndex(index)];
+    return *m_battleCourses[m_battlePacks[packIndex]->courseIndices()[index]];
 }
 
 void CourseManager::Init() {
@@ -370,21 +372,20 @@ void *CourseManager::run() {
         m_battleCourses.reset();
         m_racePacks.reset();
         m_battlePacks.reset();
+        addDefaultRaceCourses();
+        addDefaultBattleCourses();
         Array<char, 256> path;
         snprintf(path.values(), path.count(), "main:/ddd/courses");
         Storage::CreateDir(path.values(), Storage::Mode::WriteAlways);
-        addDefaultRaceCourses();
-        addDefaultBattleCourses();
-        addCustomCourses(path);
-        deduplicateRaceCourses();
-        deduplicateBattleCourses();
-        sortRaceCoursesByName();
-        sortBattleCoursesByName();
-        addCustomPacks(path);
+        Ring<u32, MaxCourseCount> raceCourseIndices;
+        Ring<u32, MaxCourseCount> battleCourseIndices;
+        addCustomPacksAndCourses(path, raceCourseIndices, battleCourseIndices);
         sortRacePacksByName();
         sortBattlePacksByName();
         addDefaultRacePacks();
         addDefaultBattlePacks();
+        sortRacePackCoursesByName();
+        sortBattlePackCoursesByName();
     }
 }
 
@@ -640,21 +641,34 @@ void CourseManager::addDefaultBattleCourses() {
     }
 }
 
-void CourseManager::addCustomCourses(Array<char, 256> &path) {
+void CourseManager::addCustomPacksAndCourses(Array<char, 256> &path,
+        Ring<u32, MaxCourseCount> &raceCourseIndices,
+        Ring<u32, MaxCourseCount> &battleCourseIndices) {
     u32 length = strlen(path.values());
-    Storage::DirHandle dir(path.values());
-    for (Storage::NodeInfo nodeInfo; dir.read(nodeInfo);) {
-        snprintf(path.values() + length, path.count() - length, "/%s", nodeInfo.name.values());
+    Storage::NodeInfo nodeInfo;
+    for (Storage::DirHandle dir(path.values()); dir.read(nodeInfo);) {
         if (nodeInfo.type == Storage::NodeType::Dir) {
-            addCustomCourses(path);
-        } else {
-            addCustomCourse(path);
+            snprintf(path.values() + length, path.count() - length, "/%s", nodeInfo.name.values());
+            addCustomPacksAndCourses(path, raceCourseIndices, battleCourseIndices);
         }
     }
     path[length] = '\0';
+    raceCourseIndices.reset();
+    battleCourseIndices.reset();
+    for (Storage::DirHandle dir(path.values()); dir.read(nodeInfo);) {
+        if (nodeInfo.type == Storage::NodeType::File) {
+            snprintf(path.values() + length, path.count() - length, "/%s", nodeInfo.name.values());
+            addCustomCourse(path, raceCourseIndices, battleCourseIndices);
+        }
+    }
+    path[length] = '\0';
+    addCustomRacePack(path, raceCourseIndices);
+    addCustomBattlePack(path, battleCourseIndices);
 }
 
-void CourseManager::addCustomCourse(const Array<char, 256> &path) {
+void CourseManager::addCustomCourse(const Array<char, 256> &path,
+        Ring<u32, MaxCourseCount> &raceCourseIndices,
+        Ring<u32, MaxCourseCount> &battleCourseIndices) {
     bool ok;
     ZIPFile zipFile(path.values(), ok);
     if (!ok) {
@@ -663,14 +677,14 @@ void CourseManager::addCustomCourse(const Array<char, 256> &path) {
 
     ZIPFile::CDNode cdNode;
     ZIPFile::LocalNode localNode;
-    INIStream courseINIStream;
-    courseINIStream.ini.reset(reinterpret_cast<u8 *>(
+    INIStream iniStream;
+    iniStream.ini.reset(reinterpret_cast<u8 *>(
             zipFile.readFile("trackinfo.ini", m_heap, -0x4, cdNode, localNode)));
-    if (!courseINIStream.ini.get()) {
+    if (!iniStream.ini.get()) {
         return;
     }
-    courseINIStream.iniSize = cdNode.uncompressedSize;
-    courseINIStream.iniOffset = 0x0;
+    iniStream.iniSize = cdNode.uncompressedSize;
+    iniStream.iniOffset = 0x0;
 
     Array<char, 128> prefix;
     u32 prefixLength = strlen(cdNode.path.get()) - strlen("trackinfo.ini");
@@ -681,7 +695,7 @@ void CourseManager::addCustomCourse(const Array<char, 256> &path) {
     memcpy(prefix.values(), cdNode.path.get(), prefixLength);
 
     CourseINI courseINI;
-    if (ini_parse_stream(ReadINI, &courseINIStream, HandleCourseINI, &courseINI)) {
+    if (ini_parse_stream(ReadINI, &iniStream, HandleCourseINI, &courseINI)) {
         return;
     }
 
@@ -791,6 +805,8 @@ void CourseManager::addCustomCourse(const Array<char, 256> &path) {
     }
 
     Ring<UniquePtr<Course>, MaxCourseCount> *courses = nullptr;
+    Ring<u32, MaxCourseCount> *courseIndices = nullptr;
+    const char *type = nullptr;
     switch (courseID) {
     case CourseID::BabyLuigi:
     case CourseID::Peach:
@@ -808,8 +824,9 @@ void CourseManager::addCustomCourse(const Array<char, 256> &path) {
     case CourseID::Rainbow:
     case CourseID::Desert:
     case CourseID::Snow:
-        DEBUG("Adding custom race course %s...\n", path.values());
         courses = &m_raceCourses;
+        courseIndices = &raceCourseIndices;
+        type = "race";
         break;
     case CourseID::Mini1:
     case CourseID::Mini2:
@@ -817,12 +834,26 @@ void CourseManager::addCustomCourse(const Array<char, 256> &path) {
     case CourseID::Mini5:
     case CourseID::Mini7:
     case CourseID::Mini8:
-        DEBUG("Adding custom battle course %s...\n", path.values());
         courses = &m_battleCourses;
+        courseIndices = &battleCourseIndices;
+        type = "battle";
         break;
     default:
         return;
     }
+
+    for (u32 i = 0; i < courses->count(); i++) {
+        if (!memcmp(archiveHash.values(), (*courses)[i]->archiveHash().values(),
+                    archiveHash.count())) {
+            if (!memcmp(bolHash.values(), (*courses)[i]->bolHash().values(), bolHash.count())) {
+                courseIndices->pushBack(i);
+                return;
+            }
+        }
+    }
+
+    DEBUG("Adding custom %s course %s...\n", type, path.values());
+    courseIndices->pushBack(courses->count());
     courses->pushBack();
     Course *course = new (m_heap, 0x4)
             CustomCourse(archiveHash, bolHash, courseID, musicID, name.release(), author.release(),
@@ -830,136 +861,71 @@ void CourseManager::addCustomCourse(const Array<char, 256> &path) {
     courses->back()->reset(course);
 }
 
-void CourseManager::sortRaceCoursesByName() {
-    SortCoursesByName(m_raceCourses);
+void CourseManager::addCustomRacePack(const Array<char, 256> &path,
+        Ring<u32, MaxCourseCount> &courseIndices) {
+    addCustomPack(path, courseIndices, 0, DefaultRaceCourseCount, m_racePacks, "race");
 }
 
-void CourseManager::sortBattleCoursesByName() {
-    SortCoursesByName(m_battleCourses);
-}
-
-void CourseManager::deduplicateRaceCourses() {
-    DeduplicateCourses(m_raceCourses);
-}
-
-void CourseManager::deduplicateBattleCourses() {
-    DeduplicateCourses(m_battleCourses);
-}
-
-void CourseManager::addCustomPacks(Array<char, 256> &path) {
-    u32 length = strlen(path.values());
-    Storage::DirHandle dir(path.values());
-    for (Storage::NodeInfo nodeInfo; dir.read(nodeInfo);) {
-        snprintf(path.values() + length, path.count() - length, "/%s", nodeInfo.name.values());
-        if (nodeInfo.type == Storage::NodeType::Dir) {
-            addCustomPacks(path);
-        } else {
-            addCustomRacePack(path);
-            addCustomBattlePack(path);
-        }
-    }
-    path[length] = '\0';
-}
-
-void CourseManager::addCustomRacePack(const Array<char, 256> &path) {
-    addCustomPack(path, m_raceCourses, m_racePacks, "race");
-}
-
-void CourseManager::addCustomBattlePack(const Array<char, 256> &path) {
-    addCustomPack(path, m_battleCourses, m_battlePacks, "battle");
+void CourseManager::addCustomBattlePack(const Array<char, 256> &path,
+        Ring<u32, MaxCourseCount> &courseIndices) {
+    addCustomPack(path, courseIndices, DefaultRaceCourseCount, DefaultBattleCourseCount,
+            m_battlePacks, "battle");
 }
 
 void CourseManager::addCustomPack(const Array<char, 256> &path,
-        const Ring<UniquePtr<Course>, MaxCourseCount> &courses,
+        Ring<u32, MaxCourseCount> &courseIndices, u32 defaultCourseOffset, u32 defaultCourseCount,
         Ring<UniquePtr<Pack>, MaxPackCount> &packs, const char *type) {
-    bool ok;
-    FileArchive archive(m_heap, -0x20, path.values(), ok);
-    if (!ok) {
+    Array<char, 256> iniPath;
+    snprintf(iniPath.values(), iniPath.count(), "%s/packinfo.ini", path.values());
+    INIStream iniStream;
+    iniStream.ini.reset(
+            reinterpret_cast<u8 *>(FileLoader::Load(iniPath.values(), m_heap, &iniStream.iniSize)));
+    if (!iniStream.ini.get()) {
         return;
     }
-    FileArchive::Dir dir(archive, "/Courses", ok);
-    if (!ok) {
+    iniStream.iniOffset = 0x0;
+
+    PackINI packINI;
+    if (ini_parse_stream(ReadINI, &iniStream, HandlePackINI, &packINI)) {
         return;
     }
-    Ring<u32, MaxCourseCount> courseIndices;
-    for (u32 i = 0; i < dir.getNodeCount(); i++) {
-        FileArchive::Node node = dir.getNode(i);
-        if (!node.isDir()) {
-            continue;
-        }
-        Array<char, 256> archiveHashPath;
-        snprintf(archiveHashPath.values(), archiveHashPath.count(), "/Courses/%s/ArchiveHash.bin",
-                node.getName());
-        Array<u8, 32> archiveHash;
-        if (!loadSubfile(archive, archiveHashPath.values(), archiveHash.values(),
-                    archiveHash.count())) {
-            continue;
-        }
-        Array<char, 256> bolHashPath;
-        snprintf(bolHashPath.values(), bolHashPath.count(), "/Courses/%s/BolHash.bin",
-                node.getName());
-        Array<u8, 32> bolHash;
-        if (!loadSubfile(archive, bolHashPath.values(), bolHash.values(), bolHash.count())) {
-            continue;
-        }
-        u32 j;
-        for (j = 0; j < courses.count(); j++) {
-            if (!memcmp(courses[j]->archiveHash().values(), archiveHash.values(),
-                        courses[j]->archiveHash().count())) {
-                if (!memcmp(courses[j]->bolHash().values(), bolHash.values(),
-                            courses[j]->bolHash().count())) {
-                    break;
-                }
-            }
-        }
-        if (j < courses.count()) {
-            if (!courseIndices.pushBack(j)) {
-                return;
-            }
-            continue;
-        }
+
+    UniquePtr<char> name(getLocalizedEntry(packINI.localizedNames, packINI.fallbackName).release());
+    if (!name.get()) {
         return;
     }
-    u32 nameSize;
-    UniquePtr<char> name(reinterpret_cast<char *>(
-            loadLocalizedSubfile(archive, "/%s/Name.txt", m_heap, &nameSize)));
-    if (!name.get() || nameSize <= 1) {
-        return;
-    }
-    name.get()[nameSize - 1] = '\0';
-    u32 authorSize;
-    UniquePtr<char> author(reinterpret_cast<char *>(
-            loadLocalizedSubfile(archive, "/%s/Author.txt", m_heap, &authorSize)));
-    if (author.get()) {
-        if (authorSize <= 1) {
-            author.reset();
-        } else {
-            author.get()[authorSize - 1] = '\0';
-        }
-    }
-    u32 versionSize;
-    UniquePtr<char> version(
-            reinterpret_cast<char *>(loadSubfile(archive, "/Version.txt", m_heap, &versionSize)));
-    if (version.get()) {
-        if (versionSize <= 1) {
-            version.reset();
-        } else {
-            version.get()[versionSize - 1] = '\0';
-        }
-    }
+    UniquePtr<char> author(
+            getLocalizedEntry(packINI.localizedAuthors, packINI.fallbackAuthor).release());
+    UniquePtr<char> version(packINI.version.release());
+
+    Array<char, 256> nameImagePrefix;
+    snprintf(nameImagePrefix.values(), nameImagePrefix.count(), "%s/pack_images/", path.values());
     u32 nameImageSize;
     UniquePtr<u8> nameImage(reinterpret_cast<u8 *>(
-            loadLocalizedSubfile(archive, "/%s/NameImage.bti", m_heap, &nameImageSize)));
+            loadLocalizedFile(nameImagePrefix.values(), "/pack_name.bti", m_heap, &nameImageSize)));
     if (!nameImage.get() || nameImageSize < 0x20) {
         return;
     }
-    if (!courseIndices.empty()) {
-        DEBUG("Adding custom %s pack %s (%u)...\n", type, path.values(), courseIndices.count());
-        packs.pushBack();
-        Pack *pack = new (m_heap, 0x4) CustomPack(courseIndices, name.release(), author.release(),
-                version.release(), nameImage.release());
-        packs.back()->reset(pack);
+
+    if (packINI.defaultCourses) {
+        const char *c = packINI.defaultCourses.get();
+        for (u32 i = 0; i < defaultCourseOffset && *c; i++, c++) {}
+        for (u32 i = 0; i < defaultCourseCount && *c; i++, c++) {
+            if (*c == 'Y' || *c == 'y' || *c == '+') {
+                courseIndices.pushBack(i);
+            }
+        }
     }
+
+    if (courseIndices.empty()) {
+        return;
+    }
+
+    DEBUG("Adding custom %s pack %s (%u)...\n", type, path.values(), courseIndices.count());
+    packs.pushBack();
+    Pack *pack = new (m_heap, 0x4) CustomPack(courseIndices, name.release(), author.release(),
+            version.release(), nameImage.release());
+    packs.back()->reset(pack);
 }
 
 void CourseManager::sortRacePacksByName() {
@@ -1017,6 +983,20 @@ void CourseManager::addDefaultPacks(const Ring<UniquePtr<Course>, MaxCourseCount
     }
 }
 
+void CourseManager::sortRacePackCoursesByName() {
+    for (u32 i = 0; i < m_racePacks.count(); i++) {
+        Ring<u32, MaxCourseCount> &courseIndices = m_racePacks[i]->courseIndices();
+        Sort(courseIndices, courseIndices.count(), CompareRaceCourseIndicesByName);
+    }
+}
+
+void CourseManager::sortBattlePackCoursesByName() {
+    for (u32 i = 0; i < m_battlePacks.count(); i++) {
+        Ring<u32, MaxCourseCount> &courseIndices = m_battlePacks[i]->courseIndices();
+        Sort(courseIndices, courseIndices.count(), CompareBattleCourseIndicesByName);
+    }
+}
+
 UniquePtr<char> &CourseManager::getLocalizedEntry(
         Array<UniquePtr<char>, KartLocale::Language::Max> &localizedEntries,
         UniquePtr<char> &fallbackEntry) {
@@ -1026,88 +1006,6 @@ UniquePtr<char> &CourseManager::getLocalizedEntry(
         }
     }
     return fallbackEntry;
-}
-
-bool CourseManager::loadSubfile(FileArchive &archive, const char *filePath, void *file,
-        u32 size) const {
-    bool ok;
-    FileArchive::Node node(archive, filePath, ok);
-    if (!ok) {
-        return false;
-    }
-    if (!node.isFile()) {
-        return false;
-    }
-    if (node.getFileSize() != size) {
-        return false;
-    }
-    if (!node.getFile(file)) {
-        return false;
-    }
-    return true;
-}
-
-void *CourseManager::loadSubfile(const char *archivePath, const char *filePath, JKRHeap *heap,
-        u32 *size) const {
-    bool ok;
-    FileArchive archive(m_heap, -0x20, archivePath, ok);
-    if (!ok) {
-        return nullptr;
-    }
-    return loadSubfile(archive, filePath, heap, size);
-}
-
-void *CourseManager::loadSubfile(FileArchive &archive, const char *filePath, JKRHeap *heap,
-        u32 *size) const {
-    bool ok;
-    FileArchive::Node node(archive, filePath, ok);
-    if (!ok) {
-        return nullptr;
-    }
-    if (!node.isFile()) {
-        return nullptr;
-    }
-    if (size) {
-        *size = node.getFileSize();
-    }
-    return node.getFile(heap, 0x20);
-}
-
-bool CourseManager::loadLocalizedSubfile(FileArchive &archive, const char *filePathPattern,
-        void *subfile, u32 size) const {
-    for (u32 i = 0; i < m_languages.count(); i++) {
-        const char *languageName = KartLocale::GetLanguageName(m_languages[i]);
-        Array<char, 256> filePath;
-        snprintf(filePath.values(), filePath.count(), filePathPattern, languageName);
-        if (loadSubfile(archive, filePath.values(), subfile, size)) {
-            return true;
-        }
-    }
-    return false;
-}
-
-void *CourseManager::loadLocalizedSubfile(const char *archivePath, const char *filePathPattern,
-        JKRHeap *heap, u32 *size) const {
-    bool ok;
-    FileArchive archive(m_heap, -0x20, archivePath, ok);
-    if (!ok) {
-        return nullptr;
-    }
-    return loadLocalizedSubfile(archive, filePathPattern, heap, size);
-}
-
-void *CourseManager::loadLocalizedSubfile(FileArchive &archive, const char *filePathPattern,
-        JKRHeap *heap, u32 *size) const {
-    for (u32 i = 0; i < m_languages.count(); i++) {
-        const char *languageName = KartLocale::GetLanguageName(m_languages[i]);
-        Array<char, 256> filePath;
-        snprintf(filePath.values(), filePath.count(), filePathPattern, languageName);
-        void *file = loadSubfile(archive, filePath.values(), heap, size);
-        if (file) {
-            return file;
-        }
-    }
-    return nullptr;
 }
 
 void *CourseManager::loadFile(const char *zipPath, const char *filePath, JKRHeap *heap,
@@ -1158,6 +1056,20 @@ void *CourseManager::loadLocalizedFile(ZIPFile &zipFile, const char *prefix, con
     return nullptr;
 }
 
+void *CourseManager::loadLocalizedFile(const char *prefix, const char *suffix, JKRHeap *heap,
+        u32 *size) const {
+    for (u32 i = 0; i < m_languages.count(); i++) {
+        const char *languageName = KartLocale::GetLanguageName(m_languages[i]);
+        Array<char, 256> filePath;
+        snprintf(filePath.values(), filePath.count(), "%s%s%s", prefix, languageName, suffix);
+        void *file = FileLoader::Load(filePath.values(), heap, size);
+        if (file) {
+            return file;
+        }
+    }
+    return nullptr;
+}
+
 void *CourseManager::Run(void *param) {
     return reinterpret_cast<CourseManager *>(param)->run();
 }
@@ -1180,50 +1092,102 @@ char *CourseManager::ReadINI(char *str, int num, void *stream) {
     return str;
 }
 
+int CourseManager::HandlePackINI(void *user, const char *section, const char *name,
+        const char *value) {
+    if (strcmp(section, "Config")) {
+        return 1;
+    }
+
+    PackINI *packINI = reinterpret_cast<PackINI *>(user);
+    Array<INIField, 4> iniFields;
+    iniFields[0] = (INIField){"packname", &packINI->fallbackName};
+    iniFields[1] = (INIField){"author", &packINI->fallbackAuthor};
+    iniFields[2] = (INIField){"version", &packINI->version};
+    iniFields[3] = (INIField){"vanilla_tracks", &packINI->defaultCourses};
+    if (HandleINIFields(name, value, iniFields.count(), iniFields.values())) {
+        return 1;
+    }
+
+    Array<LocalizedINIField, 2> localizedINIFields;
+    localizedINIFields[0] = (LocalizedINIField){"packname_", &packINI->localizedNames};
+    localizedINIFields[1] = (LocalizedINIField){"author_", &packINI->localizedAuthors};
+    if (HandleLocalizedINIFields(name, value, localizedINIFields.count(),
+                localizedINIFields.values())) {
+        return 1;
+    }
+
+    return 1;
+}
+
 int CourseManager::HandleCourseINI(void *user, const char *section, const char *name,
         const char *value) {
     if (strcmp(section, "Config")) {
         return 1;
     }
 
-    UniquePtr<char> *field = nullptr;
     CourseINI *courseINI = reinterpret_cast<CourseINI *>(user);
-    if (!strncmp(name, "trackname_", strlen("trackname_"))) {
-        for (u32 i = 0; i < KartLocale::Language::Max; i++) {
-            if (!strcmp(name + strlen("trackname_"), KartLocale::GetLanguageName(i))) {
-                field = &courseINI->localizedNames[i];
-                break;
-            }
-        }
-    } else if (!strcmp(name, "trackname")) {
-        field = &courseINI->fallbackName;
-    } else if (!strncmp(name, "author_", strlen("author_"))) {
-        for (u32 i = 0; i < KartLocale::Language::Max; i++) {
-            if (!strcmp(name + strlen("author_"), KartLocale::GetLanguageName(i))) {
-                field = &courseINI->localizedAuthors[i];
-                break;
-            }
-        }
-    } else if (!strcmp(name, "author")) {
-        field = &courseINI->fallbackAuthor;
-    } else if (!strcmp(name, "version")) {
-        field = &courseINI->version;
-    } else if (!strcmp(name, "replaces")) {
-        field = &courseINI->defaultCourseName;
-    } else if (!strcmp(name, "auxiliary_audio_track")) {
-        field = &courseINI->defaultMusicName;
-    }
-    if (!field) {
+    Array<INIField, 5> iniFields;
+    iniFields[0] = (INIField){"trackname", &courseINI->fallbackName};
+    iniFields[1] = (INIField){"author", &courseINI->fallbackAuthor};
+    iniFields[2] = (INIField){"version", &courseINI->version};
+    iniFields[3] = (INIField){"replaces", &courseINI->defaultCourseName};
+    iniFields[4] = (INIField){"auxiliary_audio_track", &courseINI->defaultMusicName};
+    if (HandleINIFields(name, value, iniFields.count(), iniFields.values())) {
         return 1;
     }
+
+    Array<LocalizedINIField, 2> localizedINIFields;
+    localizedINIFields[0] = (LocalizedINIField){"trackname_", &courseINI->localizedNames};
+    localizedINIFields[1] = (LocalizedINIField){"author_", &courseINI->localizedAuthors};
+    if (HandleLocalizedINIFields(name, value, localizedINIFields.count(),
+                localizedINIFields.values())) {
+        return 1;
+    }
+
+    return 1;
+}
+
+bool CourseManager::HandleINIFields(const char *name, const char *value, u32 fieldCount,
+        const INIField *fields) {
+    for (u32 i = 0; i < fieldCount; i++) {
+        if (strcasecmp(name, fields[i].name)) {
+            continue;
+        }
+        if (SetINIField(value, fields[i].field)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool CourseManager::HandleLocalizedINIFields(const char *name, const char *value, u32 fieldCount,
+        const LocalizedINIField *fields) {
+    for (u32 i = 0; i < fieldCount; i++) {
+        if (strncasecmp(name, fields[i].name, strlen(fields[i].name))) {
+            continue;
+        }
+        for (u32 j = 0; j < KartLocale::Language::Max; j++) {
+            if (strcasecmp(name + strlen(fields[i].name), KartLocale::GetLanguageName(j))) {
+                continue;
+            }
+            if (SetINIField(value, &(*fields[i].fields)[j])) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool CourseManager::SetINIField(const char *value, UniquePtr<char> *field) {
     u32 valueLength = strlen(value);
     field->reset(new (s_instance->m_heap, 0x4) char[valueLength + 1]);
     if (!field->get()) {
-        return 1;
+        return false;
     }
     field->get()[valueLength] = '\0';
     memcpy(field->get(), value, valueLength);
-    return 1;
+    DEBUG("%s\n", field->get());
+    return true;
 }
 
 bool CourseManager::GetDefaultCourseID(const char *name, u32 &courseID) {
@@ -1279,48 +1243,22 @@ bool CourseManager::GetDefaultCourseID(const char *name, u32 &courseID) {
     return true;
 }
 
-void CourseManager::SortCoursesByName(Ring<UniquePtr<Course>, MaxCourseCount> &courses) {
-    Sort(courses, courses.count(), CompareCoursesByName);
-}
-
-void CourseManager::DeduplicateCourses(Ring<UniquePtr<Course>, MaxCourseCount> &courses) {
-    Sort(courses, courses.count(), CompareCoursesByHash);
-    for (u32 i = courses.count(); i >= 2; i--) {
-        if (memcmp(courses[i - 2]->archiveHash().values(), courses[i - 1]->archiveHash().values(),
-                    courses[i - 2]->archiveHash().count())) {
-            continue;
-        }
-        if (memcmp(courses[i - 2]->bolHash().values(), courses[i - 1]->bolHash().values(),
-                    courses[i - 2]->bolHash().count())) {
-            continue;
-        }
-        courses.swapRemoveBack(i - 1);
-    }
-}
-
 void CourseManager::SortPacksByName(Ring<UniquePtr<Pack>, MaxPackCount> &packs) {
     Sort(packs, packs.count(), ComparePacksByName);
 }
 
-bool CourseManager::CompareCoursesByName(const UniquePtr<Course> &a, const UniquePtr<Course> &b) {
-    return strcmp(a->name(), b->name()) <= 0;
-}
-
-bool CourseManager::CompareCoursesByHash(const UniquePtr<Course> &a, const UniquePtr<Course> &b) {
-    int archiveCmp =
-            memcmp(a->archiveHash().values(), b->archiveHash().values(), a->archiveHash().count());
-    if (archiveCmp != 0) {
-        return archiveCmp < 0;
-    }
-    int bolCmp = memcmp(a->bolHash().values(), b->bolHash().values(), a->bolHash().count());
-    if (bolCmp != 0) {
-        return bolCmp < 0;
-    }
-    return a->isCustom() < b->isCustom();
-}
-
 bool CourseManager::ComparePacksByName(const UniquePtr<Pack> &a, const UniquePtr<Pack> &b) {
-    return strcmp(a->name(), b->name()) <= 0;
+    return strcasecmp(a->name(), b->name()) <= 0;
+}
+
+bool CourseManager::CompareRaceCourseIndicesByName(const u32 &a, const u32 &b) {
+    Ring<UniquePtr<Course>, MaxCourseCount> &courses = s_instance->m_raceCourses;
+    return strcasecmp(courses[a]->name(), courses[b]->name()) <= 0;
+}
+
+bool CourseManager::CompareBattleCourseIndicesByName(const u32 &a, const u32 &b) {
+    Ring<UniquePtr<Course>, MaxCourseCount> &courses = s_instance->m_battleCourses;
+    return strcasecmp(courses[a]->name(), courses[b]->name()) <= 0;
 }
 
 CourseManager *CourseManager::s_instance = nullptr;

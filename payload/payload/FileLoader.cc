@@ -2,7 +2,7 @@
 
 #include <common/storage/Storage.hh>
 
-void *FileLoader::Load(const char *path, JKRHeap *heap) {
+void *FileLoader::Load(const char *path, JKRHeap *heap, u32 *size) {
     Storage::FileHandle file(path, Storage::Mode::Read);
     u64 fileSize;
     if (!file.size(fileSize)) {
@@ -22,5 +22,8 @@ void *FileLoader::Load(const char *path, JKRHeap *heap) {
         return nullptr;
     }
 
+    if (size) {
+        *size = fileSize;
+    }
     return data;
 }

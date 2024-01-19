@@ -1,6 +1,5 @@
 #pragma once
 
-#include "payload/FileArchive.hh"
 #include "payload/ZIPFile.hh"
 
 #include <common/Ring.hh>
@@ -20,14 +19,13 @@ public:
         MaxPackCount = 128,
     };
 
-public:
     class Pack {
     public:
         Pack(Ring<u32, MaxCourseCount> courseIndices);
         virtual ~Pack();
 
-        u32 courseCount() const;
-        u32 courseIndex(u32 index) const;
+        const Ring<u32, MaxCourseCount> &courseIndices() const;
+        Ring<u32, MaxCourseCount> &courseIndices();
 
         virtual const char *name() const = 0;
         virtual const char *author() const = 0;
@@ -177,6 +175,25 @@ private:
         u32 iniOffset;
     };
 
+    struct INIField {
+        const char *name;
+        UniquePtr<char> *field;
+    };
+
+    struct LocalizedINIField {
+        const char *name;
+        Array<UniquePtr<char>, KartLocale::Language::Max> *fields;
+    };
+
+    struct PackINI {
+        Array<UniquePtr<char>, KartLocale::Language::Max> localizedNames;
+        UniquePtr<char> fallbackName;
+        Array<UniquePtr<char>, KartLocale::Language::Max> localizedAuthors;
+        UniquePtr<char> fallbackAuthor;
+        UniquePtr<char> version;
+        UniquePtr<char> defaultCourses;
+    };
+
     struct CourseINI {
         Array<UniquePtr<char>, KartLocale::Language::Max> localizedNames;
         UniquePtr<char> fallbackName;
@@ -195,17 +212,16 @@ private:
     void *run();
     void addDefaultRaceCourses();
     void addDefaultBattleCourses();
-    void addCustomCourses(Array<char, 256> &path);
-    void addCustomCourse(const Array<char, 256> &path);
-    void sortRaceCoursesByName();
-    void sortBattleCoursesByName();
-    void deduplicateRaceCourses();
-    void deduplicateBattleCourses();
-    void addCustomPacks(Array<char, 256> &path);
-    void addCustomRacePack(const Array<char, 256> &path);
-    void addCustomBattlePack(const Array<char, 256> &path);
-    void addCustomPack(const Array<char, 256> &path,
-            const Ring<UniquePtr<Course>, MaxCourseCount> &courses,
+    void addCustomPacksAndCourses(Array<char, 256> &path,
+            Ring<u32, MaxCourseCount> &raceCourseIndices,
+            Ring<u32, MaxCourseCount> &battleCourseIndices);
+    void addCustomCourse(const Array<char, 256> &path, Ring<u32, MaxCourseCount> &raceCourseIndices,
+            Ring<u32, MaxCourseCount> &battleCourseIndices);
+    void addCustomRacePack(const Array<char, 256> &path, Ring<u32, MaxCourseCount> &courseIndices);
+    void addCustomBattlePack(const Array<char, 256> &path,
+            Ring<u32, MaxCourseCount> &courseIndices);
+    void addCustomPack(const Array<char, 256> &path, Ring<u32, MaxCourseCount> &courseIndices,
+            u32 defaultCourseOffset, u32 defaultCourseCount,
             Ring<UniquePtr<Pack>, MaxPackCount> &packs, const char *type);
     void sortRacePacksByName();
     void sortBattlePacksByName();
@@ -213,20 +229,11 @@ private:
     void addDefaultBattlePacks();
     void addDefaultPacks(const Ring<UniquePtr<Course>, MaxCourseCount> &courses,
             Ring<UniquePtr<Pack>, MaxPackCount> &packs, const char *base, const char *type);
+    void sortRacePackCoursesByName();
+    void sortBattlePackCoursesByName();
     UniquePtr<char> &getLocalizedEntry(
             Array<UniquePtr<char>, KartLocale::Language::Max> &localizedEntries,
             UniquePtr<char> &fallbackEntry);
-    bool loadSubfile(FileArchive &archive, const char *filePath, void *subfile, u32 size) const;
-    void *loadSubfile(const char *archivePath, const char *filePath, JKRHeap *heap,
-            u32 *size = nullptr) const;
-    void *loadSubfile(FileArchive &archive, const char *filePath, JKRHeap *heap,
-            u32 *size = nullptr) const;
-    bool loadLocalizedSubfile(FileArchive &archive, const char *filePathPattern, void *subfile,
-            u32 size) const;
-    void *loadLocalizedSubfile(const char *archivePath, const char *filePathPattern, JKRHeap *heap,
-            u32 *size = nullptr) const;
-    void *loadLocalizedSubfile(FileArchive &archive, const char *filePathPattern, JKRHeap *heap,
-            u32 *size = nullptr) const;
     void *loadFile(const char *zipPath, const char *filePath, JKRHeap *heap,
             u32 *size = nullptr) const;
     void *loadFile(ZIPFile &zipFile, const char *filePath, JKRHeap *heap,
@@ -235,24 +242,30 @@ private:
             JKRHeap *heap, u32 *size = nullptr) const;
     void *loadLocalizedFile(ZIPFile &zipFile, const char *prefix, const char *suffix, JKRHeap *heap,
             u32 *size = nullptr) const;
+    void *loadLocalizedFile(const char *prefix, const char *suffix, JKRHeap *heap,
+            u32 *size = nullptr) const;
 
     static void *Run(void *param);
     static char *ReadINI(char *str, int num, void *stream);
+    static int HandlePackINI(void *user, const char *section, const char *name, const char *value);
     static int HandleCourseINI(void *user, const char *section, const char *name,
             const char *value);
+    static bool HandleINIFields(const char *name, const char *value, u32 fieldCount,
+            const INIField *fields);
+    static bool HandleLocalizedINIFields(const char *name, const char *value, u32 fieldCount,
+            const LocalizedINIField *fields);
+    static bool SetINIField(const char *value, UniquePtr<char> *field);
     static bool GetDefaultCourseID(const char *name, u32 &courseID);
-    static void SortCoursesByName(Ring<UniquePtr<Course>, MaxCourseCount> &courses);
-    static void DeduplicateCourses(Ring<UniquePtr<Course>, MaxCourseCount> &courses);
     static void SortPacksByName(Ring<UniquePtr<Pack>, MaxPackCount> &packs);
-    static bool CompareCoursesByHash(const UniquePtr<Course> &a, const UniquePtr<Course> &b);
-    static bool CompareCoursesByName(const UniquePtr<Course> &a, const UniquePtr<Course> &b);
     static bool ComparePacksByName(const UniquePtr<Pack> &a, const UniquePtr<Pack> &b);
+    static bool CompareRaceCourseIndicesByName(const u32 &a, const u32 &b);
+    static bool CompareBattleCourseIndicesByName(const u32 &a, const u32 &b);
 
     OSMessageQueue m_queue;
     Array<OSMessage, 1> m_messages;
     OSMessageQueue m_initQueue;
     Array<OSMessage, 1> m_initMessages;
-    Array<u8, 16 * 1024> m_stack;
+    Array<u8, 128 * 1024> m_stack;
     OSThread m_thread;
     bool m_currIsLocked;
     bool m_nextIsLocked;

@@ -402,8 +402,8 @@ void ScenePackSelect::refreshPacks() {
         pictures[0] = m_countScreens[i].search("Eplay3")->downcast<J2DPicture>();
         pictures[1] = m_countScreens[i].search("Eplay2")->downcast<J2DPicture>();
         pictures[2] = m_countScreens[i].search("Eplay1")->downcast<J2DPicture>();
-        Kart2DCommon::Instance()->changeNumberTexture(pack->courseCount(), pictures.values(),
-                pictures.count(), false, false);
+        Kart2DCommon::Instance()->changeNumberTexture(pack->courseIndices().count(),
+                pictures.values(), pictures.count(), false, false);
     }
 }
 
