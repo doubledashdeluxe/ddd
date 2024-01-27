@@ -244,6 +244,8 @@ private:
             u32 *size = nullptr) const;
     void *loadLocalizedFile(const char *prefix, const char *suffix, JKRHeap *heap,
             u32 *size = nullptr) const;
+    void *loadCourseFile(const char *zipPath, const char *filePath, u32 *size = nullptr) const;
+    void *loadCourseFile(ZIPFile &zipFile, const char *filePath, u32 *size = nullptr) const;
 
     static void *Run(void *param);
     static char *ReadINI(char *str, int num, void *stream);

@@ -3,6 +3,7 @@
 #include "payload/Archive.hh"
 #include "payload/FileLoader.hh"
 #include "payload/Lock.hh"
+#include "payload/SZS.hh"
 
 #include <common/Arena.hh>
 #include <common/Log.hh>
@@ -220,7 +221,7 @@ void *CourseManager::CustomCourse::loadStaffGhost() const {
 void *CourseManager::CustomCourse::loadCourse(u32 /* courseOrder */, u32 /* raceLevel */) const {
     Array<char, 256> coursePath;
     snprintf(coursePath.values(), coursePath.count(), "/%strack.arc", m_prefix.values());
-    return s_instance->loadFile(m_path.values(), coursePath.values(), s_instance->m_courseHeap);
+    return s_instance->loadCourseFile(m_path.values(), coursePath.values());
 }
 
 bool CourseManager::CustomCourse::isDefault() const {
@@ -754,8 +755,8 @@ void CourseManager::addCustomCourse(const Array<char, 256> &path,
         Array<char, 256> coursePath;
         snprintf(coursePath.values(), coursePath.count(), "/%strack.arc", prefix.values());
         u32 courseSize;
-        UniquePtr<u8> course(reinterpret_cast<u8 *>(
-                loadFile(zipFile, coursePath.values(), m_courseHeap, &courseSize)));
+        UniquePtr<u8> course(
+                reinterpret_cast<u8 *>(loadCourseFile(zipFile, coursePath.values(), &courseSize)));
         if (!course.get()) {
             return;
         }
@@ -1068,6 +1069,40 @@ void *CourseManager::loadLocalizedFile(const char *prefix, const char *suffix, J
         }
     }
     return nullptr;
+}
+
+void *CourseManager::loadCourseFile(const char *zipPath, const char *filePath, u32 *size) const {
+    bool ok;
+    ZIPFile zipFile(zipPath, ok);
+    if (!ok) {
+        return nullptr;
+    }
+    return loadCourseFile(zipFile, filePath, size);
+}
+
+void *CourseManager::loadCourseFile(ZIPFile &zipFile, const char *filePath, u32 *size) const {
+    u32 compressedSize;
+    UniquePtr<u8> compressed(
+            reinterpret_cast<u8 *>(loadFile(zipFile, filePath, m_courseHeap, &compressedSize)));
+    if (!compressed.get()) {
+        return nullptr;
+    }
+    UniquePtr<u8> uncompressed;
+    u32 uncompressedSize;
+    if (SZS::GetUncompressedSize(compressed.get(), compressedSize, uncompressedSize)) {
+        uncompressed.reset(new (m_courseHeap, 0x20) u8[uncompressedSize]);
+        if (!SZS::Uncompress(compressed.get(), compressedSize, uncompressed.get(),
+                    uncompressedSize)) {
+            return nullptr;
+        }
+    } else {
+        uncompressed.reset(compressed.release());
+        uncompressedSize = compressedSize;
+    }
+    if (size) {
+        *size = uncompressedSize;
+    }
+    return uncompressed.release();
 }
 
 void *CourseManager::Run(void *param) {
