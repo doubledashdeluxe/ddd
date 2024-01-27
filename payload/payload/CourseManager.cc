@@ -1186,7 +1186,6 @@ bool CourseManager::SetINIField(const char *value, UniquePtr<char> *field) {
     }
     field->get()[valueLength] = '\0';
     memcpy(field->get(), value, valueLength);
-    DEBUG("%s\n", field->get());
     return true;
 }
 
