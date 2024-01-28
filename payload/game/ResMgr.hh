@@ -1,5 +1,7 @@
 #pragma once
 
+#include "game/MinimapConfig.hh"
+
 #include <jsystem/JKRArchive.hh>
 #include <jsystem/JKRHeap.hh>
 #include <payload/CourseManager.hh>
@@ -79,6 +81,7 @@ private:
     static u32 s_courseOrder;
     static u32 s_mountCourseID;
     static u32 s_mountCourseOrder;
+    static const MinimapConfig *s_minimapConfig;
     static void *s_courseName;
     static void *s_staffGhost;
 };

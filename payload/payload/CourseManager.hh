@@ -10,6 +10,7 @@ extern "C" {
 #include <dolphin/OSThread.h>
 }
 #include <game/KartLocale.hh>
+#include <game/MinimapConfig.hh>
 #include <jsystem/JKRHeap.hh>
 
 class CourseManager : public Storage::Observer {
@@ -49,6 +50,7 @@ public:
         virtual const char *name() const = 0;
         virtual const char *author() const = 0;
         virtual const char *version() const = 0;
+        virtual const MinimapConfig *minimapConfig() const = 0;
         virtual void *thumbnail() const = 0;
         virtual void *nameImage() const = 0;
         virtual void *loadLogo() const = 0;
@@ -128,6 +130,7 @@ private:
         const char *name() const override;
         const char *author() const override;
         const char *version() const override;
+        const MinimapConfig *minimapConfig() const override;
         void *thumbnail() const override;
         void *nameImage() const override;
         void *loadLogo() const override;
@@ -144,13 +147,14 @@ private:
     class CustomCourse : public Course {
     public:
         CustomCourse(Array<u8, 32> archiveHash, Array<u8, 32> bolHash, u32 courseID, u32 musicID,
-                char *name, char *author, char *version, u8 *thumbnail, u8 *nameImage,
-                Array<char, 256> path, Array<char, 128> prefix);
+                char *name, char *author, char *version, MinimapConfig *minimapConfig,
+                u8 *thumbnail, u8 *nameImage, Array<char, 256> path, Array<char, 128> prefix);
         ~CustomCourse() override;
 
         const char *name() const override;
         const char *author() const override;
         const char *version() const override;
+        const MinimapConfig *minimapConfig() const override;
         void *thumbnail() const override;
         void *nameImage() const override;
         void *loadLogo() const override;
@@ -163,6 +167,7 @@ private:
         UniquePtr<char> m_name;
         UniquePtr<char> m_author;
         UniquePtr<char> m_version;
+        UniquePtr<MinimapConfig> m_minimapConfig;
         UniquePtr<u8> m_thumbnail;
         UniquePtr<u8> m_nameImage;
         Array<char, 256> m_path;
@@ -217,6 +222,7 @@ private:
             Ring<u32, MaxCourseCount> &battleCourseIndices);
     void addCustomCourse(const Array<char, 256> &path, Ring<u32, MaxCourseCount> &raceCourseIndices,
             Ring<u32, MaxCourseCount> &battleCourseIndices);
+    MinimapConfig *readMinimapConfig(const char *json, u32 jsonSize);
     void addCustomRacePack(const Array<char, 256> &path, Ring<u32, MaxCourseCount> &courseIndices);
     void addCustomBattlePack(const Array<char, 256> &path,
             Ring<u32, MaxCourseCount> &courseIndices);
@@ -258,6 +264,8 @@ private:
             const LocalizedINIField *fields);
     static bool SetINIField(const char *value, UniquePtr<char> *field);
     static bool GetDefaultCourseID(const char *name, u32 &courseID);
+    static bool SearchJSON(const char *json, u32 jsonSize, const char *query, f32 &value);
+    static bool SearchJSON(const char *json, u32 jsonSize, const char *query, u32 &value);
     static void SortPacksByName(Ring<UniquePtr<Pack>, MaxPackCount> &packs);
     static bool ComparePacksByName(const UniquePtr<Pack> &a, const UniquePtr<Pack> &b);
     static bool CompareRaceCourseIndicesByName(const u32 &a, const u32 &b);

@@ -2,6 +2,7 @@
 
 #include "game/CourseID.hh"
 #include "game/KartLocale.hh"
+#include "game/Race2D.hh"
 #include "game/RaceInfo.hh"
 #include "game/SysDebug.hh"
 #include "game/System.hh"
@@ -57,6 +58,8 @@ void ResMgr::LoadExtendedCourseData(const CourseManager::Course *course, u32 cou
 void ResMgr::LoadCourseData(void * /* userData */) {
     s_loadingFlag |= 1 << ArchiveID::Course;
 
+    s_minimapConfig = nullptr;
+
     const char *base = GetCrsArcName(s_courseID);
     const char *languageName = KartLocale::GetLanguageName();
     Array<char, 256> path;
@@ -85,6 +88,7 @@ void ResMgr::LoadExtendedCourseData(void *userData) {
     s_loadingFlag |= 1 << ArchiveID::Course;
 
     const CourseManager::Course *course = reinterpret_cast<CourseManager::Course *>(userData);
+    s_minimapConfig = course->minimapConfig();
     s_courseName = course->loadLogo();
     s_staffGhost = course->loadStaffGhost();
     u32 raceLevel = RaceInfo::Instance().getRaceLevel();
@@ -99,6 +103,11 @@ void ResMgr::LoadExtendedCourseData(void *userData) {
 }
 
 void *ResMgr::GetPtr(u32 courseDataID) {
+    if (courseDataID == CourseDataID::MapBti && s_minimapConfig) {
+        // Hack: this should be done in the Race2D constructor, but it's just way too long
+        Race2D::Instance()->setMinimapConfig(*s_minimapConfig);
+    }
+
     const char *name;
     switch (courseDataID) {
     case CourseDataID::CourseBmd:
@@ -171,3 +180,4 @@ u32 ResMgr::GetCourseID() {
 }
 
 u32 ResMgr::s_musicID;
+const MinimapConfig *ResMgr::s_minimapConfig;
