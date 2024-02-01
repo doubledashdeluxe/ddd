@@ -32,7 +32,7 @@ JKRArchive *JKRArchive::Mount(s32 entrynum, JKRHeap *heap, u32 mountDirection,
     }
     for (JSUPtrLink *link = s_volumeList.getFirstLink(); link; link = link->getNext()) {
         JKRArchive *archive = reinterpret_cast<JKRArchive *>(link->getObjectPtr());
-        if (archive->m_entrynum == entrynum && archive->m_heap == heap) {
+        if (archive->m_entrynum == entrynum) {
             archive->m_mountCount++;
             return archive;
         }
@@ -49,7 +49,7 @@ JKRArchive *JKRArchive::Mount(void *archive, JKRHeap *heap, u32 mountDirection,
     s32 entrynum = reinterpret_cast<intptr_t>(archive);
     for (JSUPtrLink *link = s_volumeList.getFirstLink(); link; link = link->getNext()) {
         JKRArchive *archive = reinterpret_cast<JKRArchive *>(link->getObjectPtr());
-        if (archive->m_entrynum == entrynum && archive->m_heap == heap) {
+        if (archive->m_entrynum == entrynum) {
             archive->m_mountCount++;
             return archive;
         }
