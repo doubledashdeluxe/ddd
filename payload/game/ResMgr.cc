@@ -28,7 +28,7 @@ void ResMgr::Create(JKRHeap *parentHeap) {
     s_loaders[ArchiveID::System] = JKRArchive::Mount(DOL::BinarySectionStart(), parentHeap,
             JKRArchive::MountDirection::Head, true);
 
-    size_t keepHeapSize = 0xd80000;
+    size_t keepHeapSize = 0xf00000;
     void *keepHeap = MEM2Arena::Instance()->alloc(keepHeapSize, 0x4);
     s_keepHeap = JKRExpHeap::Create(keepHeap, keepHeapSize, parentHeap, false);
     SysDebug::GetManager()->createHeapInfo(s_keepHeap, "MRAM.arc");
