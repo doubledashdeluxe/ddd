@@ -1,6 +1,7 @@
 #pragma once
 
 #include "jsystem/J2DAnmBase.hh"
+#include "jsystem/TVec2.hh"
 
 class J2DPane {
 public:
@@ -28,7 +29,7 @@ public:
     virtual void vf_20();
     virtual void setAlpha(u8 alpha);
     virtual void vf_28();
-    virtual void vf_2c();
+    virtual void calcMtx();
     virtual void vf_30();
     virtual void vf_34();
     virtual void vf_38();
@@ -77,6 +78,12 @@ public:
     bool m_isVisible;
 
 private:
-    u8 _0b1[0x100 - 0x0b1];
+    u8 _0b1[0x0d4 - 0x0b1];
+
+public:
+    TVec2<f32> m_offset;
+
+private:
+    u8 _0dc[0x100 - 0x0dc];
 };
 size_assert(J2DPane, 0x100);

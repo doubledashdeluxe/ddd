@@ -10,7 +10,7 @@ public:
     J2DScreen();
     ~J2DScreen() override;
     u32 getTypeID() const override;
-    void vf_2c() override;
+    void calcMtx() override;
     void vf_38() override;
     J2DPane *search(u64 tag) override;
     void vf_40() override;
