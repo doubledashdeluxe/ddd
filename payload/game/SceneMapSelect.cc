@@ -312,11 +312,13 @@ void SceneMapSelect::scrollDown() {
 
 void SceneMapSelect::selectIn() {
     m_selectAnmTransformFrame = 1;
-    if (m_gridAnmTransformFrame == 25) {
-        if (m_mapIndex / 3 == m_rowIndex) {
-            m_gridAnmTransformFrame = 24;
-        } else {
-            m_gridAnmTransformFrame = 26;
+    if (m_mapIndex / 3 == m_rowIndex) {
+        if (m_gridAnmTransformFrame > 21) {
+            m_gridAnmTransformFrame--;
+        }
+    } else {
+        if (m_gridAnmTransformFrame < 29) {
+            m_gridAnmTransformFrame++;
         }
     }
     for (u32 i = 0; i < m_thumbnailAnmTevRegKeyFrames.count(); i++) {
@@ -346,10 +348,8 @@ void SceneMapSelect::select() {
 
 void SceneMapSelect::spin() {
     m_spinFrame = 1;
-    if (m_mapIndex / 3 == m_rowIndex) {
-        m_gridAnmTransformFrame = 22;
-    } else {
-        m_gridAnmTransformFrame = 28;
+    if (m_gridAnmTransformFrame > 21) {
+        m_gridAnmTransformFrame--;
     }
     m_state = &SceneMapSelect::stateSpin;
 }
@@ -469,6 +469,7 @@ void SceneMapSelect::stateScrollUp() {
     showMaps(0);
     showArrows(0);
     if (m_gridAnmTransformFrame == 46) {
+        m_gridAnmTransformFrame = 21;
         idle();
     }
 }
@@ -493,10 +494,14 @@ void SceneMapSelect::stateScrollDown() {
 
 void SceneMapSelect::stateSelectIn() {
     m_selectAnmTransformFrame++;
-    if (m_gridAnmTransformFrame < 25 && m_gridAnmTransformFrame > 21) {
-        m_gridAnmTransformFrame--;
-    } else if (m_gridAnmTransformFrame > 25 && m_gridAnmTransformFrame < 29) {
-        m_gridAnmTransformFrame++;
+    if (m_mapIndex / 3 == m_rowIndex) {
+        if (m_gridAnmTransformFrame > 21) {
+            m_gridAnmTransformFrame--;
+        }
+    } else {
+        if (m_gridAnmTransformFrame < 29) {
+            m_gridAnmTransformFrame++;
+        }
     }
     showMaps(0);
     hideArrows();
@@ -538,9 +543,7 @@ void SceneMapSelect::stateSelect() {
 }
 
 void SceneMapSelect::stateSpin() {
-    if (m_gridAnmTransformFrame < 25) {
-        m_gridAnmTransformFrame++;
-    } else if (m_gridAnmTransformFrame > 25) {
+    if (m_gridAnmTransformFrame > 21) {
         m_gridAnmTransformFrame--;
     }
     hideArrows();
