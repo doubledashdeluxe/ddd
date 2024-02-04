@@ -1,7 +1,5 @@
 #pragma once
 
-#include "game/MinimapConfig.hh"
-
 #include <jsystem/JKRArchive.hh>
 #include <jsystem/JKRHeap.hh>
 #include <payload/CourseManager.hh>
@@ -55,6 +53,7 @@ public:
     REPLACE static void *GetPtr(u32 courseDataID);
     static void *GetPtr(u32 archiveID, const char *path);
     static u32 GetResSize(u32 archiveID, const void *ptr);
+    static const CourseManager::Course *GetCourse();
     static u32 GetMusicID();
     static u32 GetCourseID();
 
@@ -77,12 +76,12 @@ private:
     static JKRHeap *s_courseHeap;
     static u32 s_loadFlag;
     static u32 s_loadingFlag;
+    static const CourseManager::Course *s_course;
     static u32 s_musicID;
     static u32 s_courseID;
     static u32 s_courseOrder;
     static u32 s_mountCourseID;
     static u32 s_mountCourseOrder;
-    static const MinimapConfig *s_minimapConfig;
     static void *s_courseName;
     static void *s_staffGhost;
 };

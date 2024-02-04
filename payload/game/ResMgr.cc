@@ -40,25 +40,24 @@ void ResMgr::Create(JKRHeap *parentHeap) {
 
 void ResMgr::LoadCourseData(u32 courseID, u32 courseOrder) {
     delete s_loaders[ArchiveID::Course];
+    s_course = nullptr;
     s_musicID = courseID;
     REPLACED(LoadCourseData)(courseID, courseOrder);
 }
 
 void ResMgr::LoadExtendedCourseData(const CourseManager::Course *course, u32 courseOrder) {
     delete s_loaders[ArchiveID::Course];
+    s_course = course;
     s_musicID = course->musicID();
     s_courseOrder = courseOrder;
     CourseManager::Instance()->freeAll();
     s_loadFlag &= ~(1 << ArchiveID::Course);
     s_loaders[ArchiveID::Course] = nullptr;
-    void *userData = const_cast<CourseManager::Course *>(course);
-    System::GetLoadTask()->request(LoadExtendedCourseData, userData, nullptr);
+    System::GetLoadTask()->request(LoadExtendedCourseData, nullptr, nullptr);
 }
 
 void ResMgr::LoadCourseData(void * /* userData */) {
     s_loadingFlag |= 1 << ArchiveID::Course;
-
-    s_minimapConfig = nullptr;
 
     const char *base = GetCrsArcName(s_courseID);
     const char *languageName = KartLocale::GetLanguageName();
@@ -84,15 +83,13 @@ void ResMgr::LoadCourseData(void * /* userData */) {
     s_loadFlag |= 1 << ArchiveID::Course;
 }
 
-void ResMgr::LoadExtendedCourseData(void *userData) {
+void ResMgr::LoadExtendedCourseData(void * /* userData */) {
     s_loadingFlag |= 1 << ArchiveID::Course;
 
-    const CourseManager::Course *course = reinterpret_cast<CourseManager::Course *>(userData);
-    s_minimapConfig = course->minimapConfig();
-    s_courseName = course->loadLogo();
-    s_staffGhost = course->loadStaffGhost();
+    s_courseName = s_course->loadLogo();
+    s_staffGhost = s_course->loadStaffGhost();
     u32 raceLevel = RaceInfo::Instance().getRaceLevel();
-    void *courseArchive = course->loadCourse(s_courseOrder, raceLevel);
+    void *courseArchive = s_course->loadCourse(s_courseOrder, raceLevel);
     s_loaders[ArchiveID::Course] =
             JKRArchive::Mount(courseArchive, s_courseHeap, JKRArchive::MountDirection::Head, false);
 
@@ -113,12 +110,16 @@ void ResMgr::LoadExtendedCourseData(void *userData) {
 }
 
 void *ResMgr::GetPtr(u32 courseDataID) {
-    if (courseDataID == CourseDataID::MapBti && s_minimapConfig) {
+    if (courseDataID == CourseDataID::MapBti && s_course && s_course->minimapConfig()) {
         // Hack: this should be done in the Race2D constructor, but it's just way too long
-        Race2D::Instance()->setMinimapConfig(*s_minimapConfig);
+        Race2D::Instance()->setMinimapConfig(*s_course->minimapConfig());
     }
 
     return REPLACED(GetPtr)(courseDataID);
+}
+
+const CourseManager::Course *ResMgr::GetCourse() {
+    return s_course;
 }
 
 u32 ResMgr::GetMusicID() {
@@ -129,5 +130,5 @@ u32 ResMgr::GetCourseID() {
     return s_courseID;
 }
 
+const CourseManager::Course *ResMgr::s_course;
 u32 ResMgr::s_musicID;
-const MinimapConfig *ResMgr::s_minimapConfig;

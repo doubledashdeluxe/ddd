@@ -1,12 +1,9 @@
 #include "LANNum2D.hh"
 
 #include "game/Kart2DCommon.hh"
-#include "game/RaceInfo.hh"
-#include "game/RaceMode.hh"
-#include "game/SequenceInfo.hh"
+#include "game/ResMgr.hh"
 
 #include <jsystem/J2DPicture.hh>
-#include <payload/CourseManager.hh>
 
 extern "C" {
 #include <stdio.h>
@@ -19,26 +16,8 @@ void LANNum2D::start() {
     m_screen->search("NName")->m_isVisible = false;
     m_screen->search("NAuthor")->m_isVisible = false;
 
-    const RaceInfo &raceInfo = RaceInfo::Instance();
-    switch (raceInfo.getRaceMode()) {
-    case RaceMode::VS:
-    case RaceMode::Balloon:
-    case RaceMode::Bomb:
-    case RaceMode::Escape:
-        break;
-    default:
-        return;
-    }
-
-    const SequenceInfo &sequenceInfo = SequenceInfo::Instance();
-    const CourseManager *courseManager = CourseManager::Instance();
-    const CourseManager::Course *course;
-    if (RaceInfo::Instance().isRace()) {
-        course = &courseManager->raceCourse(sequenceInfo.m_packIndex, sequenceInfo.m_mapIndex);
-    } else {
-        course = &courseManager->battleCourse(sequenceInfo.m_packIndex, sequenceInfo.m_mapIndex);
-    }
-    if (!course->name() || !course->author()) {
+    const CourseManager::Course *course = ResMgr::GetCourse();
+    if (!course || !course->name() || !course->author()) {
         return;
     }
 
