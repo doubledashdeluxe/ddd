@@ -321,7 +321,7 @@ CourseManager::CourseManager() : m_currIsLocked(false), m_nextIsLocked(false), m
     OSInitMessageQueue(&m_queue, m_messages.values(), m_messages.count());
     OSInitMessageQueue(&m_initQueue, m_initMessages.values(), m_initMessages.count());
     void *param = this;
-    OSCreateThread(&m_thread, Run, param, m_stack.values() + m_stack.count(), m_stack.count(), 12,
+    OSCreateThread(&m_thread, Run, param, m_stack.values() + m_stack.count(), m_stack.count(), 26,
             0);
 }
 
