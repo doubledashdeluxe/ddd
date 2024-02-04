@@ -10,6 +10,12 @@ JKRArchive *SceneFactory::archive(u32 archiveType) {
 
 void SceneFactory::loadData(s32 sceneType, JKRHeap *heap) {
     switch (sceneType) {
+    case SceneType::Title:
+        REPLACED(loadData)(SceneType::Title, heap);
+        REPLACED(loadData)(SceneType::Menu, heap);
+        REPLACED(loadData)(SceneType::Option, heap);
+        REPLACED(loadData)(SceneType::Record, heap);
+        return;
     case SceneType::MapSelect:
         REPLACED(loadData)(SceneType::Menu, heap);
         REPLACED(loadData)(SceneType::CourseSelect, heap);
