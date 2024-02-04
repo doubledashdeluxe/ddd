@@ -163,6 +163,9 @@
 8013f044 __dt__12SceneFactoryFv
 8013f0cc loadData__12SceneFactoryFlP7JKRHeap
 8013f6e8 createScene__12SceneFactoryFlP7JKRHeap
+801449c8 setS__11Race2DParamFf
+801449d0 setY__11Race2DParamFf
+801449d8 setX__11Race2DParamFf
 801573fc reset__9SceneMenuFv
 80157c08 init__9SceneMenuFv
 80163cb0 setRaceData__9SceneMenuFv
