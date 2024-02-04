@@ -51,6 +51,7 @@ public:
     static void LoadExtendedCourseData(const CourseManager::Course *course, u32 courseOrder);
     static const char *GetCrsArcName(u32 courseID);
     static bool IsFinishedLoadingArc(u32 archiveID);
+    static void *REPLACED(GetPtr)(u32 courseDataID);
     REPLACE static void *GetPtr(u32 courseDataID);
     static void *GetPtr(u32 archiveID, const char *path);
     static u32 GetResSize(u32 archiveID, const void *ptr);

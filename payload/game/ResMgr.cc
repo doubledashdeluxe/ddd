@@ -15,6 +15,7 @@
 #include <payload/FileLoader.hh>
 
 extern "C" {
+#include <assert.h>
 #include <stdio.h>
 }
 
@@ -46,7 +47,6 @@ void ResMgr::LoadCourseData(u32 courseID, u32 courseOrder) {
 void ResMgr::LoadExtendedCourseData(const CourseManager::Course *course, u32 courseOrder) {
     delete s_loaders[ArchiveID::Course];
     s_musicID = course->musicID();
-    s_courseID = course->courseID();
     s_courseOrder = courseOrder;
     CourseManager::Instance()->freeAll();
     s_loadFlag &= ~(1 << ArchiveID::Course);
@@ -96,6 +96,16 @@ void ResMgr::LoadExtendedCourseData(void *userData) {
     s_loaders[ArchiveID::Course] =
             JKRArchive::Mount(courseArchive, s_courseHeap, JKRArchive::MountDirection::Head, false);
 
+    for (s_courseID = CourseID::BabyLuigi; s_courseID <= CourseID::Mini8; s_courseID++) {
+        const char *base = GetCrsArcName(s_courseID);
+        Array<char, 32> path;
+        snprintf(path.values(), path.count(), "%s_course.bol", base);
+        if (GetPtr(ArchiveID::Course, path.values())) {
+            break;
+        }
+    }
+    assert(s_courseID >= CourseID::BabyLuigi && s_courseID <= CourseID::Mini8);
+
     s_mountCourseID = s_courseID;
     s_mountCourseOrder = s_courseOrder;
     s_loadingFlag &= ~(1 << ArchiveID::Course);
@@ -108,67 +118,7 @@ void *ResMgr::GetPtr(u32 courseDataID) {
         Race2D::Instance()->setMinimapConfig(*s_minimapConfig);
     }
 
-    const char *name;
-    switch (courseDataID) {
-    case CourseDataID::CourseBmd:
-        name = "course.bmd";
-        break;
-    case CourseDataID::CourseBco:
-        name = "course.bco";
-        break;
-    case CourseDataID::CourseBol:
-        name = "course.bol";
-        break;
-    case CourseDataID::CourseBtk:
-        name = "course.btk";
-        break;
-    case CourseDataID::CourseBtk2:
-        name = "course_02.btk";
-        break;
-    case CourseDataID::CourseBtk3:
-        name = "course_03.btk";
-        break;
-    case CourseDataID::CourseBtp:
-        name = "course.btp";
-        break;
-    case CourseDataID::CourseBrk:
-        name = "course.brk";
-        break;
-    case CourseDataID::SkyBmd:
-        name = "sky.bmd";
-        break;
-    case CourseDataID::SkyBtk:
-        name = "sky.btk";
-        break;
-    case CourseDataID::SkyBrk:
-        name = "sky.brk";
-        break;
-    case CourseDataID::MapBti:
-        name = "map.bti";
-        break;
-    case CourseDataID::CourseName:
-        return s_courseName;
-    case CourseDataID::StaffGhost:
-        return s_staffGhost;
-    default:
-        return nullptr;
-    }
-    const char *base = GetCrsArcName(s_courseID);
-    Array<char, 32> path;
-    snprintf(path.values(), path.count(), "%s_%s", base, name);
-    void *ptr = GetPtr(ArchiveID::Course, path.values());
-    if (ptr) {
-        return ptr;
-    }
-    for (u32 courseID = CourseID::BabyLuigi; courseID <= CourseID::Mini8; courseID++) {
-        base = GetCrsArcName(courseID);
-        snprintf(path.values(), path.count(), "%s_%s", base, name);
-        void *ptr = GetPtr(ArchiveID::Course, path.values());
-        if (ptr) {
-            return ptr;
-        }
-    }
-    return nullptr;
+    return REPLACED(GetPtr)(courseDataID);
 }
 
 u32 ResMgr::GetMusicID() {

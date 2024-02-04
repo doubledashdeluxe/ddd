@@ -39,14 +39,13 @@ public:
 
     class Course {
     public:
-        Course(Array<u8, 32> archiveHash, Array<u8, 32> bolHash, u32 courseID, u32 musicID);
+        Course(Array<u8, 32> archiveHash, Array<u8, 32> bolHash);
         virtual ~Course();
 
         Array<u8, 32> archiveHash() const;
         Array<u8, 32> bolHash() const;
-        u32 courseID() const;
-        u32 musicID() const;
 
+        virtual u32 musicID() const = 0;
         virtual const char *name() const = 0;
         virtual const char *author() const = 0;
         virtual const char *version() const = 0;
@@ -62,8 +61,6 @@ public:
     protected:
         Array<u8, 32> m_archiveHash;
         Array<u8, 32> m_bolHash;
-        u32 m_courseID;
-        u32 m_musicID;
     };
 
     void start();
@@ -127,6 +124,7 @@ private:
                 const char *thumbnail, const char *nameImage);
         ~DefaultCourse() override;
 
+        u32 musicID() const override;
         const char *name() const override;
         const char *author() const override;
         const char *version() const override;
@@ -140,17 +138,19 @@ private:
         bool isCustom() const override;
 
     private:
+        u32 m_courseID;
         const char *m_thumbnail;
         const char *m_nameImage;
     };
 
     class CustomCourse : public Course {
     public:
-        CustomCourse(Array<u8, 32> archiveHash, Array<u8, 32> bolHash, u32 courseID, u32 musicID,
-                char *name, char *author, char *version, MinimapConfig *minimapConfig,
-                u8 *thumbnail, u8 *nameImage, Array<char, 256> path, Array<char, 128> prefix);
+        CustomCourse(Array<u8, 32> archiveHash, Array<u8, 32> bolHash, u32 musicID, char *name,
+                char *author, char *version, MinimapConfig *minimapConfig, u8 *thumbnail,
+                u8 *nameImage, Array<char, 256> path, Array<char, 128> prefix);
         ~CustomCourse() override;
 
+        u32 musicID() const override;
         const char *name() const override;
         const char *author() const override;
         const char *version() const override;
@@ -164,6 +164,7 @@ private:
         bool isCustom() const override;
 
     private:
+        u32 m_musicID;
         UniquePtr<char> m_name;
         UniquePtr<char> m_author;
         UniquePtr<char> m_version;

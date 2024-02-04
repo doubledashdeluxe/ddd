@@ -37,9 +37,8 @@ Ring<u32, CourseManager::MaxCourseCount> &CourseManager::Pack::courseIndices() {
     return m_courseIndices;
 }
 
-CourseManager::Course::Course(Array<u8, 32> archiveHash, Array<u8, 32> bolHash, u32 courseID,
-        u32 musicID)
-    : m_archiveHash(archiveHash), m_bolHash(bolHash), m_courseID(courseID), m_musicID(musicID) {}
+CourseManager::Course::Course(Array<u8, 32> archiveHash, Array<u8, 32> bolHash)
+    : m_archiveHash(archiveHash), m_bolHash(bolHash) {}
 
 CourseManager::Course::~Course() {}
 
@@ -49,14 +48,6 @@ Array<u8, 32> CourseManager::Course::archiveHash() const {
 
 Array<u8, 32> CourseManager::Course::bolHash() const {
     return m_bolHash;
-}
-
-u32 CourseManager::Course::courseID() const {
-    return m_courseID;
-}
-
-u32 CourseManager::Course::musicID() const {
-    return m_musicID;
 }
 
 CourseManager::DefaultPack::DefaultPack(Ring<u32, MaxCourseCount> courseIndices,
@@ -113,10 +104,14 @@ void *CourseManager::CustomPack::nameImage() const {
 
 CourseManager::DefaultCourse::DefaultCourse(Array<u8, 32> archiveHash, Array<u8, 32> bolHash,
         u32 courseID, const char *thumbnail, const char *nameImage)
-    : Course(archiveHash, bolHash, courseID, courseID), m_thumbnail(thumbnail),
+    : Course(archiveHash, bolHash), m_courseID(courseID), m_thumbnail(thumbnail),
       m_nameImage(nameImage) {}
 
 CourseManager::DefaultCourse::~DefaultCourse() {}
+
+u32 CourseManager::DefaultCourse::musicID() const {
+    return m_courseID;
+}
 
 const char *CourseManager::DefaultCourse::name() const {
     Array<char, 32> path;
@@ -183,14 +178,17 @@ bool CourseManager::DefaultCourse::isCustom() const {
 }
 
 CourseManager::CustomCourse::CustomCourse(Array<u8, 32> archiveHash, Array<u8, 32> bolHash,
-        u32 courseID, u32 musicID, char *name, char *author, char *version,
-        MinimapConfig *minimapConfig, u8 *thumbnail, u8 *nameImage, Array<char, 256> path,
-        Array<char, 128> prefix)
-    : Course(archiveHash, bolHash, courseID, musicID), m_name(name), m_author(author),
+        u32 musicID, char *name, char *author, char *version, MinimapConfig *minimapConfig,
+        u8 *thumbnail, u8 *nameImage, Array<char, 256> path, Array<char, 128> prefix)
+    : Course(archiveHash, bolHash), m_musicID(musicID), m_name(name), m_author(author),
       m_version(version), m_minimapConfig(minimapConfig), m_thumbnail(thumbnail),
       m_nameImage(nameImage), m_path(path), m_prefix(prefix) {}
 
 CourseManager::CustomCourse::~CustomCourse() {}
+
+u32 CourseManager::CustomCourse::musicID() const {
+    return m_musicID;
+}
 
 const char *CourseManager::CustomCourse::name() const {
     return m_name.get();
@@ -788,30 +786,23 @@ void CourseManager::addCustomCourse(const Array<char, 256> &path,
         if (!archive.isValid(courseSize)) {
             return;
         }
-        const char *base = ResMgr::GetCrsArcName(courseID);
-        Array<char, 256> bolPath;
-        snprintf(bolPath.values(), bolPath.count(), "/%s_course.bol", base);
-        const char *name;
-        Archive::Dir dir(nullptr);
         Archive::Node node(nullptr);
-        bool exists;
-        if (!archive.getTree().search(bolPath.values(), name, dir, node, exists)) {
-            return;
-        }
-        if (!exists || !node.isFile()) {
-            for (u32 bolCourseID = CourseID::BabyLuigi; bolCourseID <= CourseID::Mini8;
-                    bolCourseID++) {
-                base = ResMgr::GetCrsArcName(bolCourseID);
-                snprintf(bolPath.values(), bolPath.count(), "/%s_course.bol", base);
-                if (!archive.getTree().search(bolPath.values(), name, dir, node, exists)) {
-                    return;
-                }
-                if (exists && node.isFile()) {
-                    break;
-                }
+        u32 bolCourseID;
+        for (bolCourseID = CourseID::BabyLuigi; bolCourseID <= CourseID::Mini8; bolCourseID++) {
+            const char *base = ResMgr::GetCrsArcName(bolCourseID);
+            Array<char, 256> bolPath;
+            snprintf(bolPath.values(), bolPath.count(), "/%s_course.bol", base);
+            const char *name;
+            Archive::Dir dir(nullptr);
+            bool exists;
+            if (!archive.getTree().search(bolPath.values(), name, dir, node, exists)) {
+                return;
+            }
+            if (exists && node.isFile()) {
+                break;
             }
         }
-        if (!exists || !node.isFile()) {
+        if (bolCourseID > CourseID::Mini8) {
             return;
         }
         u8 *bol = reinterpret_cast<u8 *>(node.getFile(archive.getFiles()));
@@ -878,9 +869,9 @@ void CourseManager::addCustomCourse(const Array<char, 256> &path,
     DEBUG("Adding custom %s course %s...\n", type, path.values());
     courseIndices->pushBack(courses->count());
     courses->pushBack();
-    Course *course = new (m_heap, 0x4) CustomCourse(archiveHash, bolHash, courseID, musicID,
-            name.release(), author.release(), version.release(), minimapConfig.release(),
-            thumbnail.release(), nameImage.release(), path, prefix);
+    Course *course = new (m_heap, 0x4) CustomCourse(archiveHash, bolHash, musicID, name.release(),
+            author.release(), version.release(), minimapConfig.release(), thumbnail.release(),
+            nameImage.release(), path, prefix);
     courses->back()->reset(course);
 }
 
