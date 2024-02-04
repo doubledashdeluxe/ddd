@@ -34,6 +34,7 @@ public:
     public:
         enum {
             MRAM = 0x0,
+            ARAM = 0x2,
             Course = 0x3,
             System = 0x4,
         };

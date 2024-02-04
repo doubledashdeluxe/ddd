@@ -196,7 +196,11 @@
 801cf310 GetPtr__6ResMgrFUl
 801cf524 GetPtr__6ResMgrFUlPCc
 801cf560 GetResSize__6ResMgrFUlPCv
+801cf8c4 Create__7LogoAppFv
 801cf914 Call__7LogoAppFv
+801cf938 __ct__7LogoAppFv
+801cfa38 draw__7LogoAppFv
+801cfa5c calc__7LogoAppFv
 801d02f8 StartAudio__6SystemFPv
 801d0388 Init__6SystemFv
 801d3704 Ask__9CardAgentFll
@@ -271,6 +275,7 @@
 803d5b90 s_mountCourseOrder__6ResMgr
 803d5b94 s_courseName__6ResMgr
 803d5b98 s_staffGhost__6ResMgr
+803d5ba8 s_instance__7LogoApp
 803d5bb0 s_display__6System
 803d5bb4 s_appHeap__6System
 803d5bcc s_loadTask__6System
