@@ -6,6 +6,7 @@
 #include "game/SequenceApp.hh"
 #include "game/System.hh"
 
+#include <common/Log.hh>
 #include <payload/CourseManager.hh>
 
 void LogoApp::draw() {}
@@ -14,16 +15,20 @@ void LogoApp::calc() {
     switch (m_state) {
     case 0:
         CardAgent::Ask(1, 0);
+        INFO("Loading bgm_0.aw...");
         break;
     case 1:
-        if (!GameAudio::Main::Instance()->isWaveLoaded(1)) {
-            return;
-        }
-        break;
-    case 2:
         if (!GameAudio::Main::Instance()->isWaveLoaded(5)) {
             return;
         }
+        INFO(" done.\n");
+        INFO("Loading se00_0.aw...");
+        break;
+    case 2:
+        if (!GameAudio::Main::Instance()->isWaveLoaded(1)) {
+            return;
+        }
+        INFO(" done.\n");
         break;
     case 3:
         ResMgr::LoadKeepData();

@@ -16,16 +16,24 @@ extern "C" volatile u16 visel;
 const VI::Color VI::Color::Black = {16, 128, 16, 128};
 const VI::Color VI::Color::White = {255, 128, 255, 128};
 
-bool VI::isProgressive() {
+bool VI::isProgressive() const {
     return m_isProgressive;
 }
 
-u16 VI::getXFBWidth() {
+u16 VI::getXFBWidth() const {
     return m_xfbWidth;
 }
 
-u16 VI::getXFBHeight() {
+u16 VI::getXFBHeight() const {
     return m_xfbHeight;
+}
+
+u32 VI::getXFBSize() const {
+    return m_xfbSize;
+}
+
+u32 *VI::getXFB() const {
+    return m_xfb;
 }
 
 VI::Color VI::readFromXFB(u16 x, u16 y) {
@@ -66,9 +74,9 @@ VI *VI::Instance() {
 VI::VI() {
     m_isProgressive = visel & 1 || dcr & 4;
     bool isNtsc = (dcr >> 8 & 3) == 0;
-    m_xfbWidth = 640;
-    m_xfbHeight = m_isProgressive || isNtsc ? 480 : 574;
-    m_xfbSize = m_xfbHeight * (m_xfbWidth + 1) / 2 * sizeof(u32);
+    m_xfbWidth = 608;
+    m_xfbHeight = m_isProgressive || isNtsc ? 448 : 538;
+    m_xfbSize = m_xfbHeight * ((m_xfbWidth + 1) / 2) * sizeof(u32);
     m_xfb = reinterpret_cast<u32 *>(MEM2Arena::Instance()->alloc(m_xfbSize, 0x20));
     for (u16 y = 0; y < m_xfbHeight; y++) {
         for (u16 x = 0; x < m_xfbWidth; x++) {
@@ -78,16 +86,16 @@ VI::VI() {
     flushXFB();
     vtr = m_xfbHeight << (3 + m_isProgressive) | (vtr & 0xf);
     if (m_isProgressive) {
-        vto = 0x6 << 16 | 0x30;
-        vte = 0x6 << 16 | 0x30;
+        vto = 0x26 << 16 | 0x50;
+        vte = 0x26 << 16 | 0x50;
     } else if (isNtsc) {
-        vto = 0x3 << 16 | 0x18;
-        vte = 0x2 << 16 | 0x19;
+        vto = 0x23 << 16 | 0x38;
+        vte = 0x22 << 16 | 0x39;
     } else {
-        vto = 0x1 << 16 | 0x23;
-        vte = 0x0 << 16 | 0x24;
+        vto = 0x21 << 16 | 0x43;
+        vte = 0x20 << 16 | 0x44;
     }
-    hsw = 0x2828;
+    hsw = 0x2626;
     hsr = 0x10f5;
     tfbl = 1 << 28 | reinterpret_cast<uintptr_t>(m_xfb) >> 5;
     bfbl = 1 << 28 | reinterpret_cast<uintptr_t>(m_xfb) >> 5;

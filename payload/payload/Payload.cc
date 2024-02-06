@@ -170,5 +170,5 @@ void Payload::Run(Context *context) {
     LogFile::Init();
     INFO(" done.\n");
 
-    Console::Instance()->m_isActive = false;
+    Console::Instance()->setIsDirect(false);
 }

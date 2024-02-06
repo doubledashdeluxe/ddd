@@ -30,6 +30,7 @@
 80018ed4 print__10JUTConsoleFPCc
 8001ab48 panic_f__12JUTExceptionFPCciPCce
 8001cda0 setPreUserCallback__12JUTExceptionFPFUsP9OSContextUlUl_v
+80023d44 DummyNoDrawWait__8JUTVideoFv
 80023e24 setRenderMode__8JUTVideoFPC15GXRenderModeObj
 80028d84 appendChild__7J2DPaneFP7J2DPane
 8002e058 GetTypeID__10J2DPictureFv
@@ -246,6 +247,7 @@
 803d4aa0 s_systemHeap__7JKRHeap
 803d4aa4 s_currentHeap__7JKRHeap
 803d4aa8 s_rootHeap__7JKRHeap
+803d4b90 s_manager__6JUTXfb
 803d4d50 s_loadThread__13JASAramStream
 803d4d54 s_readBuffer__13JASAramStream
 803d4d58 s_blockSize__13JASAramStream

@@ -23,7 +23,9 @@ public:
         static const Color White;
     };
 
+    void setIsDirect(bool isDirect);
     void vprintf(Color bg, Color fg, const char *format, va_list vlist);
+    void copyXFB(u16 xfbWidth, u16 xfbHeight, void *xfb);
 
     static void Init(VI *vi);
     static void Init(Console *instance);
@@ -35,9 +37,11 @@ private:
     Console(VI *vi);
 
     void putchar(int c);
+    void scroll();
 
     static void Putchar(int c, void *ctx);
 
+    bool m_isDirect;
     VI *m_vi;
     u8 m_cols;
     u8 m_rows;

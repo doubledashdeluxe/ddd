@@ -14,9 +14,11 @@ public:
         static const Color White;
     };
 
-    bool isProgressive();
-    u16 getXFBWidth();
-    u16 getXFBHeight();
+    bool isProgressive() const;
+    u16 getXFBWidth() const;
+    u16 getXFBHeight() const;
+    u32 getXFBSize() const;
+    u32 *getXFB() const;
     Color readFromXFB(u16 x, u16 y);
     void writeToXFB(u16 x, u16 y, Color color);
     void flushXFB();

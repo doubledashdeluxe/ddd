@@ -13,6 +13,8 @@ extern "C" {
 #define NANOPRINTF_VISIBILITY_STATIC
 #define NANOPRINTF_IMPLEMENTATION
 #include <nanoprintf.h>
+
+#include <string.h>
 }
 
 const Console::Color Console::Color::Black = {0, 0, 0};
@@ -24,6 +26,17 @@ const Console::Color Console::Color::Magenta = {255, 0, 255};
 const Console::Color Console::Color::Yellow = {255, 255, 0};
 const Console::Color Console::Color::White = {255, 255, 255};
 
+void Console::setIsDirect(bool isDirect) {
+    if (isDirect) {
+        if (m_row >= m_rows) {
+            m_row = m_rows + m_row % m_rows;
+        }
+        scroll();
+    }
+
+    m_isDirect = isDirect;
+}
+
 void Console::vprintf(Color bg, Color fg, const char *format, va_list vlist) {
     if (!m_isActive) {
         return;
@@ -32,7 +45,34 @@ void Console::vprintf(Color bg, Color fg, const char *format, va_list vlist) {
     m_bg = bg;
     m_fg = fg;
     npf_vpprintf(Putchar, this, format, vlist);
-    m_vi->flushXFB();
+    if (m_isDirect) {
+        m_vi->flushXFB();
+    }
+}
+
+void Console::copyXFB(u16 xfbWidth, u16 xfbHeight, void *xfb) {
+    if (!m_isActive) {
+        return;
+    }
+
+    if (xfbWidth != m_vi->getXFBWidth() || xfbHeight != m_vi->getXFBHeight()) {
+        return;
+    }
+
+    u8 glyphHeight = Font::GetGlyphHeight();
+    for (u16 dstY = 0; dstY < xfbHeight; dstY++) {
+        u16 srcY = dstY;
+        if (dstY >= glyphHeight / 2 && dstY < glyphHeight / 2 + m_rows * glyphHeight) {
+            if (m_row >= m_rows) {
+                srcY -= glyphHeight / 2;
+                srcY = (srcY + (m_row + 1) % m_rows * glyphHeight) % (m_rows * glyphHeight);
+                srcY += glyphHeight / 2;
+            }
+        }
+        u8 *dst = &reinterpret_cast<u8 *>(xfb)[dstY * xfbWidth * 2];
+        const u32 *src = &m_vi->getXFB()[srcY * xfbWidth / 2];
+        memcpy(dst, src, xfbWidth * 2);
+    }
 }
 
 void Console::Init(VI *vi) {
@@ -48,18 +88,26 @@ Console *Console::Instance() {
 }
 
 Console::Console(VI *vi)
-    : m_isActive(true), m_vi(vi), m_cols(vi->getXFBWidth() / Font::GetGlyphWidth() - 1),
+    : m_isActive(true), m_isDirect(true), m_vi(vi),
+      m_cols(vi->getXFBWidth() / Font::GetGlyphWidth() - 1),
       m_rows(vi->getXFBHeight() / Font::GetGlyphHeight() / (!vi->isProgressive() + 1) - 1),
       m_col(0), m_row(0) {}
 
 void Console::putchar(int c) {
-    if (m_col >= m_cols) {
-        return;
-    }
-
     if (c == '\n') {
         m_col = 0;
         m_row++;
+        if (!m_isDirect) {
+            u16 xfbWidth = m_vi->getXFBWidth();
+            u8 glyphHeight = Font::GetGlyphHeight();
+            u16 y0 = (m_row % m_rows) * glyphHeight + glyphHeight / 2;
+            for (u16 y = 0; y < glyphHeight; y++) {
+                for (u16 x = 0; x < xfbWidth; x++) {
+                    VI::Color color = VI::Color::Black;
+                    m_vi->writeToXFB(x, y0 + y, color);
+                }
+            }
+        }
         return;
     }
 
@@ -68,25 +116,18 @@ void Console::putchar(int c) {
         return;
     }
 
-    while (m_row >= m_rows) {
-        u16 xfbWidth = m_vi->getXFBWidth();
-        u8 glyphHeight = Font::GetGlyphHeight();
-        for (u8 m_row = 0; m_row < m_rows; m_row++) {
-            u16 y0 = m_row * glyphHeight + glyphHeight / 2;
-            for (u16 y = 0; y < glyphHeight; y++) {
-                for (u16 x = 0; x < xfbWidth; x++) {
-                    VI::Color color = m_vi->readFromXFB(x, y0 + glyphHeight + y);
-                    m_vi->writeToXFB(x, y0 + y, color);
-                }
-            }
-        }
-        m_row--;
+    if (m_col >= m_cols) {
+        return;
+    }
+
+    if (m_isDirect) {
+        scroll();
     }
 
     u8 glyphWidth = Font::GetGlyphWidth();
     u8 glyphHeight = Font::GetGlyphHeight();
     const u8 *glyph = Font::GetGlyph(c);
-    u16 y0 = m_row * glyphHeight + glyphHeight / 2;
+    u16 y0 = (m_row % m_rows) * glyphHeight + glyphHeight / 2;
     for (u16 y = 0; y < glyphHeight; y++) {
         u16 x0 = m_col * glyphWidth + glyphWidth / 2;
         for (u16 x = 0; x < glyphWidth; x += 2) {
@@ -108,6 +149,23 @@ void Console::putchar(int c) {
     }
 
     m_col++;
+}
+
+void Console::scroll() {
+    while (m_row >= m_rows) {
+        u16 xfbWidth = m_vi->getXFBWidth();
+        u8 glyphHeight = Font::GetGlyphHeight();
+        for (u8 row = 0; row < m_rows; row++) {
+            u16 y0 = row * glyphHeight + glyphHeight / 2;
+            for (u16 y = 0; y < glyphHeight; y++) {
+                for (u16 x = 0; x < xfbWidth; x++) {
+                    VI::Color color = m_vi->readFromXFB(x, y0 + glyphHeight + y);
+                    m_vi->writeToXFB(x, y0 + y, color);
+                }
+            }
+        }
+        m_row--;
+    }
 }
 
 void Console::Putchar(int c, void *ctx) {
