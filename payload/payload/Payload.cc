@@ -6,6 +6,7 @@
 #include "payload/DVDStorage.hh"
 #include "payload/Lock.hh"
 #include "payload/LogFile.hh"
+#include "payload/VirtualCard.hh"
 #include "payload/WUP028.hh"
 
 #include <common/Clock.hh>
@@ -136,6 +137,10 @@ void Payload::Run(Context *context) {
 
     INFO("Initializing course manager...");
     CourseManager::Init();
+    INFO(" done.\n");
+
+    INFO("Initializing virtual memory cards...");
+    VirtualCard::Init();
     INFO(" done.\n");
 
     INFO("Initializing storage...");

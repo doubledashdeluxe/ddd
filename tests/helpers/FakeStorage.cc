@@ -37,8 +37,10 @@ bool FakeStorage::File::write(const void *src, u32 size, u32 offset) {
     if (offset > file.size()) {
         return false;
     }
-    file.insert(file.begin() + offset, reinterpret_cast<const u8 *>(src),
-            reinterpret_cast<const u8 *>(src) + size);
+    if (offset + size > file.size()) {
+        file.resize(offset + size);
+    }
+    memcpy(file.data() + offset, src, size);
     return true;
 }
 
@@ -48,10 +50,6 @@ bool FakeStorage::File::sync() {
 
 bool FakeStorage::File::truncate(u64 size) {
     auto &file = m_storage->m_files[m_path];
-    if (size > file.size()) {
-        return false;
-    }
-
     file.resize(size);
     return true;
 }
@@ -94,6 +92,7 @@ bool FakeStorage::Dir::read(NodeInfo &nodeInfo) {
     }
     auto name = path->substr(pos + 1);
     snprintf(nodeInfo.name.values(), nodeInfo.name.count(), "%s", name.c_str());
+    m_index++;
     return true;
 }
 

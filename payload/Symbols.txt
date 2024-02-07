@@ -66,6 +66,24 @@
 800b15a8 ARGetSize
 800b2fec ARQInit
 800b305c ARQPostRequest
+800b4834 CARDFreeBlocks
+800b74c8 CARDCheck
+800b75e8 CARDProbeEx
+800b7e4c CARDMount
+800b7f30 CARDUnmount
+800b8778 CARDFormat
+800b8c40 CARDFastOpen
+800b8d44 CARDOpen
+800b8e60 CARDClose
+800b920c CARDCreate
+800b9680 CARDRead
+800b99fc CARDWrite
+800b9c14 CARDFastDelete
+800b9d6c CARDDelete
+800b9db4 CARDUpdateIconOffsets
+800b9fac CARDGetStatus
+800ba234 CARDSetStatus
+800ba478 CARDRename
 800bf31c GXInitTexObj
 800bf904 GXInitTlutObj
 800c3970 EXIImm
@@ -123,6 +141,7 @@
 800eff6c SIProbe
 800f0744 DBInit
 
+800ff0e0 __register_global_object
 800ff1a4 __destroy_arr
 800ff21c __construct_array
 800ff504 __ptmf_scall
