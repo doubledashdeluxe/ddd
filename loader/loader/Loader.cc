@@ -195,9 +195,9 @@ Loader::PayloadEntryFunc Loader::Run(Context *context) {
             }
         } else {
             if (DI::IsInserted()) {
-                INFO("Resetting disc interface...");
+                INFO("Resetting disc interface...\n");
                 DI::Reset();
-                INFO(" done.\n");
+                INFO("Reset disc interface.\n");
             } else {
                 if (Platform::IsDolphin()) {
                     WARN("Insert the Mario Kart: Double Dash!! disc by right-clicking the game\n");
@@ -237,19 +237,19 @@ Loader::PayloadEntryFunc Loader::Run(Context *context) {
         return nullptr;
     }
 
-    INFO("Copying payload...");
+    INFO("Copying payload...\n");
     memcpy(payloadDst, payloadSrc, payloadSize);
     DCache::Flush(payloadDst, payloadSize);
     ICache::Invalidate(payloadDst, payloadSize);
-    INFO(" done.\n");
+    INFO("Copied payload.\n");
 
-    INFO("Copying common archive...");
+    INFO("Copying common archive...\n");
     context->commonArchive = MEM2Arena::Instance()->alloc(commonArchive_size, 0x20);
     context->commonArchiveSize = commonArchive_size;
     memcpy(context->commonArchive, &commonArchive, commonArchive_size);
-    INFO(" done.\n");
+    INFO("Copied common archive.\n");
 
-    INFO("Copying localized archive...");
+    INFO("Copying localized archive...\n");
     u32 language = GetLanguage();
     const u8 *localizedArchives[] = {
             japaneseArchive,
@@ -272,7 +272,7 @@ Loader::PayloadEntryFunc Loader::Run(Context *context) {
     context->localizedArchive = MEM2Arena::Instance()->alloc(localizedArchiveSize, 0x20);
     context->localizedArchiveSize = localizedArchiveSize;
     memcpy(context->localizedArchive, localizedArchive, localizedArchiveSize);
-    INFO(" done.\n");
+    INFO("Copied localized archive.\n");
 
     if (Platform::IsDolphin()) {
         // Enable OSReport over EXI
@@ -280,7 +280,7 @@ Loader::PayloadEntryFunc Loader::Run(Context *context) {
     }
     arenaLo = reinterpret_cast<uintptr_t>(payloadDst) + payloadSize;
 
-    INFO("Starting payload...");
+    INFO("Starting payload...\n");
     PayloadEntryFunc payloadEntry = reinterpret_cast<PayloadEntryFunc>(payloadDst);
     return payloadEntry;
 }

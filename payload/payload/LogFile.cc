@@ -119,7 +119,7 @@ void LogFile::RemoveOldLogFiles() {
         }
 
         if (!Storage::Remove(path.values(), Storage::Mode::RemoveExisting)) {
-            DEBUG("Failed to remove the log file '%s'!", path.values());
+            DEBUG("Failed to remove the log file '%s'!\n", path.values());
         }
     }
 }

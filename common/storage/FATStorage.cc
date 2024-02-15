@@ -137,7 +137,7 @@ bool FATStorage::add() {
     snprintf(fDirPath.values(), fDirPath.count(), "%u:/ddd", m_volumeId);
     fResult = f_mkdir(fDirPath.values());
     if (fResult != FR_OK && fResult != FR_EXIST) {
-        DEBUG("Failed to create or open the %s directory with error %u", fDirPath.values(),
+        DEBUG("Failed to create or open the %s directory with error %u\n", fDirPath.values(),
                 fResult);
         f_unmount(fVolumePath.values());
         s_volumes[m_volumeId] = nullptr;

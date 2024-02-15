@@ -17,14 +17,11 @@ JKRMemArchive::JKRMemArchive(s32 entrynum, u32 mountDirection, bool patchesAllow
     m_isMounted = false;
     m_mountDirection = mountDirection;
     if (open(entrynum, mountDirection, patchesAllowed)) {
-        INFO(" done.\n");
         memcpy(&m_signature, "RARC", strlen("RARC"));
         u8 *dir = m_dirs;
         m_name = m_names + Bytes::ReadBE<u32>(dir, 0x04);
         s_volumeList.prepend(&m_link);
         m_isMounted = true;
-    } else {
-        INFO(" failed!\n");
     }
 }
 
@@ -53,7 +50,7 @@ bool JKRMemArchive::open(s32 entrynum, u32 mountDirection, bool patchesAllowed) 
 
     const char *bare = strrchr(path.values(), '/');
     bare = bare ? bare + 1 : path.values();
-    INFO("Loading %s...", bare);
+    INFO("Loading %s...\n", bare);
 
     Array<char, 256> filePath;
     s32 length = snprintf(filePath.values(), filePath.count(), "dvd:%s", path.values());
@@ -119,6 +116,7 @@ bool JKRMemArchive::open(s32 entrynum, u32 mountDirection, bool patchesAllowed) 
         addSubnodes(fileSize, "main:/ddd/assets/", bare);
     }
 
+    INFO("Loaded %s.\n", bare);
     return true;
 }
 
