@@ -8,24 +8,25 @@ extern "C" {
 #include <stdio.h>
 }
 
-extern "C" void Log(LogLevel level, const char *format, ...) {
+extern "C" void Log(LogLevel level, const char *shortFormat, const char *longFormat, ...) {
     va_list vlist;
-    va_start(vlist, format);
-    VLog(level, format, vlist);
+    va_start(vlist, longFormat);
+    VLog(level, shortFormat, longFormat, vlist);
     va_end(vlist);
 }
 
-extern "C" void VLog(LogLevel level, const char *format, va_list vlist) {
+extern "C" void VLog(LogLevel level, const char *shortFormat, const char *longFormat,
+        va_list vlist) {
     if (level == LOG_LEVEL_TRACE) {
         return;
     }
 
     va_list copy;
     va_copy(copy, vlist);
-    vprintf(format, copy);
+    vprintf(longFormat, copy);
 
     va_copy(copy, vlist);
-    LogFile::VPrintf(format, copy);
+    LogFile::VPrintf(longFormat, copy);
 
     Lock<NoInterrupts> lock;
     Console::Color bg = Console::Color::Black;
@@ -43,5 +44,5 @@ extern "C" void VLog(LogLevel level, const char *format, va_list vlist) {
     default:
         return;
     }
-    Console::Instance()->vprintf(bg, fg, format, vlist);
+    Console::Instance()->vprintf(bg, fg, shortFormat, vlist);
 }
