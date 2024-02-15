@@ -61,35 +61,35 @@ bool SDStorage::waitFor(Status status) {
 
 void SDStorage::pollAdd() {
     if (!resetCard()) {
-        DEBUG("Failed to reset card\n");
+        DEBUG("Failed to reset card");
         return;
     }
 
     Status status;
     if (!getStatus(status)) {
-        DEBUG("Failed to get status\n");
+        DEBUG("Failed to get status");
         return;
     }
 
     if (!status.wasAdded) {
-        DEBUG("No card inserted\n");
+        DEBUG("No card inserted");
         return;
     }
 
     if (!status.isMemory) {
-        DEBUG("Not a memory card\n");
+        DEBUG("Not a memory card");
         return;
     }
 
     m_isSDHC = status.isSDHC;
 
     if (!enable4BitBus()) {
-        DEBUG("Failed to enable 4-bit bus\n");
+        DEBUG("Failed to enable 4-bit bus");
         return;
     }
 
     if (!setClock(1)) {
-        DEBUG("Failed to set clock\n");
+        DEBUG("Failed to set clock");
         return;
     }
 

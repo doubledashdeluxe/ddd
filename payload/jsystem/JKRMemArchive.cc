@@ -50,7 +50,7 @@ bool JKRMemArchive::open(s32 entrynum, u32 mountDirection, bool patchesAllowed) 
 
     const char *bare = strrchr(path.values(), '/');
     bare = bare ? bare + 1 : path.values();
-    INFO("Loading %s...\n", bare);
+    INFO("Loading %s...", bare);
 
     Array<char, 256> filePath;
     s32 length = snprintf(filePath.values(), filePath.count(), "dvd:%s", path.values());
@@ -116,7 +116,7 @@ bool JKRMemArchive::open(s32 entrynum, u32 mountDirection, bool patchesAllowed) 
         addSubnodes(fileSize, "main:/ddd/assets/", bare);
     }
 
-    INFO("Loaded %s.\n", bare);
+    INFO("Loaded %s.", bare);
     return true;
 }
 
@@ -240,7 +240,7 @@ bool JKRMemArchive::addSubdir(u64 &archiveSize, const char *prefix, const char *
 
             Bytes::WriteBE<u32>(m_tree, 0x00, dirCount + 1);
 
-            DEBUG("Added %s to %s (%llx)\n", relative.values(), bare, archiveSize - oldArchiveSize);
+            DEBUG("Added %s to %s (%llx)", relative.values(), bare, archiveSize - oldArchiveSize);
         }
     }
 
@@ -358,7 +358,7 @@ bool JKRMemArchive::addSubfile(u64 &archiveSize, const char *prefix, const char 
     Bytes::WriteBE<u32>(node, 0x08, file - m_files);
     Bytes::WriteBE<u32>(node, 0x0c, subfileSize);
 
-    DEBUG("Added %s to %s (%llx)\n", relative.values(), bare, archiveSize - oldArchiveSize);
+    DEBUG("Added %s to %s (%llx)", relative.values(), bare, archiveSize - oldArchiveSize);
     return true;
 }
 

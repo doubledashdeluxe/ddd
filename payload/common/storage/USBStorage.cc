@@ -19,7 +19,7 @@ void USBStorage::onRemove(USB::Device *device) {
     assert(device == m_device);
     FATStorage::remove();
     m_device = nullptr;
-    DEBUG("Removed device %p\n", device);
+    DEBUG("Removed device %p", device);
 }
 
 bool USBStorage::onAdd(const USB::DeviceInfo *deviceInfo, USB::Device *device) {
@@ -76,24 +76,24 @@ bool USBStorage::onAdd(const USB::DeviceInfo *deviceInfo, USB::Device *device) {
     if (!getLunCount(device, lunCount)) {
         return false;
     }
-    DEBUG("Device has %u logical unit(s)\n", lunCount);
+    DEBUG("Device has %u logical unit(s)", lunCount);
 
     if (!findLun(device, lunCount, m_lun)) {
         return false;
     }
-    DEBUG("Using logical unit %u\n", m_lun);
+    DEBUG("Using logical unit %u", m_lun);
 
     if (!readCapacity(device, m_lun, m_blockSize)) {
         return false;
     }
-    DEBUG("Block size: %u bytes\n", m_blockSize);
+    DEBUG("Block size: %u bytes", m_blockSize);
 
     m_device = device;
     if (!FATStorage::add()) {
         m_device = nullptr;
         return false;
     }
-    DEBUG("Added device %p\n", device);
+    DEBUG("Added device %p", device);
     return true;
 }
 

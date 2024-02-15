@@ -25,7 +25,7 @@ void Clock::Init() {
     }
     u32 counterBias;
     if (!ReadCounterBias(counterBias)) {
-        WARN("Failed to read the counter bias!\n");
+        WARN("Failed to read the counter bias!");
         counterBias = 189388800;
     }
     OSSetTime(SecondsToTicks(currRTC + counterBias));

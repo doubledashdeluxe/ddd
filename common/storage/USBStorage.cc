@@ -124,7 +124,7 @@ bool USBStorage::requestSense(USB::Device *device, u8 lun) {
         return false;
     }
 
-    DEBUG("Sense key: %x\n", Bytes::ReadBE<u8>(response.values(), 0x2) & 0xf);
+    DEBUG("Sense key: %x", Bytes::ReadBE<u8>(response.values(), 0x2) & 0xf);
     return true;
 }
 

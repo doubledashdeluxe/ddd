@@ -128,7 +128,7 @@ bool SDStorage::writeHCR(u8 reg, u8 size, const void *val) {
     memcpy(regOp.val + 0x4 - size, val, size);
 
     if (ioctl(Ioctl::WriteHCR, &regOp, sizeof(regOp), nullptr, 0) < 0) {
-        DEBUG("Failed to write to host controller register 0x%x\n", reg);
+        DEBUG("Failed to write to host controller register 0x%x", reg);
         return false;
     }
 
@@ -146,7 +146,7 @@ bool SDStorage::readHCR(u8 reg, u8 size, void *val) {
     alignas(0x20) u8 out[4];
 
     if (ioctl(Ioctl::ReadHCR, &regOp, sizeof(regOp), &out, sizeof(out)) < 0) {
-        DEBUG("Failed to read host controller register 0x%x\n", reg);
+        DEBUG("Failed to read host controller register 0x%x", reg);
         return false;
     }
 
@@ -158,11 +158,11 @@ bool SDStorage::resetCard() {
     alignas(0x20) u32 out;
 
     if (ioctl(Ioctl::ResetCard, nullptr, 0, &out, sizeof(out)) < 0) {
-        DEBUG("Failed to reset interface\n");
+        DEBUG("Failed to reset interface");
         return false;
     }
 
-    DEBUG("Successfully reset interface\n");
+    DEBUG("Successfully reset interface");
     m_rca = out >> 16;
     return true;
 }
@@ -171,7 +171,7 @@ bool SDStorage::setClock(u32 clock) {
     alignas(0x20) u32 in = clock;
 
     if (ioctl(Ioctl::SetClock, &in, sizeof(in), nullptr, 0) < 0) {
-        DEBUG("Failed to set clock\n");
+        DEBUG("Failed to set clock");
         return false;
     }
 
@@ -203,14 +203,14 @@ bool SDStorage::sendCommand(u32 command, u32 commandType, u32 responseType, u32 
         pairs[2].size = sizeof(out);
         if (ioctlv(Ioctlv::SendCommand, 2, 1, pairs) < 0) {
             if (command != Command::Select) {
-                DEBUG("Failed to send command 0x%x\n", command);
+                DEBUG("Failed to send command 0x%x", command);
             }
             return false;
         }
     } else {
         if (ioctl(Ioctl::SendCommand, &request, sizeof(request), &out, sizeof(out)) < 0) {
             if (command != Command::Select) {
-                DEBUG("Failed to send command 0x%x\n", command);
+                DEBUG("Failed to send command 0x%x", command);
             }
             return false;
         }
@@ -226,11 +226,11 @@ bool SDStorage::getStatus(Status &status) {
     alignas(0x20) u32 out;
 
     if (ioctl(Ioctl::GetStatus, nullptr, 0, &out, sizeof(out)) < 0) {
-        DEBUG("Failed to get status\n");
+        DEBUG("Failed to get status");
         return false;
     }
 
-    DEBUG("Got status 0x%x\n", out);
+    DEBUG("Got status 0x%x", out);
     memcpy(&status, &out, sizeof(out));
     return true;
 }

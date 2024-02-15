@@ -128,7 +128,7 @@ bool FATStorage::add() {
     snprintf(fVolumePath.values(), fVolumePath.count(), "%u:", m_volumeId);
     FRESULT fResult = f_mount(&m_fs, fVolumePath.values(), 1);
     if (fResult != FR_OK) {
-        DEBUG("Failed to mount the filesystem with error %u\n", fResult);
+        DEBUG("Failed to mount the filesystem with error %u", fResult);
         s_volumes[m_volumeId] = nullptr;
         return false;
     }
@@ -137,7 +137,7 @@ bool FATStorage::add() {
     snprintf(fDirPath.values(), fDirPath.count(), "%u:/ddd", m_volumeId);
     fResult = f_mkdir(fDirPath.values());
     if (fResult != FR_OK && fResult != FR_EXIST) {
-        DEBUG("Failed to create or open the %s directory with error %u\n", fDirPath.values(),
+        DEBUG("Failed to create or open the %s directory with error %u", fDirPath.values(),
                 fResult);
         f_unmount(fVolumePath.values());
         s_volumes[m_volumeId] = nullptr;

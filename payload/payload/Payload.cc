@@ -117,63 +117,63 @@ size_t Payload::BssSectionSize() {
 }
 
 void Payload::Run(Context *context) {
-    INFO("Started payload.\n");
+    INFO("Started payload.");
 
-    INFO("Initializing IOS...\n");
+    INFO("Initializing IOS...");
     IOS::Resource::Init();
-    INFO("Initialized IOS.\n");
+    INFO("Initialized IOS.");
 
-    INFO("Initializing clock...\n");
+    INFO("Initializing clock...");
     Clock::Init();
-    INFO("Initialized clock.\n");
+    INFO("Initialized clock.");
 
-    INFO("Initializing WUP-028...\n");
+    INFO("Initializing WUP-028...");
     WUP028::Init();
-    INFO("Initialized WUP-028.\n");
+    INFO("Initialized WUP-028.");
 
-    INFO("Initializing assets directory creator...\n");
+    INFO("Initializing assets directory creator...");
     AssetsDirCreator::Init();
-    INFO("Initialized assets directory creator.\n");
+    INFO("Initialized assets directory creator.");
 
-    INFO("Initializing course manager...\n");
+    INFO("Initializing course manager...");
     CourseManager::Init();
-    INFO("Initialized course manager.\n");
+    INFO("Initialized course manager.");
 
-    INFO("Initializing virtual memory cards...\n");
+    INFO("Initializing virtual memory cards...");
     VirtualCard::Init();
-    INFO("Initialized virtual memory cards.\n");
+    INFO("Initialized virtual memory cards.");
 
-    INFO("Initializing storage...\n");
+    INFO("Initializing storage...");
     Storage::Init();
-    INFO("Initialized storage.\n");
+    INFO("Initialized storage.");
 
-    INFO("Initializing DVD storage...\n");
+    INFO("Initializing DVD storage...");
     DVDStorage::Init();
-    INFO("Initialized DVD storage.\n");
+    INFO("Initialized DVD storage.");
 
-    INFO("Initializing common archive storage...\n");
+    INFO("Initializing common archive storage...");
     ArchiveStorage::Init("carc:", context->commonArchive, context->commonArchiveSize);
-    INFO("Initialized common archive storage.\n");
+    INFO("Initialized common archive storage.");
 
-    INFO("Initializing localized archive storage...\n");
+    INFO("Initializing localized archive storage...");
     ArchiveStorage::Init("larc:", context->localizedArchive, context->localizedArchiveSize);
-    INFO("Initialized localized archive storage.\n");
+    INFO("Initialized localized archive storage.");
 
-    INFO("Initializing USB storage...\n");
+    INFO("Initializing USB storage...");
     USBStorage::Init();
-    INFO("Initialized USB storage.\n");
+    INFO("Initialized USB storage.");
 
-    INFO("Initializing USB...\n");
+    INFO("Initializing USB...");
     USB::Init();
-    INFO("Initialized USB.\n");
+    INFO("Initialized USB.");
 
-    INFO("Initializing SD storage...\n");
+    INFO("Initializing SD storage...");
     SDStorage::Init();
-    INFO("Initialized SD storage.\n");
+    INFO("Initialized SD storage.");
 
-    INFO("Initializing log file...\n");
+    INFO("Initializing log file...");
     LogFile::Init();
-    INFO("Initialized log file.\n");
+    INFO("Initialized log file.");
 
     Console::Instance()->setIsDirect(false);
 }

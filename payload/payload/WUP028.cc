@@ -121,7 +121,7 @@ WUP028::WUP028() : m_device(nullptr) {
 void WUP028::onRemove(USB::Device *device) {
     assert(device == m_device);
     m_device = nullptr;
-    DEBUG("Removed device %p\n", device);
+    DEBUG("Removed device %p", device);
 }
 
 bool WUP028::onAdd(const USB::DeviceInfo *deviceInfo, USB::Device *device) {
@@ -137,7 +137,7 @@ bool WUP028::onAdd(const USB::DeviceInfo *deviceInfo, USB::Device *device) {
 
     u8 numEndpoints = deviceInfo->interfaceDescriptor.numEndpoints;
     if (numEndpoints != 2) {
-        DEBUG("Unexpected number of endpoints: %u\n", numEndpoints);
+        DEBUG("Unexpected number of endpoints: %u", numEndpoints);
         return false;
     }
 
@@ -148,7 +148,7 @@ bool WUP028::onAdd(const USB::DeviceInfo *deviceInfo, USB::Device *device) {
     u8 endpointDirection = USB::EndpointDirection::HostToDevice;
     u8 endpointNumber = 2;
     if (!device->intrTransfer(data, length, endpointDirection, endpointNumber)) {
-        DEBUG("Failed to send init transfer\n");
+        DEBUG("Failed to send init transfer");
         return false;
     }
 
@@ -156,7 +156,7 @@ bool WUP028::onAdd(const USB::DeviceInfo *deviceInfo, USB::Device *device) {
     memset(m_writeBuffer.values(), 0, m_writeBuffer.count());
     m_writeBuffer[0] = 0x11;
 
-    DEBUG("Added device %p\n", device);
+    DEBUG("Added device %p", device);
     m_device = device;
     return true;
 }

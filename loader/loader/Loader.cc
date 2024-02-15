@@ -158,11 +158,11 @@ Loader::PayloadEntryFunc Loader::Run(Context *context) {
     VI::Init();
 
     Console::Init(VI::Instance());
-    INFO("Double Dash Deluxe Loader\n");
+    INFO("Double Dash Deluxe Loader");
 
     if (iosVersion >> 16 != 58 && iosVersion >> 16 != 59) {
-        ERROR("In order for Double Dash Deluxe to work, IOS58 (or IOS59) must be installed.\n");
-        ERROR("Please perform a Wii System Update or use the IOS58 Installer to install IOS58.\n");
+        ERROR("In order for Double Dash Deluxe to work, IOS58 (or IOS59) must be installed.");
+        ERROR("Please perform a Wii System Update or use the IOS58 Installer to install IOS58.");
         return nullptr;
     }
 
@@ -170,8 +170,8 @@ Loader::PayloadEntryFunc Loader::Run(Context *context) {
         Array<char, 64> dolphinVersion;
         if (!Platform::GetDolphinVersion(dolphinVersion) ||
                 strncmp(dolphinVersion.values(), "5.0-20189", strlen("5.0-20189")) < 0) {
-            WARN("Using DSP HLE will result in broken sound on this Dolphin version!\n");
-            WARN("Please update to Dolphin 5.0-20189 or later.\n");
+            WARN("Using DSP HLE will result in broken sound on this Dolphin version!");
+            WARN("Please update to Dolphin 5.0-20189 or later.");
             Clock::WaitMilliseconds(1000);
         }
     }
@@ -182,29 +182,29 @@ Loader::PayloadEntryFunc Loader::Run(Context *context) {
             Array<char, 5> discIDString('\0');
             memcpy(discIDString.values(), &discID[0], discIDString.count() - 1);
             if (IsDiscIDValid()) {
-                INFO("Mario Kart: Double Dash!! disc found (disc id %s).\n", discIDString);
+                INFO("Mario Kart: Double Dash!! disc found (disc id %s).", discIDString);
                 gameEntry = Apploader::LoadAndRun(discID[0] & 0xff);
                 if (gameEntry) {
                     break;
                 }
             } else {
-                ERROR("This is not Mario Kart: Double Dash!! (disc id %s).\n", discIDString);
+                ERROR("This is not Mario Kart: Double Dash!! (disc id %s).", discIDString);
             }
             while (DI::ReadDiscID()) {
                 Clock::WaitMilliseconds(100);
             }
         } else {
             if (DI::IsInserted()) {
-                INFO("Resetting disc interface...\n");
+                INFO("Resetting disc interface...");
                 DI::Reset();
-                INFO("Reset disc interface.\n");
+                INFO("Reset disc interface.");
             } else {
                 if (Platform::IsDolphin()) {
-                    WARN("Insert the Mario Kart: Double Dash!! disc by right-clicking the game\n");
-                    WARN("in the game list and selecting \"Change Disc\".\n");
-                    WARN("To avoid this in the future, select \"Set as Default ISO\" as well.\n");
+                    WARN("Insert the Mario Kart: Double Dash!! disc by right-clicking the game");
+                    WARN("in the game list and selecting \"Change Disc\".");
+                    WARN("To avoid this in the future, select \"Set as Default ISO\" as well.");
                 } else {
-                    WARN("Please insert a Mario Kart: Double Dash!! disc.\n");
+                    WARN("Please insert a Mario Kart: Double Dash!! disc.");
                 }
                 while (!DI::IsInserted()) {
                     Clock::WaitMilliseconds(100);
@@ -233,23 +233,23 @@ Loader::PayloadEntryFunc Loader::Run(Context *context) {
         payloadSize = payloadJ_size;
         break;
     default:
-        ERROR("Region detection failed!\n");
+        ERROR("Region detection failed!");
         return nullptr;
     }
 
-    INFO("Copying payload...\n");
+    INFO("Copying payload...");
     memcpy(payloadDst, payloadSrc, payloadSize);
     DCache::Flush(payloadDst, payloadSize);
     ICache::Invalidate(payloadDst, payloadSize);
-    INFO("Copied payload.\n");
+    INFO("Copied payload.");
 
-    INFO("Copying common archive...\n");
+    INFO("Copying common archive...");
     context->commonArchive = MEM2Arena::Instance()->alloc(commonArchive_size, 0x20);
     context->commonArchiveSize = commonArchive_size;
     memcpy(context->commonArchive, &commonArchive, commonArchive_size);
-    INFO("Copied common archive.\n");
+    INFO("Copied common archive.");
 
-    INFO("Copying localized archive...\n");
+    INFO("Copying localized archive...");
     u32 language = GetLanguage();
     const u8 *localizedArchives[] = {
             japaneseArchive,
@@ -272,7 +272,7 @@ Loader::PayloadEntryFunc Loader::Run(Context *context) {
     context->localizedArchive = MEM2Arena::Instance()->alloc(localizedArchiveSize, 0x20);
     context->localizedArchiveSize = localizedArchiveSize;
     memcpy(context->localizedArchive, localizedArchive, localizedArchiveSize);
-    INFO("Copied localized archive.\n");
+    INFO("Copied localized archive.");
 
     if (Platform::IsDolphin()) {
         // Enable OSReport over EXI
@@ -280,7 +280,7 @@ Loader::PayloadEntryFunc Loader::Run(Context *context) {
     }
     arenaLo = reinterpret_cast<uintptr_t>(payloadDst) + payloadSize;
 
-    INFO("Starting payload...\n");
+    INFO("Starting payload...");
     PayloadEntryFunc payloadEntry = reinterpret_cast<PayloadEntryFunc>(payloadDst);
     return payloadEntry;
 }

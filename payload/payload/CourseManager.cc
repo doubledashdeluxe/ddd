@@ -568,7 +568,7 @@ void CourseManager::addDefaultRaceCourses() {
     nameImages[15] = "CoName_SHERBET_LAND.bti";
 
     for (u32 i = 0; i < DefaultRaceCourseCount; i++) {
-        DEBUG("Adding default race course 0x%02x...\n", courseIDs[i]);
+        DEBUG("Adding default race course 0x%02x...", courseIDs[i]);
         m_raceCourses.pushBack();
         Course *course = new (m_heap, 0x4) DefaultCourse(archiveHashes[i], bolHashes[i],
                 courseIDs[i], thumbnails[i], nameImages[i]);
@@ -644,7 +644,7 @@ void CourseManager::addDefaultBattleCourses() {
     nameImages[5] = "Mozi_Map4.bti";
 
     for (u32 i = 0; i < DefaultBattleCourseCount; i++) {
-        DEBUG("Adding default battle course 0x%02x...\n", courseIDs[i]);
+        DEBUG("Adding default battle course 0x%02x...", courseIDs[i]);
         m_battleCourses.pushBack();
         Course *course = new (m_heap, 0x4) DefaultCourse(archiveHashes[i], bolHashes[i],
                 courseIDs[i], thumbnails[i], nameImages[i]);
@@ -866,7 +866,7 @@ void CourseManager::addCustomCourse(const Array<char, 256> &path,
         }
     }
 
-    DEBUG("Adding custom %s course %s...\n", type, path.values());
+    DEBUG("Adding custom %s course %s...", type, path.values());
     courseIndices->pushBack(courses->count());
     courses->pushBack();
     Course *course = new (m_heap, 0x4) CustomCourse(archiveHash, bolHash, musicID, name.release(),
@@ -960,7 +960,7 @@ void CourseManager::addCustomPack(const Array<char, 256> &path,
         return;
     }
 
-    DEBUG("Adding custom %s pack %s (%u)...\n", type, path.values(), courseIndices.count());
+    DEBUG("Adding custom %s pack %s (%u)...", type, path.values(), courseIndices.count());
     packs.pushBack();
     Pack *pack = new (m_heap, 0x4) CustomPack(courseIndices, name.release(), author.release(),
             version.release(), nameImage.release());
@@ -1011,7 +1011,7 @@ void CourseManager::addDefaultPacks(const Ring<UniquePtr<Course>, MaxCourseCount
         if (courseIndices[i].empty()) {
             continue;
         }
-        DEBUG("Adding default %s pack %s (%u)...\n", type, names[i].values(),
+        DEBUG("Adding default %s pack %s (%u)...", type, names[i].values(),
                 courseIndices[i].count());
         if (packs.full()) {
             packs.popBack();

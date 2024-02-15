@@ -40,7 +40,7 @@ bool USB::Resource::getVersion(u32 &version) {
     memset(m_buffer, 0, 0x20);
     s32 result = ioctl(Ioctl::GetVersion, nullptr, 0, m_buffer, 0x20);
     if (result < 0) {
-        DEBUG("Failed to get version with error %d\n", result);
+        DEBUG("Failed to get version with error %d", result);
         return false;
     }
     version = Bytes::ReadBE<u32>(m_buffer, 0x0);
@@ -68,7 +68,7 @@ bool USB::Resource::suspend(u32 id) {
     Bytes::WriteBE<u32>(m_buffer, 0x8, 0);
     s32 result = ioctl(Ioctl::SuspendResume, m_buffer, 0x20, nullptr, 0);
     if (result < 0) {
-        DEBUG("Failed to suspend device %u with error %d\n", id, result);
+        DEBUG("Failed to suspend device %u with error %d", id, result);
     }
     return result >= 0;
 }
@@ -79,7 +79,7 @@ bool USB::Resource::resume(u32 id) {
     Bytes::WriteBE<u32>(m_buffer, 0x8, 1);
     s32 result = ioctl(Ioctl::SuspendResume, m_buffer, 0x20, nullptr, 0);
     if (result < 0) {
-        DEBUG("Failed to resume device %u with error %d\n", id, result);
+        DEBUG("Failed to resume device %u with error %d", id, result);
     }
     return result >= 0;
 }
@@ -119,8 +119,8 @@ bool USB::VENResource::getDeviceInfo(u32 id, u8 alternateSetting, DeviceInfo &de
     Bytes::WriteBE<u32>(m_buffer, 0x8, alternateSetting);
     s32 result = ioctl(Ioctl::GetDeviceInfo, m_buffer, 0x20, m_buffer + 0x20, 0xc0);
     if (result < 0) {
-        DEBUG("Failed to get device info for device %u and alternate setting %u with error %d\n",
-                id, alternateSetting, result);
+        DEBUG("Failed to get device info for device %u and alternate setting %u with error %d", id,
+                alternateSetting, result);
         return false;
     }
     memcpy(&deviceInfo, m_buffer + 0x20, sizeof(DeviceInfo));
@@ -133,7 +133,7 @@ bool USB::VENResource::setAlternateSetting(u32 id, u8 alternateSetting) {
     Bytes::WriteBE<u8>(m_buffer, 0x8, alternateSetting);
     s32 result = ioctl(Ioctl::SetAlternateSetting, m_buffer, 0x20, nullptr, 0);
     if (result < 0) {
-        DEBUG("Failed to set alternate setting %u for device %u with error %d\n", alternateSetting,
+        DEBUG("Failed to set alternate setting %u for device %u with error %d", alternateSetting,
                 id, result);
     }
     return result >= 0;
@@ -222,8 +222,8 @@ bool USB::HIDResource::getDeviceInfo(u32 id, u8 alternateSetting, DeviceInfo &de
     Bytes::WriteBE<u32>(m_buffer, 0x8, alternateSetting);
     s32 result = ioctl(Ioctl::GetDeviceInfo, m_buffer, 0x20, m_buffer + 0x20, 0x60);
     if (result < 0) {
-        DEBUG("Failed to get device info for device %u and alternate setting %u with error %d\n",
-                id, alternateSetting, result);
+        DEBUG("Failed to get device info for device %u and alternate setting %u with error %d", id,
+                alternateSetting, result);
         return false;
     }
     memcpy(&deviceInfo.id, m_buffer + 0x20 + 0x00, sizeof(deviceInfo.id));
@@ -276,12 +276,12 @@ bool USB::HIDResource::bulkTransfer(u32 /* id */, Transfer * /* transfer */, voi
 void USB::PrintDeviceEntries(u32 deviceEntryCount,
         const Array<Resource::DeviceEntry, 0x20> &deviceEntries) {
     for (u32 i = 0; i < deviceEntryCount; i++) {
-        DEBUG("DeviceEntry(%x):\n", i);
-        DEBUG("    id: %x\n", deviceEntries[i].id);
-        DEBUG("    vendorId: %x\n", deviceEntries[i].vendorId);
-        DEBUG("    productId: %x\n", deviceEntries[i].productId);
-        DEBUG("    interfaceNumber: %x\n", deviceEntries[i].interfaceNumber);
-        DEBUG("    alternateSettingCount: %x\n", deviceEntries[i].alternateSettingCount);
+        DEBUG("DeviceEntry(%x):", i);
+        DEBUG("    id: %x", deviceEntries[i].id);
+        DEBUG("    vendorId: %x", deviceEntries[i].vendorId);
+        DEBUG("    productId: %x", deviceEntries[i].productId);
+        DEBUG("    interfaceNumber: %x", deviceEntries[i].interfaceNumber);
+        DEBUG("    alternateSettingCount: %x", deviceEntries[i].alternateSettingCount);
     }
 }
 

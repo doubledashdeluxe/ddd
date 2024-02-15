@@ -24,24 +24,24 @@ Apploader::GameEntryFunc Apploader::LoadAndRun(char region) {
         hashes = HashesJ;
         break;
     default:
-        ERROR("Invalid region.\n");
+        ERROR("Invalid region.");
         return nullptr;
     }
 
     alignas(0x20) ApploaderHeader header;
     if (!Read(&header, sizeof(header), 0x2440, hashes)) {
-        ERROR("Failed to read apploader header.\n");
+        ERROR("Failed to read apploader header.");
         return nullptr;
     }
-    INFO("Successfully read apploader header.\n");
+    INFO("Successfully read apploader header.");
 
     if (!Read(reinterpret_cast<void *>(0x81200000), AlignUp(header.size + header.trailer, 0x20),
                 0x2460, hashes)) {
-        ERROR("Failed to read apploader.\n");
+        ERROR("Failed to read apploader.");
         return nullptr;
     }
     ICache::Invalidate(reinterpret_cast<void *>(0x81200000), header.size + header.trailer);
-    INFO("Successfully read apploader.\n");
+    INFO("Successfully read apploader.");
 
     ApploaderInitFunc init;
     ApploaderMainFunc main;
@@ -55,12 +55,12 @@ Apploader::GameEntryFunc Apploader::LoadAndRun(char region) {
     u32 offset;
     while (main(&dst, &size, &offset)) {
         if (!Read(dst, size, offset, hashes)) {
-            ERROR("Failed to read dol section.\n");
+            ERROR("Failed to read dol section.");
             return nullptr;
         }
         ICache::Invalidate(dst, size);
     }
-    INFO("Successfully read dol.\n");
+    INFO("Successfully read dol.");
 
     return close();
 }
@@ -72,7 +72,7 @@ bool Apploader::Read(void *dst, u32 size, u32 offset, const Array<u8, 32> *&hash
     Array<u8, 32> hash;
     crypto_blake2b(hash.values(), hash.count(), reinterpret_cast<u8 *>(dst), size);
     if (crypto_verify32(hash.values(), (*hashes++).values())) {
-        ERROR("Please ensure that the game disc is not modified in any capacity!\n");
+        ERROR("Please ensure that the game disc is not modified in any capacity!");
         return false;
     }
     return true;
