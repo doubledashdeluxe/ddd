@@ -7,12 +7,15 @@ public:
     void changeNumberTexture(s32 number, J2DPicture **pictures, u8 pictureCount, bool padWithZeros,
             bool fillWithHyphens);
     ResTIMG *getAsciiTexture(char c);
+    ResTIMG *getNumberTexture(u32 index);
     ResTIMG *getBattleIcon(u32 index);
 
     static Kart2DCommon *Instance();
 
 private:
-    u8 _000[0x198 - 0x000];
+    u8 _000[0x004 - 0x000];
+    ResTIMG *m_numberTextures[11];
+    u8 _030[0x198 - 0x030];
     ResTIMG *m_battleIcons[3];
     u8 _1a4[0x1bc - 0x1a4];
 };

@@ -1,7 +1,5 @@
 #include "SystemRecord.hh"
 
-extern SystemRecord s_systemRecord; // gSystemRecord
-
 void SystemRecord::setSecretKart(u16 secretKart) {
     secretKart &= SecretKart::All;
 
@@ -20,5 +18,5 @@ void SystemRecord::unlockAll() {
 }
 
 SystemRecord &SystemRecord::Instance() {
-    return s_systemRecord;
+    return s_instance;
 }

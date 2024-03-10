@@ -12,7 +12,9 @@ public:
     void startSequenceBgm(u32 soundID);
     u32 getPlayingSequenceID();
     void startSystemSe(u32 soundID);
+    void setMasterVolume(s8 masterVolume);
     void fadeOutAll(u32 duration);
+    void setOutputMode(u32 outputMode);
 
     static Main *Instance();
 

@@ -30,6 +30,8 @@
 80018ed4 print__10JUTConsoleFPCc
 8001ab48 panic_f__12JUTExceptionFPCciPCce
 8001cda0 setPreUserCallback__12JUTExceptionFPFUsP9OSContextUlUl_v
+8001ee3c StartMotor__Q210JUTGamePad7CRumbleFl
+8001eee0 StopMotor__Q210JUTGamePad7CRumbleFlb
 80023d44 DummyNoDrawWait__8JUTVideoFv
 80023e24 setRenderMode__8JUTVideoFPC15GXRenderModeObj
 80028d84 appendChild__7J2DPaneFP7J2DPane
@@ -41,6 +43,7 @@
 80031774 animation__9J2DScreenFv
 8003875c Load__20J2DAnmLoaderDataBaseFPCv
 800432fc animation__11J2DMaterialFv
+800483b4 getBlackWhite__10J2DPictureCFP7GXColorP7GXColor
 800905cc CreateThread__6JASDvdFllUl
 8009162c sendCmdMsg__13JASTaskThreadFPFPv_vPvUl
 80094770 RejectCallback__9JASDriverFPFPv_lPv
@@ -151,8 +154,9 @@
 800ff9e8 __mod2i
 800ffaf4 __shl2i
 800ffb18 __shr2u
-800ffe28 exit
 
+800ffe28 exit
+80102200 abs
 8010241c toupper
 801024cc isspace
 801024e8 isdigit
@@ -174,7 +178,9 @@
 80115140 startSequenceBgm__Q29GameAudio4MainFUl
 801154c8 getPlayingSequenceID__Q29GameAudio4MainFv
 80115ea4 startSystemSe__Q29GameAudio4MainFUl
+801167b0 setMasterVolume__Q29GameAudio4MainFSc
 80116900 fadeOutAll__Q29GameAudio4MainFUl
+80116b40 setOutputMode__Q29GameAudio4MainFUl
 8012cfbc __ct__5SceneFP10JKRArchiveP7JKRHeap
 8012cfd8 __dt__5SceneFv
 8012d6ec init__10SceneTitleFv
@@ -203,6 +209,12 @@
 80189c64 createHeapInfo__8SysDebugFP7JKRHeapPCc
 8019e54c resetCommon__12RaceDirectorFv
 801af940 Create__8MovieAppFv
+801c9760 __ct__14SceneTitleLineFP10JKRArchiveP7JKRHeapPCc
+801c98d0 __dt__14SceneTitleLineFv
+801c9934 init__14SceneTitleLineFl
+801c9994 draw__14SceneTitleLineFP15J2DGraphContext
+801c99e8 calcAnm__14SceneTitleLineFl
+801c9ab0 calcMatAnm__14SceneTitleLineFv
 801cc4a4 __ct__7GameAppFUlPCcPv
 801cc548 __dt__7GameAppFv
 801cc5bc main
@@ -280,7 +292,7 @@
 803d51c8 OSLastInterrupt
 803d51d0 OSLastInterruptTime
 
-803c5fe0 s_systemRecord
+803c5fe0 s_instance__12SystemRecord
 803d5498 s_instance__Q29GameAudio4Main
 803d5578 s_instance__12SceneFactory
 803d5580 s_instance__6Race2D
@@ -302,6 +314,8 @@
 803d5bb4 s_appHeap__6System
 803d5bcc s_loadTask__6System
 803d5be0 s_currentApp__6AppMgr
+803d5c1c s_state__9CardAgent
+803d5c44 s_printMemoryCard__9CardAgent
 803d5c60 s_instance__11SequenceApp
 803d5cd0 s_instance__14MenuBackground
 803d5cd8 s_instance__13MenuTitleLine

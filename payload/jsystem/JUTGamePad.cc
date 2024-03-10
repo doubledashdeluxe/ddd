@@ -19,3 +19,11 @@ u32 JUTGamePad::CButton::repeat() const {
 const JUTGamePad::CButton &JUTGamePad::button() const {
     return m_button;
 }
+
+void JUTGamePad::startMotor() {
+    CRumble::StartMotor(m_chan);
+}
+
+void JUTGamePad::stopMotor(bool hard) {
+    CRumble::StopMotor(m_chan, hard);
+}

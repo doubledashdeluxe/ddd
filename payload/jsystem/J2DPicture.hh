@@ -3,6 +3,10 @@
 #include "jsystem/J2DPane.hh"
 #include "jsystem/ResTIMG.hh"
 
+extern "C" {
+#include <dolphin/GX.h>
+}
+
 class J2DPicture : public J2DPane {
 public:
     J2DPicture();
@@ -42,6 +46,15 @@ public:
     virtual void vf_10c();
     virtual ResTIMG *changeTexture(const ResTIMG *texture, u8 index);
     virtual ResTIMG *changeTexture(const char *name, u8 index);
+    virtual void vf_118();
+    virtual void vf_11c();
+    virtual void vf_120();
+    virtual void vf_124();
+    virtual void vf_128();
+    virtual void vf_12c();
+    virtual bool setBlackWhite(GXColor black, GXColor white);
+
+    bool getBlackWhite(GXColor *black, GXColor *white) const;
 
     static u32 GetTypeID();
 

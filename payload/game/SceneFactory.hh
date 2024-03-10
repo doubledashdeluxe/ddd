@@ -12,6 +12,7 @@ public:
     public:
         enum {
             Menu = 0x1,
+            Option = 0x2,
             MapSelect = 0x4,
             GhostData = 0x6,
             TitleLine = 0x8,

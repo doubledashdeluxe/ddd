@@ -2,6 +2,14 @@
 
 #include <common/Types.h>
 
+typedef struct GXColor {
+    u8 r;
+    u8 g;
+    u8 b;
+    u8 a;
+} GXColor;
+size_assert(GXColor, 0x4);
+
 typedef struct GXRenderModeObj {
     s32 viTVmode;
     u16 fbWidth;

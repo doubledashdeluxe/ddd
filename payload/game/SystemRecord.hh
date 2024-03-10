@@ -54,10 +54,29 @@ public:
 
     static SystemRecord &Instance();
 
+public:
+    u8 m_rearViewButtons : 8; // Added
+
 private:
-    u8 _000[0x004 - 0x000];
+    u32 : 20;
+
+public:
+    bool m_noTAGhosts : 1;
+    bool m_noRumble : 1;
+    u8 m_soundMode : 2;
+
+private:
     u16 m_secretKart;
     u16 m_gameFlag;
-    u8 _008[0x614 - 0x008];
+
+public:
+    s8 m_volume;
+    u8 m_itemSlotType;
+    u8 m_vsLapNum;
+
+private:
+    u8 _00b[0x614 - 0x00b];
+
+    static SystemRecord s_instance;
 };
 size_assert(SystemRecord, 0x614);
