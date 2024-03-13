@@ -9,7 +9,7 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Install Wine
         run: |
           sudo dpkg --add-architecture i386
@@ -21,14 +21,14 @@ jobs:
       - name: Install LLD
         run: sudo update-alternatives --install /usr/bin/ld.lld ld.lld /usr/bin/ld.lld-15 15
       - name: Install Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
       - name: Install pyelftools
         run: pip install pyelftools
       - name: Cache CodeWarrior
         id: cache-cw
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: cache
           key: ${{ runner.os }}-cw-se-v2.10
@@ -43,7 +43,7 @@ jobs:
       - name: Build
         run: python build.py --ci -- app
       - name: Upload result
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ddd-linux
           path: out
@@ -54,9 +54,9 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Install Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
       - name: Install pyelftools
@@ -65,7 +65,7 @@ jobs:
         run: pip install ninja
       - name: Cache CodeWarrior
         id: cache-cw
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: cache
           key: ${{ runner.os }}-cw-se-v2.10
@@ -80,7 +80,7 @@ jobs:
       - name: Build
         run: python build.py --ci -- app
       - name: Upload result
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ddd-windows
           path: out
@@ -92,7 +92,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Download results
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
       - name: Compare
         run: cmp ddd-linux/boot.dol ddd-windows/boot.dol
 
@@ -102,11 +102,11 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Install Ninja
         run: sudo apt-get install ninja-build
       - name: Install Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
       - name: Test
@@ -118,9 +118,9 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Install Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
       - name: Install Ninja
@@ -134,7 +134,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Format
         run: |
           dirs="common libc loader payload tests"
