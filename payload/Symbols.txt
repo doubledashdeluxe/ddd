@@ -55,6 +55,7 @@
 80099e9c load__13JASAramStreamFv
 8009a164 ChannelProc__13JASAramStreamFPv
 
+800a9d6c C_MTXLookAt
 800ab56c DVDConvertPathToEntrynum
 800ab8d4 DVDOpen
 800ab99c DVDClose
@@ -172,6 +173,8 @@
 80106d58 strncmp
 80106dc0 strcmp
 80107088 strlen
+8010c02c tan
+8010c434 sqrt
 8010c474 strcasecmp
 
 80114ad8 isWaveLoaded__Q29GameAudio4MainFl
@@ -253,6 +256,13 @@
 801e73a0 drop__13MenuTitleLineFUl
 801e7480 lift__13MenuTitleLineFv
 801e748c calc__13MenuTitleLineFv
+8029eb08 init__7KartCamFb
+8029f190 doCameraMode__7KartCamFv
+8029f63c dynamicsInit__8KartCtrlFb
+8029fb60 dynamicsReset__8KartCtrlFv
+802aaf34 doChange__8KartGameFv
+802afcb0 doStatus__8KartGameFv
+802b14a0 getDriveCont__8KartCtrlFUl
 
 80346c20 LanguageNames__10KartLocale
 80347af8 __vt__7JKRAram
@@ -319,3 +329,4 @@
 803d5c60 s_instance__11SequenceApp
 803d5cd0 s_instance__14MenuBackground
 803d5cd8 s_instance__13MenuTitleLine
+803d63c8 s_instance__8KartCtrl

@@ -56,6 +56,6 @@ private:
     u8 _48[0x68 - 0x48];
     CRumble m_rumble;
     s16 m_chan;
-    u8 _7e[0xb8 - 0x7e];
+    u8 _7e[0xa8 - 0x7e];
 };
-size_assert(JUTGamePad, 0xb8);
+size_assert(JUTGamePad, 0xa8);
