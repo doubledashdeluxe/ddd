@@ -8,7 +8,7 @@ FakeStorage::FakeStorage() : Storage(nullptr) {
 }
 
 FakeStorage::~FakeStorage() {
-    m_pollCallback = &Storage::remove;
+    m_pollCallback = &FakeStorage::remove;
     notify();
 }
 
@@ -98,6 +98,10 @@ bool FakeStorage::Dir::read(NodeInfo &nodeInfo) {
 
 Storage *FakeStorage::Dir::storage() {
     return m_storage;
+}
+
+void FakeStorage::remove() {
+    Storage::remove();
 }
 
 void FakeStorage::poll() {

@@ -135,6 +135,10 @@ bool Storage::DirHandle::read(NodeInfo &nodeInfo) {
 
 Storage::File::File() : m_handle(nullptr) {}
 
+Storage::File::~File() {
+    close();
+}
+
 void Storage::File::close() {
     if (m_handle) {
         FileHandle *handle = m_handle;
@@ -144,6 +148,10 @@ void Storage::File::close() {
 }
 
 Storage::Dir::Dir() : m_handle(nullptr) {}
+
+Storage::Dir::~Dir() {
+    close();
+}
 
 void Storage::Dir::close() {
     if (m_handle) {
@@ -156,6 +164,12 @@ void Storage::Dir::close() {
 Storage::Observer::Observer() : m_next(s_headObserver) {
     assert(!s_head);
     s_headObserver = this;
+}
+
+Storage::Observer::~Observer() {
+    Observer **next;
+    for (next = &s_headObserver; *next != this; next = &(*next)->m_next) {}
+    *next = m_next;
 }
 
 Storage::Observer *Storage::Observer::next() {

@@ -1,6 +1,8 @@
 #include <lest.hpp>
 #include <payload/SZS.hh>
 
+#include <array>
+
 static lest::tests specification;
 
 #define CASE(name) lest_CASE(specification, name)

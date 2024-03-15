@@ -122,7 +122,6 @@ target_ccflags = {
     ],
 }
 common_ncflags = [
-    '-flto=auto',
     '-fsanitize=undefined',
     '-isystem', '.',
     '-isystem', 'vendor',
@@ -137,9 +136,7 @@ common_ncflags = [
 common_nccflags = [
     '-D', 'lest_FEATURE_AUTO_REGISTER',
     '-fcheck-new',
-    '-flto=auto',
     '-fsanitize=undefined',
-    '-fno-sanitize=vptr', # Order matters
     '-isystem', '.',
     '-isystem', 'vendor',
     '-O2',
@@ -150,9 +147,7 @@ common_nccflags = [
     '-Wsuggest-override',
 ]
 common_nldflags = [
-    '-flto=auto',
     '-fsanitize=undefined',
-    '-fno-sanitize=vptr',
 ]
 target_ncflags = {
     'vendor': [],
@@ -192,23 +187,35 @@ target_nccflags = {
 }
 if 'win' in sys.platform or 'msys' in sys.platform:
     common_ncflags += [
+        '-flto=auto',
         '-fsanitize-undefined-trap-on-error',
     ]
     common_nccflags += [
+        '-flto=auto',
+        '-fno-sanitize=vptr',
         '-fsanitize-undefined-trap-on-error',
     ]
     common_nldflags += [
+        '-flto=auto',
+        '-fno-sanitize=vptr',
         '-fsanitize-undefined-trap-on-error',
     ]
 else:
     common_ncflags += [
+        '-fdata-sections',
+        '-ffunction-sections',
         '-fsanitize=address',
     ]
     common_nccflags += [
+        '-fdata-sections',
+        '-ffunction-sections',
         '-fsanitize=address',
+        '-Wno-unused-private-field',
     ]
     common_nldflags += [
         '-fsanitize=address',
+        '-fuse-ld=lld',
+        '-Wl,--gc-sections',
     ]
 if args.ci:
     common_cflags += [
@@ -306,7 +313,7 @@ n.newline()
 if 'win' in sys.platform or 'msys' in sys.platform:
     nc_command = 'gcc.exe -MD -MT $out -MF $out.d $cflags -c $in -o $out'
 else:
-    nc_command = 'gcc -MD -MT $out -MF $out.d $cflags -c $in -o $out'
+    nc_command = 'clang -MD -MT $out -MF $out.d $cflags -c $in -o $out'
 n.rule(
     'nc',
     command = nc_command,
@@ -319,7 +326,7 @@ n.newline()
 if 'win' in sys.platform or 'msys' in sys.platform:
     ncc_command = 'g++.exe -MD -MT $out -MF $out.d $ccflags -c $in -o $out'
 else:
-    ncc_command = 'g++ -MD -MT $out -MF $out.d $ccflags -c $in -o $out'
+    ncc_command = 'clang++ -MD -MT $out -MF $out.d $ccflags -c $in -o $out'
 n.rule(
     'ncc',
     command = ncc_command,
@@ -332,7 +339,7 @@ n.newline()
 if 'win' in sys.platform or 'msys' in sys.platform:
     nld_command = 'g++.exe $ldflags $in -o $out'
 else:
-    nld_command = 'g++ $ldflags $in -o $out'
+    nld_command = 'clang++ $ldflags $in -o $out'
 n.rule(
     'nld',
     command = nld_command,

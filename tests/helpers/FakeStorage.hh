@@ -49,6 +49,8 @@ private:
         size_t m_index = 0;
     };
 
+    void remove();
+
     void poll() override;
     u32 priority() override;
     const char *prefix() override;

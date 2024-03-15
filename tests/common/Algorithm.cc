@@ -1,6 +1,8 @@
 #include <common/Algorithm.hh>
 #include <lest.hpp>
 
+#include <array>
+
 static lest::tests specification;
 
 #define CASE(name) lest_CASE(specification, name)

@@ -2,6 +2,7 @@
 #include <lest.hpp>
 #include <payload/ZIPFile.hh>
 
+#include <array>
 #include <cstring>
 #include <optional>
 

@@ -92,6 +92,7 @@ public:
     class File {
     protected:
         File();
+        virtual ~File();
 
         virtual void close();
         virtual bool read(void *dst, u32 size, u32 offset) = 0;
@@ -111,6 +112,7 @@ public:
     class Dir {
     protected:
         Dir();
+        virtual ~Dir();
 
         virtual void close();
         virtual bool read(NodeInfo &nodeInfo) = 0;
@@ -126,10 +128,12 @@ public:
     class Observer {
     public:
         Observer();
-        Observer *next();
+        virtual ~Observer();
 
         virtual void onAdd(const char *prefix) = 0;
         virtual void onRemove(const char *prefix) = 0;
+
+        Observer *next();
 
     private:
         Observer *m_next;
