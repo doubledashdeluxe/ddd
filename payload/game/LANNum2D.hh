@@ -4,6 +4,8 @@
 
 class LANNum2D {
 public:
+    void REPLACED(init)();
+    REPLACE void init();
     void REPLACED(start)();
     REPLACE void start();
     void REPLACED(start2)();

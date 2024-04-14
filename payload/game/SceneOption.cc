@@ -29,6 +29,9 @@ SceneOption::SceneOption(JKRArchive *archive, JKRHeap *heap)
     m_mainScreen.set("Option.blo", 0x40000, m_archive);
     m_arrowScreen.set("GDIndexLayout.blo", 0x20000, ghostDataArchive);
 
+    m_backgroundScreen.search("Back")->setHasARScale(false, false);
+    m_backgroundScreen.search("B_mozi")->setHasARScale(false, false);
+
     m_arrowScreen.search("NSaveGD")->m_isVisible = false;
 
     m_backgroundAnmTextureSRTKey = J2DAnmLoaderDataBase::Load("OptionBack.btk", m_archive);
@@ -354,6 +357,9 @@ void SceneOption::calc() {
     refreshOption(Option::P2RearView, "XYLR");
     refreshOption(Option::P3RearView, "XYLR");
     refreshOption(Option::P4RearView, "XYLR");
+    const char *aspectRatioValueNames[] = {"Auto", "43", "1914", "32", "1610", "169", "3821",
+            "219"};
+    refreshOption(Option::AspectRatio, aspectRatioValueNames);
 
     m_backgroundScreen.animation();
     m_mainScreen.animation();
@@ -453,6 +459,7 @@ void SceneOption::stateIdle() {
     } else if (button.risingEdge() & PAD_BUTTON_B) {
         GameAudio::Main::Instance()->setOutputMode(m_savedValues[Option::Sound]);
         GameAudio::Main::Instance()->setMasterVolume(m_savedValues[Option::Volume] - 10);
+        System::SetAspectRatio(m_savedValues[Option::AspectRatio]);
         slideOut();
     } else if (button.repeat() & JUTGamePad::PAD_MSTICK_UP) {
         if (m_entryIndex >= 1) {
@@ -556,6 +563,7 @@ void SceneOption::readOptions() {
     for (u32 i = 0; i < 4; i++) {
         m_savedValues[Option::P1RearView + i] = (systemRecord.m_rearViewButtons >> (2 * i)) % 4;
     }
+    m_savedValues[Option::AspectRatio] = systemRecord.m_aspectRatio;
 
     m_unsavedValues = m_savedValues;
 }
@@ -580,6 +588,7 @@ void SceneOption::writeOptions() {
     for (u32 i = 0; i < 4; i++) {
         systemRecord.m_rearViewButtons |= m_unsavedValues[Option::P1RearView + i] << (2 * i);
     }
+    systemRecord.m_aspectRatio = m_unsavedValues[Option::AspectRatio];
 
     m_savedValues = m_unsavedValues;
 }
@@ -597,6 +606,9 @@ void SceneOption::onOptionChange() {
     if (m_entryIndex == Option::Rumble && m_unsavedValues[Option::Rumble]) {
         KartGamePad::GamePad(0)->startMotor();
         m_timeBeforeRumbleEnd = 10;
+    }
+    if (m_entryIndex == Option::AspectRatio) {
+        System::SetAspectRatio(m_unsavedValues[Option::AspectRatio]);
     }
 }
 
@@ -682,6 +694,6 @@ void SceneOption::hideArrows() {
     }
 }
 
-const u32 SceneOption::ValueCounts[Option::Count] = {3, 21, 2, 2, 4, 10, 4, 4, 4, 4};
+const u32 SceneOption::ValueCounts[Option::Count] = {3, 21, 2, 2, 4, 10, 4, 4, 4, 4, 8};
 const char *const SceneOption::EntryNames[Entry::Count] = {"Sd", "BGM", "Rm", "Gh", "Is", "Lp",
-        "Re1", "Re2", "Re3", "Re4", "ReTtl"};
+        "Re1", "Re2", "Re3", "Re4", "As", "ReTtl"};

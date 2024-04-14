@@ -27,7 +27,8 @@ private:
             P2RearView = 7,
             P3RearView = 8,
             P4RearView = 9,
-            Count = 10,
+            AspectRatio = 10,
+            Count = 11,
         };
 
     private:

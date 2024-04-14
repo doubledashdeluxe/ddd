@@ -1,6 +1,7 @@
 #include "LANNum2D.hh"
 
 #include "game/Kart2DCommon.hh"
+#include "game/RaceInfo.hh"
 #include "game/ResMgr.hh"
 
 #include <jsystem/J2DPicture.hh>
@@ -8,6 +9,17 @@
 extern "C" {
 #include <stdio.h>
 #include <string.h>
+}
+
+void LANNum2D::init() {
+    s16 consoleCount = RaceInfo::Instance().getConsoleCount();
+    for (s16 i = 1; i <= consoleCount; i++) {
+        for (u32 j = 1; j <= (consoleCount <= 2 || i == 1 ? 2 : 1); j++) {
+            m_screen->search("NP%u%u", i, j)->setHasARTrans(false, true);
+        }
+    }
+
+    REPLACED(init)();
 }
 
 void LANNum2D::start() {

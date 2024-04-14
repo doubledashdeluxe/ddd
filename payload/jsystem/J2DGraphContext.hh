@@ -1,5 +1,7 @@
 #pragma once
 
+#include "jsystem/TBox.hh"
+
 #include <common/Types.hh>
 
 class J2DGraphContext {

@@ -1,9 +1,14 @@
 #pragma once
 
+#include <jsystem/J2DPane.hh>
 #include <jsystem/JKRHeap.hh>
+#include <payload/Replace.hh>
 
 class CharacterSelect3D {
 public:
+    void REPLACED(draw)(s32 index, f32 aspect);
+    REPLACE void draw(s32 index, f32 aspect);
+
     static CharacterSelect3D *Create(JKRHeap *heap);
     static void Destroy();
     static CharacterSelect3D *Instance();

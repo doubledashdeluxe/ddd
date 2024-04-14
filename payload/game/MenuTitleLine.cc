@@ -8,6 +8,12 @@ void MenuTitleLine::drop(const char *title) {
     m_state = 1;
 }
 
+void MenuTitleLine::calc() {
+    m_screen.search("T_line")->setHasARScale(false, false);
+
+    REPLACED(calc)();
+}
+
 void MenuTitleLine::draw(const J2DGraphContext *graphContext) {
     m_screen.draw(0.0f, 0.0f, graphContext);
 }

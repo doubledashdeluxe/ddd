@@ -5,6 +5,7 @@
 
 extern "C" {
 #include <dolphin/GX.h>
+#include <dolphin/MTX.h>
 }
 
 class J2DPicture : public J2DPane {
@@ -53,12 +54,21 @@ public:
     virtual void vf_128();
     virtual void vf_12c();
     virtual bool setBlackWhite(GXColor black, GXColor white);
+    virtual void vf_134();
+    virtual void vf_138();
+    virtual void vf_13c();
+    REPLACE virtual void drawFullSet(f32 x, f32 y, f32 w, f32 h, Mtx34 *mtx);
+    virtual void drawTexCoord(f32 x, f32 y, f32 w, f32 h, s16 s0, s16 t0, s16 s1, s16 t1, s16 s2,
+            s16 t2, s16 s3, s16 t3, Mtx34 *mtx);
+    virtual void vf_148();
 
     bool getBlackWhite(GXColor *black, GXColor *white) const;
 
     static u32 GetTypeID();
 
 private:
-    u8 _100[0x168 - 0x100];
+    u8 _100[0x112 - 0x100];
+    TVec2<s16> m_texCoords[4];
+    u8 _122[0x168 - 0x122];
 };
 size_assert(J2DPicture, 0x168);

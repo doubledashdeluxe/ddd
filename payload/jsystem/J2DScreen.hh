@@ -20,9 +20,10 @@ public:
     void setAnimation(J2DAnmBase *animation) override;
     // ...
 
-    J2DPane *search(const char *tag);
+    J2DPane *search(const char *format, ...);
 
     void set(const char *file, u32 flags, JKRArchive *archive);
+    void setPriority(const char *file, u32 flags, JKRArchive *archive);
     void draw(f32 f1, f32 f2, const J2DGraphContext *graphContext);
     void animation();
     void animationMaterials();

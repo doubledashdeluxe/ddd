@@ -18,7 +18,7 @@ struct TVec3 {
 };
 
 template <>
-struct TVec3<f32> : public Vec3 {
+struct TVec3<f32> : Vec3 {
     TVec3(f32 x, f32 y, f32 z) {
         this->x = x;
         this->y = y;
@@ -52,3 +52,5 @@ inline TVec3<T> &operator-=(TVec3<T> &v, const TVec3<T> &v0) {
     v = v - v0;
     return v;
 }
+
+struct Vec3f : TVec3<f32> {};

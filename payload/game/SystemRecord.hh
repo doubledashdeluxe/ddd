@@ -48,6 +48,8 @@ public:
         GameFlag();
     };
 
+    void applyAspectRatioSetting();
+
     void setSecretKart(u16 secretKart);
     void setGameFlag(u16 gameFlag);
     void unlockAll();
@@ -56,9 +58,10 @@ public:
 
 public:
     u8 m_rearViewButtons : 8; // Added
+    u8 m_aspectRatio : 4;     // Added
 
 private:
-    u32 : 20;
+    u32 : 16;
 
 public:
     bool m_noTAGhosts : 1;

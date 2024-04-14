@@ -2,6 +2,7 @@
 
 #include <jsystem/J2DPicture.hh>
 #include <jsystem/J2DScreen.hh>
+#include <payload/Replace.hh>
 
 class MenuTitleLine {
 public:
@@ -21,7 +22,8 @@ public:
     void drop(const char *title);
     void lift();
     void draw(const J2DGraphContext *graphContext);
-    void calc();
+    void REPLACED(calc)();
+    REPLACE void calc();
 
     static MenuTitleLine *Create(JKRArchive *archive, JKRHeap *heap);
     static void Destroy();

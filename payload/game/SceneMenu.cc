@@ -10,6 +10,11 @@
 void SceneMenu::init() {
     CourseManager::Instance()->unlock();
 
+    m_selectModeScreen->search("MtaName")->setHasARScissor(true, true);
+    m_selectModeScreen->search("N_Pw_gp1")->setHasARScissor(true, true);
+    m_selectModeScreen->search("N_Pw_gp2")->setHasARScissor(true, true);
+    m_selectModeScreen->search("N_Pw_vs")->setHasARScissor(true, true);
+
     REPLACED(init)();
 }
 
