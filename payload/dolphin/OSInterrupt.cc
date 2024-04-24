@@ -48,19 +48,65 @@ extern "C" REPLACE void OSInterruptInit() {
 extern "C" u32 REPLACED(OSSetInterruptMask)(u32 mask, u32 interrupts);
 extern "C" REPLACE u32 OSSetInterruptMask(u32 mask, u32 interrupts) {
 #ifdef __CWCC__
-    if (__cntlzw(mask) != 27) {
+    if (__cntlzw(mask) < 17) {
 #else
-    if (__builtin_clz(mask) != 27) {
+    if (__builtin_clz(mask) < 17) {
 #endif
         return REPLACED(OSSetInterruptMask)(mask, interrupts);
     }
 
-    if (interrupts & 1 << (31 - 27)) {
-        intmr = intmr & ~(1 << 14);
-    } else {
-        intmr = intmr | 1 << 14;
+    u32 cachedIntmr = 0;
+    cachedIntmr |= 1 << 7;
+    cachedIntmr |= 1 << 6;
+    cachedIntmr |= 1 << 5;
+    cachedIntmr |= 1 << 4;
+    if (!(interrupts & 1 << (31 - 17))) {
+        cachedIntmr |= 1 << 11;
     }
-    return mask & ~(1 << (31 - 27));
+    if (!(interrupts & 1 << (31 - 20))) {
+        cachedIntmr |= 1 << 3;
+    }
+    if (!(interrupts & 1 << (31 - 21))) {
+        cachedIntmr |= 1 << 2;
+    }
+    if (!(interrupts & 1 << (31 - 22))) {
+        cachedIntmr |= 1 << 1;
+    }
+    if (!(interrupts & 1 << (31 - 23))) {
+        cachedIntmr |= 1 << 0;
+    }
+    if (!(interrupts & 1 << (31 - 24))) {
+        cachedIntmr |= 1 << 8;
+    }
+    if (!(interrupts & 1 << (31 - 25))) {
+        cachedIntmr |= 1 << 12;
+    }
+    if (!(interrupts & 1 << (31 - 18))) {
+        cachedIntmr |= 1 << 9;
+    }
+    if (!(interrupts & 1 << (31 - 19))) {
+        cachedIntmr |= 1 << 10;
+    }
+    if (!(interrupts & 1 << (31 - 26))) {
+        cachedIntmr |= 1 << 13;
+    }
+    if (!(interrupts & 1 << (31 - 27))) {
+        cachedIntmr |= 1 << 14;
+    }
+    intmr = cachedIntmr;
+
+    mask &= ~(1 << (31 - 17));
+    mask &= ~(1 << (31 - 20));
+    mask &= ~(1 << (31 - 21));
+    mask &= ~(1 << (31 - 22));
+    mask &= ~(1 << (31 - 23));
+    mask &= ~(1 << (31 - 24));
+    mask &= ~(1 << (31 - 25));
+    mask &= ~(1 << (31 - 18));
+    mask &= ~(1 << (31 - 19));
+    mask &= ~(1 << (31 - 26));
+    mask &= ~(1 << (31 - 27));
+    return mask;
 }
 
 extern "C" REPLACE void OSDispatchInterrupt(u8 /* exception */, OSContext *context) {
