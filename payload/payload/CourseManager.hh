@@ -112,10 +112,10 @@ private:
         void *nameImage() const override;
 
     private:
-        UniquePtr<char> m_name;
-        UniquePtr<char> m_author;
-        UniquePtr<char> m_version;
-        UniquePtr<u8> m_nameImage;
+        UniquePtr<char[]> m_name;
+        UniquePtr<char[]> m_author;
+        UniquePtr<char[]> m_version;
+        UniquePtr<u8[]> m_nameImage;
     };
 
     class DefaultCourse : public Course {
@@ -165,49 +165,49 @@ private:
 
     private:
         u32 m_musicID;
-        UniquePtr<char> m_name;
-        UniquePtr<char> m_author;
-        UniquePtr<char> m_version;
+        UniquePtr<char[]> m_name;
+        UniquePtr<char[]> m_author;
+        UniquePtr<char[]> m_version;
         UniquePtr<MinimapConfig> m_minimapConfig;
-        UniquePtr<u8> m_thumbnail;
-        UniquePtr<u8> m_nameImage;
+        UniquePtr<u8[]> m_thumbnail;
+        UniquePtr<u8[]> m_nameImage;
         Array<char, 256> m_path;
         Array<char, 128> m_prefix;
     };
 
     struct INIStream {
-        UniquePtr<u8> ini;
+        UniquePtr<u8[]> ini;
         u32 iniSize;
         u32 iniOffset;
     };
 
     struct INIField {
         const char *name;
-        UniquePtr<char> *field;
+        UniquePtr<char[]> *field;
     };
 
     struct LocalizedINIField {
         const char *name;
-        Array<UniquePtr<char>, KartLocale::Language::Count> *fields;
+        Array<UniquePtr<char[]>, KartLocale::Language::Count> *fields;
     };
 
     struct PackINI {
-        Array<UniquePtr<char>, KartLocale::Language::Count> localizedNames;
-        UniquePtr<char> fallbackName;
-        Array<UniquePtr<char>, KartLocale::Language::Count> localizedAuthors;
-        UniquePtr<char> fallbackAuthor;
-        UniquePtr<char> version;
-        UniquePtr<char> defaultCourses;
+        Array<UniquePtr<char[]>, KartLocale::Language::Count> localizedNames;
+        UniquePtr<char[]> fallbackName;
+        Array<UniquePtr<char[]>, KartLocale::Language::Count> localizedAuthors;
+        UniquePtr<char[]> fallbackAuthor;
+        UniquePtr<char[]> version;
+        UniquePtr<char[]> defaultCourses;
     };
 
     struct CourseINI {
-        Array<UniquePtr<char>, KartLocale::Language::Count> localizedNames;
-        UniquePtr<char> fallbackName;
-        Array<UniquePtr<char>, KartLocale::Language::Count> localizedAuthors;
-        UniquePtr<char> fallbackAuthor;
-        UniquePtr<char> version;
-        UniquePtr<char> defaultCourseName;
-        UniquePtr<char> defaultMusicName;
+        Array<UniquePtr<char[]>, KartLocale::Language::Count> localizedNames;
+        UniquePtr<char[]> fallbackName;
+        Array<UniquePtr<char[]>, KartLocale::Language::Count> localizedAuthors;
+        UniquePtr<char[]> fallbackAuthor;
+        UniquePtr<char[]> version;
+        UniquePtr<char[]> defaultCourseName;
+        UniquePtr<char[]> defaultMusicName;
     };
 
     CourseManager();
@@ -238,9 +238,9 @@ private:
             Ring<UniquePtr<Pack>, MaxPackCount> &packs, const char *base, const char *type);
     void sortRacePackCoursesByName();
     void sortBattlePackCoursesByName();
-    UniquePtr<char> &getLocalizedEntry(
-            Array<UniquePtr<char>, KartLocale::Language::Count> &localizedEntries,
-            UniquePtr<char> &fallbackEntry);
+    UniquePtr<char[]> &getLocalizedEntry(
+            Array<UniquePtr<char[]>, KartLocale::Language::Count> &localizedEntries,
+            UniquePtr<char[]> &fallbackEntry);
     void *loadFile(const char *zipPath, const char *filePath, JKRHeap *heap,
             u32 *size = nullptr) const;
     void *loadFile(ZIPFile &zipFile, const char *filePath, JKRHeap *heap,
@@ -263,7 +263,7 @@ private:
             const INIField *fields);
     static bool HandleLocalizedINIFields(const char *name, const char *value, u32 fieldCount,
             const LocalizedINIField *fields);
-    static bool SetINIField(const char *value, UniquePtr<char> *field);
+    static bool SetINIField(const char *value, UniquePtr<char[]> *field);
     static bool GetDefaultCourseID(const char *name, u32 &courseID);
     static bool SearchJSON(const char *json, u32 jsonSize, const char *query, f32 &value);
     static bool SearchJSON(const char *json, u32 jsonSize, const char *query, u32 &value);

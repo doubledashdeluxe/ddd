@@ -721,14 +721,14 @@ void CourseManager::addCustomCourse(const Array<char, 256> &path,
         return;
     }
 
-    UniquePtr<char> name(
+    UniquePtr<char[]> name(
             getLocalizedEntry(courseINI.localizedNames, courseINI.fallbackName).release());
     if (!name.get()) {
         return;
     }
-    UniquePtr<char> author(
+    UniquePtr<char[]> author(
             getLocalizedEntry(courseINI.localizedAuthors, courseINI.fallbackAuthor).release());
-    UniquePtr<char> version(courseINI.version.release());
+    UniquePtr<char[]> version(courseINI.version.release());
 
     u32 courseID;
     if (!courseINI.defaultCourseName.get() ||
@@ -756,7 +756,7 @@ void CourseManager::addCustomCourse(const Array<char, 256> &path,
     snprintf(thumbnailPrefix.values(), thumbnailPrefix.count(), "/%scourse_images/",
             prefix.values());
     u32 thumbnailSize;
-    UniquePtr<u8> thumbnail(reinterpret_cast<u8 *>(loadLocalizedFile(zipFile,
+    UniquePtr<u8[]> thumbnail(reinterpret_cast<u8 *>(loadLocalizedFile(zipFile,
             thumbnailPrefix.values(), "/track_image.bti", m_heap, &thumbnailSize)));
     if (!thumbnail.get() || thumbnailSize < 0x20) {
         return;
@@ -767,7 +767,7 @@ void CourseManager::addCustomCourse(const Array<char, 256> &path,
     snprintf(nameImagePrefix.values(), nameImagePrefix.count(), "/%scourse_images/",
             prefix.values());
     u32 nameImageSize;
-    UniquePtr<u8> nameImage(reinterpret_cast<u8 *>(loadLocalizedFile(zipFile,
+    UniquePtr<u8[]> nameImage(reinterpret_cast<u8 *>(loadLocalizedFile(zipFile,
             nameImagePrefix.values(), "/track_name.bti", m_heap, &nameImageSize)));
     if (!nameImage.get() || nameImageSize < 0x20) {
         return;
@@ -779,7 +779,7 @@ void CourseManager::addCustomCourse(const Array<char, 256> &path,
     Array<char, 256> hashesPath;
     snprintf(hashesPath.values(), hashesPath.count(), "/%shashes.bin", prefix.values());
     u32 hashesSize;
-    UniquePtr<u8> hashes(
+    UniquePtr<u8[]> hashes(
             reinterpret_cast<u8 *>(loadFile(zipFile, hashesPath.values(), m_heap, &hashesSize)));
     if (hashes.get() && hashesSize == 64) {
         memcpy(archiveHash.values(), hashes.get() + 0, archiveHash.count());
@@ -788,7 +788,7 @@ void CourseManager::addCustomCourse(const Array<char, 256> &path,
         Array<char, 256> coursePath;
         snprintf(coursePath.values(), coursePath.count(), "/%strack.arc", prefix.values());
         u32 courseSize;
-        UniquePtr<u8> course(
+        UniquePtr<u8[]> course(
                 reinterpret_cast<u8 *>(loadCourseFile(zipFile, coursePath.values(), &courseSize)));
         if (!course.get()) {
             return;
@@ -942,18 +942,19 @@ void CourseManager::addCustomPack(const Array<char, 256> &path,
         return;
     }
 
-    UniquePtr<char> name(getLocalizedEntry(packINI.localizedNames, packINI.fallbackName).release());
+    UniquePtr<char[]> name(
+            getLocalizedEntry(packINI.localizedNames, packINI.fallbackName).release());
     if (!name.get()) {
         return;
     }
-    UniquePtr<char> author(
+    UniquePtr<char[]> author(
             getLocalizedEntry(packINI.localizedAuthors, packINI.fallbackAuthor).release());
-    UniquePtr<char> version(packINI.version.release());
+    UniquePtr<char[]> version(packINI.version.release());
 
     Array<char, 256> nameImagePrefix;
     snprintf(nameImagePrefix.values(), nameImagePrefix.count(), "%s/pack_images/", path.values());
     u32 nameImageSize;
-    UniquePtr<u8> nameImage(reinterpret_cast<u8 *>(
+    UniquePtr<u8[]> nameImage(reinterpret_cast<u8 *>(
             loadLocalizedFile(nameImagePrefix.values(), "/pack_name.bti", m_heap, &nameImageSize)));
     if (!nameImage.get() || nameImageSize < 0x20) {
         return;
@@ -1050,9 +1051,9 @@ void CourseManager::sortBattlePackCoursesByName() {
     }
 }
 
-UniquePtr<char> &CourseManager::getLocalizedEntry(
-        Array<UniquePtr<char>, KartLocale::Language::Count> &localizedEntries,
-        UniquePtr<char> &fallbackEntry) {
+UniquePtr<char[]> &CourseManager::getLocalizedEntry(
+        Array<UniquePtr<char[]>, KartLocale::Language::Count> &localizedEntries,
+        UniquePtr<char[]> &fallbackEntry) {
     for (u32 i = 0; i < KartLocale::Language::Count; i++) {
         if (localizedEntries[m_languages[i]].get()) {
             return localizedEntries[m_languages[i]];
@@ -1134,12 +1135,12 @@ void *CourseManager::loadCourseFile(const char *zipPath, const char *filePath, u
 
 void *CourseManager::loadCourseFile(ZIPFile &zipFile, const char *filePath, u32 *size) const {
     u32 compressedSize;
-    UniquePtr<u8> compressed(
+    UniquePtr<u8[]> compressed(
             reinterpret_cast<u8 *>(loadFile(zipFile, filePath, m_courseHeap, &compressedSize)));
     if (!compressed.get()) {
         return nullptr;
     }
-    UniquePtr<u8> uncompressed;
+    UniquePtr<u8[]> uncompressed;
     u32 uncompressedSize;
     if (SZS::GetUncompressedSize(compressed.get(), compressedSize, uncompressedSize)) {
         uncompressed.reset(new (m_courseHeap, 0x20) u8[uncompressedSize]);
@@ -1265,7 +1266,7 @@ bool CourseManager::HandleLocalizedINIFields(const char *name, const char *value
     return false;
 }
 
-bool CourseManager::SetINIField(const char *value, UniquePtr<char> *field) {
+bool CourseManager::SetINIField(const char *value, UniquePtr<char[]> *field) {
     u32 valueLength = strlen(value);
     field->reset(new (s_instance->m_heap, 0x4) char[valueLength + 1]);
     if (!field->get()) {
