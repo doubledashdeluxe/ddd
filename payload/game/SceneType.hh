@@ -15,7 +15,7 @@ public:
         Secret = 0x9,
         None = 0xb,
         MapSelect = 0xd, // Moved
-        Max = 0xe,
+        Count = 0xe,
     };
 
 private:

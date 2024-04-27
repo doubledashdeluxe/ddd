@@ -1,7 +1,7 @@
 #include "MenuTitleLine.hh"
 
 void MenuTitleLine::drop(const char *title) {
-    m_title = Title::Max;
+    m_title = Title::Count;
     m_titlePictures[0]->changeTexture(title, 0);
     m_titlePictures[0]->m_isVisible = true;
     m_titlePictures[1]->m_isVisible = false;

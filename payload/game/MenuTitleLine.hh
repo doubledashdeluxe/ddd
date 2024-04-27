@@ -11,7 +11,7 @@ public:
         enum {
             SelectCourse = 0x4,
             SelectMap = 0x7,
-            Max = 0xb,
+            Count = 0xb,
         };
 
     private:

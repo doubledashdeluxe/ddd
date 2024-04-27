@@ -35,10 +35,10 @@ private:
     u32 m_prevScene;
     u32 m_state;
     u32 _48;
-    Array<Scene *, SceneType::Max> m_scenes; // Added
+    Array<Scene *, SceneType::Count> m_scenes; // Added
 
     static SequenceApp *s_instance;
     static u32 s_scene;
     static u32 s_nextScene;
 };
-size_assert(SequenceApp, 0x4c + sizeof(Array<Scene *, SceneType::Max>));
+size_assert(SequenceApp, 0x4c + sizeof(Array<Scene *, SceneType::Count>));

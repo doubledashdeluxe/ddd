@@ -188,22 +188,22 @@ private:
 
     struct LocalizedINIField {
         const char *name;
-        Array<UniquePtr<char>, KartLocale::Language::Max> *fields;
+        Array<UniquePtr<char>, KartLocale::Language::Count> *fields;
     };
 
     struct PackINI {
-        Array<UniquePtr<char>, KartLocale::Language::Max> localizedNames;
+        Array<UniquePtr<char>, KartLocale::Language::Count> localizedNames;
         UniquePtr<char> fallbackName;
-        Array<UniquePtr<char>, KartLocale::Language::Max> localizedAuthors;
+        Array<UniquePtr<char>, KartLocale::Language::Count> localizedAuthors;
         UniquePtr<char> fallbackAuthor;
         UniquePtr<char> version;
         UniquePtr<char> defaultCourses;
     };
 
     struct CourseINI {
-        Array<UniquePtr<char>, KartLocale::Language::Max> localizedNames;
+        Array<UniquePtr<char>, KartLocale::Language::Count> localizedNames;
         UniquePtr<char> fallbackName;
-        Array<UniquePtr<char>, KartLocale::Language::Max> localizedAuthors;
+        Array<UniquePtr<char>, KartLocale::Language::Count> localizedAuthors;
         UniquePtr<char> fallbackAuthor;
         UniquePtr<char> version;
         UniquePtr<char> defaultCourseName;
@@ -239,7 +239,7 @@ private:
     void sortRacePackCoursesByName();
     void sortBattlePackCoursesByName();
     UniquePtr<char> &getLocalizedEntry(
-            Array<UniquePtr<char>, KartLocale::Language::Max> &localizedEntries,
+            Array<UniquePtr<char>, KartLocale::Language::Count> &localizedEntries,
             UniquePtr<char> &fallbackEntry);
     void *loadFile(const char *zipPath, const char *filePath, JKRHeap *heap,
             u32 *size = nullptr) const;
@@ -283,7 +283,7 @@ private:
     bool m_hasChanged;
     JKRHeap *m_heap;
     JKRHeap *m_courseHeap;
-    Array<u32, KartLocale::Language::Max> m_languages;
+    Array<u32, KartLocale::Language::Count> m_languages;
     Ring<UniquePtr<Course>, MaxCourseCount> m_raceCourses;
     Ring<UniquePtr<Course>, MaxCourseCount> m_battleCourses;
     Ring<UniquePtr<Pack>, MaxPackCount> m_racePacks;

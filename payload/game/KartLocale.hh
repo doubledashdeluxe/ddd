@@ -14,7 +14,7 @@ public:
             Italian = 3,
             Japanese = 4,
             Spanish = 5,
-            Max = 6,
+            Count = 6,
         };
 
     private:

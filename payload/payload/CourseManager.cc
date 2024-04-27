@@ -357,7 +357,7 @@ void CourseManager::onRemove(const char *prefix) {
 }
 
 void *CourseManager::run() {
-    m_languages = (u32[KartLocale::Language::Max]){
+    m_languages = (u32[KartLocale::Language::Count]){
             KartLocale::Language::English,
             KartLocale::Language::French,
             KartLocale::Language::Spanish,
@@ -1051,9 +1051,9 @@ void CourseManager::sortBattlePackCoursesByName() {
 }
 
 UniquePtr<char> &CourseManager::getLocalizedEntry(
-        Array<UniquePtr<char>, KartLocale::Language::Max> &localizedEntries,
+        Array<UniquePtr<char>, KartLocale::Language::Count> &localizedEntries,
         UniquePtr<char> &fallbackEntry) {
-    for (u32 i = 0; i < KartLocale::Language::Max; i++) {
+    for (u32 i = 0; i < KartLocale::Language::Count; i++) {
         if (localizedEntries[m_languages[i]].get()) {
             return localizedEntries[m_languages[i]];
         }
@@ -1253,7 +1253,7 @@ bool CourseManager::HandleLocalizedINIFields(const char *name, const char *value
         if (strncasecmp(name, fields[i].name, strlen(fields[i].name))) {
             continue;
         }
-        for (u32 j = 0; j < KartLocale::Language::Max; j++) {
+        for (u32 j = 0; j < KartLocale::Language::Count; j++) {
             if (strcasecmp(name + strlen(fields[i].name), KartLocale::GetLanguageName(j))) {
                 continue;
             }
