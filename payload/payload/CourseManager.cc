@@ -6,6 +6,7 @@
 #include "payload/SZS.hh"
 
 #include <common/Arena.hh>
+#include <common/DCache.hh>
 #include <common/Log.hh>
 extern "C" {
 #include <coreJSON/core_json.h>
@@ -217,8 +218,13 @@ void *CourseManager::CustomCourse::nameImage() const {
 void *CourseManager::CustomCourse::loadLogo() const {
     Array<char, 256> logoPrefix;
     snprintf(logoPrefix.values(), logoPrefix.count(), "/%scourse_images/", m_prefix.values());
-    return s_instance->loadLocalizedFile(m_path.values(), logoPrefix.values(),
-            "/track_big_logo.bti", s_instance->m_courseHeap);
+    u32 logoSize;
+    void *logo = s_instance->loadLocalizedFile(m_path.values(), logoPrefix.values(),
+            "/track_big_logo.bti", s_instance->m_courseHeap, &logoSize);
+    if (logo) {
+        DCache::Flush(logo, logoSize);
+    }
+    return logo;
 }
 
 void *CourseManager::CustomCourse::loadStaffGhost() const {
@@ -231,7 +237,12 @@ void *CourseManager::CustomCourse::loadStaffGhost() const {
 void *CourseManager::CustomCourse::loadCourse(u32 /* courseOrder */, u32 /* raceLevel */) const {
     Array<char, 256> coursePath;
     snprintf(coursePath.values(), coursePath.count(), "/%strack.arc", m_prefix.values());
-    return s_instance->loadCourseFile(m_path.values(), coursePath.values());
+    u32 courseSize;
+    void *course = s_instance->loadCourseFile(m_path.values(), coursePath.values(), &courseSize);
+    if (course) {
+        DCache::Flush(course, courseSize);
+    }
+    return course;
 }
 
 bool CourseManager::CustomCourse::isDefault() const {
@@ -750,6 +761,7 @@ void CourseManager::addCustomCourse(const Array<char, 256> &path,
     if (!thumbnail.get() || thumbnailSize < 0x20) {
         return;
     }
+    DCache::Flush(thumbnail.get(), thumbnailSize);
 
     Array<char, 256> nameImagePrefix;
     snprintf(nameImagePrefix.values(), nameImagePrefix.count(), "/%scourse_images/",
@@ -760,6 +772,7 @@ void CourseManager::addCustomCourse(const Array<char, 256> &path,
     if (!nameImage.get() || nameImageSize < 0x20) {
         return;
     }
+    DCache::Flush(nameImage.get(), nameImageSize);
 
     Array<u8, 32> archiveHash;
     Array<u8, 32> bolHash;
@@ -945,6 +958,7 @@ void CourseManager::addCustomPack(const Array<char, 256> &path,
     if (!nameImage.get() || nameImageSize < 0x20) {
         return;
     }
+    DCache::Flush(nameImage.get(), nameImageSize);
 
     if (packINI.defaultCourses) {
         const char *c = packINI.defaultCourses.get();

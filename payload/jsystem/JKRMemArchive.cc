@@ -2,6 +2,7 @@
 
 #include <common/Align.hh>
 #include <common/Bytes.hh>
+#include <common/DCache.hh>
 #include <common/Log.hh>
 #include <common/storage/Storage.hh>
 extern "C" {
@@ -354,6 +355,7 @@ bool JKRMemArchive::addSubfile(u64 &archiveSize, const char *prefix, const char 
             return false;
         }
     }
+    DCache::Flush(file, subfileSize);
 
     Bytes::WriteBE<u32>(node, 0x08, file - m_files);
     Bytes::WriteBE<u32>(node, 0x0c, subfileSize);
