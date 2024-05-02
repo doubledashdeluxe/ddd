@@ -8,7 +8,7 @@ static Array<char, 64> expectedVersion;
 
 namespace IOS {
 
-Resource::Resource(const char *path, u32 mode) : m_fd(-1) {
+Resource::Resource(const char *path, u32 mode, bool /* isBlocking */) : m_fd(-1) {
     open(path, mode);
 }
 

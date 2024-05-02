@@ -29,7 +29,7 @@ public:
     };
 
     Resource(s32 fd);
-    Resource(const char *path, u32 mode);
+    Resource(const char *path, u32 mode, bool isBlocking = true);
     ~Resource();
     s32 ioctl(u32 ioctl, const void *input, u32 inputSize, void *output, u32 outputSize);
     s32 ioctlv(u32 ioctlv, u32 inputCount, u32 outputCount, IoctlvPair *pairs);

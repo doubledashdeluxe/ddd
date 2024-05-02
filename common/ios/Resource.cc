@@ -1,5 +1,6 @@
 #include "common/ios/Resource.hh"
 
+#include "common/Clock.hh"
 #include "common/DCache.hh"
 #include "common/Memory.hh"
 
@@ -12,8 +13,14 @@ namespace IOS {
 
 Resource::Resource(s32 fd) : m_fd(fd) {}
 
-Resource::Resource(const char *path, u32 mode) : m_fd(-1) {
-    open(path, mode);
+Resource::Resource(const char *path, u32 mode, bool isBlocking) : m_fd(-1) {
+    while (true) {
+        open(path, mode);
+        if (!isBlocking || m_fd != -6) {
+            return;
+        }
+        Clock::WaitMilliseconds(100);
+    }
 }
 
 Resource::~Resource() {

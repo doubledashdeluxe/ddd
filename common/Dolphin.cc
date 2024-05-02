@@ -1,6 +1,6 @@
 #include "Dolphin.hh"
 
-Dolphin::Dolphin() : IOS::Resource("/dev/dolphin", IOS::Mode::None) {}
+Dolphin::Dolphin() : IOS::Resource("/dev/dolphin", IOS::Mode::None, false) {}
 
 Dolphin::~Dolphin() {}
 
