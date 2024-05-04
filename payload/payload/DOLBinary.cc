@@ -1,4 +1,4 @@
-#include "DOL.hh"
+#include "DOLBinary.hh"
 
 extern "C" u8 dol_init_start[];
 extern "C" u8 dol_init_end[];
@@ -29,182 +29,182 @@ extern "C" u8 dol_sdata2_end[];
 extern "C" u8 dol_sbss2_start[];
 extern "C" u8 dol_sbss2_end[];
 
-void *DOL::Start() {
+void *DOLBinary::Start() {
     return dol_text_start;
 }
 
-void *DOL::End() {
+void *DOLBinary::End() {
     return dol_bss_end;
 }
 
-size_t DOL::Size() {
+size_t DOLBinary::Size() {
     return dol_bss_end - dol_text_start;
 }
 
-void *DOL::InitSectionStart() {
+void *DOLBinary::InitSectionStart() {
     return dol_init_start;
 }
 
-void *DOL::InitSectionEnd() {
+void *DOLBinary::InitSectionEnd() {
     return dol_init_end;
 }
 
-size_t DOL::InitSectionSize() {
+size_t DOLBinary::InitSectionSize() {
     return dol_init_end - dol_init_start;
 }
 
-void *DOL::ExtabSectionStart() {
+void *DOLBinary::ExtabSectionStart() {
     return dol_extab_start;
 }
 
-void *DOL::ExtabSectionEnd() {
+void *DOLBinary::ExtabSectionEnd() {
     return dol_extab_end;
 }
 
-size_t DOL::ExtabSectionSize() {
+size_t DOLBinary::ExtabSectionSize() {
     return dol_extab_end - dol_extab_start;
 }
 
-void *DOL::ExtabindexSectionStart() {
+void *DOLBinary::ExtabindexSectionStart() {
     return dol_extabindex_start;
 }
 
-void *DOL::ExtabindexSectionEnd() {
+void *DOLBinary::ExtabindexSectionEnd() {
     return dol_extabindex_end;
 }
 
-size_t DOL::ExtabindexSectionSize() {
+size_t DOLBinary::ExtabindexSectionSize() {
     return dol_extabindex_end - dol_extabindex_start;
 }
 
-void *DOL::TextSectionStart() {
+void *DOLBinary::TextSectionStart() {
     return dol_text_start;
 }
 
-void *DOL::TextSectionEnd() {
+void *DOLBinary::TextSectionEnd() {
     return dol_text_end;
 }
 
-size_t DOL::TextSectionSize() {
+size_t DOLBinary::TextSectionSize() {
     return dol_text_end - dol_text_start;
 }
 
-void *DOL::CtorsSectionStart() {
+void *DOLBinary::CtorsSectionStart() {
     return dol_ctors_start;
 }
 
-void *DOL::CtorsSectionEnd() {
+void *DOLBinary::CtorsSectionEnd() {
     return dol_ctors_end;
 }
 
-size_t DOL::CtorsSectionSize() {
+size_t DOLBinary::CtorsSectionSize() {
     return dol_ctors_end - dol_ctors_start;
 }
 
-void *DOL::DtorsSectionStart() {
+void *DOLBinary::DtorsSectionStart() {
     return dol_dtors_start;
 }
 
-void *DOL::DtorsSectionEnd() {
+void *DOLBinary::DtorsSectionEnd() {
     return dol_dtors_end;
 }
 
-size_t DOL::DtorsSectionSize() {
+size_t DOLBinary::DtorsSectionSize() {
     return dol_dtors_end - dol_dtors_start;
 }
 
-void *DOL::BinarySectionStart() {
+void *DOLBinary::BinarySectionStart() {
     return dol_BINARY_start;
 }
 
-void *DOL::BinarySectionEnd() {
+void *DOLBinary::BinarySectionEnd() {
     return dol_BINARY_end;
 }
 
-size_t DOL::BinarySectionSize() {
+size_t DOLBinary::BinarySectionSize() {
     return dol_BINARY_end - dol_BINARY_start;
 }
 
-void *DOL::RodataSectionStart() {
+void *DOLBinary::RodataSectionStart() {
     return dol_rodata_start;
 }
 
-void *DOL::RodataSectionEnd() {
+void *DOLBinary::RodataSectionEnd() {
     return dol_rodata_end;
 }
 
-size_t DOL::RodataSectionSize() {
+size_t DOLBinary::RodataSectionSize() {
     return dol_rodata_end - dol_rodata_start;
 }
 
-void *DOL::DataSectionStart() {
+void *DOLBinary::DataSectionStart() {
     return dol_data_start;
 }
 
-void *DOL::DataSectionEnd() {
+void *DOLBinary::DataSectionEnd() {
     return dol_data_end;
 }
 
-size_t DOL::DataSectionSize() {
+size_t DOLBinary::DataSectionSize() {
     return dol_data_end - dol_data_start;
 }
 
-void *DOL::BssSectionStart() {
+void *DOLBinary::BssSectionStart() {
     return dol_bss_start;
 }
 
-void *DOL::BssSectionEnd() {
+void *DOLBinary::BssSectionEnd() {
     return dol_bss_end;
 }
 
-size_t DOL::BssSectionSize() {
+size_t DOLBinary::BssSectionSize() {
     return dol_bss_end - dol_bss_start;
 }
 
-void *DOL::SdataSectionStart() {
+void *DOLBinary::SdataSectionStart() {
     return dol_sdata_start;
 }
 
-void *DOL::SdataSectionEnd() {
+void *DOLBinary::SdataSectionEnd() {
     return dol_sdata_end;
 }
 
-size_t DOL::SdataSectionSize() {
+size_t DOLBinary::SdataSectionSize() {
     return dol_sdata_end - dol_sdata_start;
 }
 
-void *DOL::SbssSectionStart() {
+void *DOLBinary::SbssSectionStart() {
     return dol_sbss_start;
 }
 
-void *DOL::SbssSectionEnd() {
+void *DOLBinary::SbssSectionEnd() {
     return dol_sbss_end;
 }
 
-size_t DOL::SbssSectionSize() {
+size_t DOLBinary::SbssSectionSize() {
     return dol_sbss_end - dol_sbss_start;
 }
 
-void *DOL::Sdata2SectionStart() {
+void *DOLBinary::Sdata2SectionStart() {
     return dol_sdata2_start;
 }
 
-void *DOL::Sdata2SectionEnd() {
+void *DOLBinary::Sdata2SectionEnd() {
     return dol_sdata2_end;
 }
 
-size_t DOL::Sdata2SectionSize() {
+size_t DOLBinary::Sdata2SectionSize() {
     return dol_sdata2_end - dol_sdata2_start;
 }
 
-void *DOL::Sbss2SectionStart() {
+void *DOLBinary::Sbss2SectionStart() {
     return dol_sbss2_start;
 }
 
-void *DOL::Sbss2SectionEnd() {
+void *DOLBinary::Sbss2SectionEnd() {
     return dol_sbss2_end;
 }
 
-size_t DOL::Sbss2SectionSize() {
+size_t DOLBinary::Sbss2SectionSize() {
     return dol_sbss2_end - dol_sbss2_start;
 }

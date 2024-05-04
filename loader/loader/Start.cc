@@ -1,4 +1,5 @@
 #include "loader/Loader.hh"
+#include "loader/LoaderBinary.hh"
 
 #include <common/Arena.hh>
 extern "C" {
@@ -12,12 +13,12 @@ extern "C" {
 extern "C" u32 stackTop;
 
 extern "C" void RunLoader() {
-    void *bssStart = Loader::BssSectionStart();
-    size_t bssSize = Loader::BssSectionSize();
+    void *bssStart = LoaderBinary::BssSectionStart();
+    size_t bssSize = LoaderBinary::BssSectionSize();
     memset(bssStart, 0, bssSize);
 
-    void (**ctorsStart)() = reinterpret_cast<void (**)()>(Loader::CtorsSectionStart());
-    void (**ctorsEnd)() = reinterpret_cast<void (**)()>(Loader::CtorsSectionEnd());
+    void (**ctorsStart)() = reinterpret_cast<void (**)()>(LoaderBinary::CtorsSectionStart());
+    void (**ctorsEnd)() = reinterpret_cast<void (**)()>(LoaderBinary::CtorsSectionEnd());
     for (void (**ctor)() = ctorsStart; ctor < ctorsEnd; ctor++) {
         (*ctor)();
     }

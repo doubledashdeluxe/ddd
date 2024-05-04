@@ -11,7 +11,7 @@
 #include <common/Array.hh>
 #include <jsystem/JKRExpHeap.hh>
 #include <jsystem/JKRSolidHeap.hh>
-#include <payload/DOL.hh>
+#include <payload/DOLBinary.hh>
 #include <payload/FileLoader.hh>
 
 extern "C" {
@@ -26,7 +26,7 @@ void ResMgr::Create(JKRHeap *parentHeap) {
     for (u32 i = 0; i < 0x40; i++) {
         s_aramResArgs[i].status = 2;
     }
-    s_loaders[ArchiveID::System] = JKRArchive::Mount(DOL::BinarySectionStart(), parentHeap,
+    s_loaders[ArchiveID::System] = JKRArchive::Mount(DOLBinary::BinarySectionStart(), parentHeap,
             JKRArchive::MountDirection::Head, true);
 
     size_t keepHeapSize = 0xf00000;

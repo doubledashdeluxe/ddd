@@ -2,7 +2,7 @@
 
 #include <common/Types.hh>
 
-class DOL {
+class DOLBinary {
 public:
     static void *Start();
     static void *End();
@@ -51,5 +51,5 @@ public:
     static size_t Sbss2SectionSize();
 
 private:
-    DOL();
+    DOLBinary();
 };

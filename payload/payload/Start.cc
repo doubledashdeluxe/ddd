@@ -1,5 +1,6 @@
 #include "payload/Patcher.hh"
 #include "payload/Payload.hh"
+#include "payload/PayloadBinary.hh"
 
 #include <common/Arena.hh>
 #include <common/Context.hh>
@@ -21,8 +22,8 @@ extern "C" void __init_user(void);
 extern "C" int main(void);
 
 extern "C" void RunPayload(Context *context) {
-    void (**ctorsStart)() = reinterpret_cast<void (**)()>(Payload::CtorsSectionStart());
-    void (**ctorsEnd)() = reinterpret_cast<void (**)()>(Payload::CtorsSectionEnd());
+    void (**ctorsStart)() = reinterpret_cast<void (**)()>(PayloadBinary::CtorsSectionStart());
+    void (**ctorsEnd)() = reinterpret_cast<void (**)()>(PayloadBinary::CtorsSectionEnd());
     for (void (**ctor)() = ctorsStart; ctor < ctorsEnd; ctor++) {
         (*ctor)();
     }
