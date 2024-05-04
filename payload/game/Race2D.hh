@@ -29,7 +29,8 @@ private:
     u8 _0000[0x0230 - 0x0000];
     J2DScreen *m_raceScreen;
     J2DScreen *m_maskScreen;
-    u8 _0238[0x0338 - 0x0238];
+    J2DPicture *m_playerNumberPictures[4][8];
+    u8 _02b8[0x0338 - 0x02b8];
     J2DScreen *m_shineIndicationScreens[4];
     u8 _0348[0x04b4 - 0x0348];
     J2DPicture *m_specialItemPictures[4][2];

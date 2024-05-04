@@ -37,6 +37,12 @@ void Race2D::init() {
         m_maskScreen->setHasARScale(false, true);
         m_maskScreen->setHasARTexCoords(false, true);
     }
+    for (u32 i = 0; i < 4; i++) {
+        for (u32 j = 0; j < 8; j++) {
+            m_playerNumberPictures[i][j]->setHasARTrans(false, false);
+            m_playerNumberPictures[i][j]->setHasARShift(false, false);
+        }
+    }
     if (raceInfo.getRaceMode() == RaceMode::Escape) {
         for (s16 i = 0; i < consoleCount; i++) {
             m_shineIndicationScreens[i]->setHasARTrans(false, true);
