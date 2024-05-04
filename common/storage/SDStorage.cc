@@ -71,17 +71,17 @@ bool SDStorage::transfer(bool isWrite, u32 firstSector, u32 sectorCount, void *b
                 buffer, nullptr);
     } else {
         while (sectorCount > 0) {
-            u32 chunkSectorCount = Min<u32>(sectorCount, m_buffer.count() / SectorSize);
+            u32 chunkSectorCount = Min<u32>(sectorCount, s_buffer->count() / SectorSize);
             if (isWrite) {
-                memcpy(m_buffer.values(), buffer, chunkSectorCount * SectorSize);
+                memcpy(s_buffer->values(), buffer, chunkSectorCount * SectorSize);
             }
             u32 firstBlock = m_isSDHC ? firstSector : firstSector * SectorSize;
             if (!sendCommand(command, 3, ResponseType::R1, firstBlock, chunkSectorCount, SectorSize,
-                        m_buffer.values(), nullptr)) {
+                        s_buffer->values(), nullptr)) {
                 return false;
             }
             if (!isWrite) {
-                memcpy(buffer, m_buffer.values(), chunkSectorCount * SectorSize);
+                memcpy(buffer, s_buffer->values(), chunkSectorCount * SectorSize);
             }
             firstSector += chunkSectorCount;
             sectorCount -= chunkSectorCount;
@@ -89,6 +89,62 @@ bool SDStorage::transfer(bool isWrite, u32 firstSector, u32 sectorCount, void *b
         }
         return true;
     }
+}
+
+void SDStorage::pollAdd() {
+    if (!resetCard()) {
+        DEBUG("Failed to reset card");
+        return;
+    }
+
+    Status status;
+    if (!getStatus(status)) {
+        DEBUG("Failed to get status");
+        return;
+    }
+
+    if (!status.wasAdded) {
+        DEBUG("No card inserted");
+        return;
+    }
+
+    if (!status.isMemory) {
+        DEBUG("Not a memory card");
+        return;
+    }
+
+    m_isSDHC = status.isSDHC;
+
+    if (!enable4BitBus()) {
+        DEBUG("Failed to enable 4-bit bus");
+        return;
+    }
+
+    if (!setClock(1)) {
+        DEBUG("Failed to set clock");
+        return;
+    }
+
+    {
+        CardHandle cardHandle(this);
+        if (!cardHandle.ok()) {
+            return;
+        }
+
+        if (!setCardBlockLength(sectorSize())) {
+            return;
+        }
+
+        if (!enableCard4BitBus()) {
+            return;
+        }
+    }
+
+    add();
+}
+
+void SDStorage::pollRemove() {
+    remove();
 }
 
 bool SDStorage::enable4BitBus() {
@@ -235,4 +291,6 @@ bool SDStorage::getStatus(Status &status) {
 
 const u32 SDStorage::SectorSize = 512;
 
+Array<u8, 0x4000> *SDStorage::s_buffer = nullptr;
 SDStorage *SDStorage::s_instance = nullptr;
+Mutex *SDStorage::s_mutex = nullptr;

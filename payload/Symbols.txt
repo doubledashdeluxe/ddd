@@ -66,6 +66,7 @@
 800ab8d4 DVDOpen
 800ab99c DVDClose
 800abcd4 DVDReadPrio
+800ad9fc DVDReadAbsAsyncPrio
 800af1d8 VIInit
 800af688 VIWaitForRetrace
 800b0378 VIFlush

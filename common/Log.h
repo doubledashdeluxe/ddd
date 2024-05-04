@@ -1,8 +1,10 @@
 #pragma once
 
+#include <common/Types.h>
+
 #include <stdarg.h>
 
-enum LogLevel {
+enum {
     LOG_LEVEL_ERROR,
     LOG_LEVEL_WARN,
     LOG_LEVEL_INFO,
@@ -10,8 +12,8 @@ enum LogLevel {
     LOG_LEVEL_TRACE,
 };
 
-void Log(LogLevel level, const char *shortFormat, const char *longFormat, ...);
-void VLog(LogLevel level, const char *shortFormat, const char *longFormat, va_list vlist);
+void Log(u32 level, const char *shortFormat, const char *longFormat, ...);
+void VLog(u32 level, const char *shortFormat, const char *longFormat, va_list vlist);
 
 #define STRINGIFY2(s) #s
 #define STRINGIFY(s) STRINGIFY2(s)

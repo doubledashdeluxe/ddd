@@ -13,8 +13,9 @@ extern "C" {
 }
 
 void SDStorage::Init() {
+    s_buffer = new (MEM2Arena::Instance(), 0x20) Array<u8, 0x4000>;
     s_mutex = new (MEM2Arena::Instance(), 0x4) Mutex;
-    s_instance = new (MEM2Arena::Instance(), 0x20) SDStorage;
+    s_instance = new (MEM2Arena::Instance(), 0x4) SDStorage;
 }
 
 SDStorage::SDStorage() : IOS::Resource("/dev/sdio/slot0", IOS::Mode::None), FATStorage(s_mutex) {
@@ -59,65 +60,8 @@ bool SDStorage::waitFor(Status status) {
     return sendCommand(VirtualCommand::Wait, 0, 0, arg, 0, 0, nullptr, nullptr);
 }
 
-void SDStorage::pollAdd() {
-    if (!resetCard()) {
-        DEBUG("Failed to reset card");
-        return;
-    }
-
-    Status status;
-    if (!getStatus(status)) {
-        DEBUG("Failed to get status");
-        return;
-    }
-
-    if (!status.wasAdded) {
-        DEBUG("No card inserted");
-        return;
-    }
-
-    if (!status.isMemory) {
-        DEBUG("Not a memory card");
-        return;
-    }
-
-    m_isSDHC = status.isSDHC;
-
-    if (!enable4BitBus()) {
-        DEBUG("Failed to enable 4-bit bus");
-        return;
-    }
-
-    if (!setClock(1)) {
-        DEBUG("Failed to set clock");
-        return;
-    }
-
-    {
-        CardHandle cardHandle(this);
-        if (!cardHandle.ok()) {
-            return;
-        }
-
-        if (!setCardBlockLength(sectorSize())) {
-            return;
-        }
-
-        if (!enableCard4BitBus()) {
-            return;
-        }
-    }
-
-    add();
-}
-
-void SDStorage::pollRemove() {
-    remove();
-}
-
 void *SDStorage::Run(void *param) {
     return reinterpret_cast<SDStorage *>(param)->run();
 }
 
-Mutex *SDStorage::s_mutex;
 OSMessageQueue SDStorage::s_queue;

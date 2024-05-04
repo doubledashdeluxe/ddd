@@ -2,14 +2,14 @@
 
 #include <common/Console.hh>
 
-extern "C" void Log(LogLevel level, const char *shortFormat, const char *longFormat, ...) {
+extern "C" void Log(u32 level, const char *shortFormat, const char *longFormat, ...) {
     va_list vlist;
     va_start(vlist, longFormat);
     VLog(level, shortFormat, longFormat, vlist);
     va_end(vlist);
 }
 
-extern "C" void VLog(LogLevel level, const char *shortFormat, const char * /* longFormat */,
+extern "C" void VLog(u32 level, const char *shortFormat, const char * /* longFormat */,
         va_list vlist) {
     Console::Color bg = Console::Color::Black;
     Console::Color fg;

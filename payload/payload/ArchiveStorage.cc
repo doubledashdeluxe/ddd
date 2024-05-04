@@ -16,6 +16,7 @@ ArchiveStorage::File::File() : m_storage(nullptr), m_node(nullptr) {}
 
 void ArchiveStorage::File::close() {
     m_storage = nullptr;
+    Storage::File::close();
 }
 
 bool ArchiveStorage::File::read(void *dst, u32 size, u32 offset) {
@@ -57,6 +58,7 @@ ArchiveStorage::Dir::Dir() : m_storage(nullptr), m_dir(nullptr) {}
 
 void ArchiveStorage::Dir::close() {
     m_storage = nullptr;
+    Storage::Dir::close();
 }
 
 bool ArchiveStorage::Dir::read(NodeInfo &nodeInfo) {

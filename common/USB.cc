@@ -1,5 +1,6 @@
 #include "USB.hh"
 
+#include "common/Arena.hh"
 #include "common/Bytes.hh"
 #include "common/Log.hh"
 
@@ -7,6 +8,42 @@ extern "C" {
 #include <assert.h>
 #include <string.h>
 }
+
+USB::Handler::Handler() {
+    for (u32 i = 0; i < s_backends.count(); i++) {
+        assert(!s_backends[i]);
+    }
+    m_next = s_headHandler;
+    s_headHandler = this;
+}
+
+void USB::Handler::pollRemove() {
+    if (!isRemovalHandler()) {
+        return;
+    }
+
+    onRemove(s_removalDevice);
+    s_removalDevice->m_handler = nullptr;
+    s_removalDevice = nullptr;
+    s_removalHandler = nullptr;
+}
+
+void USB::Handler::pollAdd() {
+    if (!isAdditionHandler()) {
+        return;
+    }
+
+    s_additionDevice->m_handler = s_additionHandler;
+    if (onAdd(s_additionDeviceInfo, s_additionDevice)) {
+        s_additionDevice = nullptr;
+        s_additionHandler = nullptr;
+    } else {
+        s_additionDevice->m_handler = nullptr;
+        s_additionHandler = m_next;
+    }
+}
+
+USB::Device::Device() : m_handler(nullptr), m_transfer(new(MEM2Arena::Instance(), 0x20) Transfer) {}
 
 USB::Device::~Device() {}
 
@@ -32,7 +69,8 @@ bool USB::Device::bulkTransfer(void *data, u16 length, u8 endpointDirection, u8 
             endpointNumber);
 }
 
-USB::Resource::Resource(const char *name) : IOS::Resource(name, IOS::Mode::None) {}
+USB::Resource::Resource(const char *name, Buffer &buffer)
+    : IOS::Resource(name, IOS::Mode::None), m_buffer(buffer.buffer) {}
 
 USB::Resource::~Resource() {}
 
@@ -109,7 +147,7 @@ bool USB::Resource::ctrlTransfer(u32 id, Transfer *transfer, u8 endpointDirectio
     return result == 0x8 + length;
 }
 
-USB::VENResource::VENResource() : Resource("/dev/usb/ven") {}
+USB::VENResource::VENResource(Buffer &buffer) : Resource("/dev/usb/ven", buffer) {}
 
 USB::VENResource::~VENResource() {}
 
@@ -212,7 +250,7 @@ bool USB::VENResource::bulkTransfer(u32 id, Transfer *transfer, void *data, u16 
     return result == length;
 }
 
-USB::HIDResource::HIDResource() : Resource("/dev/usb/hid") {}
+USB::HIDResource::HIDResource(Buffer &buffer) : Resource("/dev/usb/hid", buffer) {}
 
 USB::HIDResource::~HIDResource() {}
 
@@ -294,11 +332,91 @@ void USB::CheckDeviceEntries(u32 deviceEntryCount,
     }
 }
 
+void USB::HandleRemovals(Backend *backend, u32 deviceEntryCount,
+        const Array<Resource::DeviceEntry, 0x20> &deviceEntries) {
+    for (u32 i = 0; i < backend->devices.count(); i++) {
+        if (!backend->devices[i].m_handler) {
+            continue;
+        }
+        bool wasRemoved = true;
+        for (u32 j = 0; j < deviceEntryCount; j++) {
+            if (deviceEntries[j].id == backend->devices[i].m_id) {
+                wasRemoved = false;
+                break;
+            }
+        }
+        if (!wasRemoved) {
+            continue;
+        }
+
+        s_removalHandler = backend->devices[i].m_handler;
+        s_removalDevice = &backend->devices[i];
+        HandleRemoval();
+    }
+}
+
+void USB::HandleAdditions(Backend *backend, u32 deviceEntryCount,
+        const Array<Resource::DeviceEntry, 0x20> &deviceEntries) {
+    for (u32 i = 0; i < deviceEntryCount; i++) {
+        bool wasAdded = true;
+        for (u32 j = 0; j < backend->devices.count(); j++) {
+            if (!backend->devices[j].m_handler) {
+                continue;
+            }
+            if (backend->devices[j].m_id == deviceEntries[i].id) {
+                wasAdded = false;
+            }
+        }
+        if (!wasAdded) {
+            continue;
+        }
+
+        u32 j;
+        for (j = 0; j < backend->devices.count(); j++) {
+            if (!backend->devices[j].m_handler) {
+                break;
+            }
+        }
+        assert(j < backend->devices.count());
+        backend->devices[j].m_id = deviceEntries[i].id;
+
+        if (!backend->resource->resume(backend->devices[j].m_id)) {
+            continue;
+        }
+
+        for (u32 k = 0; k < deviceEntries[i].alternateSettingCount; k++) {
+            if (!backend->resource->getDeviceInfo(backend->devices[j].m_id, k,
+                        *s_additionDeviceInfo)) {
+                continue;
+            }
+
+            if (deviceEntries[i].alternateSettingCount > 1) {
+                if (!backend->resource->setAlternateSetting(backend->devices[j].m_id, k)) {
+                    continue;
+                }
+            }
+
+            s_additionHandler = s_headHandler;
+            s_additionDevice = &backend->devices[j];
+            while (s_additionHandler) {
+                HandleAddition();
+            }
+
+            if (backend->devices[j].m_handler) {
+                break;
+            }
+        }
+
+        if (!backend->devices[j].m_handler) {
+            backend->resource->suspend(backend->devices[j].m_id);
+        }
+    }
+}
+
 USB::DeviceInfo *USB::s_additionDeviceInfo = nullptr;
 USB::Handler *USB::s_headHandler = nullptr;
 USB::Handler *USB::s_removalHandler = nullptr;
 USB::Handler *USB::s_additionHandler = nullptr;
 USB::Device *USB::s_removalDevice = nullptr;
 USB::Device *USB::s_additionDevice = nullptr;
-USB::Backend *USB::s_venBackend = nullptr;
-USB::Backend *USB::s_hidBackend = nullptr;
+Array<USB::Backend *, 2> USB::s_backends;

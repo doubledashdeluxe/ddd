@@ -4,9 +4,11 @@
 
 class Apploader {
 public:
+    typedef bool (*ReadFunc)(void *dst, u32 size, u32 offset);
+
     typedef void (*GameEntryFunc)();
 
-    static GameEntryFunc LoadAndRun(char region);
+    static GameEntryFunc Run(ReadFunc read);
 
 private:
     Apploader();
@@ -29,8 +31,7 @@ private:
     };
     size_assert(ApploaderHeader, 0x20);
 
-    static Array<Array<u8, 32>, 18> GetHashes();
-    static bool Read(void *dst, u32 size, u32 offset, const Array<u8, 32> *&hashes);
+    static bool Read(ReadFunc read, void *dst, u32 size, u32 offset, const Array<u8, 32> *&hashes);
     static void Report(const char *format, ...);
 
     static const Array<u8, 32> HashesP[18];

@@ -12,8 +12,11 @@ extern "C" {
 FATStorage::File::File() : m_storage(nullptr) {}
 
 void FATStorage::File::close() {
-    f_close(&m_fFile);
-    m_storage = nullptr;
+    if (m_storage) {
+        f_close(&m_fFile);
+        m_storage = nullptr;
+    }
+    Storage::File::close();
 }
 
 bool FATStorage::File::read(void *dst, u32 size, u32 offset) {
@@ -66,8 +69,11 @@ Storage *FATStorage::File::storage() {
 FATStorage::Dir::Dir() : m_storage(nullptr) {}
 
 void FATStorage::Dir::close() {
-    f_closedir(&m_fDir);
-    m_storage = nullptr;
+    if (m_storage) {
+        f_closedir(&m_fDir);
+        m_storage = nullptr;
+    }
+    Storage::Dir::close();
 }
 
 bool FATStorage::Dir::read(NodeInfo &nodeInfo) {
@@ -242,6 +248,8 @@ bool FATStorage::convertPath(const char *path, Array<char, 256> &fPath) {
     s32 length = snprintf(fPath.values(), fPath.count(), "%u:/%s", m_volumeId, path);
     return length < static_cast<s32>(fPath.count());
 }
+
+Array<FATStorage *, FF_VOLUMES> FATStorage::s_volumes(nullptr);
 
 extern "C" DSTATUS disk_status(BYTE /* pdrv */) {
     return 0;

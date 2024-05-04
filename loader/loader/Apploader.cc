@@ -1,8 +1,7 @@
 #include "Apploader.hh"
 
-#include "loader/DI.hh"
-
 #include <common/Align.hh>
+#include <common/DiscID.hh>
 #include <common/ICache.hh>
 #include <common/Log.hh>
 extern "C" {
@@ -11,9 +10,9 @@ extern "C" {
 #include <string.h>
 }
 
-Apploader::GameEntryFunc Apploader::LoadAndRun(char region) {
+Apploader::GameEntryFunc Apploader::Run(ReadFunc read) {
     const Array<u8, 32> *hashes;
-    switch (region) {
+    switch (DiscID::Get().gameID[3]) {
     case 'P':
         hashes = HashesP;
         break;
@@ -29,14 +28,14 @@ Apploader::GameEntryFunc Apploader::LoadAndRun(char region) {
     }
 
     alignas(0x20) ApploaderHeader header;
-    if (!Read(&header, sizeof(header), 0x2440, hashes)) {
+    if (!Read(read, &header, sizeof(header), 0x2440, hashes)) {
         ERROR("Failed to read apploader header.");
         return nullptr;
     }
     INFO("Successfully read apploader header.");
 
-    if (!Read(reinterpret_cast<void *>(0x81200000), AlignUp(header.size + header.trailer, 0x20),
-                0x2460, hashes)) {
+    if (!Read(read, reinterpret_cast<void *>(0x81200000),
+                AlignUp(header.size + header.trailer, 0x20), 0x2460, hashes)) {
         ERROR("Failed to read apploader.");
         return nullptr;
     }
@@ -54,7 +53,7 @@ Apploader::GameEntryFunc Apploader::LoadAndRun(char region) {
     u32 size;
     u32 offset;
     while (main(&dst, &size, &offset)) {
-        if (!Read(dst, size, offset, hashes)) {
+        if (!Read(read, dst, size, offset, hashes)) {
             ERROR("Failed to read dol section.");
             return nullptr;
         }
@@ -65,8 +64,8 @@ Apploader::GameEntryFunc Apploader::LoadAndRun(char region) {
     return close();
 }
 
-bool Apploader::Read(void *dst, u32 size, u32 offset, const Array<u8, 32> *&hashes) {
-    if (!DI::Read(dst, size, offset)) {
+bool Apploader::Read(ReadFunc read, void *dst, u32 size, u32 offset, const Array<u8, 32> *&hashes) {
+    if (!read(dst, size, offset)) {
         return false;
     }
     Array<u8, 32> hash;

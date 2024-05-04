@@ -9,6 +9,9 @@ struct OSMessageQueue;
 
 class SDStorage : private IOS::Resource, private FATStorage {
 public:
+    SDStorage();
+    ~SDStorage();
+
     static void Init();
 
 private:
@@ -149,8 +152,6 @@ private:
         SDStorage *m_storage;
     };
 
-    SDStorage();
-
     void poll() override;
     u32 priority() override;
     const char *prefix() override;
@@ -184,10 +185,10 @@ private:
     PollCallback m_pollCallback;
     u16 m_rca;
     bool m_isSDHC;
-    alignas(0x20) Array<u8, 0x4000> m_buffer;
 
     static const u32 SectorSize;
 
+    static Array<u8, 0x4000> *s_buffer;
     static SDStorage *s_instance;
     static Mutex *s_mutex;
     static OSMessageQueue s_queue;

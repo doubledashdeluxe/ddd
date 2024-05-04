@@ -36,6 +36,15 @@ void *memset(void *s, int c, size_t n) {
     return s;
 }
 
+char *strchr(const char *s, int c) {
+    do {
+        if (*s == c) {
+            return (char *)s;
+        }
+    } while (*s++ != '\0');
+    return NULL;
+}
+
 size_t strlen(const char *s) {
     const char *f = s;
     while (*s != '\0') {

@@ -20,6 +20,7 @@ DVDStorage::File::File() : m_storage(nullptr) {}
 void DVDStorage::File::close() {
     DVDClose(&m_fileInfo);
     m_storage = nullptr;
+    Storage::File::close();
 }
 
 bool DVDStorage::File::read(void *dst, u32 size, u32 offset) {
@@ -69,6 +70,7 @@ DVDStorage::Dir::Dir() : m_storage(nullptr) {}
 void DVDStorage::Dir::close() {
     DVDCloseDir(&m_dir);
     m_storage = nullptr;
+    Storage::Dir::close();
 }
 
 bool DVDStorage::Dir::read(NodeInfo &nodeInfo) {

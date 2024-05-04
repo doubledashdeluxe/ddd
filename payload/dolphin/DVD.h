@@ -2,8 +2,28 @@
 
 #include <common/Types.h>
 
+typedef struct DVDCommandBlock DVDCommandBlock;
+
+typedef void (*DVDCBCallback)(s32 result, DVDCommandBlock *block);
+
+struct DVDCommandBlock {
+    u8 _00[0x08 - 0x00];
+    u32 command;
+    u32 state;
+    u32 offset;
+    u32 length;
+    void *addr;
+    u8 _1c[0x1c - 0x18];
+    u32 transferredSize;
+    u8 _24[0x28 - 0x24];
+    DVDCBCallback callback;
+    u8 _2c[0x30 - 0x2c];
+};
+size_assert(DVDCommandBlock, 0x30);
+
 typedef struct DVDFileInfo {
-    u8 _00[0x34 - 0x00];
+    DVDCommandBlock block;
+    u8 _30[0x34 - 0x30];
     u32 length;
     u8 _38[0x3c - 0x38];
 } DVDFileInfo;

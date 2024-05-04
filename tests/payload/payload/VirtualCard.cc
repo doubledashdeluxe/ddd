@@ -1,3 +1,4 @@
+#include <common/DiscID.hh>
 #include <helpers/FakeStorage.hh>
 #include <lest.hpp>
 #include <payload/VirtualCard.hh>
@@ -5,7 +6,7 @@
 #include <cstring>
 
 extern "C" {
-u32 discID[8];
+DiscID discID;
 u32 busClock = 243000000;
 }
 
@@ -26,8 +27,8 @@ static lest::tests specification;
 #define CASE(name) lest_CASE(specification, name)
 
 CASE("VirtualCard") {
-    memset(discID, 0, sizeof(discID));
-    memcpy(discID, "GM4P01", strlen("GM4P01"));
+    memcpy(discID.gameID, "GM4P", strlen("GM4P"));
+    memcpy(discID.makerID, "01", strlen("01"));
 
     VirtualCard::Init();
     FakeStorage fakeStorage;

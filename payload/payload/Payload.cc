@@ -14,6 +14,7 @@
 #include <common/Log.hh>
 #include <common/Platform.hh>
 #include <common/USB.hh>
+#include <common/VirtualDI.hh>
 #include <common/ios/Resource.hh>
 #include <common/storage/SDStorage.hh>
 #include <common/storage/Storage.hh>
@@ -174,6 +175,15 @@ void Payload::Run(Context *context) {
     INFO("Initializing log file...");
     LogFile::Init();
     INFO("Initialized log file.");
+
+    if (context->hasVirtualDI) {
+        INFO("Initializing virtual disc...");
+        VirtualDI::Init();
+        while (!VirtualDI::Mount()) {
+            Clock::WaitMilliseconds(1000);
+        }
+        INFO("Initialized virtual disc.");
+    }
 
     Console::Instance()->setIsDirect(false);
 }

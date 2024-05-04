@@ -3,6 +3,7 @@
 #include <common/Arena.hh>
 #include <common/Bytes.hh>
 #include <common/Clock.hh>
+#include <common/DiscID.hh>
 #include <common/String.hh>
 extern "C" {
 #include <dolphin/OSTime.h>
@@ -10,8 +11,6 @@ extern "C" {
 #include <stdio.h>
 #include <string.h>
 }
-
-extern "C" u32 discID[8];
 
 s32 VirtualCard::freeBlocks(s32 *bytesNotUsed, s32 *filesNotUsed) {
     if (!m_isMounted) {
@@ -161,8 +160,8 @@ s32 VirtualCard::create(const char *fileName, u32 size, CARDFileInfo *fileInfo) 
         snprintf(stat.fileName, sizeof(stat.fileName), "%s", fileName);
         stat.length = size;
         stat.time = Clock::TicksToSeconds(OSGetTime());
-        memcpy(stat.gameName, &discID[0], sizeof(stat.gameName));
-        memcpy(stat.company, &discID[1], sizeof(stat.company));
+        memcpy(stat.gameName, DiscID::Get().gameID, sizeof(stat.gameName));
+        memcpy(stat.company, DiscID::Get().makerID, sizeof(stat.company));
         stat.bannerFormat = 0;
         stat.iconAddr = UINT32_MAX;
         stat.iconFormat = 0;

@@ -11,6 +11,7 @@ struct OSMessageQueue;
 class USB {
 public:
     class Device;
+    class Handle;
 
 private:
     struct Transfer;
@@ -186,6 +187,8 @@ public:
     private:
         void pollRemove();
         void pollAdd();
+        bool isRemovalHandler() const;
+        bool isAdditionHandler() const;
 
         Handler *m_next;
     };
@@ -210,6 +213,7 @@ public:
 
         friend class USB;
         friend class Handler;
+        friend class Handle;
     };
 
     static void Init();
@@ -271,6 +275,10 @@ private:
 
     class Resource : protected IOS::Resource {
     public:
+        struct Buffer {
+            u8 buffer[0x180];
+        };
+
         struct DeviceEntry {
             u32 id;
             u16 vendorId;
@@ -298,7 +306,7 @@ private:
                 u8 endpointDirection, u8 endpointNumber) = 0;
 
     protected:
-        Resource(const char *name);
+        Resource(const char *name, Buffer &buffer);
         ~Resource();
 
         class Ioctl {
@@ -329,12 +337,12 @@ private:
             Ioctlv();
         };
 
-        alignas(0x20) u8 m_buffer[0x180];
+        u8 (&m_buffer)[0x180];
     };
 
     class VENResource : public Resource {
     public:
-        VENResource();
+        VENResource(Buffer &buffer);
         ~VENResource();
 
         bool getDeviceInfo(u32 id, u8 alternateSetting, DeviceInfo &deviceInfo) override;
@@ -349,7 +357,7 @@ private:
 
     class HIDResource : public Resource {
     public:
-        HIDResource();
+        HIDResource(Buffer &buffer);
         ~HIDResource();
 
         bool getDeviceInfo(u32 id, u8 alternateSetting, DeviceInfo &deviceInfo) override;
@@ -363,11 +371,24 @@ private:
     };
 
     struct Backend {
-        Array<Device, 0x20> devices;
+        Resource::Buffer buffer;
         Resource *resource;
+        Array<Device, 0x20> devices;
         OSMessageQueue *initQueue;
     };
 
+public:
+    class Handle {
+    public:
+        Handle();
+        ~Handle();
+
+    private:
+        VENResource m_venResource;
+        HIDResource m_hidResource;
+    };
+
+private:
     USB();
 
     static void *Run(void *param);
@@ -379,6 +400,8 @@ private:
             const Array<Resource::DeviceEntry, 0x20> &deviceEntries);
     static void HandleAdditions(Backend *backend, u32 deviceEntryCount,
             const Array<Resource::DeviceEntry, 0x20> &deviceEntries);
+    static void HandleRemoval();
+    static void HandleAddition();
 
     static DeviceInfo *s_additionDeviceInfo;
     static Handler *s_headHandler;
@@ -386,8 +409,7 @@ private:
     static Handler *s_additionHandler;
     static Device *s_removalDevice;
     static Device *s_additionDevice;
-    static Backend *s_venBackend;
-    static Backend *s_hidBackend;
+    static Array<Backend *, 2> s_backends;
     static OSMessageQueue s_queue;
     static Mutex *s_mutex;
 };

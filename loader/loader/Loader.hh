@@ -48,6 +48,8 @@ private:
 
     Loader();
 
-    static bool IsDiscIDValid();
+    static void RunApploader(Context *context);
+    static bool RunApploaderFromVirtualDI();
+    static bool RunApploaderFromVirtualDI(bool enableUSB);
     static u32 GetLanguage();
 };

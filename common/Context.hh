@@ -3,6 +3,7 @@
 #include "common/Console.hh"
 
 struct Context {
+    bool hasVirtualDI;
     void *commonArchive;
     u32 commonArchiveSize;
     void *localizedArchive;

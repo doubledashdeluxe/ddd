@@ -8,15 +8,14 @@ extern "C" {
 #include <stdio.h>
 }
 
-extern "C" void Log(LogLevel level, const char *shortFormat, const char *longFormat, ...) {
+extern "C" void Log(u32 level, const char *shortFormat, const char *longFormat, ...) {
     va_list vlist;
     va_start(vlist, longFormat);
     VLog(level, shortFormat, longFormat, vlist);
     va_end(vlist);
 }
 
-extern "C" void VLog(LogLevel level, const char *shortFormat, const char *longFormat,
-        va_list vlist) {
+extern "C" void VLog(u32 level, const char *shortFormat, const char *longFormat, va_list vlist) {
     if (level == LOG_LEVEL_TRACE) {
         return;
     }
