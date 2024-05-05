@@ -159,24 +159,24 @@ bool LogFile::ShouldRemoveLogFile(const Storage::NodeInfo &nodeInfo) {
     for (u32 i = 0; i < 4; i++) {
         year = year * 10 + (nodeInfo.name[i] - '0');
     }
-    if (year < limit.year) {
-        return true;
+    if (year != limit.year) {
+        return year < limit.year;
     }
 
     s32 month = 0;
     for (u32 i = 5; i < 7; i++) {
         month = month * 10 + (nodeInfo.name[i] - '0');
     }
-    if (month < limit.mon + 1) {
-        return true;
+    if (month != limit.mon + 1) {
+        return month < limit.mon + 1;
     }
 
     s32 day = 0;
     for (u32 i = 8; i < 10; i++) {
         day = day * 10 + (nodeInfo.name[i] - '0');
     }
-    if (day < limit.mday) {
-        return true;
+    if (day != limit.mday) {
+        return day < limit.mday;
     }
 
     return false;
