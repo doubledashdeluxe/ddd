@@ -19,7 +19,13 @@ private:
     u32 m_raceMode;
     u8 _00c[0x010 - 0x00c];
     u32 m_raceLevel;
-    u8 _014[0x020 - 0x014];
+    u8 _014[0x018 - 0x014];
+
+public:
+    u16 m_vsLapNum;
+
+private:
+    u8 _01a[0x020 - 0x01a];
     s16 m_consoleCount;
     u8 _022[0x120 - 0x022];
     s16 m_awardKartNo;

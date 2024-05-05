@@ -11,6 +11,7 @@
 #include "game/SequenceApp.hh"
 #include "game/SequenceInfo.hh"
 #include "game/System.hh"
+#include "game/SystemRecord.hh"
 
 #include <common/Algorithm.hh>
 extern "C" {
@@ -353,6 +354,7 @@ void SceneMapSelect::nextScene() {
 }
 
 void SceneMapSelect::nextBattle() {
+    RaceInfo::Instance().m_vsLapNum = SystemRecord::Instance().m_vsLapNum;
     m_state = &SceneMapSelect::stateNextBattle;
 }
 
