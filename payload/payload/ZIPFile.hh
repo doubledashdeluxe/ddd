@@ -73,7 +73,7 @@ private:
     };
 
     bool readEOCD(EOCD &eocd);
-    bool readEOCD(u32 eocdOffset, EOCD &eocd);
+    bool readEOCD(u32 eocdOffset, const Array<u8, EOCDHeaderSize> &eocdHeader, EOCD &eocd);
     bool readCDNode(u32 cdNodeOffset, JKRHeap *heap, s32 alignment, CDNode &cdNode);
     bool readLocalNode(u32 localNodeOffset, JKRHeap *heap, s32 alignment, LocalNode &localNode);
 

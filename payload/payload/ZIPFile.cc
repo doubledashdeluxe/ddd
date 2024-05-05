@@ -228,23 +228,29 @@ bool ZIPFile::readEOCD(EOCD &eocd) {
         return false;
     }
 
+    Array<u8, EOCDHeaderSize> eocdHeader;
     u32 minEOCDOffset = m_fileSize > MaxEOCDCommentSize ? m_fileSize - MaxEOCDCommentSize : 0;
     u32 maxEOCDOffset = m_fileSize - EOCDHeaderSize;
-    for (u32 eocdOffset = maxEOCDOffset + 0x1; eocdOffset-- > minEOCDOffset;) {
-        if (readEOCD(eocdOffset, eocd)) {
-            return true;
-        }
-    }
-
-    return false;
-}
-
-bool ZIPFile::readEOCD(u32 eocdOffset, EOCD &eocd) {
-    Array<u8, EOCDHeaderSize> eocdHeader;
+    u32 eocdOffset = maxEOCDOffset;
     if (!m_file.read(eocdHeader.values(), eocdHeader.count(), eocdOffset)) {
         return false;
     }
+    while (!readEOCD(eocdOffset, eocdHeader, eocd)) {
+        if (eocdOffset == minEOCDOffset) {
+            return false;
+        }
 
+        eocdOffset--;
+        eocdHeader.rotateRight(1);
+        if (!m_file.read(eocdHeader.values(), 1, eocdOffset)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool ZIPFile::readEOCD(u32 eocdOffset, const Array<u8, EOCDHeaderSize> &eocdHeader, EOCD &eocd) {
     u32 eocdSignature;
     memcpy(&eocdSignature, eocdHeader.values(), sizeof(eocdSignature));
     if (memcmp(&eocdSignature, "PK\5\6", sizeof(eocdSignature))) {
