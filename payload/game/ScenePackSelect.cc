@@ -37,9 +37,7 @@ ScenePackSelect::ScenePackSelect(JKRArchive *archive, JKRHeap *heap) : Scene(arc
     m_arrowScreen.set("GDIndexLayout.blo", 0x20000, ghostDataArchive);
 
     for (u32 i = 0; i < m_countScreens.count(); i++) {
-        Array<char, 9> tag;
-        snprintf(tag.values(), tag.count(), "Ecount%u", i + 1);
-        m_mainScreen.search(tag.values())->appendChild(&m_countScreens[i]);
+        m_mainScreen.search("Ecount%u", i + 1)->appendChild(&m_countScreens[i]);
     }
     m_modeScreen.search("OK_wb11")->m_isVisible = false;
     m_arrowScreen.search("NSaveGD")->m_isVisible = false;
@@ -51,38 +49,26 @@ ScenePackSelect::ScenePackSelect(JKRArchive *archive, JKRHeap *heap) : Scene(arc
     m_mainScreen.setAnimation(m_mainAnmTextureSRTKey);
     for (u32 i = 0; i < m_packAnmTransforms.count(); i++) {
         m_packAnmTransforms[i] = J2DAnmLoaderDataBase::Load("SelectPack.bck", m_archive);
-        Array<char, 9> tag;
-        snprintf(tag.values(), tag.count(), "Ecrsr%u", i + 1);
-        m_mainScreen.search(tag.values())->setAnimation(m_packAnmTransforms[i]);
-        snprintf(tag.values(), tag.count(), "ENplay%u", i + 1);
-        m_mainScreen.search(tag.values())->setAnimation(m_packAnmTransforms[i]);
-        snprintf(tag.values(), tag.count(), "Ecount%u", i + 1);
-        m_mainScreen.search(tag.values())->setAnimation(m_packAnmTransforms[i]);
+        m_mainScreen.search("Ecrsr%u", i + 1)->setAnimation(m_packAnmTransforms[i]);
+        m_mainScreen.search("ENplay%u", i + 1)->setAnimation(m_packAnmTransforms[i]);
+        m_mainScreen.search("Ecount%u", i + 1)->setAnimation(m_packAnmTransforms[i]);
     }
     for (u32 i = 0; i < m_packAnmColors.count(); i++) {
         m_packAnmColors[i] = J2DAnmLoaderDataBase::Load("SelectPack.bpk", m_archive);
         m_packAnmColors[i]->searchUpdateMaterialID(&m_mainScreen);
-        Array<char, 9> tag;
-        snprintf(tag.values(), tag.count(), "Ecrsr%u", i + 1);
-        m_mainScreen.search(tag.values())->setAnimation(m_packAnmColors[i]);
+        m_mainScreen.search("Ecrsr%u", i + 1)->setAnimation(m_packAnmColors[i]);
     }
     for (u32 i = 0; i < m_packAnmTevRegKeys.count(); i++) {
         m_packAnmTevRegKeys[i] = J2DAnmLoaderDataBase::Load("HowManyDrivers.brk", m_archive);
         m_packAnmTevRegKeys[i]->searchUpdateMaterialID(&m_mainScreen);
-        Array<char, 9> tag;
-        snprintf(tag.values(), tag.count(), "Ebar%u", i + 1);
-        m_mainScreen.search(tag.values())->setAnimation(m_packAnmTevRegKeys[i]);
-        snprintf(tag.values(), tag.count(), "Eplay%u", i + 1);
-        m_mainScreen.search(tag.values())->setAnimation(m_packAnmTevRegKeys[i]);
-        snprintf(tag.values(), tag.count(), "Eplay%ub", i + 1);
-        m_mainScreen.search(tag.values())->setAnimation(m_packAnmTevRegKeys[i]);
+        m_mainScreen.search("Ebar%u", i + 1)->setAnimation(m_packAnmTevRegKeys[i]);
+        m_mainScreen.search("Eplay%u", i + 1)->setAnimation(m_packAnmTevRegKeys[i]);
+        m_mainScreen.search("Eplay%ub", i + 1)->setAnimation(m_packAnmTevRegKeys[i]);
         m_countScreens[i].setAnimation(m_packAnmTevRegKeys[i]);
     }
     for (u32 i = 0; i < m_circleAnmTransforms.count(); i++) {
         m_circleAnmTransforms[i] = J2DAnmLoaderDataBase::Load("SelectPack.bck", m_archive);
-        Array<char, 9> tag;
-        snprintf(tag.values(), tag.count(), "Eplay%ub", i + 1);
-        m_mainScreen.search(tag.values())->setAnimation(m_circleAnmTransforms[i]);
+        m_mainScreen.search("Eplay%ub", i + 1)->setAnimation(m_circleAnmTransforms[i]);
     }
     m_modeAnmTransform = J2DAnmLoaderDataBase::Load("SelectMapLayout.bck", mapSelectArchive);
     m_modeScreen.search("NSlMap")->setAnimation(m_modeAnmTransform);
@@ -92,9 +78,7 @@ ScenePackSelect::ScenePackSelect(JKRArchive *archive, JKRHeap *heap) : Scene(arc
     }
     m_arrowAnmTransform = J2DAnmLoaderDataBase::Load("GDIndexLayout.bck", ghostDataArchive);
     for (u32 i = 0; i < 2; i++) {
-        Array<char, 9> tag;
-        snprintf(tag.values(), tag.count(), "MArrow%02u", i + 1);
-        m_arrowScreen.search(tag.values())->setAnimation(m_arrowAnmTransform);
+        m_arrowScreen.search("MArrow%02u", i + 1)->setAnimation(m_arrowAnmTransform);
     }
 
     m_mainAnmTextureSRTKeyFrame = 0;
@@ -192,23 +176,16 @@ void ScenePackSelect::calc() {
     m_arrowAnmTransform->m_frame = m_arrowAnmTransformFrame;
 
     for (u32 i = 0; i < m_packAlphas.count(); i++) {
-        Array<char, 9> tag;
-        snprintf(tag.values(), tag.count(), "Ebar%u", i + 1);
-        m_mainScreen.search(tag.values())->setAlpha(m_packAlphas[i]);
-        snprintf(tag.values(), tag.count(), "Eplay%u", i + 1);
-        m_mainScreen.search(tag.values())->setAlpha(m_packAlphas[i]);
-        snprintf(tag.values(), tag.count(), "Eplay%ub", i + 1);
-        m_mainScreen.search(tag.values())->setAlpha(m_packAlphas[i]);
+        m_mainScreen.search("Ebar%u", i + 1)->setAlpha(m_packAlphas[i]);
+        m_mainScreen.search("Eplay%u", i + 1)->setAlpha(m_packAlphas[i]);
+        m_mainScreen.search("Eplay%ub", i + 1)->setAlpha(m_packAlphas[i]);
         for (u32 j = 0; j < 3; j++) {
-            snprintf(tag.values(), tag.count(), "Eplay%u", j + 1);
-            m_countScreens[i].search(tag.values())->setAlpha(m_packAlphas[i]);
+            m_countScreens[i].search("Eplay%u", j + 1)->setAlpha(m_packAlphas[i]);
         }
         m_packAnmColors[i]->m_frame += m_packAlphas[i] / 51 * 121;
     }
     for (u32 i = 0; i < m_arrowAlphas.count(); i++) {
-        Array<char, 9> tag;
-        snprintf(tag.values(), tag.count(), "MArrow%02u", i + 1);
-        m_arrowScreen.search(tag.values())->setAlpha(m_arrowAlphas[i]);
+        m_arrowScreen.search("MArrow%02u", i + 1)->setAlpha(m_arrowAlphas[i]);
     }
 
     m_mainScreen.animation();
@@ -394,9 +371,7 @@ void ScenePackSelect::refreshPacks() {
         } else {
             pack = &courseManager->battlePack(packIndex);
         }
-        Array<char, 9> tag;
-        snprintf(tag.values(), tag.count(), "Eplay%u", i + 1);
-        J2DPicture *picture = m_mainScreen.search(tag.values())->downcast<J2DPicture>();
+        J2DPicture *picture = m_mainScreen.search("Eplay%u", i + 1)->downcast<J2DPicture>();
         picture->changeTexture(reinterpret_cast<ResTIMG *>(pack->nameImage()), 0);
         Array<J2DPicture *, 3> pictures;
         pictures[0] = m_countScreens[i].search("Eplay3")->downcast<J2DPicture>();

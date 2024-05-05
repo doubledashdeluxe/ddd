@@ -52,9 +52,7 @@ void LANNum2D::setText(const char *prefix, const char *text) {
     u32 length = strlen(text);
     f32 startX, endX;
     for (u32 i = 0; i < 30; i++) {
-        Array<char, 9> tag;
-        snprintf(tag.values(), tag.count(), "%s%u", prefix, i);
-        J2DPicture *picture = m_screen->search(tag.values())->downcast<J2DPicture>();
+        J2DPicture *picture = m_screen->search("%s%u", prefix, i)->downcast<J2DPicture>();
         picture->m_isVisible = i < length;
         if (i < length) {
             char c = length > 30 && i >= 27 ? '.' : text[i];
@@ -67,9 +65,7 @@ void LANNum2D::setText(const char *prefix, const char *text) {
             endX = picture->m_offset.x;
         }
     }
-    Array<char, 9> tag;
-    snprintf(tag.values(), tag.count(), "%sO", prefix);
-    J2DPane *pane = m_screen->search(tag.values());
+    J2DPane *pane = m_screen->search("%sO", prefix);
     pane->m_offset.x = -(startX + endX) / 2.0f;
     pane->calcMtx();
 }

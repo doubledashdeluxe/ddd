@@ -42,18 +42,13 @@ SceneOption::SceneOption(JKRArchive *archive, JKRHeap *heap)
     m_mainScreen.search("NScroll")->setAnimation(m_scrollAnmTransform);
     m_cursorAnmTransform = J2DAnmLoaderDataBase::Load("Option.bck", m_archive);
     for (u32 i = 0; i < Entry::Count; i++) {
-        Array<char, 9> tag;
-        snprintf(tag.values(), tag.count(), "%sCs", EntryNames[i]);
-        m_mainScreen.search(tag.values())->setAnimation(m_cursorAnmTransform);
+        m_mainScreen.search("%sCs", EntryNames[i])->setAnimation(m_cursorAnmTransform);
     }
     for (u32 i = 0; i < m_entryAnmTransforms.count(); i++) {
         m_entryAnmTransforms[i] = J2DAnmLoaderDataBase::Load("Option.bck", m_archive);
-        Array<char, 9> tag;
-        snprintf(tag.values(), tag.count(), "%s_M", EntryNames[i]);
-        m_mainScreen.search(tag.values())->setAnimation(m_entryAnmTransforms[i]);
+        m_mainScreen.search("%s_M", EntryNames[i])->setAnimation(m_entryAnmTransforms[i]);
         if (i < Option::Count) {
-            snprintf(tag.values(), tag.count(), "NSb%s", EntryNames[i]);
-            m_mainScreen.search(tag.values())->setAnimation(m_entryAnmTransforms[i]);
+            m_mainScreen.search("NSb%s", EntryNames[i])->setAnimation(m_entryAnmTransforms[i]);
             if (i == Option::Volume) {
                 m_mainScreen.search("NSbBGM1")->setAnimation(m_entryAnmTransforms[i]);
             }
@@ -61,15 +56,12 @@ SceneOption::SceneOption(JKRArchive *archive, JKRHeap *heap)
     }
     for (u32 i = 0; i < m_optionAnmTransforms.count(); i++) {
         m_optionAnmTransforms[i] = J2DAnmLoaderDataBase::Load("Option.bck", m_archive);
-        Array<char, 9> tag;
         if (i == Option::Volume) {
             for (u32 j = 0; j < 3; j++) {
-                snprintf(tag.values(), tag.count(), "SbBGMw%u", j);
-                m_mainScreen.search(tag.values())->setAnimation(m_optionAnmTransforms[i]);
+                m_mainScreen.search("SbBGMw%u", j)->setAnimation(m_optionAnmTransforms[i]);
             }
         } else {
-            snprintf(tag.values(), tag.count(), "Sb%s_M", EntryNames[i]);
-            m_mainScreen.search(tag.values())->setAnimation(m_optionAnmTransforms[i]);
+            m_mainScreen.search("Sb%s_M", EntryNames[i])->setAnimation(m_optionAnmTransforms[i]);
         }
         if (i == Option::Laps) {
             m_mainScreen.search("SbLp_M1")->setAnimation(m_optionAnmTransforms[i]);
@@ -77,45 +69,35 @@ SceneOption::SceneOption(JKRArchive *archive, JKRHeap *heap)
     }
     for (u32 i = 0; i < m_optionLeftAnmTransforms.count(); i++) {
         m_optionLeftAnmTransforms[i] = J2DAnmLoaderDataBase::Load("Option.bck", m_archive);
-        Array<char, 9> tag;
-        snprintf(tag.values(), tag.count(), "NSb%sL2", EntryNames[i]);
-        m_mainScreen.search(tag.values())->setAnimation(m_optionLeftAnmTransforms[i]);
+        m_mainScreen.search("NSb%sL2", EntryNames[i])->setAnimation(m_optionLeftAnmTransforms[i]);
     }
     for (u32 i = 0; i < m_optionLeftAnmTevRegKeys.count(); i++) {
         m_optionLeftAnmTevRegKeys[i] = J2DAnmLoaderDataBase::Load("Option.brk", m_archive);
         m_optionLeftAnmTevRegKeys[i]->searchUpdateMaterialID(&m_mainScreen);
-        Array<char, 9> tag;
-        snprintf(tag.values(), tag.count(), "Sb%sL1", EntryNames[i]);
-        m_mainScreen.search(tag.values())->setAnimation(m_optionLeftAnmTevRegKeys[i]);
+        m_mainScreen.search("Sb%sL1", EntryNames[i])->setAnimation(m_optionLeftAnmTevRegKeys[i]);
     }
     for (u32 i = 0; i < m_optionRightAnmTransforms.count(); i++) {
         m_optionRightAnmTransforms[i] = J2DAnmLoaderDataBase::Load("Option.bck", m_archive);
-        Array<char, 9> tag;
-        snprintf(tag.values(), tag.count(), "NSb%sR2", EntryNames[i]);
-        m_mainScreen.search(tag.values())->setAnimation(m_optionRightAnmTransforms[i]);
+        m_mainScreen.search("NSb%sR2", EntryNames[i])->setAnimation(m_optionRightAnmTransforms[i]);
     }
     for (u32 i = 0; i < m_optionRightAnmTevRegKeys.count(); i++) {
         m_optionRightAnmTevRegKeys[i] = J2DAnmLoaderDataBase::Load("Option.brk", m_archive);
         m_optionRightAnmTevRegKeys[i]->searchUpdateMaterialID(&m_mainScreen);
-        Array<char, 9> tag;
-        snprintf(tag.values(), tag.count(), "Sb%sR1", EntryNames[i]);
-        m_mainScreen.search(tag.values())->setAnimation(m_optionRightAnmTevRegKeys[i]);
+        m_mainScreen.search("Sb%sR1", EntryNames[i])->setAnimation(m_optionRightAnmTevRegKeys[i]);
     }
     for (u32 i = 0; i < m_optionLoopAnmTransforms.count(); i++) {
         m_optionLoopAnmTransforms[i] = J2DAnmLoaderDataBase::Load("Option.bck", m_archive);
         for (u32 j = 0; j < 2; j++) {
-            Array<char, 9> tag;
-            snprintf(tag.values(), tag.count(), "NSb%s%c1", EntryNames[i], "LR"[j]);
-            m_mainScreen.search(tag.values())->setAnimation(m_optionLoopAnmTransforms[i]);
+            m_mainScreen.search("NSb%s%c1", EntryNames[i], "LR"[j])
+                    ->setAnimation(m_optionLoopAnmTransforms[i]);
         }
     }
     for (u32 i = 0; i < m_optionLoopAnmTextureSRTKeys.count(); i++) {
         m_optionLoopAnmTextureSRTKeys[i] = J2DAnmLoaderDataBase::Load("Option.btk", m_archive);
         m_optionLoopAnmTextureSRTKeys[i]->searchUpdateMaterialID(&m_mainScreen);
         for (u32 j = 0; j < 2; j++) {
-            Array<char, 9> tag;
-            snprintf(tag.values(), tag.count(), "Sb%s%c2", EntryNames[i], "LR"[j]);
-            m_mainScreen.search(tag.values())->setAnimation(m_optionLoopAnmTextureSRTKeys[i]);
+            m_mainScreen.search("Sb%s%c2", EntryNames[i], "LR"[j])
+                    ->setAnimation(m_optionLoopAnmTextureSRTKeys[i]);
         }
     }
     m_volumeAnmTransform = J2DAnmLoaderDataBase::Load("Option.bck", m_archive);
@@ -125,9 +107,7 @@ SceneOption::SceneOption(JKRArchive *archive, JKRHeap *heap)
     m_mainScreen.search("BGMBar2")->setAnimation(m_volumeAnmTextureSRTKey);
     m_arrowAnmTransform = J2DAnmLoaderDataBase::Load("OptionArrow.bck", m_archive);
     for (u32 i = 0; i < 2; i++) {
-        Array<char, 9> tag;
-        snprintf(tag.values(), tag.count(), "MArrow%02u", i + 1);
-        m_arrowScreen.search(tag.values())->setAnimation(m_arrowAnmTransform);
+        m_arrowScreen.search("MArrow%02u", i + 1)->setAnimation(m_arrowAnmTransform);
     }
 
     m_backgroundAnmTextureSRTKeyFrame = 0;
@@ -271,44 +251,34 @@ void SceneOption::calc() {
     m_arrowAnmTransform->m_frame = m_arrowAnmTransformFrame;
 
     for (u32 i = 0; i < m_optionAlphas.count(); i++) {
-        Array<char, 9> tag;
-        snprintf(tag.values(), tag.count(), "%s_M", EntryNames[i]);
-        m_mainScreen.search(tag.values())->setAlpha(m_optionAlphas[i]);
-        snprintf(tag.values(), tag.count(), "%sCs", EntryNames[i]);
-        m_mainScreen.search(tag.values())->setAlpha(m_optionAlphas[i]);
-        snprintf(tag.values(), tag.count(), "NSb%s", EntryNames[i]);
+        m_mainScreen.search("%s_M", EntryNames[i])->setAlpha(m_optionAlphas[i]);
+        m_mainScreen.search("%sCs", EntryNames[i])->setAlpha(m_optionAlphas[i]);
         if (i == Option::Volume) {
             for (u32 j = 0; j < 3; j++) {
-                snprintf(tag.values(), tag.count(), "SbBGMw%u", j);
-                m_mainScreen.search(tag.values())->setAlpha(m_optionAlphas[i]);
+                m_mainScreen.search("SbBGMw%u", j)->setAlpha(m_optionAlphas[i]);
             }
             m_mainScreen.search("BGMBar1")->setAlpha(m_optionAlphas[i]);
             m_mainScreen.search("BGMBar2")->setAlpha(m_optionAlphas[i]);
             m_mainScreen.search("BGMKnob")->setAlpha(m_optionAlphas[i]);
         } else {
-            snprintf(tag.values(), tag.count(), "Sb%s_M", EntryNames[i]);
-            m_mainScreen.search(tag.values())->setAlpha(m_optionAlphas[i]);
+            m_mainScreen.search("Sb%s_M", EntryNames[i])->setAlpha(m_optionAlphas[i]);
         }
         if (i == Option::Laps) {
             m_mainScreen.search("SbLp_M1")->setAlpha(m_optionAlphas[i]);
         }
         for (u32 j = 0; j < 2; j++) {
             for (u32 k = 0; k < 2; k++) {
-                snprintf(tag.values(), tag.count(), "Sb%s%c%u", EntryNames[i], "LR"[j], k + 1);
-                m_mainScreen.search(tag.values())->setAlpha(m_optionAlphas[i]);
+                m_mainScreen.search("Sb%s%c%u", EntryNames[i], "LR"[j], k + 1)
+                        ->setAlpha(m_optionAlphas[i]);
             }
         }
     }
     for (u32 i = 0; i < m_arrowAlphas.count(); i++) {
-        Array<char, 9> tag;
-        snprintf(tag.values(), tag.count(), "MArrow%02u", i + 1);
-        m_arrowScreen.search(tag.values())->setAlpha(m_arrowAlphas[i]);
+        m_arrowScreen.search("MArrow%02u", i + 1)->setAlpha(m_arrowAlphas[i]);
     }
 
     for (u32 i = 0; i < Entry::Count; i++) {
-        Array<char, 9> tag;
-        snprintf(tag.values(), tag.count(), "%sCs", EntryNames[i]);
-        m_mainScreen.search(tag.values())->m_isVisible = i == m_entryIndex;
+        m_mainScreen.search("%sCs", EntryNames[i])->m_isVisible = i == m_entryIndex;
     }
     m_mainScreen.search("SbBGMw0")->m_isVisible = m_unsavedValues[Option::Volume] == 10;
     m_mainScreen.search("SbBGMw1")->m_isVisible = m_unsavedValues[Option::Volume] != 10;
@@ -317,23 +287,19 @@ void SceneOption::calc() {
     m_mainScreen.search("SbLp_M1")->m_isVisible = m_unsavedValues[Option::Laps] == 0;
 
     for (u32 i = 0; i < Entry::Count; i++) {
-        Array<char, 9> tag;
-        snprintf(tag.values(), tag.count(), "CSel%u", i == m_entryIndex ? 1 : 2);
         GXColor black, white;
-        J2DPicture *picture = m_mainScreen.search(tag.values())->downcast<J2DPicture>();
+        J2DPicture *picture =
+                m_mainScreen.search("CSel%u", i == m_entryIndex ? 1 : 2)->downcast<J2DPicture>();
         picture->getBlackWhite(&black, &white);
-        snprintf(tag.values(), tag.count(), "%s_M", EntryNames[i]);
-        picture = m_mainScreen.search(tag.values())->downcast<J2DPicture>();
+        picture = m_mainScreen.search("%s_M", EntryNames[i])->downcast<J2DPicture>();
         picture->setBlackWhite(black, white);
         if (i == Option::Volume) {
             for (u32 j = 0; j < 3; j++) {
-                snprintf(tag.values(), tag.count(), "SbBGMw%u", j);
-                picture = m_mainScreen.search(tag.values())->downcast<J2DPicture>();
+                picture = m_mainScreen.search("SbBGMw%u", j)->downcast<J2DPicture>();
                 picture->setBlackWhite(black, white);
             }
         } else if (i < Option::Count) {
-            snprintf(tag.values(), tag.count(), "Sb%s_M", EntryNames[i]);
-            picture = m_mainScreen.search(tag.values())->downcast<J2DPicture>();
+            picture = m_mainScreen.search("Sb%s_M", EntryNames[i])->downcast<J2DPicture>();
             picture->setBlackWhite(black, white);
         }
         if (i == Option::Laps) {
@@ -635,18 +601,18 @@ void SceneOption::refreshOption(u32 index, s8 nameOffset) {
 }
 
 void SceneOption::refreshOption(const char *tag, const char *name) {
-    J2DPicture *picture = m_mainScreen.search(tag)->downcast<J2DPicture>();
+    J2DPicture *picture = m_mainScreen.search("%s", tag)->downcast<J2DPicture>();
     picture->changeTexture(name, 0);
 }
 
 void SceneOption::refreshOption(const char *tag, char name) {
-    J2DPicture *picture = m_mainScreen.search(tag)->downcast<J2DPicture>();
+    J2DPicture *picture = m_mainScreen.search("%s", tag)->downcast<J2DPicture>();
     Kart2DCommon *kart2DCommon = Kart2DCommon::Instance();
     picture->changeTexture(kart2DCommon->getAsciiTexture(name), 0);
 }
 
 void SceneOption::refreshOption(const char *tag, u8 name) {
-    J2DPicture *picture = m_mainScreen.search(tag)->downcast<J2DPicture>();
+    J2DPicture *picture = m_mainScreen.search("%s", tag)->downcast<J2DPicture>();
     Kart2DCommon *kart2DCommon = Kart2DCommon::Instance();
     picture->changeTexture(kart2DCommon->getNumberTexture(name), 0);
 }

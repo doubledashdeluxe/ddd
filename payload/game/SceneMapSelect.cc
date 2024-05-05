@@ -41,9 +41,7 @@ SceneMapSelect::SceneMapSelect(JKRArchive *archive, JKRHeap *heap) : Scene(archi
     m_arrowScreen.set("GDIndexLayout.blo", 0x20000, ghostDataArchive);
 
     for (u32 i = 0; i < m_mapScreens.count(); i++) {
-        Array<char, 9> tag;
-        snprintf(tag.values(), tag.count(), "Map%u", i);
-        m_gridScreen.search(tag.values())->appendChild(&m_mapScreens[i]);
+        m_gridScreen.search("Map%u", i)->appendChild(&m_mapScreens[i]);
     }
     m_arrowScreen.search("NSaveGD")->m_isVisible = false;
 
@@ -90,9 +88,7 @@ SceneMapSelect::SceneMapSelect(JKRArchive *archive, JKRHeap *heap) : Scene(archi
     }
     m_arrowAnmTransform = J2DAnmLoaderDataBase::Load("SelectMapArrow.bck", m_archive);
     for (u32 i = 0; i < 2; i++) {
-        Array<char, 9> tag;
-        snprintf(tag.values(), tag.count(), "MArrow%02u", i + 1);
-        m_arrowScreen.search(tag.values())->setAnimation(m_arrowAnmTransform);
+        m_arrowScreen.search("MArrow%02u", i + 1)->setAnimation(m_arrowAnmTransform);
     }
 
     m_okAnmTextureSRTKeyFrame = 0;
@@ -223,9 +219,7 @@ void SceneMapSelect::calc() {
         }
     }
     for (u32 i = 0; i < m_arrowAlphas.count(); i++) {
-        Array<char, 9> tag;
-        snprintf(tag.values(), tag.count(), "MArrow%02u", i + 1);
-        m_arrowScreen.search(tag.values())->setAlpha(m_arrowAlphas[i]);
+        m_arrowScreen.search("MArrow%02u", i + 1)->setAlpha(m_arrowAlphas[i]);
     }
 
     m_mainScreen.animation();
