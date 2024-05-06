@@ -2,6 +2,9 @@
 
 #include "common/Arena.hh"
 #include "common/DCache.hh"
+#include "common/Memory.hh"
+
+extern "C" u32 videoMode;
 
 extern "C" volatile u16 vtr;
 extern "C" volatile u16 dcr;
@@ -72,10 +75,10 @@ VI *VI::Instance() {
 }
 
 VI::VI() {
-    m_isProgressive = visel & 1 || dcr & 4;
     bool isNtsc = (dcr >> 8 & 3) == 0;
+    m_isProgressive = isNtsc && (visel & 1 || dcr & 4);
     m_xfbWidth = 608;
-    m_xfbHeight = m_isProgressive || isNtsc ? 448 : 538;
+    m_xfbHeight = isNtsc ? 448 : 538;
     m_xfbSize = m_xfbHeight * ((m_xfbWidth + 1) / 2) * sizeof(u32);
     m_xfb = reinterpret_cast<u32 *>(MEM2Arena::Instance()->alloc(m_xfbSize, 0x20));
     for (u16 y = 0; y < m_xfbHeight; y++) {
@@ -92,13 +95,14 @@ VI::VI() {
         vto = 0x23 << 16 | 0x38;
         vte = 0x22 << 16 | 0x39;
     } else {
-        vto = 0x21 << 16 | 0x43;
-        vte = 0x20 << 16 | 0x44;
+        vto = 0x13 << 16 | 0x35;
+        vte = 0x12 << 16 | 0x36;
     }
-    hsw = 0x2626;
-    hsr = 0x10f5;
-    tfbl = 1 << 28 | reinterpret_cast<uintptr_t>(m_xfb) >> 5;
-    bfbl = 1 << 28 | reinterpret_cast<uintptr_t>(m_xfb) >> 5;
+    hsw = m_xfbWidth << 4 | m_xfbWidth >> (3 + m_isProgressive);
+    hsr = isNtsc ? 0x10f5 : 0x10e9;
+    tfbl = 1 << 28 | Memory::VirtualToPhysical(m_xfb) >> 5;
+    bfbl = 1 << 28 | Memory::VirtualToPhysical(m_xfb + (m_xfbWidth / 2) * !m_isProgressive) >> 5;
+    videoMode = !isNtsc;
 }
 
 VI *VI::s_instance = nullptr;
