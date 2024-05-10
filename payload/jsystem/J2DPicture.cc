@@ -21,11 +21,12 @@ void J2DPicture::drawFullSet(f32 x, f32 y, f32 w, f32 h, Mtx34 *mtx) {
     }
 
     if (!m_hasARTrans || !m_hasARScale) {
-        x += 0.5f * w;
+        x *= m_globalMtx[0][0];
+        x += m_globalMtx[0][3];
+        x += 0.5f * w * m_globalMtx[0][0];
     }
 
     if (!m_hasARTrans) {
-        x += m_globalMtx[0][3];
         if (m_hasARShift) {
             if (m_hasARShiftRight || (x >= 0.5f * 608.0f && !m_hasARShiftLeft)) {
                 x += s_arShift;
@@ -37,7 +38,6 @@ void J2DPicture::drawFullSet(f32 x, f32 y, f32 w, f32 h, Mtx34 *mtx) {
             x /= s_arScale;
             x += 0.5f * 608.0f;
         }
-        x -= m_globalMtx[0][3];
     }
 
     if (!m_hasARScale) {
@@ -58,7 +58,9 @@ void J2DPicture::drawFullSet(f32 x, f32 y, f32 w, f32 h, Mtx34 *mtx) {
     }
 
     if (!m_hasARTrans || !m_hasARScale) {
-        x -= 0.5f * w;
+        x -= 0.5f * w * m_globalMtx[0][0];
+        x -= m_globalMtx[0][3];
+        x /= m_globalMtx[0][0];
     }
 
     drawTexCoord(x, y, w, h, s0, t0, s1, t1, s2, t2, s3, t3, mtx);

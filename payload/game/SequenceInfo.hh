@@ -6,6 +6,8 @@ class SequenceInfo {
 public:
     u32 getBattleMode() const;
 
+    void init();
+
     static SequenceInfo &Instance();
 
 private:

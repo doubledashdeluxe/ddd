@@ -200,7 +200,6 @@
 8012c7bc drawK2D__10K2DPictureFffffb
 8012cfbc __ct__5SceneFP10JKRArchiveP7JKRHeap
 8012cfd8 __dt__5SceneFv
-8012d6ec init__10SceneTitleFv
 801326c0 init__11SceneRecordFv
 80139480 Instance__12Kart2DCommonFv
 80139628 init__8Result2DFv
@@ -208,6 +207,7 @@
 8013f044 __dt__12SceneFactoryFv
 8013f0cc loadData__12SceneFactoryFlP7JKRHeap
 8013f6e8 createScene__12SceneFactoryFlP7JKRHeap
+8013fb34 init__12SequenceInfoFv
 801449c8 setS__11Race2DParamFf
 801449d0 setY__11Race2DParamFf
 801449d8 setX__11Race2DParamFf
@@ -215,6 +215,11 @@
 8014e640 getMapPos__6Race2DFlRC5Vec3fR5Vec2f
 8014efd8 getItemInfo__6Race2DFlllRfRfRf
 80150d18 getStartCharPos__6Race2DFllRf
+80152374 __ct__15PrintMemoryCardFP7JKRHeap
+80152440 reset__15PrintMemoryCardFv
+801524ac init__15PrintMemoryCardFUl
+801528c0 draw__15PrintMemoryCardFv
+801528f0 calc__15PrintMemoryCardFv
 80153694 init__9PreRace2DFv
 801573fc reset__9SceneMenuFv
 80157c08 init__9SceneMenuFv
@@ -236,6 +241,8 @@
 80189bb0 setHeapGroup__8SysDebugFPCcP7JKRHeap
 80189bb4 setDefaultHeapGroup__8SysDebugFP7JKRHeap
 80189c64 createHeapInfo__8SysDebugFP7JKRHeapPCc
+8018b298 reset__8RaceInfoFv
+8018b3f0 settingForWaitDemo__8RaceInfoFb
 8019e54c resetCommon__12RaceDirectorFv
 801af940 Create__8MovieAppFv
 801c9760 __ct__14SceneTitleLineFP10JKRArchiveP7JKRHeapPCc
@@ -247,6 +254,7 @@
 801cc4a4 __ct__7GameAppFUlPCcPv
 801cc548 __dt__7GameAppFv
 801cc5bc main
+801ccdf4 Call__7RaceAppFv
 801cdb54 ctrlRace__7RaceAppFv
 801ce300 GetCrsArcName__6ResMgrFUl
 801ce530 Create__6ResMgrFP7JKRHeap
@@ -280,6 +288,7 @@
 801d983c reset__11SequenceAppFv
 801d98ac ready__11SequenceAppFl
 801d9990 createScene__11SequenceAppFl
+801dd7cc getState__6BBAMgrFv
 801ddfd0 updateKartPadRecord__9GhostFileFRC13KartPadRecord
 801de664 changeNumberTexture__12Kart2DCommonFlPP10J2DPictureUcbb
 801de75c getAsciiTexture__12Kart2DCommonFc
@@ -358,12 +367,14 @@
 803d5bcc s_loadTask__6System
 803d5bd4 s_j2dOrtho__6System
 803d5be0 s_currentApp__6AppMgr
+803d5bf4 s_requests__6AppMgr
 803d5c1c s_state__9CardAgent
 803d5c44 s_printMemoryCard__9CardAgent
 803d5c48 s_aspect__6System
 803d5c4c s_aspectDiv2__6System
 803d5c50 s_aspectSub__6System
 803d5c60 s_instance__11SequenceApp
+803d5ca8 s_instance__6BBAMgr
 803d5cd0 s_instance__14MenuBackground
 803d5cd8 s_instance__13MenuTitleLine
 803d63c8 s_instance__8KartCtrl

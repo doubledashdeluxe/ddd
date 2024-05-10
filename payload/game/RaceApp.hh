@@ -5,6 +5,9 @@
 #include <payload/Replace.hh>
 
 class RaceApp : public GameApp {
+public:
+    static void Call();
+
 private:
     void REPLACED(ctrlRace)();
     REPLACE void ctrlRace();

@@ -14,7 +14,7 @@ void LogoApp::draw() {}
 void LogoApp::calc() {
     switch (m_state) {
     case 0:
-        CardAgent::Ask(1, 0);
+        CardAgent::Ask(CardAgent::Command::CheckSystemFile, 0);
         INFO("Loading bgm_0.aw...");
         break;
     case 1:

@@ -375,7 +375,7 @@ void SceneOption::scrollDown() {
 }
 
 void SceneOption::wait() {
-    CardAgent::Ask(3, 0);
+    CardAgent::Ask(CardAgent::Command::WriteSystemFile, 0);
     m_state = &SceneOption::stateWait;
 }
 

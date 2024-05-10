@@ -4,6 +4,18 @@
 
 class CardAgent {
 public:
+    class Command {
+    public:
+        enum {
+            CheckSystemFile = 1,
+            SetupSystemFile = 2,
+            WriteSystemFile = 3,
+        };
+
+    private:
+        Command();
+    };
+
     static void Ask(s32 command, s32 chan);
     static bool IsReady();
     static void Ack(u32 soundID);

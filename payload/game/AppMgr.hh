@@ -14,10 +14,25 @@ public:
         KartAppEnum();
     };
 
+    class Request {
+    public:
+        enum {
+            DestroyApp = 1 << 0,
+            RestartApp = 1 << 1,
+            PrepareForMovieApp = 1 << 2,
+            StartMovieApp = 1 << 3,
+        };
+
+    private:
+        Request();
+    };
+
     static s32 CurrentApp();
+    static void Request(u32 requests);
 
 private:
     AppMgr();
 
     static s32 s_currentApp; // msGameApp
+    static u32 s_requests;
 };

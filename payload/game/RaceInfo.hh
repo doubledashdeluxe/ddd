@@ -12,6 +12,9 @@ public:
     bool isRace() const;
     bool isBattle() const;
 
+    void reset();
+    void settingForWaitDemo(bool isLast);
+
     static RaceInfo &Instance();
 
 private:
@@ -29,7 +32,13 @@ private:
     s16 m_consoleCount;
     u8 _022[0x120 - 0x022];
     s16 m_awardKartNo;
-    u8 _122[0x2a0 - 0x122];
+    u8 _122[0x298 - 0x122];
+
+public:
+    s32 m_waitDemoResult;
+
+private:
+    u8 _29c[0x2a0 - 0x29c];
 
     static RaceInfo s_instance;
 };

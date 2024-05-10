@@ -3,6 +3,7 @@
 #include "game/SceneMapSelect.hh"
 #include "game/SceneOption.hh"
 #include "game/ScenePackSelect.hh"
+#include "game/SceneTitle.hh"
 #include "game/SysDebug.hh"
 
 JKRArchive *SceneFactory::archive(u32 archiveType) {
@@ -11,13 +12,6 @@ JKRArchive *SceneFactory::archive(u32 archiveType) {
 
 void SceneFactory::loadData(s32 sceneType, JKRHeap *heap) {
     switch (sceneType) {
-    case SceneType::Title:
-        REPLACED(loadData)(SceneType::Title, heap);
-        REPLACED(loadData)(SceneType::Menu, heap);
-        REPLACED(loadData)(SceneType::Option, heap);
-        REPLACED(loadData)(SceneType::Record, heap);
-        REPLACED(loadData)(SceneType::GhostLoadSave, heap);
-        return;
     case SceneType::Option:
         REPLACED(loadData)(SceneType::Option, heap);
         REPLACED(loadData)(SceneType::GhostLoadSave, heap);
@@ -42,6 +36,10 @@ Scene *SceneFactory::createScene(s32 sceneType, JKRHeap *heap) {
     SysDebug *sysDebug = SysDebug::GetManager();
     Scene *scene;
     switch (sceneType) {
+    case SceneType::Title:
+        sysDebug->setHeapGroup("Title", heap);
+        scene = new (heap, 0x0) SceneTitle(m_archives[ArchiveType::Title], heap);
+        break;
     case SceneType::Option:
         sysDebug->setHeapGroup("Option", heap);
         scene = new (heap, 0x0) SceneOption(m_archives[ArchiveType::Option], heap);
