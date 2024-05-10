@@ -1,5 +1,6 @@
 #include "SceneFactory.hh"
 
+#include "game/SceneHowManyPlayers.hh"
 #include "game/SceneMapSelect.hh"
 #include "game/SceneOption.hh"
 #include "game/ScenePackSelect.hh"
@@ -27,6 +28,10 @@ void SceneFactory::loadData(s32 sceneType, JKRHeap *heap) {
         REPLACED(loadData)(SceneType::PackSelect, heap);
         REPLACED(loadData)(SceneType::GhostLoadSave, heap);
         return;
+    case SceneType::HowManyPlayers:
+        REPLACED(loadData)(SceneType::Menu, heap);
+        REPLACED(loadData)(SceneType::LanEntry, heap);
+        return;
     }
 
     REPLACED(loadData)(sceneType, heap);
@@ -52,6 +57,10 @@ Scene *SceneFactory::createScene(s32 sceneType, JKRHeap *heap) {
         sysDebug->setHeapGroup("MapSelect", heap);
         m_battleName2D = BattleName2D::Create(m_archives[ArchiveType::BattleName]);
         scene = new (heap, 0x0) SceneMapSelect(m_archives[ArchiveType::MapSelect], heap);
+        break;
+    case SceneType::HowManyPlayers:
+        sysDebug->setHeapGroup("HowManyPlayers", heap);
+        scene = new (heap, 0x0) SceneHowManyPlayers(m_archives[ArchiveType::Menu], heap);
         break;
     default:
         return REPLACED(createScene)(sceneType, heap);

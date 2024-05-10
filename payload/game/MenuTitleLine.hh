@@ -9,6 +9,7 @@ public:
     class Title {
     public:
         enum {
+            HowManyPlayers = 0x0,
             SelectCourse = 0x4,
             SelectMap = 0x7,
             Count = 0xb,

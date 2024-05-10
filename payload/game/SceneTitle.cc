@@ -310,7 +310,7 @@ void SceneTitle::stateStart() {
                 GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE);
                 break;
             case Entry::Remote:
-                m_nextScene = SceneType::Title;
+                m_nextScene = SceneType::HowManyPlayers;
                 GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_TITLE_TO_SELECT);
                 break;
             }

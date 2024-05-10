@@ -16,6 +16,7 @@ public:
             Option = 0x2,
             MapSelect = 0x4,
             GhostData = 0x6,
+            LanEntry = 0x7,
             TitleLine = 0x8,
             Background = 0x9,
             BattleName = 0xb,

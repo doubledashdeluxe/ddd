@@ -14,8 +14,9 @@ public:
         LanEntry = 0x8,
         Secret = 0x9,
         None = 0xb,
-        MapSelect = 0xd, // Moved
-        Count = 0xe,
+        MapSelect = 0xd,      // Moved
+        HowManyPlayers = 0xe, // Added
+        Count = 0xf,
     };
 
 private:

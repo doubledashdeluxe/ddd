@@ -137,9 +137,7 @@ void SceneMapSelect::init() {
         m_mapIndex = sequenceInfo.m_mapIndex;
         sequenceInfo.m_fromPause = false;
         System::GetDisplay()->startFadeIn(15);
-        if (GameAudio::Main::Instance()->getPlayingSequenceID() != SoundID::JA_BGM_SELECT) {
-            GameAudio::Main::Instance()->startSequenceBgm(SoundID::JA_BGM_SELECT);
-        }
+        GameAudio::Main::Instance()->startSequenceBgm(SoundID::JA_BGM_SELECT);
         SequenceApp::Instance()->ready(SceneType::PackSelect);
     }
     m_rowCount = (m_mapCount + 3 - 1) / 3;
