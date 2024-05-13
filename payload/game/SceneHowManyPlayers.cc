@@ -6,6 +6,7 @@
 #include "game/OnlineBackground.hh"
 #include "game/SceneFactory.hh"
 #include "game/SequenceApp.hh"
+#include "game/SequenceInfo.hh"
 #include "game/System.hh"
 
 #include <jsystem/J2DAnmLoaderDataBase.hh>
@@ -60,7 +61,7 @@ SceneHowManyPlayers::~SceneHowManyPlayers() {}
 
 void SceneHowManyPlayers::init() {
     if (SequenceApp::Instance()->prevScene() == SceneType::Title) {
-        m_playerCount = 1;
+        m_padCount = 1;
         System::GetDisplay()->startFadeIn(15);
         GameAudio::Main::Instance()->startSequenceBgm(SoundID::JA_BGM_SELECT);
     }
@@ -86,7 +87,7 @@ void SceneHowManyPlayers::calc() {
     m_anmTextureSRTKeyFrame = (m_anmTextureSRTKeyFrame + 1) % 180;
     m_anmColorFrame = (m_anmColorFrame + 1) % 120;
     for (u32 i = 0; i < 4; i++) {
-        if (i == m_playerCount - 1) {
+        if (i == m_padCount - 1) {
             if (m_countAnmTransformFrames[i] < 22) {
                 m_countAnmTransformFrames[i]++;
             }
@@ -155,7 +156,10 @@ void SceneHowManyPlayers::stateSlideOut() {
 void SceneHowManyPlayers::stateIdle() {
     const JUTGamePad::CButton &button = KartGamePad::GamePad(0)->button();
     if (button.risingEdge() & PAD_BUTTON_A) {
+        m_nextScene = SceneType::NameSelect;
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE_LITTLE);
+        SequenceInfo::Instance().m_padCount = m_padCount;
+        slideOut();
     } else if (button.risingEdge() & PAD_BUTTON_B) {
         m_nextScene = SceneType::Title;
         GameAudio::Main::Instance()->fadeOutAll(15);
@@ -163,10 +167,10 @@ void SceneHowManyPlayers::stateIdle() {
         System::GetDisplay()->startFadeOut(15);
         slideOut();
     } else if (button.repeat() & JUTGamePad::PAD_MSTICK_UP) {
-        m_playerCount = m_playerCount == 1 ? 4 : m_playerCount - 1;
+        m_padCount = m_padCount == 1 ? 4 : m_padCount - 1;
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CURSOL);
     } else if (button.repeat() & JUTGamePad::PAD_MSTICK_DOWN) {
-        m_playerCount = m_playerCount == 4 ? 1 : m_playerCount + 1;
+        m_padCount = m_padCount == 4 ? 1 : m_padCount + 1;
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CURSOL);
     }
 }

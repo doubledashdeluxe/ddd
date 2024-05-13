@@ -1,6 +1,6 @@
 #pragma once
 
-#include <common/Types.hh>
+#include <common/Array.hh>
 
 class SystemRecord {
 public:
@@ -76,9 +76,10 @@ public:
     s8 m_volume;
     u8 m_itemSlotType;
     u8 m_vsLapNum;
+    Array<char, 4> m_name;
 
 private:
-    u8 _00b[0x614 - 0x00b];
+    u8 _00f[0x614 - 0x00f];
 
     static SystemRecord s_instance;
 };

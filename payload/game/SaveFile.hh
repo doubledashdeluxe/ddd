@@ -4,8 +4,8 @@
 
 class SaveFile {
 public:
-    virtual void vf_08() = 0;
-    virtual void vf_0c() = 0;
+    virtual void setPart(s32 filePart) = 0;
+    virtual void fetch() = 0;
     virtual void store() = 0;
     virtual void vf_14() = 0;
     virtual void vf_18() = 0;

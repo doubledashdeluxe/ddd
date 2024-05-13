@@ -270,8 +270,8 @@ void ScenePackSelect::stateWait() {
 void ScenePackSelect::stateSlideIn() {
     if (m_modeAnmTransformFrame < 15) {
         m_modeAnmTransformFrame++;
-        if (m_mainAnmTransformFrame < 14) {
-            m_mainAnmTransformFrame++;
+        if (m_modeAnmTransformFrame <= 14) {
+            m_mainAnmTransformFrame = m_modeAnmTransformFrame;
         }
         if (m_modeAnmTransformFrame > 10) {
             showArrows(0);
@@ -284,8 +284,8 @@ void ScenePackSelect::stateSlideIn() {
 void ScenePackSelect::stateSlideOut() {
     if (m_modeAnmTransformFrame > 0) {
         m_modeAnmTransformFrame--;
-        if (m_mainAnmTransformFrame > 0) {
-            m_mainAnmTransformFrame--;
+        if (m_modeAnmTransformFrame <= 14) {
+            m_mainAnmTransformFrame = m_modeAnmTransformFrame;
         }
         hideArrows();
     } else {

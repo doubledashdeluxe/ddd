@@ -18,6 +18,7 @@ public:
 
     static void Ask(s32 command, s32 chan);
     static bool IsReady();
+    static void Ack();
     static void Ack(u32 soundID);
 
 private:

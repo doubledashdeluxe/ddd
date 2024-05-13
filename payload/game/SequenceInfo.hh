@@ -1,12 +1,14 @@
 #pragma once
 
 #include <common/Types.hh>
+#include <payload/Replace.hh>
 
 class SequenceInfo {
 public:
     u32 getBattleMode() const;
 
-    void init();
+    void REPLACED(init)();
+    REPLACE void init();
 
     static SequenceInfo &Instance();
 
@@ -15,10 +17,12 @@ private:
 
 public:
     bool m_fromPause;
-    u8 m_packIndex; // Added
+    u8 m_packIndex;        // Added (was padding)
+    u8 m_padCount;         // Added (was padding)
+    bool m_hasOnlineNames; // Added (was padding)
 
 private:
-    u8 _02a[0x038 - 0x02a];
+    u8 _02c[0x038 - 0x02c];
     u32 m_battleMode;
 
 public:

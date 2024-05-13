@@ -279,6 +279,8 @@
 801d0ccc Get3DVpDiv4X__6SystemFUc
 801d0cf8 Get3DVpDiv4W__6SystemFUc
 801d3704 Ask__9CardAgentFll
+801d5a10 setPart__10SystemFileFl
+801d5a18 fetch__10SystemFileFv
 801d5c74 store__10SystemFileFv
 801d9308 Create__11SequenceAppFv
 801d9358 Call__11SequenceAppFl
@@ -298,6 +300,12 @@
 801e73a0 drop__13MenuTitleLineFUl
 801e7480 lift__13MenuTitleLineFv
 801e748c calc__13MenuTitleLineFv
+801e00ac __ct__15NameEntryHelperFPP7J2DPanePcP7JKRHeapP10JUTGamePadb
+801e0198 init__15NameEntryHelperFPCc
+801e01f4 startEdit__15NameEntryHelperFv
+801e03b4 calc__15NameEntryHelperFv
+801e0428 draw__15NameEntryHelperFP15J2DGraphContext
+801e0b04 selectOut__Q215NameEntryHelper13NameEntryDrumFv
 8029eb08 init__7KartCamFb
 8029f190 doCameraMode__7KartCamFv
 8029f63c dynamicsInit__8KartCtrlFb

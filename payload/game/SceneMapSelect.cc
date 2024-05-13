@@ -359,16 +359,13 @@ void SceneMapSelect::nextBattle() {
 void SceneMapSelect::stateSlideIn() {
     if (m_mainAnmTransformFrame < 15) {
         m_mainAnmTransformFrame++;
-        if (m_mapIndex / 3 == m_rowIndex) {
-            if (m_gridAnmTransformFrame < 21) {
-                m_gridAnmTransformFrame++;
+        if (m_mainAnmTransformFrame <= 10) {
+            if (m_mapIndex / 3 == m_rowIndex) {
+                m_gridAnmTransformFrame = 11 + m_mainAnmTransformFrame;
+            } else {
+                m_gridAnmTransformFrame = 10 - m_mainAnmTransformFrame;
             }
         } else {
-            if (m_gridAnmTransformFrame > 0) {
-                m_gridAnmTransformFrame--;
-            }
-        }
-        if (m_mainAnmTransformFrame > 10) {
             showArrows(0);
         }
     } else {
@@ -379,18 +376,15 @@ void SceneMapSelect::stateSlideIn() {
 void SceneMapSelect::stateSlideOut() {
     if (m_mainAnmTransformFrame > 0) {
         m_mainAnmTransformFrame--;
-        if (m_mainAnmTransformFrame < 10) {
+        if (m_mainAnmTransformFrame <= 10) {
             if (m_mapIndex / 3 == m_rowIndex) {
-                if (m_gridAnmTransformFrame > 11) {
-                    m_gridAnmTransformFrame--;
-                }
+                m_gridAnmTransformFrame = 11 + m_mainAnmTransformFrame;
             } else {
-                if (m_gridAnmTransformFrame < 10) {
-                    m_gridAnmTransformFrame++;
-                }
+                m_gridAnmTransformFrame = 10 - m_mainAnmTransformFrame;
             }
+        } else {
+            hideArrows();
         }
-        hideArrows();
     } else {
         if (m_nextScene == SceneType::None) {
             nextBattle();

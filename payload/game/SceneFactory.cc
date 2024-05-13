@@ -2,6 +2,7 @@
 
 #include "game/SceneHowManyPlayers.hh"
 #include "game/SceneMapSelect.hh"
+#include "game/SceneNameSelect.hh"
 #include "game/SceneOption.hh"
 #include "game/ScenePackSelect.hh"
 #include "game/SceneTitle.hh"
@@ -32,6 +33,9 @@ void SceneFactory::loadData(s32 sceneType, JKRHeap *heap) {
         REPLACED(loadData)(SceneType::Menu, heap);
         REPLACED(loadData)(SceneType::LanEntry, heap);
         return;
+    case SceneType::NameSelect:
+        REPLACED(loadData)(SceneType::Menu, heap);
+        return;
     }
 
     REPLACED(loadData)(sceneType, heap);
@@ -61,6 +65,10 @@ Scene *SceneFactory::createScene(s32 sceneType, JKRHeap *heap) {
     case SceneType::HowManyPlayers:
         sysDebug->setHeapGroup("HowManyPlayers", heap);
         scene = new (heap, 0x0) SceneHowManyPlayers(m_archives[ArchiveType::Menu], heap);
+        break;
+    case SceneType::NameSelect:
+        sysDebug->setHeapGroup("NameSelect", heap);
+        scene = new (heap, 0x0) SceneNameSelect(m_archives[ArchiveType::Menu], heap);
         break;
     default:
         return REPLACED(createScene)(sceneType, heap);

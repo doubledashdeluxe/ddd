@@ -27,7 +27,7 @@ private:
     void stateNextScene();
 
     State m_state;
-    u32 m_playerCount;
+    u32 m_padCount;
     u32 m_nextScene;
     J2DScreen m_screen;
     J2DAnmBase *m_anmTransform;
