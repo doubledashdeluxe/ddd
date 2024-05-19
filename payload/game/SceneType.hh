@@ -17,7 +17,8 @@ public:
         MapSelect = 0xd,      // Moved
         HowManyPlayers = 0xe, // Added
         NameSelect = 0xf,     // Added
-        Count = 0x10,
+        TandemSelect = 0x10,  // Added
+        Count = 0x11,
     };
 
 private:

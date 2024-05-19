@@ -17,12 +17,14 @@ private:
 
 public:
     bool m_fromPause;
-    u8 m_packIndex;        // Added (was padding)
-    u8 m_padCount;         // Added (was padding)
-    bool m_hasOnlineNames; // Added (was padding)
+    u8 m_packIndex;            // Added (was padding)
+    u8 m_padCount : 3;         // Added (was padding)
+    bool m_hasOnlineNames : 1; // Added (was padding)
+    u8 m_statusCount : 2;      // Added (was padding)
+    u8 : 2;
 
 private:
-    u8 _02c[0x038 - 0x02c];
+    u8 _02b[0x038 - 0x02b];
     u32 m_battleMode;
 
 public:
