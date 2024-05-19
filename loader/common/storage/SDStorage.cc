@@ -8,8 +8,10 @@ SDStorage::SDStorage() : IOS::Resource("/dev/sdio/slot0", IOS::Mode::None), FATS
 }
 
 SDStorage::~SDStorage() {
-    m_pollCallback = &SDStorage::pollRemove;
-    notify();
+    if (isContained()) {
+        m_pollCallback = &SDStorage::pollRemove;
+        notify();
+    }
 }
 
 void SDStorage::Init() {
