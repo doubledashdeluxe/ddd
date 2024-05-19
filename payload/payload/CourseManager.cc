@@ -260,6 +260,7 @@ void CourseManager::start() {
     size_t courseHeapSize = 0x500000;
     void *courseHeap = MEM2Arena::Instance()->alloc(courseHeapSize, 0x4);
     m_courseHeap = JKRExpHeap::Create(courseHeap, courseHeapSize, JKRHeap::GetRootHeap(), false);
+    notify();
     OSResumeThread(&m_thread);
     OSReceiveMessage(&m_initQueue, nullptr, OS_MESSAGE_BLOCK);
 }
@@ -337,20 +338,20 @@ CourseManager::CourseManager() : m_currIsLocked(false), m_nextIsLocked(false), m
 }
 
 void CourseManager::onAdd(const char *prefix) {
-    if (strcmp(prefix, "main:")) {
-        return;
-    }
-
-    Lock<NoInterrupts> lock;
-    m_hasChanged = true;
-    OSSendMessage(&m_queue, nullptr, OS_MESSAGE_NOBLOCK);
+    onChange(prefix);
 }
 
 void CourseManager::onRemove(const char *prefix) {
-    if (strcmp(prefix, "main:")) {
-        return;
-    }
+    onChange(prefix);
+}
 
+void CourseManager::onChange(const char *prefix) {
+    if (!strcmp(prefix, "main:")) {
+        notify();
+    }
+}
+
+void CourseManager::notify() {
     Lock<NoInterrupts> lock;
     m_hasChanged = true;
     OSSendMessage(&m_queue, nullptr, OS_MESSAGE_NOBLOCK);

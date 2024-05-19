@@ -215,6 +215,8 @@ private:
     void onAdd(const char *prefix) override;
     void onRemove(const char *prefix) override;
 
+    void onChange(const char *prefix);
+    void notify();
     void *run();
     void addDefaultRaceCourses();
     void addDefaultBattleCourses();
