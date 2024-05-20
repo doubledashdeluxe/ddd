@@ -1,7 +1,5 @@
 #include "Platform.hh"
 
-#include "common/Dolphin.hh"
-
 bool Platform::IsDolphin() {
     // Modern versions
     Dolphin dolphin;
@@ -18,7 +16,7 @@ bool Platform::IsDolphin() {
     return false;
 }
 
-bool Platform::GetDolphinVersion(Array<char, 64> &dolphinVersion) {
+bool Platform::GetDolphinVersion(Dolphin::Version &dolphinVersion) {
     Dolphin dolphin;
     if (!dolphin.ok()) {
         return false;

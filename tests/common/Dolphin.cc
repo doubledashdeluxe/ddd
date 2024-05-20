@@ -1,10 +1,11 @@
 #include <common/Dolphin.hh>
 #include <lest.hpp>
 
+#include <array>
 #include <cstring>
 
 static bool exists;
-static Array<char, 64> expectedVersion;
+static std::array<char, 64> versionString;
 
 namespace IOS {
 
@@ -19,7 +20,7 @@ s32 Resource::ioctlv(u32 ioctlv, u32 inputCount, u32 outputCount, IoctlvPair *pa
         return -4;
     }
 
-    memcpy(pairs[0].data, expectedVersion.values(), expectedVersion.count());
+    memcpy(pairs[0].data, versionString.data(), versionString.size());
     return 0;
 }
 
@@ -59,27 +60,29 @@ CASE("getVersion") {
         exists = true;
 
         SECTION("Invalid") {
-            memset(expectedVersion.values(), '1', expectedVersion.count());
+            memset(versionString.data(), '1', versionString.size());
 
             Dolphin dolphin;
             EXPECT(dolphin.ok());
-            Array<char, 64> actualVersion;
+            Dolphin::Version actualVersion;
             bool result = dolphin.getVersion(actualVersion);
 
             EXPECT(!result);
         }
 
         SECTION("Valid") {
-            strncpy(expectedVersion.values(), "5.0-20288", expectedVersion.count());
+            Dolphin::Version expectedVersion{5, 0, 20288};
+            memset(versionString.data(), '\0', versionString.size());
+            snprintf(versionString.data(), versionString.size(), "%u.%u-%u", expectedVersion.major,
+                    expectedVersion.minor, expectedVersion.patch);
 
             Dolphin dolphin;
             EXPECT(dolphin.ok());
-            Array<char, 64> actualVersion;
+            Dolphin::Version actualVersion;
             bool result = dolphin.getVersion(actualVersion);
 
             EXPECT(result);
-            EXPECT(!memcmp(actualVersion.values(), expectedVersion.values(),
-                    actualVersion.count()));
+            EXPECT(actualVersion == expectedVersion);
         }
     }
 }

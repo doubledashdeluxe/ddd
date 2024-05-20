@@ -72,9 +72,10 @@ Channel::PayloadEntryFunc Channel::Run(Context *context) {
     Clock::Init();
 
     if (Platform::IsDolphin()) {
-        Array<char, 64> dolphinVersion;
+        Dolphin::Version dolphinVersion;
+        Dolphin::Version minimumDolphinVersion = {5, 0, 20189};
         if (!Platform::GetDolphinVersion(dolphinVersion) ||
-                strncmp(dolphinVersion.values(), "5.0-20189", strlen("5.0-20189")) < 0) {
+                dolphinVersion < minimumDolphinVersion) {
             WARN("Using DSP HLE will result in broken sound on this Dolphin version!");
             WARN("Please update to Dolphin 5.0-20189 or later.");
             Clock::WaitMilliseconds(1000);
