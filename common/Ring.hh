@@ -126,7 +126,10 @@ public:
     }
 
 private:
-    u8 m_buffer[sizeof(T[N])];
+    union {
+        u8 m_buffer[sizeof(T[N])];
+        Aligner<alignof(T[N])> m_aligner;
+    };
     size_t m_front;
     size_t m_count;
 };
