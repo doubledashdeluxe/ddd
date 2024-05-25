@@ -16,6 +16,8 @@ public:
     static s64 MillisecondsToTicks(s64 milliseconds);
     static s64 SecondsToTicks(s64 seconds);
 
+    static s64 GetMonotonicTicks();
+
     static void WaitMilliseconds(u32 milliseconds);
 
 private:

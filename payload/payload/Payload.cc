@@ -8,6 +8,8 @@
 #include "payload/LogFile.hh"
 #include "payload/VirtualCard.hh"
 #include "payload/WUP028.hh"
+#include "payload/network/DNS.hh"
+#include "payload/network/Socket.hh"
 
 #include <common/Clock.hh>
 #include <common/Console.hh>
@@ -87,6 +89,14 @@ void Payload::Run(Context *context) {
         }
         INFO("Initialized virtual disc.");
     }
+
+    INFO("Initializing sockets...");
+    Socket::Init();
+    INFO("Initialized sockets.");
+
+    INFO("Initializing DNS...");
+    DNS::Init();
+    INFO("Initialized DNS.");
 
     Console::Instance()->setIsDirect(false);
 }

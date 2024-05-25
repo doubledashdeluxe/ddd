@@ -31,6 +31,10 @@ void Clock::Init() {
     OSSetTime(SecondsToTicks(currRTC + counterBias));
 }
 
+s64 Clock::GetMonotonicTicks() {
+    return OSGetSystemTime();
+}
+
 void Clock::WaitMilliseconds(u32 milliseconds) {
     OSAlarm alarm;
     OSCreateAlarm(&alarm);
