@@ -1,19 +1,13 @@
 #pragma once
 
-#include "payload/ZIPFile.hh"
+#include "payload/StorageScanner.hh"
 
 #include <common/Ring.hh>
 #include <common/UniquePtr.hh>
-#include <common/storage/Storage.hh>
-extern "C" {
-#include <dolphin/OSMessage.h>
-#include <dolphin/OSThread.h>
-}
-#include <game/KartLocale.hh>
 #include <game/MinimapConfig.hh>
 #include <jsystem/JKRHeap.hh>
 
-class CourseManager : public Storage::Observer {
+class CourseManager : public StorageScanner {
 public:
     enum {
         MaxCourseCount = 256,
@@ -64,8 +58,6 @@ public:
     };
 
     void start();
-    bool lock();
-    void unlock();
     void freeAll();
 
     u32 racePackCount() const;
@@ -175,22 +167,6 @@ private:
         Array<char, 128> m_prefix;
     };
 
-    struct INIStream {
-        UniquePtr<u8[]> ini;
-        u32 iniSize;
-        u32 iniOffset;
-    };
-
-    struct INIField {
-        const char *name;
-        UniquePtr<char[]> *field;
-    };
-
-    struct LocalizedINIField {
-        const char *name;
-        Array<UniquePtr<char[]>, KartLocale::Language::Count> *fields;
-    };
-
     struct PackINI {
         Array<UniquePtr<char[]>, KartLocale::Language::Count> localizedNames;
         UniquePtr<char[]> fallbackName;
@@ -212,12 +188,8 @@ private:
 
     CourseManager();
 
-    void onAdd(const char *prefix) override;
-    void onRemove(const char *prefix) override;
+    void process() override;
 
-    void onChange(const char *prefix);
-    void notify();
-    void *run();
     void addDefaultRaceCourses();
     void addDefaultBattleCourses();
     void addCustomPacksAndCourses(Array<char, 256> &path,
@@ -240,32 +212,12 @@ private:
             Ring<UniquePtr<Pack>, MaxPackCount> &packs, const char *base, const char *type);
     void sortRacePackCoursesByName();
     void sortBattlePackCoursesByName();
-    UniquePtr<char[]> &getLocalizedEntry(
-            Array<UniquePtr<char[]>, KartLocale::Language::Count> &localizedEntries,
-            UniquePtr<char[]> &fallbackEntry);
-    void *loadFile(const char *zipPath, const char *filePath, JKRHeap *heap,
-            u32 *size = nullptr) const;
-    void *loadFile(ZIPFile &zipFile, const char *filePath, JKRHeap *heap,
-            u32 *size = nullptr) const;
-    void *loadLocalizedFile(const char *zipPath, const char *prefix, const char *suffix,
-            JKRHeap *heap, u32 *size = nullptr) const;
-    void *loadLocalizedFile(ZIPFile &zipFile, const char *prefix, const char *suffix, JKRHeap *heap,
-            u32 *size = nullptr) const;
-    void *loadLocalizedFile(const char *prefix, const char *suffix, JKRHeap *heap,
-            u32 *size = nullptr) const;
     void *loadCourseFile(const char *zipPath, const char *filePath, u32 *size = nullptr) const;
     void *loadCourseFile(ZIPFile &zipFile, const char *filePath, u32 *size = nullptr) const;
 
-    static void *Run(void *param);
-    static char *ReadINI(char *str, int num, void *stream);
     static int HandlePackINI(void *user, const char *section, const char *name, const char *value);
     static int HandleCourseINI(void *user, const char *section, const char *name,
             const char *value);
-    static bool HandleINIFields(const char *name, const char *value, u32 fieldCount,
-            const INIField *fields);
-    static bool HandleLocalizedINIFields(const char *name, const char *value, u32 fieldCount,
-            const LocalizedINIField *fields);
-    static bool SetINIField(const char *value, UniquePtr<char[]> *field);
     static bool GetDefaultCourseID(const char *name, u32 &courseID);
     static bool SearchJSON(const char *json, u32 jsonSize, const char *query, f32 &value);
     static bool SearchJSON(const char *json, u32 jsonSize, const char *query, u32 &value);
@@ -274,18 +226,8 @@ private:
     static bool CompareRaceCourseIndicesByName(const u32 &a, const u32 &b);
     static bool CompareBattleCourseIndicesByName(const u32 &a, const u32 &b);
 
-    OSMessageQueue m_queue;
-    Array<OSMessage, 1> m_messages;
-    OSMessageQueue m_initQueue;
-    Array<OSMessage, 1> m_initMessages;
-    Array<u8, 128 * 1024> m_stack;
-    OSThread m_thread;
-    bool m_currIsLocked;
-    bool m_nextIsLocked;
-    bool m_hasChanged;
     JKRHeap *m_heap;
     JKRHeap *m_courseHeap;
-    Array<u32, KartLocale::Language::Count> m_languages;
     Ring<UniquePtr<Course>, MaxCourseCount> m_raceCourses;
     Ring<UniquePtr<Course>, MaxCourseCount> m_battleCourses;
     Ring<UniquePtr<Pack>, MaxPackCount> m_racePacks;
