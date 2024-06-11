@@ -10,6 +10,7 @@
 #include "payload/WUP028.hh"
 #include "payload/network/DNS.hh"
 #include "payload/network/Socket.hh"
+#include "payload/online/ServerManager.hh"
 
 #include <common/Clock.hh>
 #include <common/Console.hh>
@@ -44,6 +45,10 @@ void Payload::Run(Context *context) {
     INFO("Initializing course manager...");
     CourseManager::Init();
     INFO("Initialized course manager.");
+
+    INFO("Initializing server manager...");
+    ServerManager::Init();
+    INFO("Initialized server manager.");
 
     INFO("Initializing virtual memory cards...");
     VirtualCard::Init();
