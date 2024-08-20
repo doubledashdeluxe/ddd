@@ -151,5 +151,5 @@ jobs:
         uses: actions/checkout@v4
       - name: Format
         run: |
-          dirs="common libc loader payload tests"
+          dirs="libc common freestanding bootstrap channel payload tests"
           find $dirs -regex '.*\.\(c\|h\|cc\|hh\)' | xargs clang-format-15 --dry-run -Werror

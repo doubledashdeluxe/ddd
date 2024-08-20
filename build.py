@@ -67,6 +67,7 @@ common_cflags = [
     '-O4,p',
     '-pragma', '"cpp1x on"',
     '-pragma', '"no_register_save_helpers on"',
+    '-proc', '604e',
     '-rostr',
     '-RTTI', 'off',
     '-sdata', '0',
@@ -88,6 +89,7 @@ common_ccflags = [
     '-O4,p',
     '-pragma', '"cpp1x on"',
     '-pragma', '"no_register_save_helpers on"',
+    '-proc', '604e',
     '-rostr',
     '-RTTI', 'off',
     '-sdata', '0',
@@ -103,9 +105,9 @@ target_cflags = {
     'vendor': [],
     'libc': [],
     'common': [],
-    'loader': [
-        '-Iloader',
-    ],
+    'freestanding': [],
+    'bootstrap': [],
+    'channel': [],
     'payload': [
         '-Ipayload',
     ],
@@ -114,9 +116,9 @@ target_ccflags = {
     'vendor': [],
     'libc': [],
     'common': [],
-    'loader': [
-        '-Iloader',
-    ],
+    'freestanding': [],
+    'bootstrap': [],
+    'channel': [],
     'payload': [
         '-Ipayload',
     ],
@@ -153,10 +155,9 @@ target_ncflags = {
     'vendor': [],
     'libc': [],
     'common': [],
-    'loader': [
-        '-iquote', 'loader',
-        '-isystem', 'loader',
-    ],
+    'freestanding': [],
+    'bootstrap': [],
+    'channel': [],
     'payload': [
         '-iquote', 'payload',
         '-isystem', 'payload',
@@ -171,10 +172,9 @@ target_nccflags = {
     'vendor': [],
     'libc': [],
     'common': [],
-    'loader': [
-        '-iquote', 'loader',
-        '-isystem', 'loader',
-    ],
+    'freestanding': [],
+    'bootstrap': [],
+    'channel': [],
     'payload': [
         '-iquote', 'payload',
         '-isystem', 'payload',
@@ -425,7 +425,7 @@ for c_file in asset_c_files:
         variables = {
             'cflags': ' '.join([
                 *common_ccflags,
-                *target_ccflags['loader'],
+                *target_ccflags['channel'],
             ]),
         },
     )
@@ -465,9 +465,17 @@ code_in_files = {
         *sorted(glob.glob(os.path.join('common', '**', '*.c'), recursive=True)),
         *sorted(glob.glob(os.path.join('common', '**', '*.cc'), recursive=True)),
     ],
-    'loader': [
-        *sorted(glob.glob(os.path.join('loader', '**', '*.c'), recursive=True)),
-        *sorted(glob.glob(os.path.join('loader', '**', '*.cc'), recursive=True)),
+    'freestanding': [
+        *sorted(glob.glob(os.path.join('freestanding', '**', '*.c'), recursive=True)),
+        *sorted(glob.glob(os.path.join('freestanding', '**', '*.cc'), recursive=True)),
+    ],
+    'bootstrap': [
+        *sorted(glob.glob(os.path.join('bootstrap', '**', '*.c'), recursive=True)),
+        *sorted(glob.glob(os.path.join('bootstrap', '**', '*.cc'), recursive=True)),
+    ],
+    'channel': [
+        *sorted(glob.glob(os.path.join('channel', '**', '*.c'), recursive=True)),
+        *sorted(glob.glob(os.path.join('channel', '**', '*.cc'), recursive=True)),
     ],
     'payload': [
         *sorted(glob.glob(os.path.join('payload', '**', '*.c'), recursive=True)),
@@ -626,32 +634,33 @@ for region in ['P', 'E', 'J']:
         variables = {
             'cflags': ' '.join([
                 *common_ccflags,
-                *target_ccflags['loader'],
+                *target_ccflags['channel'],
             ]),
         },
     )
     n.newline()
 
 n.build(
-    os.path.join('$builddir', 'loader', 'GM4.ld'),
+    os.path.join('$builddir', 'channel', 'GM4.ld'),
     'script',
     [
         os.path.join('common', 'Symbols.txt'),
-        os.path.join('loader', 'Symbols.txt'),
-        os.path.join('loader', 'GM4.ld.template'),
+        os.path.join('channel', 'Symbols.txt'),
+        os.path.join('channel', 'GM4.ld.template'),
     ],
     implicit = '$script',
 )
 n.newline()
 
 n.build(
-    os.path.join('$builddir', 'loader', 'loader.elf'),
+    os.path.join('$builddir', 'channel', 'channel.elf'),
     'ld',
     [
         *code_out_files['vendor'],
         *code_out_files['libc'],
         *code_out_files['common'],
-        *code_out_files['loader'],
+        *code_out_files['freestanding'],
+        *code_out_files['channel'],
         *asset_o_files,
         *[os.path.join('$builddir', 'payload', f'payload{region}.o') for region in ['P', 'E', 'J']],
     ],
@@ -659,18 +668,85 @@ n.build(
         'ldflags' : ' '.join([
             *common_ldflags,
             '--gc-sections',
-            '--image-base=0x80800000',
-            '-T', os.path.join('$builddir', 'loader', 'GM4.ld'),
+            '--image-base=0x80003400',
+            '-T', os.path.join('$builddir', 'channel', 'GM4.ld'),
         ]),
     },
-    implicit = os.path.join('$builddir', 'loader', 'GM4.ld'),
+    implicit = os.path.join('$builddir', 'channel', 'GM4.ld'),
+)
+n.newline()
+
+n.build(
+    os.path.join('$builddir', 'channel', 'channel.dol'),
+    'elf2dol',
+    os.path.join('$builddir', 'channel', 'channel.elf'),
+    implicit = '$elf2dol',
+)
+n.newline()
+
+n.build(
+    os.path.join('$builddir', 'channel', 'channel.c'),
+    'bin2c',
+    os.path.join('$builddir', 'channel', 'channel.dol'),
+    variables = {
+        'name': 'channel',
+    },
+    implicit = '$bin2c',
+)
+n.newline()
+
+n.build(
+    os.path.join('$builddir', 'channel', 'channel.o'),
+    'c',
+    os.path.join('$builddir', 'channel', 'channel.c'),
+    variables = {
+        'cflags': ' '.join([
+            *common_ccflags,
+            *target_ccflags['bootstrap'],
+        ]),
+    },
+)
+n.newline()
+
+n.build(
+    os.path.join('$builddir', 'bootstrap', 'GM4.ld'),
+    'script',
+    [
+        os.path.join('common', 'Symbols.txt'),
+        os.path.join('bootstrap', 'Symbols.txt'),
+        os.path.join('bootstrap', 'GM4.ld.template'),
+    ],
+    implicit = '$script',
+)
+n.newline()
+
+n.build(
+    os.path.join('$builddir', 'bootstrap', 'bootstrap.elf'),
+    'ld',
+    [
+        *code_out_files['vendor'],
+        *code_out_files['libc'],
+        *code_out_files['common'],
+        *code_out_files['freestanding'],
+        *code_out_files['bootstrap'],
+        os.path.join('$builddir', 'channel', 'channel.o'),
+    ],
+    variables = {
+        'ldflags' : ' '.join([
+            *common_ldflags,
+            '--gc-sections',
+            '--image-base=0x80800000',
+            '-T', os.path.join('$builddir', 'bootstrap', 'GM4.ld'),
+        ]),
+    },
+    implicit = os.path.join('$builddir', 'bootstrap', 'GM4.ld'),
 )
 n.newline()
 
 n.build(
     os.path.join('$outdir', 'boot.dol'),
     'elf2dol',
-    os.path.join('$builddir', 'loader', 'loader.elf'),
+    os.path.join('$builddir', 'bootstrap', 'bootstrap.elf'),
     implicit = '$elf2dol',
 )
 n.newline()
@@ -698,7 +774,9 @@ native_code_in_files = {
     'tests': [
         *sorted(glob.glob(os.path.join('tests', 'libc', '**', '*.cc'), recursive=True)),
         *sorted(glob.glob(os.path.join('tests', 'common', '**', '*.cc'), recursive=True)),
-        *sorted(glob.glob(os.path.join('tests', 'loader', '**', '*.cc'), recursive=True)),
+        *sorted(glob.glob(os.path.join('tests', 'freestanding', '**', '*.cc'), recursive=True)),
+        *sorted(glob.glob(os.path.join('tests', 'bootstrap', '**', '*.cc'), recursive=True)),
+        *sorted(glob.glob(os.path.join('tests', 'channel', '**', '*.cc'), recursive=True)),
         *sorted(glob.glob(os.path.join('tests', 'payload', '**', '*.cc'), recursive=True)),
     ],
     'helpers': [
@@ -745,7 +823,9 @@ for out_file in native_code_out_files['tests']:
             out_file,
             *native_code_out_files['vendor'],
             *native_code_out_files['common'],
-            *(native_code_out_files['loader'] if target == 'loader' else []),
+            *(native_code_out_files['freestanding'] if target != 'payload' else []),
+            *(native_code_out_files['bootstrap'] if target == 'bootstrap' else []),
+            *(native_code_out_files['channel'] if target == 'channel' else []),
             *(native_code_out_files['payload'] if target == 'payload' else []),
             *native_code_out_files['helpers'],
         ],

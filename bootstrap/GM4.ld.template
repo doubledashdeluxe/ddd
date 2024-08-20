@@ -1,0 +1,31 @@
+PHDRS {
+    text PT_LOAD;
+    rodata PT_LOAD;
+    data PT_LOAD;
+}
+
+SECTIONS {
+    .text : { *(.init*) *(.text*) } :text
+    .ctors : { *(.ctors*) } :rodata
+    .dtors : { *(.dtors*) } :rodata
+    .rodata : { *(.rodata*) } :rodata
+    .data : { *(.data*) } :rodata
+    .bss : { *(.bss*) } :data
+
+    bootstrap_text_start = ADDR(.text);
+    bootstrap_text_end = bootstrap_text_start + SIZEOF(.text);
+    bootstrap_ctors_start = ADDR(.ctors);
+    bootstrap_ctors_end = bootstrap_ctors_start + SIZEOF(.ctors);
+    bootstrap_dtors_start = ADDR(.dtors);
+    bootstrap_dtors_end = bootstrap_dtors_start + SIZEOF(.dtors);
+    bootstrap_rodata_start = ADDR(.rodata);
+    bootstrap_rodata_end = bootstrap_rodata_start + SIZEOF(.rodata);
+    bootstrap_data_start = ADDR(.data);
+    bootstrap_data_end = bootstrap_data_start + SIZEOF(.data);
+    bootstrap_bss_start = ADDR(.bss);
+    bootstrap_bss_end = bootstrap_bss_start + SIZEOF(.bss);
+
+    stackTop = ADDR(.text) - 0x8;
+
+$symbols
+}

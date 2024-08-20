@@ -2,7 +2,7 @@
 
 #include <common/Types.hh>
 
-class LoaderBinary {
+class BootstrapBinary {
 public:
     static void *Start();
     static void *End();
@@ -27,5 +27,5 @@ public:
     static size_t BssSectionSize();
 
 private:
-    LoaderBinary();
+    BootstrapBinary();
 };

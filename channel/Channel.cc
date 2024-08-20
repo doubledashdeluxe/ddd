@@ -1,10 +1,11 @@
-#include "Loader.hh"
+#include "Channel.hh"
 
-#include "loader/Apploader.hh"
-#include "loader/DI.hh"
+#include "channel/Apploader.hh"
+#include "channel/DI.hh"
 
 #include <common/Arena.hh>
 #include <common/Clock.hh>
+#include <common/Console.hh>
 #include <common/DCache.hh>
 #include <common/DiscID.hh>
 #include <common/ICache.hh>
@@ -12,7 +13,9 @@
 #include <common/Platform.hh>
 #include <common/SC.hh>
 #include <common/USB.hh>
+#include <common/VI.hh>
 #include <common/VirtualDI.hh>
+#include <common/ios/Resource.hh>
 #include <common/storage/SDStorage.hh>
 #include <common/storage/Storage.hh>
 #include <common/storage/USBStorage.hh>
@@ -53,26 +56,20 @@ extern "C" volatile u32 aicr;
 extern "C" volatile u32 armirqmask;
 extern "C" volatile u32 aipprot;
 
-Loader::PayloadEntryFunc Loader::Run(Context *context) {
-    // Use compat MMIO ranges for DI/SI/EXI/AI
-    aipprot &= ~0x1;
-
-    // Prevent Starlet from receiving DI interrupts
-    armirqmask &= ~(1 << 18);
-
-    // Reset the DSP: libogc apps like the HBC cannot initialize it properly, but the SDK can.
-    aicr = 0;
-
+Channel::PayloadEntryFunc Channel::Run(Context *context) {
     VI::Init();
 
     Console::Init(VI::Instance());
-    INFO("Double Dash Deluxe Loader");
+    INFO("Double Dash Deluxe Channel");
 
     if (iosVersion >> 16 != 58 && iosVersion >> 16 != 59) {
         ERROR("In order for Double Dash Deluxe to work, IOS58 (or IOS59) must be installed.");
         ERROR("Please perform a Wii System Update or use the IOS58 Installer to install IOS58.");
         return nullptr;
     }
+
+    IOS::Resource::Init();
+    Clock::Init();
 
     if (Platform::IsDolphin()) {
         Array<char, 64> dolphinVersion;
@@ -83,6 +80,15 @@ Loader::PayloadEntryFunc Loader::Run(Context *context) {
             Clock::WaitMilliseconds(1000);
         }
     }
+
+    // Use compat MMIO ranges for DI/SI/EXI/AI
+    aipprot &= ~(1 << 0);
+
+    // Prevent Starlet from receiving DI interrupts
+    armirqmask &= ~(1 << 18);
+
+    // Reset the DSP: libogc apps like the HBC cannot initialize it properly, but the SDK can.
+    aicr = 0;
 
     Storage::Init();
     USBStorage::Init();
@@ -164,7 +170,7 @@ Loader::PayloadEntryFunc Loader::Run(Context *context) {
     return payloadEntry;
 }
 
-void Loader::RunApploader(Context *context) {
+void Channel::RunApploader(Context *context) {
     while (true) {
         if (DI::ReadDiscID()) {
             const char *gameID = DiscID::Get().gameID;
@@ -209,11 +215,11 @@ void Loader::RunApploader(Context *context) {
     }
 }
 
-bool Loader::RunApploaderFromVirtualDI() {
+bool Channel::RunApploaderFromVirtualDI() {
     return RunApploaderFromVirtualDI(!Platform::IsDolphin());
 }
 
-bool Loader::RunApploaderFromVirtualDI(bool enableUSB) {
+bool Channel::RunApploaderFromVirtualDI(bool enableUSB) {
     if (enableUSB) {
         USB::Handle usbHandle;
 
@@ -233,7 +239,7 @@ bool Loader::RunApploaderFromVirtualDI(bool enableUSB) {
     return true;
 }
 
-u32 Loader::GetLanguage() {
+u32 Channel::GetLanguage() {
     char region = DiscID::Get().gameID[3];
     if (region == 'J') {
         return Language::Japanese;

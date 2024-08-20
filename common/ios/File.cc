@@ -1,5 +1,7 @@
 #include "File.hh"
 
+#include "common/Array.hh"
+#include "common/Bytes.hh"
 #include "common/DCache.hh"
 #include "common/Memory.hh"
 
@@ -14,6 +16,10 @@ File::File(s32 fd) : Resource(fd) {}
 File::File(const char *path, u32 mode) : Resource(path, mode) {}
 
 File::~File() {}
+
+bool File::ok() const {
+    return Resource::ok();
+}
 
 s32 File::read(void *output, u32 outputSize) {
     alignas(0x20) Request request;
@@ -30,6 +36,8 @@ s32 File::read(void *output, u32 outputSize) {
 }
 
 s32 File::write(const void *input, u32 inputSize) {
+    DCache::Flush(input, inputSize);
+
     alignas(0x20) Request request;
     memset(&request, 0, sizeof(request));
     request.command = Command::Write;
@@ -40,6 +48,18 @@ s32 File::write(const void *input, u32 inputSize) {
     Sync(request);
 
     return request.result;
+}
+
+bool File::getStats(Stats &stats) {
+    alignas(0x20) Array<u8, 0x8> out;
+
+    if (ioctl(Ioctl::GetFileStats, nullptr, 0, out.values(), out.count()) != 0) {
+        return false;
+    }
+
+    stats.size = Bytes::ReadBE<u32>(out.values(), 0x0);
+    stats.offset = Bytes::ReadBE<u32>(out.values(), 0x4);
+    return true;
 }
 
 } // namespace IOS

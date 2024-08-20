@@ -23,6 +23,10 @@ extern "C" volatile u32 armmsg;
 
 namespace IOS {
 
+void Resource::Init() {
+    ppcctrl = X2;
+}
+
 void Resource::Sync(Request &request) {
     DCache::Flush(&request, offsetof(Request, user));
 
@@ -52,6 +56,38 @@ void Resource::Sync(Request &request) {
     } while (reply != Memory::VirtualToPhysical(&request));
 
     DCache::Invalidate(&request, offsetof(Request, user));
+}
+
+bool Resource::SyncReboot(Request &request) {
+    DCache::Flush(&request, offsetof(Request, user));
+
+    ppcmsg = Memory::VirtualToPhysical(&request);
+    ppcctrl = X1;
+
+    while ((ppcctrl & Y2) != Y2) {
+        if ((ppcctrl & Y1) == Y1) {
+            u32 reply = armmsg;
+            ppcctrl = Y1;
+            if (reply == Memory::VirtualToPhysical(&request)) {
+                return false;
+            }
+        }
+    }
+    ppcctrl = Y2;
+
+    while ((ppcctrl & Y2) != Y2) {
+        if ((ppcctrl & Y1) == Y1) {
+            u32 reply = armmsg;
+            ppcctrl = Y1;
+            if (reply == Memory::VirtualToPhysical(&request)) {
+                return false;
+            }
+        }
+    }
+    ppcctrl = Y2;
+    ppcctrl = X2;
+
+    return true;
 }
 
 } // namespace IOS

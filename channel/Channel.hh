@@ -2,7 +2,7 @@
 
 #include <common/Context.hh>
 
-class Loader {
+class Channel {
 public:
     typedef void (*PayloadEntryFunc)(Context *context);
 
@@ -24,7 +24,7 @@ private:
         Language();
     };
 
-    Loader();
+    Channel();
 
     static void RunApploader(Context *context);
     static bool RunApploaderFromVirtualDI();

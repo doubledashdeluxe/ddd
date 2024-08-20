@@ -81,6 +81,27 @@ s32 Resource::ioctlv(u32 ioctlv, u32 inputCount, u32 outputCount, IoctlvPair *pa
     return request.result;
 }
 
+bool Resource::ioctlvReboot(u32 ioctlv, u32 inputCount, IoctlvPair *pairs) {
+    for (u32 i = 0; i < inputCount; i++) {
+        if (pairs[i].data && pairs[i].size != 0) {
+            DCache::Flush(pairs[i].data, pairs[i].size);
+            pairs[i].data = reinterpret_cast<void *>(Memory::VirtualToPhysical(pairs[i].data));
+        }
+    }
+    DCache::Flush(pairs, inputCount * sizeof(IoctlvPair));
+
+    alignas(0x20) Request request;
+    memset(&request, 0, sizeof(request));
+    request.command = Command::Ioctlv;
+    request.fd = m_fd;
+    request.ioctlv.ioctlv = ioctlv;
+    request.ioctlv.inputCount = inputCount;
+    request.ioctlv.outputCount = 0;
+    request.ioctlv.pairs = Memory::VirtualToPhysical(pairs);
+
+    return SyncReboot(request);
+}
+
 bool Resource::ok() const {
     return m_fd >= 0;
 }

@@ -51,6 +51,10 @@ void Resource::Sync(Request &request) {
     OSSleepThread(queue);
 }
 
+bool Resource::SyncReboot(Request & /* request */) {
+    return false;
+}
+
 void Resource::HandleInterrupt(s16 /* interrupt */, OSContext * /* context */) {
     if (ppcctrl & Y1) {
         Request *reply = Memory::PhysicalToVirtual<Request>(armmsg);

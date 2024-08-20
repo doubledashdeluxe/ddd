@@ -1,0 +1,33 @@
+PHDRS {
+    first PT_LOAD;
+    text PT_LOAD;
+    rodata PT_LOAD;
+    data PT_LOAD;
+}
+
+SECTIONS {
+    .first : { *(first) } :first
+    .text 0x80800000 : { *(.init*) *(.text*) } :text
+    .ctors : { *(.ctors*) } :rodata
+    .dtors : { *(.dtors*) } :rodata
+    .rodata : { *(.rodata*) } :rodata
+    .data : { *(.data*) } :rodata
+    .bss : { *(.bss*) } :data
+
+    channel_text_start = ADDR(.text);
+    channel_text_end = channel_text_start + SIZEOF(.text);
+    channel_ctors_start = ADDR(.ctors);
+    channel_ctors_end = channel_ctors_start + SIZEOF(.ctors);
+    channel_dtors_start = ADDR(.dtors);
+    channel_dtors_end = channel_dtors_start + SIZEOF(.dtors);
+    channel_rodata_start = ADDR(.rodata);
+    channel_rodata_end = channel_rodata_start + SIZEOF(.rodata);
+    channel_data_start = ADDR(.data);
+    channel_data_end = channel_data_start + SIZEOF(.data);
+    channel_bss_start = ADDR(.bss);
+    channel_bss_end = channel_bss_start + SIZEOF(.bss);
+
+    stackTop = ADDR(.text) - 0x8;
+
+$symbols
+}

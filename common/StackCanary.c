@@ -1,6 +1,5 @@
 #include "StackCanary.h"
 
-#define IABR 1010
 #define IABR_BE_BIT 30
 
 #ifdef __CWCC__

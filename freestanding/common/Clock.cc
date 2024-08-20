@@ -1,5 +1,11 @@
 #include <common/Clock.hh>
 
+extern "C" u32 busClock;
+
+void Clock::Init() {
+    busClock = 243000000;
+}
+
 #ifdef __CWCC__
 void Clock::WaitMilliseconds(u32 milliseconds) {
     u32 duration = MillisecondsToTicks(milliseconds);
