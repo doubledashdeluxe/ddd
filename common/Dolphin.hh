@@ -7,7 +7,7 @@ class Dolphin : private IOS::Resource {
 public:
     Dolphin();
     ~Dolphin();
-    bool ok();
+    bool ok() const;
 
     bool getVersion(Array<char, 64> &version);
 

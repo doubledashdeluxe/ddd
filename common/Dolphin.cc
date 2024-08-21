@@ -4,7 +4,7 @@ Dolphin::Dolphin() : IOS::Resource("/dev/dolphin", IOS::Mode::None, false) {}
 
 Dolphin::~Dolphin() {}
 
-bool Dolphin::ok() {
+bool Dolphin::ok() const {
     return Resource::ok();
 }
 

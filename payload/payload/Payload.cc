@@ -6,6 +6,7 @@
 #include "payload/DVDStorage.hh"
 #include "payload/Lock.hh"
 #include "payload/LogFile.hh"
+#include "payload/Random.hh"
 #include "payload/VirtualCard.hh"
 #include "payload/WUP028.hh"
 #include "payload/network/DNS.hh"
@@ -85,6 +86,10 @@ void Payload::Run(Context *context) {
     INFO("Initializing log file...");
     LogFile::Init();
     INFO("Initialized log file.");
+
+    INFO("Initializing random number generator...");
+    Random::Init();
+    INFO("Initialized random number generator...");
 
     if (context->hasVirtualDI) {
         INFO("Initializing virtual disc...");
