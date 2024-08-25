@@ -1,4 +1,4 @@
-name: Build Double Dash Deluxe
+name: Build DDD
 
 on: [push, pull_request]
 
@@ -47,7 +47,7 @@ jobs:
       - name: Prepare tools
         run: bash tools/prepare.sh cache/CW55xx_v2_10_SE.exe
       - name: Build
-        run: python build.py --ci -- app
+        run: python build.py --ci -- ddd
       - name: Upload result
         uses: actions/upload-artifact@v4
         with:
@@ -84,7 +84,7 @@ jobs:
       - name: Prepare tools
         run: bash tools/prepare.sh cache/CW55xx_v2_10_SE.exe
       - name: Build
-        run: python build.py --ci -- app
+        run: python build.py --ci -- ddd
       - name: Upload result
         uses: actions/upload-artifact@v4
         with:

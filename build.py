@@ -760,7 +760,7 @@ n.build(
 n.newline()
 
 n.build(
-    'app',
+    'ddd',
     'phony',
     [
         os.path.join('$outdir', 'boot.dol'),

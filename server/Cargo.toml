@@ -1,0 +1,10 @@
+[package]
+name = "ddd-server"
+version = "0.0.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0.86"
+noise-protocol = "0.2.0"
+orion = "0.17.6"
+zeroize = "1.8.1"
