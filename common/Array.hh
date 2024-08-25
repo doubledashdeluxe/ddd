@@ -84,5 +84,5 @@ bool operator==(const Array<T, N> &a, const Array<T, N> &b) {
 
 template <typename T, size_t N>
 bool operator!=(const Array<T, N> &a, const Array<T, N> &b) {
-    return (!a == b);
+    return !(a == b);
 }

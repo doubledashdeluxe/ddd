@@ -1,5 +1,6 @@
 #include "Random.hh"
 
+#ifdef __CWCC__
 #include "payload/Lock.hh"
 
 #include <common/Algorithm.hh>
@@ -56,3 +57,14 @@ bool Random::s_isInit = false;
 Mutex *Random::s_mutex = nullptr;
 Array<u8, 32 + 256> Random::s_buffer;
 u16 Random::s_offset = s_buffer.count();
+#else
+#include <algorithm>
+#include <climits>
+#include <random>
+
+void Random::Get(void *data, size_t size) {
+    static std::independent_bits_engine<std::random_device, CHAR_BIT, u8> engine;
+    std::generate(reinterpret_cast<u8 *>(data), reinterpret_cast<u8 *>(data) + size,
+            std::ref(engine));
+}
+#endif
