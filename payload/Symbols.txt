@@ -50,6 +50,7 @@
 800432fc animation__11J2DMaterialFv
 8004558c drawFullSet__12J2DPictureExFffffPA3_A4_f
 800483b4 getBlackWhite__10J2DPictureCFP7GXColorP7GXColor
+8004dbf4 drawInit__6J3DSysFv
 800905cc CreateThread__6JASDvdFllUl
 8009162c sendCmdMsg__13JASTaskThreadFPFPv_vPvUl
 80094770 RejectCallback__9JASDriverFPFPv_lPv
@@ -67,6 +68,7 @@
 800ab99c DVDClose
 800abcd4 DVDReadPrio
 800ad9fc DVDReadAbsAsyncPrio
+800ade98 DVDGetDriveStatus
 800af1d8 VIInit
 800af688 VIWaitForRetrace
 800b0378 VIFlush
@@ -188,6 +190,8 @@
 8010c434 sqrt
 8010c474 strcasecmp
 
+80114790 isActive__Q29GameAudio4MainFv
+801148a8 framework__Q29GameAudio4MainFv
 80114ad8 isWaveLoaded__Q29GameAudio4MainFl
 80115140 startSequenceBgm__Q29GameAudio4MainFUl
 801154c8 getPlayingSequenceID__Q29GameAudio4MainFv
@@ -245,12 +249,14 @@
 8018b3f0 settingForWaitDemo__8RaceInfoFb
 8019e54c resetCommon__12RaceDirectorFv
 801af940 Create__8MovieAppFv
+801b0314 DrawDone__11MoviePlayerFv
 801c9760 __ct__14SceneTitleLineFP10JKRArchiveP7JKRHeapPCc
 801c98d0 __dt__14SceneTitleLineFv
 801c9934 init__14SceneTitleLineFl
 801c9994 draw__14SceneTitleLineFP15J2DGraphContext
 801c99e8 calcAnm__14SceneTitleLineFl
 801c9ab0 calcMatAnm__14SceneTitleLineFv
+801cbe60 Move__9GameClockFv
 801cc4a4 __ct__7GameAppFUlPCcPv
 801cc548 __dt__7GameAppFv
 801cc5bc main
@@ -272,16 +278,23 @@
 801cfa5c calc__7LogoAppFv
 801d02f8 StartAudio__6SystemFPv
 801d0388 Init__6SystemFv
+801d0ae8 Run__6SystemFv
 801d0c14 Get3DVpX__6SystemFv
 801d0c34 Get3DVpW__6SystemFv
 801d0c70 Get3DVpDiv2X__6SystemFUc
 801d0c9c Get3DVpDiv2W__6SystemFUc
 801d0ccc Get3DVpDiv4X__6SystemFUc
 801d0cf8 Get3DVpDiv4W__6SystemFUc
+801d1a9c Draw__6AppMgrFv
+801d1af4 Calc__6AppMgrFv
+801d2290 Call__12ErrorViewAppFl
+801d27fc Probe__7CardMgrFv
 801d3704 Ask__9CardAgentFll
 801d5a10 setPart__10SystemFileFl
 801d5a18 fetch__10SystemFileFv
 801d5c74 store__10SystemFileFv
+801d7c98 framework__10NetGameMgrFv
+801d8a18 adjustFrame__10NetGameMgrFv
 801d9308 Create__11SequenceAppFv
 801d9358 Call__11SequenceAppFl
 801d958c freeForMovieApp__11SequenceAppFv
@@ -290,6 +303,7 @@
 801d983c reset__11SequenceAppFv
 801d98ac ready__11SequenceAppFl
 801d9990 createScene__11SequenceAppFl
+801dc140 Framework__6PadMgrFv
 801dd7cc getState__6BBAMgrFv
 801ddfd0 updateKartPadRecord__9GhostFileFRC13KartPadRecord
 801de664 changeNumberTexture__12Kart2DCommonFlPP10J2DPictureUcbb
@@ -323,6 +337,7 @@
 80371e08 Ecb
 
 803ae998 s_volumeList__13JKRFileLoader
+803b6db0 s_instance__6J3DSys
 
 803bad54 s_instance__12SequenceInfo
 803bb27c s_instance__8RaceInfo
@@ -359,6 +374,7 @@
 803d55e0 s_instance__17CharacterSelect3D
 803d5600 s_instance__12BattleName2D
 803d5630 s_manager__8SysDebug
+803d5ab0 s_instance__11MoviePlayer
 803d5b68 s_keepHeap__6ResMgr
 803d5b6c s_courseHeap__6ResMgr
 803d5b78 s_loadFlag__6ResMgr
@@ -372,6 +388,7 @@
 803d5ba8 s_instance__7LogoApp
 803d5bb0 s_display__6System
 803d5bb4 s_appHeap__6System
+803d5bb8 s_dvdState__6System
 803d5bcc s_loadTask__6System
 803d5bd4 s_j2dOrtho__6System
 803d5be0 s_currentApp__6AppMgr
@@ -381,6 +398,7 @@
 803d5c48 s_aspect__6System
 803d5c4c s_aspectDiv2__6System
 803d5c50 s_aspectSub__6System
+803d5c58 s_instance__10NetGameMgr
 803d5c60 s_instance__11SequenceApp
 803d5ca8 s_instance__6BBAMgr
 803d5cd0 s_instance__14MenuBackground

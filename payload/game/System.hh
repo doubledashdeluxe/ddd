@@ -20,6 +20,7 @@ public:
 
     static void REPLACED(Init)();
     REPLACE static void Init();
+    REPLACE static void Run();
 
     static JFWDisplay *GetDisplay();
     static JKRHeap *GetAppHeap();
@@ -41,6 +42,7 @@ private:
 
     static JFWDisplay *s_display;
     static JKRHeap *s_appHeap;
+    static s32 s_dvdState;
     static JKRTask *s_loadTask;
     static J2DOrthoGraph *s_j2dOrtho;
     static f32 s_aspect;

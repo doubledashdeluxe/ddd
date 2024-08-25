@@ -54,3 +54,5 @@ BOOL DVDCloseDir(DVDDir *dir);
 
 s32 DVDConvertPathToEntrynum(const char *path);
 BOOL DVDConvertEntrynumToPath(s32 entrynum, char *path, u32 maxlen);
+
+s32 DVDGetDriveStatus(void);

@@ -1,7 +1,20 @@
 #include "System.hh"
 
+#include "game/AppMgr.hh"
+#include "game/CardMgr.hh"
+#include "game/ErrorViewApp.hh"
+#include "game/GameAudioMain.hh"
+#include "game/GameClock.hh"
+#include "game/MoviePlayer.hh"
+#include "game/NetGameMgr.hh"
+#include "game/PadMgr.hh"
+
 #include <common/SC.hh>
+extern "C" {
+#include <dolphin/DVD.h>
+}
 #include <jsystem/J2DPane.hh>
+#include <jsystem/J3DSys.hh>
 
 void System::Init() {
     REPLACED(Init)();
@@ -11,6 +24,60 @@ void System::Init() {
     u8 ar;
     if (sc.get("IPL.AR", ar) && ar) {
         s_defaultAspectRatio = 38.0f / 21.0f;
+    }
+}
+
+void System::Run() {
+    while (true) {
+        CardMgr::Probe();
+        s_dvdState = DVDGetDriveStatus();
+        switch (s_dvdState) {
+        case 4:
+            ErrorViewApp::Call(2);
+            break;
+        case 5:
+            ErrorViewApp::Call(1);
+            break;
+        case 6:
+            ErrorViewApp::Call(3);
+            break;
+        case 11:
+            ErrorViewApp::Call(4);
+            break;
+        case -1:
+            ErrorViewApp::Call(5);
+            break;
+        }
+
+        if (GameAudio::Main::Instance()->isActive()) {
+            GameAudio::Main::Instance()->framework();
+        }
+
+        s_display->beginRender();
+
+        NetGameMgr *netGameMgr = NetGameMgr::Instance();
+        bool isNetGameActive = netGameMgr->isActive();
+        netGameMgr->adjustFrame();
+        GameClock::Move();
+        J3DSys::Instance().drawInit();
+        if (isNetGameActive) {
+            PadMgr::Framework();
+        }
+        netGameMgr->framework();
+        AppMgr::Draw();
+
+        s_display->endRender();
+
+        if (!isNetGameActive) {
+            PadMgr::Framework();
+        }
+        AppMgr::Calc();
+
+        s_display->endFrame();
+
+        if (MoviePlayer::Instance()) {
+            MoviePlayer::DrawDone();
+        }
     }
 }
 

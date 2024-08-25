@@ -8,6 +8,8 @@ namespace GameAudio {
 
 class Main {
 public:
+    bool isActive();
+    void framework();
     bool isWaveLoaded(s32 id);
     void startSequenceBgm(u32 soundID);
     u32 getPlayingSequenceID();

@@ -29,6 +29,8 @@ public:
 
     static s32 CurrentApp();
     static void Request(u32 requests);
+    static void Draw();
+    static void Calc();
 
 private:
     AppMgr();
