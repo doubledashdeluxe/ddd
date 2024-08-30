@@ -12,6 +12,11 @@ extern "C" {
 }
 
 bool DNS::resolve(const char *name, Array<u8, 4> &address) {
+    if (!strcmp(name, "localhost")) {
+        address = (u8[4]){127, 0, 0, 1};
+        return true;
+    }
+
     const char *pattern = "%hhu.%hhu.%hhu.%hhu";
     if (sscanf(name, pattern, &address[0], &address[1], &address[2], &address[3]) == 4) {
         return true;
