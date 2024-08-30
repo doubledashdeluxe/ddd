@@ -12,6 +12,11 @@ extern "C" {
 }
 
 bool DNS::resolve(const char *name, Array<u8, 4> &address) {
+    const char *pattern = "%hhu.%hhu.%hhu.%hhu";
+    if (sscanf(name, pattern, &address[0], &address[1], &address[2], &address[3]) == 4) {
+        return true;
+    }
+
     if (!m_socket.ok()) {
         m_queries.reset();
         m_socket.open(Socket::Domain::IPv4);
