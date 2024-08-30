@@ -8,6 +8,7 @@
 
 #include <common/Log.hh>
 #include <payload/CourseManager.hh>
+#include <payload/online/Client.hh>
 #include <payload/online/ServerManager.hh>
 
 void LogoApp::draw() {}
@@ -46,6 +47,9 @@ void LogoApp::calc() {
         ServerManager::Instance()->start();
         break;
     case 7:
+        Client::Init();
+        break;
+    case 8:
         SequenceApp::Call(SceneType::Title);
         return;
     }

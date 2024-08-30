@@ -18,7 +18,8 @@ public:
         HowManyPlayers = 0xe, // Added
         NameSelect = 0xf,     // Added
         TandemSelect = 0x10,  // Added
-        Count = 0x11,
+        ServerSelect = 0x11,  // Added
+        Count = 0x12,
     };
 
 private:

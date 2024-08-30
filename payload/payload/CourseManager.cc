@@ -256,11 +256,11 @@ bool CourseManager::CustomCourse::isCustom() const {
 
 void CourseManager::start() {
     size_t heapSize = 0x500000;
-    void *heap = MEM2Arena::Instance()->alloc(heapSize, 0x4);
-    m_heap = JKRExpHeap::Create(heap, heapSize, JKRHeap::GetRootHeap(), false);
+    void *heapPtr = MEM2Arena::Instance()->alloc(heapSize, 0x4);
+    m_heap = JKRExpHeap::Create(heapPtr, heapSize, JKRHeap::GetRootHeap(), false);
     size_t courseHeapSize = 0x500000;
-    void *courseHeap = MEM2Arena::Instance()->alloc(courseHeapSize, 0x4);
-    m_courseHeap = JKRExpHeap::Create(courseHeap, courseHeapSize, JKRHeap::GetRootHeap(), false);
+    void *courseHeapPtr = MEM2Arena::Instance()->alloc(courseHeapSize, 0x4);
+    m_courseHeap = JKRExpHeap::Create(courseHeapPtr, courseHeapSize, JKRHeap::GetRootHeap(), false);
     StorageScanner::start();
 }
 

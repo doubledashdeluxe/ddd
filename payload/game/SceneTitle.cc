@@ -20,6 +20,7 @@ extern "C" {
 #include <jsystem/J2DAnmLoaderDataBase.hh>
 #include <jsystem/J2DPicture.hh>
 #include <payload/CourseManager.hh>
+#include <payload/online/ServerManager.hh>
 
 SceneTitle::SceneTitle(JKRArchive *archive, JKRHeap *heap)
     : Scene(archive, heap), m_printMemoryCard(heap) {
@@ -132,6 +133,7 @@ void SceneTitle::calc() {
 
 void SceneTitle::fadeIn() {
     CourseManager::Instance()->unlock();
+    ServerManager::Instance()->unlock();
     m_entryIndex = Entry::Count;
     m_bbaIsEnabled = false;
     m_printMemoryCard.reset();

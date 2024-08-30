@@ -11,6 +11,7 @@
 #include "game/SystemRecord.hh"
 
 #include <jsystem/J2DAnmLoaderDataBase.hh>
+#include <payload/online/ServerManager.hh>
 
 extern "C" {
 #include <stdio.h>
@@ -123,6 +124,7 @@ void SceneNameSelect::calc() {
 }
 
 void SceneNameSelect::slideIn() {
+    ServerManager::Instance()->unlock();
     MenuTitleLine::Instance()->drop("SelectName.bti");
     m_mainAnmTransformFrame = 0;
     m_padCountAnmTransformFrame = 0;
@@ -197,7 +199,7 @@ void SceneNameSelect::stateIdle() {
         }
     }
     if (wasSelected) {
-        m_nextScene = m_padCount == 1 ? SceneType::None : SceneType::TandemSelect;
+        m_nextScene = m_padCount == 1 ? SceneType::ServerSelect : SceneType::TandemSelect;
         bool hasChanged = false;
         for (u32 i = 0; i < 4; i++) {
             if (strcmp(m_unsavedNames[i].values(), m_savedNames[i].values())) {

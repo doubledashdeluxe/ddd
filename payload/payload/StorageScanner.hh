@@ -14,6 +14,7 @@ extern "C" {
 class StorageScanner : public Storage::Observer {
 public:
     void start();
+    bool isLocked() const;
     bool lock();
     void unlock();
 

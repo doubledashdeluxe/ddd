@@ -102,6 +102,7 @@ bool KX::IK2(const Array<u8, 32> &serverK, const u8 m1[M1Size], u8 m2[M2Size],
     // M2 finalization
     symmetricState.encryptAndHash(nullptr, 0, m2 + 32);
 
+    serverSession.reset();
     symmetricState.computeSessionKeys(serverSession.m_readK, serverSession.m_writeK);
     return true;
 }
@@ -125,6 +126,7 @@ bool KX::IK3(ClientState &clientState, const u8 m2[M2Size], Session &clientSessi
         return false;
     }
 
+    clientSession.reset();
     symmetricState.computeSessionKeys(clientSession.m_writeK, clientSession.m_readK);
     clientState = ClientState();
     return true;

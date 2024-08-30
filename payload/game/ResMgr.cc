@@ -30,8 +30,8 @@ void ResMgr::Create(JKRHeap *parentHeap) {
             JKRArchive::MountDirection::Head, true);
 
     size_t keepHeapSize = 0xf00000;
-    void *keepHeap = MEM2Arena::Instance()->alloc(keepHeapSize, 0x4);
-    s_keepHeap = JKRExpHeap::Create(keepHeap, keepHeapSize, parentHeap, false);
+    void *keepHeapPtr = MEM2Arena::Instance()->alloc(keepHeapSize, 0x4);
+    s_keepHeap = JKRExpHeap::Create(keepHeapPtr, keepHeapSize, parentHeap, false);
     SysDebug::GetManager()->createHeapInfo(s_keepHeap, "MRAM.arc");
 
     s_courseHeap = JKRSolidHeap::Create(0x280000, parentHeap, false);

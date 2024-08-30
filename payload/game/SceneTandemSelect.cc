@@ -10,6 +10,7 @@
 #include "game/SequenceInfo.hh"
 
 #include <jsystem/J2DAnmLoaderDataBase.hh>
+#include <payload/online/ServerManager.hh>
 
 extern "C" {
 #include <stdio.h>
@@ -226,6 +227,7 @@ void SceneTandemSelect::calc() {
 }
 
 void SceneTandemSelect::slideIn() {
+    ServerManager::Instance()->unlock();
     MenuTitleLine::Instance()->drop(MenuTitleLine::Title::SelectTandem);
     m_mainAnmTransformFrame = 0;
     m_padCountAnmTransformFrame = 0;
@@ -270,7 +272,7 @@ void SceneTandemSelect::stateSlideOut() {
 void SceneTandemSelect::stateIdle() {
     const JUTGamePad::CButton &button = KartGamePad::GamePad(0)->button();
     if (button.risingEdge() & PAD_BUTTON_A) {
-        m_nextScene = SceneType::None;
+        m_nextScene = SceneType::ServerSelect;
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE_LITTLE);
         SequenceInfo::Instance().m_statusCount = GetStatusCount(m_padCount, m_partitionIndex);
         slideOut();

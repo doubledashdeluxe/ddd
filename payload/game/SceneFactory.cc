@@ -5,6 +5,7 @@
 #include "game/SceneNameSelect.hh"
 #include "game/SceneOption.hh"
 #include "game/ScenePackSelect.hh"
+#include "game/SceneServerSelect.hh"
 #include "game/SceneTandemSelect.hh"
 #include "game/SceneTitle.hh"
 #include "game/SysDebug.hh"
@@ -36,9 +37,16 @@ void SceneFactory::loadData(s32 sceneType, JKRHeap *heap) {
         return;
     case SceneType::NameSelect:
         REPLACED(loadData)(SceneType::Menu, heap);
+        REPLACED(loadData)(SceneType::LanEntry, heap);
         return;
     case SceneType::TandemSelect:
         REPLACED(loadData)(SceneType::Menu, heap);
+        REPLACED(loadData)(SceneType::LanEntry, heap);
+        return;
+    case SceneType::ServerSelect:
+        REPLACED(loadData)(SceneType::Menu, heap);
+        REPLACED(loadData)(SceneType::PackSelect, heap);
+        REPLACED(loadData)(SceneType::GhostLoadSave, heap);
         return;
     }
 
@@ -77,6 +85,10 @@ Scene *SceneFactory::createScene(s32 sceneType, JKRHeap *heap) {
     case SceneType::TandemSelect:
         sysDebug->setHeapGroup("TandemSelect", heap);
         scene = new (heap, 0x0) SceneTandemSelect(m_archives[ArchiveType::Menu], heap);
+        break;
+    case SceneType::ServerSelect:
+        sysDebug->setHeapGroup("ServerSelect", heap);
+        scene = new (heap, 0x0) SceneServerSelect(m_archives[ArchiveType::Menu], heap);
         break;
     default:
         return REPLACED(createScene)(sceneType, heap);

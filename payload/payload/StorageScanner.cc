@@ -15,6 +15,10 @@ void StorageScanner::start() {
     OSReceiveMessage(&m_initQueue, nullptr, OS_MESSAGE_BLOCK);
 }
 
+bool StorageScanner::isLocked() const {
+    return m_currIsLocked;
+}
+
 bool StorageScanner::lock() {
     Lock<NoInterrupts> lock;
     if (m_currIsLocked) {

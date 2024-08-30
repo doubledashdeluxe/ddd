@@ -37,8 +37,8 @@ void *ServerManager::Server::nameImage() const {
 
 void ServerManager::start() {
     size_t heapSize = 0x80000;
-    void *heap = MEM2Arena::Instance()->alloc(heapSize, 0x4);
-    m_heap = JKRExpHeap::Create(heap, heapSize, JKRHeap::GetRootHeap(), false);
+    void *heapPtr = MEM2Arena::Instance()->alloc(heapSize, 0x4);
+    m_heap = JKRExpHeap::Create(heapPtr, heapSize, JKRHeap::GetRootHeap(), false);
     StorageScanner::start();
 }
 
