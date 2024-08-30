@@ -154,8 +154,8 @@ void ServerManager::addServer(const Array<char, 256> &path) {
 
     DEBUG("Adding server %s...", path.values());
     m_servers.pushBack();
-    Server *server =
-            new (m_heap, 0x4) Server(name.release(), address.get(), publicKey, nameImage.release());
+    Server *server = new (m_heap, 0x4)
+            Server(name.release(), address.release(), publicKey, nameImage.release());
     m_servers.back()->reset(server);
 }
 
