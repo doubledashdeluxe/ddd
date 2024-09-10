@@ -274,12 +274,14 @@ extern "C" DRESULT disk_ioctl(BYTE pdrv, BYTE cmd, void *buff) {
     case GET_SECTOR_SIZE:
         *reinterpret_cast<WORD *>(buff) = FATStorage::s_volumes[pdrv]->sectorSize();
         return RES_OK;
-    case CTRL_TRIM: {
-        const LBA_t *args = reinterpret_cast<LBA_t *>(buff);
-        LBA_t firstSector = args[0];
-        LBA_t sectorCount = args[1] - args[0] + 1;
-        return FATStorage::s_volumes[pdrv]->erase(firstSector, sectorCount) ? RES_OK : RES_ERROR;
-    }
+    case CTRL_TRIM:
+        {
+            const LBA_t *args = reinterpret_cast<LBA_t *>(buff);
+            LBA_t firstSector = args[0];
+            LBA_t sectorCount = args[1] - args[0] + 1;
+            return FATStorage::s_volumes[pdrv]->erase(firstSector, sectorCount) ? RES_OK :
+                                                                                  RES_ERROR;
+        }
     default:
         PANIC("Invalid ioctl");
     }

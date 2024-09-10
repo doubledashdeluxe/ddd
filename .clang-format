@@ -28,6 +28,7 @@ ColumnLimit: 100
 ContinuationIndentWidth: 8
 IncludeBlocks: Preserve
 IndentAccessModifiers: False
+IndentCaseBlocks: True
 IndentCaseLabels: False
 IndentGotoLabels: True
 IndentWidth: 4

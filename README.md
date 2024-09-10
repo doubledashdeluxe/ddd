@@ -15,6 +15,7 @@ You need:
 - Python 3.10 or later
 - pyelftools
 - Ninja
+- cargo
 - lld and clang-format
 - Clang (only on Linux)
 - GCC and binutils (only on Windows)

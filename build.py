@@ -102,6 +102,9 @@ common_ldflags = [
     '-n',
 ]
 target_cflags = {
+    'formats': [
+        '-w', 'nounusedarg',
+    ],
     'vendor': [],
     'libc': [],
     'common': [],
@@ -113,6 +116,9 @@ target_cflags = {
     ],
 }
 target_ccflags = {
+    'formats': [
+        '-w', 'nounusedarg',
+    ],
     'vendor': [],
     'libc': [],
     'common': [],
@@ -152,6 +158,9 @@ common_nldflags = [
     '-fsanitize=undefined',
 ]
 target_ncflags = {
+    'formats': [
+        '-Wno-unused-parameter',
+    ],
     'vendor': [],
     'libc': [],
     'common': [],
@@ -169,6 +178,9 @@ target_ncflags = {
     'helpers': [],
 }
 target_nccflags = {
+    'formats': [
+        '-Wno-unused-parameter',
+    ],
     'vendor': [],
     'libc': [],
     'common': [],
@@ -292,6 +304,13 @@ n.rule(
 )
 n.newline()
 
+n.rule(
+    'format',
+    command = 'cargo -q --color always run -r --bin ddd-formats -- --$format --$ext --output $out',
+    description = 'FORMAT $out',
+)
+n.newline()
+
 if 'win' in sys.platform or 'msys' in sys.platform:
     ld_command = 'ld.lld.exe $ldflags $in -o $out'
 else:
@@ -300,13 +319,6 @@ n.rule(
     'ld',
     command = ld_command,
     description = 'LD $out',
-)
-n.newline()
-
-n.rule(
-    'nanopb',
-    command = f'{sys.executable} $nanopb $in -I protobuf -L "#include <vendor/nanopb/%s>" -D build/protobuf -q',
-    description = 'NANOPB $out',
 )
 n.newline()
 
@@ -431,28 +443,35 @@ for c_file in asset_c_files:
     )
     n.newline()
 
-protobuf_proto_files = sorted(glob.glob('protobuf/*.proto'))
-protobuf_h_files = []
-protobuf_c_files = []
-for proto_file in protobuf_proto_files:
-    base, _ = os.path.splitext(proto_file)
-    options_file = base + '.options'
-    h_file = os.path.join('$builddir', base + '.pb.h')
-    c_file = os.path.join('$builddir', base + '.pb.c')
-    protobuf_h_files += [h_file]
-    protobuf_c_files += [c_file]
-    n.build(
-        [
-            h_file,
-            c_file,
-        ],
-        'nanopb',
-        proto_file,
-        implicit = options_file,
-    )
-n.newline()
+format_kc_names = ['client-state', 'server-state']
+format_implicit = sorted(glob.glob(os.path.join('formats', '**'), recursive=True))
+format_hh_files = []
+format_cc_files = []
+for format_kc_name in format_kc_names:
+    format_sc_name = format_kc_name.replace('-', '_')
+    code_dir = os.path.join('$builddir', 'formats', format_sc_name)
+    common_ccflags += [f'-I{code_dir}']
+    common_nccflags += ['-isystem', code_dir]
+    format_pc_name = format_kc_name.replace('-', ' ').title().replace(' ', '')
+    hh_file = os.path.join(code_dir, 'formats', f'{format_pc_name}.hh')
+    format_hh_files += [hh_file]
+    cc_file = os.path.join(code_dir, 'formats', f'{format_pc_name}.cc')
+    format_cc_files += [cc_file]
+    for code_file in [hh_file, cc_file]:
+        _, ext = os.path.splitext(code_file)
+        n.build(
+            code_file,
+            'format',
+            implicit = format_implicit,
+            variables = {
+                'format': format_kc_name,
+                'ext': ext[1:],
+            }
+        )
+        n.newline()
 
 code_in_files = {
+    'formats': format_cc_files,
     'vendor': [
         *sorted(glob.glob(os.path.join('vendor', '**', '*.c'), recursive=True)),
         *sorted(glob.glob(os.path.join('vendor', '**', '*.cc'), recursive=True)),
@@ -486,7 +505,10 @@ code_out_files = {target: [] for target in code_in_files}
 for target in code_in_files:
     for in_file in code_in_files[target]:
         _, ext = os.path.splitext(in_file)
-        out_file = os.path.join('$builddir', in_file + '.o')
+        if in_file.startswith('$builddir'):
+            out_file = in_file + '.o'
+        else:
+            out_file = os.path.join('$builddir', in_file + '.o')
         code_out_files[target] += [out_file]
         n.build(
             out_file,
@@ -502,7 +524,7 @@ for target in code_in_files:
                     *target_ccflags[target],
                 ]),
             },
-            order_only = protobuf_h_files if target == 'payload' else [],
+            order_only = format_hh_files,
             implicit=os.path.join('tools', 'cw', 'modified_mwcceppc.exe'),
         )
         n.newline()
@@ -587,6 +609,7 @@ for region in ['P', 'E', 'J']:
         os.path.join('$builddir', 'payload', f'payload{region}.elf'),
         'ld',
         [
+            *code_out_files['formats'],
             *code_out_files['vendor'],
             *code_out_files['libc'],
             *code_out_files['common'],
@@ -805,7 +828,7 @@ for target in native_code_in_files:
                     *(target_nccflags[in_file.split(os.path.sep)[1]] if target == 'tests' else []),
                 ]),
             },
-            order_only = protobuf_h_files if target == 'payload' else [],
+            order_only = format_hh_files,
         )
         n.newline()
 

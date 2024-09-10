@@ -9,8 +9,10 @@ use crate::x25519::X25519;
 
 mod blake2b;
 mod chacha20poly1305;
+mod client_state;
 mod kx;
 mod sensitive;
+mod server_state;
 mod x25519;
 
 fn main() -> Result<()> {
