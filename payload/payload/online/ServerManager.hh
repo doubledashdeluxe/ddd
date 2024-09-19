@@ -19,19 +19,17 @@ public:
 
     class Server {
     public:
-        Server(char *name, char *address, Array<u8, 32> publicKey, u8 *nameImage);
+        Server(char *name, char *address, Array<u8, 32> publicKey);
         ~Server();
 
         const char *name() const;
         const char *address() const;
         Array<u8, 32> publicKey() const;
-        void *nameImage() const;
 
     private:
         UniquePtr<char[]> m_name;
         UniquePtr<char[]> m_address;
         Array<u8, 32> m_publicKey;
-        UniquePtr<u8[]> m_nameImage;
     };
 
     void start();

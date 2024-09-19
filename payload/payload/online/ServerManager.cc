@@ -1,7 +1,8 @@
 #include "ServerManager.hh"
 
+#include "payload/FileLoader.hh"
+
 #include <common/Arena.hh>
-#include <common/DCache.hh>
 #include <common/Log.hh>
 extern "C" {
 #include <inih/ini.h>
@@ -14,8 +15,8 @@ extern "C" {
 #include <strings.h>
 }
 
-ServerManager::Server::Server(char *name, char *address, Array<u8, 32> publicKey, u8 *nameImage)
-    : m_name(name), m_address(address), m_publicKey(publicKey), m_nameImage(nameImage) {}
+ServerManager::Server::Server(char *name, char *address, Array<u8, 32> publicKey)
+    : m_name(name), m_address(address), m_publicKey(publicKey) {}
 
 ServerManager::Server::~Server() {}
 
@@ -29,10 +30,6 @@ const char *ServerManager::Server::address() const {
 
 Array<u8, 32> ServerManager::Server::publicKey() const {
     return m_publicKey;
-}
-
-void *ServerManager::Server::nameImage() const {
-    return m_nameImage.get();
 }
 
 void ServerManager::start() {
@@ -84,30 +81,13 @@ void ServerManager::addServers(Array<char, 256> &path) {
 }
 
 void ServerManager::addServer(const Array<char, 256> &path) {
-    bool ok;
-    ZIPFile zipFile(path.values(), ok);
-    if (!ok) {
-        return;
-    }
-
-    ZIPFile::CDNode cdNode;
-    ZIPFile::LocalNode localNode;
     INIStream iniStream;
-    iniStream.ini.reset(reinterpret_cast<u8 *>(
-            zipFile.readFile("serverinfo.ini", m_heap, -0x4, cdNode, localNode)));
+    iniStream.ini.reset(
+            reinterpret_cast<u8 *>(FileLoader::Load(path.values(), m_heap, &iniStream.iniSize)));
     if (!iniStream.ini.get()) {
         return;
     }
-    iniStream.iniSize = cdNode.uncompressedSize;
     iniStream.iniOffset = 0x0;
-
-    Array<char, 128> prefix;
-    u32 prefixLength = strlen(cdNode.path.get()) - strlen("serverinfo.ini");
-    if (prefixLength > prefix.count()) {
-        return;
-    }
-    prefix[prefixLength] = '\0';
-    memcpy(prefix.values(), cdNode.path.get(), prefixLength);
 
     ServerINI serverINI;
     if (ini_parse_stream(ReadINI, &iniStream, HandleServerINI, &serverINI)) {
@@ -141,21 +121,9 @@ void ServerManager::addServer(const Array<char, 256> &path) {
         }
     }
 
-    Array<char, 256> nameImagePrefix;
-    snprintf(nameImagePrefix.values(), nameImagePrefix.count(), "/%sserver_images/",
-            prefix.values());
-    u32 nameImageSize;
-    UniquePtr<u8[]> nameImage(reinterpret_cast<u8 *>(loadLocalizedFile(zipFile,
-            nameImagePrefix.values(), "/server_name.bti", m_heap, &nameImageSize)));
-    if (!nameImage.get() || nameImageSize < 0x20) {
-        return;
-    }
-    DCache::Flush(nameImage.get(), nameImageSize);
-
     DEBUG("Adding server %s...", path.values());
     m_servers.pushBack();
-    Server *server = new (m_heap, 0x4)
-            Server(name.release(), address.release(), publicKey, nameImage.release());
+    Server *server = new (m_heap, 0x4) Server(name.release(), address.release(), publicKey);
     m_servers.back()->reset(server);
 }
 
