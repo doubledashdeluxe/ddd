@@ -1,7 +1,7 @@
 use noise_protocol::{U8Array, DH};
 use orion::hazardous::ecc::x25519::{self, PrivateKey, PublicKey};
 
-use crate::sensitive::Sensitive;
+use crate::crypto::sensitive::Sensitive;
 
 pub enum X25519 {}
 

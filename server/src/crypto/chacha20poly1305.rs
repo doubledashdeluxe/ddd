@@ -1,7 +1,7 @@
 use noise_protocol::Cipher;
 use orion::hazardous::aead::chacha20poly1305::{self, Nonce, SecretKey};
 
-use crate::sensitive::Sensitive;
+use crate::crypto::sensitive::Sensitive;
 
 pub enum ChaCha20Poly1305 {}
 

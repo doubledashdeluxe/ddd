@@ -1,7 +1,7 @@
 use noise_protocol::{Hash, U8Array};
 use orion::hazardous::hash::blake2::blake2b;
 
-use crate::sensitive::Sensitive;
+use crate::crypto::sensitive::Sensitive;
 
 pub struct Blake2b(blake2b::Blake2b);
 
