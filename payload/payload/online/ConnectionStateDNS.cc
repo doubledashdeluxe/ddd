@@ -24,15 +24,15 @@ ConnectionState &ConnectionStateDNS::reset() {
     return *this;
 }
 
-ConnectionState &ConnectionStateDNS::read(u8 * /* buffer */, u32 /* size */,
-        const Socket::Address & /* address */, bool &ok) {
+ConnectionState &ConnectionStateDNS::read(ServerStateReader & /* reader */, u8 * /* buffer */,
+        u32 /* size */, const Socket::Address & /* address */, bool &ok) {
     ok = false;
 
     return *this;
 }
 
-ConnectionState &ConnectionStateDNS::write(u8 * /* buffer */, u32 & /* size */,
-        Socket::Address & /* address */, bool &ok) {
+ConnectionState &ConnectionStateDNS::write(ClientStateWriter & /* writer */, u8 * /* buffer */,
+        u32 & /* size */, Socket::Address & /* address */, bool &ok) {
     ok = false;
 
     Socket::Address address;

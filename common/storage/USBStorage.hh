@@ -3,7 +3,9 @@
 #include "common/USB.hh"
 #include "common/storage/FATStorage.hh"
 
-class USBStorage : private USB::Handler, private FATStorage {
+class USBStorage
+    : private USB::Handler
+    , private FATStorage {
 public:
     static void Init();
 

@@ -11,8 +11,8 @@ public:
     Connection(JKRHeap *heap, Array<u8, 32> serverPK, const char *name);
     ~Connection();
     void reset();
-    bool read(u8 *buffer, u32 size, const Socket::Address &address);
-    bool write(u8 *buffer, u32 &size, Socket::Address &address);
+    bool read(ServerStateReader &reader, u8 *buffer, u32 size, const Socket::Address &address);
+    bool write(ClientStateWriter &writer, u8 *buffer, u32 &size, Socket::Address &address);
 
 private:
     bool updateState(ConnectionState &nextState);

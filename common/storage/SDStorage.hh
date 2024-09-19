@@ -7,7 +7,9 @@ extern "C" {
 struct OSMessageQueue;
 }
 
-class SDStorage : private IOS::Resource, private FATStorage {
+class SDStorage
+    : private IOS::Resource
+    , private FATStorage {
 public:
     SDStorage();
     ~SDStorage();

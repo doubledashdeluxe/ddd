@@ -3,11 +3,10 @@
 #include "payload/crypto/Random.hh"
 #include "payload/online/ConnectionStateSession.hh"
 
-#include <common/Log.hh>
 extern "C" {
 #include <monocypher/monocypher.h>
 
-#include <stdio.h>
+#include <assert.h>
 #include <string.h>
 }
 
@@ -25,8 +24,8 @@ ConnectionState &ConnectionStateKX::reset() {
     return *this;
 }
 
-ConnectionState &ConnectionStateKX::read(u8 *buffer, u32 size, const Socket::Address &address,
-        bool &ok) {
+ConnectionState &ConnectionStateKX::read(ServerStateReader & /* reader */, u8 *buffer, u32 size,
+        const Socket::Address &address, bool &ok) {
     ok = address == m_address;
 
     if (!ok) {
@@ -41,23 +40,15 @@ ConnectionState &ConnectionStateKX::read(u8 *buffer, u32 size, const Socket::Add
     if (!KX::IK3(m_clientState, buffer, session)) {
         return *this;
     }
-    // TODO don't print this (duh)
-    Array<char, 128> k;
-    for (u32 i = 0; i < 32; i++) {
-        snprintf(k.values() + 2 * i, 3, "%02x", session.m_readK.values()[i]);
-    }
-    DEBUG("Read key: %s", k.values());
-    for (u32 i = 0; i < 32; i++) {
-        snprintf(k.values() + 2 * i, 3, "%02x", session.m_writeK.values()[i]);
-    }
-    DEBUG("Write key: %s", k.values());
 
     return *(new (m_heap, 0x4) ConnectionStateSession(m_heap, m_serverPK, m_address, session));
 }
 
-ConnectionState &ConnectionStateKX::write(u8 *buffer, u32 &size, Socket::Address &address,
-        bool &ok) {
-    ok = size >= m_m1.count();
+ConnectionState &ConnectionStateKX::write(ClientStateWriter & /* writer */, u8 *buffer, u32 &size,
+        Socket::Address &address, bool &ok) {
+    assert(size >= m_m1.count());
+
+    ok = true;
 
     if (!ok) {
         return *this;

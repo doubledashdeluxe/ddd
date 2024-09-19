@@ -2,6 +2,10 @@
 
 #include "payload/online/ConnectionStateKX.hh"
 
+extern "C" {
+#include <assert.h>
+}
+
 ConnectionStateSession::ConnectionStateSession(JKRHeap *heap, Array<u8, 32> serverPK,
         Socket::Address address, Session session)
     : ConnectionState(heap, serverPK), m_address(address), m_session(session) {}
@@ -12,8 +16,8 @@ ConnectionState &ConnectionStateSession::reset() {
     return *(new (m_heap, 0x4) ConnectionStateKX(m_heap, m_serverPK, m_address));
 }
 
-ConnectionState &ConnectionStateSession::read(u8 *buffer, u32 size, const Socket::Address &address,
-        bool &ok) {
+ConnectionState &ConnectionStateSession::read(ServerStateReader &reader, u8 *buffer, u32 size,
+        const Socket::Address &address, bool &ok) {
     ok = address == m_address;
 
     if (!ok) {
@@ -31,26 +35,31 @@ ConnectionState &ConnectionStateSession::read(u8 *buffer, u32 size, const Socket
         return *this;
     }
 
-    // TODO read the decrypted message
+    u32 offset = 0;
+    if (!reader.isValid(buffer, size, offset)) {
+        return *this;
+    }
+    offset = 0;
+    reader.read(buffer, offset);
 
     return *this;
 }
 
-ConnectionState &ConnectionStateSession::write(u8 *buffer, u32 &size, Socket::Address &address,
-        bool &ok) {
-    ok = size >= Session::MACSize + Session::NonceSize;
+ConnectionState &ConnectionStateSession::write(ClientStateWriter &writer, u8 *buffer, u32 &size,
+        Socket::Address &address, bool &ok) {
+    assert(size >= Session::MACSize + Session::NonceSize);
 
-    if (!ok) {
-        return *this;
-    }
+    ok = true;
 
     size -= Session::MACSize + Session::NonceSize;
-    size = 0;
-    // TODO write the message to encrypt
+    u32 offset = 0;
+    assert(writer.write(buffer, size, offset));
+    size = offset;
 
     u8 *mac = buffer + size;
     u8 *nonce = mac + Session::MACSize;
     m_session.write(buffer, size, mac, nonce);
+    size += Session::MACSize + Session::NonceSize;
     address = m_address;
     return *this;
 }

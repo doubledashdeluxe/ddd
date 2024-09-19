@@ -4,7 +4,9 @@
 
 #include <payload/online/ClientReadHandler.hh>
 
-class SceneServerSelect : public Scene, private ClientReadHandler {
+class SceneServerSelect
+    : public Scene
+    , private ClientReadHandler {
 public:
     SceneServerSelect(JKRArchive *archive, JKRHeap *heap);
     ~SceneServerSelect() override;

@@ -23,6 +23,7 @@ BitFieldColonSpacing: Both
 BreakBeforeBinaryOperators: None
 BreakBeforeBraces: Attach
 BreakBeforeTernaryOperators: False
+BreakInheritanceList: BeforeComma
 BreakStringLiterals: True
 ColumnLimit: 100
 ContinuationIndentWidth: 8

@@ -2,6 +2,8 @@
 
 #include "payload/online/ClientStateError.hh"
 
+#include <common/Log.hh>
+
 ClientStateServer::ClientStateServer(JKRHeap *heap, UDPSocket *socket, Array<u8, 512> *buffer)
     : ClientState(heap), m_socket(socket), m_buffer(buffer), m_index(0) {
     if (!m_socket) {
@@ -29,8 +31,8 @@ ClientState &ClientStateServer::read(ClientReadHandler &handler) {
             break;
         }
         for (u32 j = 0; j < m_connections.count(); j++) {
-            u32 index = (m_index + j) % m_connections.count();
-            if (m_connections[index]->read(m_buffer->values(), result, address)) {
+            m_index = (m_index + 1) % m_connections.count();
+            if (m_connections[m_index]->read(*this, m_buffer->values(), result, address)) {
                 break;
             }
         }
@@ -53,12 +55,100 @@ ClientState &ClientStateServer::writeStateServer() {
 
     u32 size = m_buffer->count();
     Socket::Address address;
-    if (m_connections[m_index]->write(m_buffer->values(), size, address)) {
+    if (m_connections[m_index]->write(*this, m_buffer->values(), size, address)) {
         m_socket->sendTo(m_buffer->values(), size, address);
     }
     m_index = (m_index + 1) % m_connections.count();
 
     return *this;
+}
+
+ServerStateServerReader *ClientStateServer::serverReader() {
+    return this;
+}
+
+ServerStateRoomReader *ClientStateServer::roomReader() {
+    return nullptr;
+}
+
+bool ClientStateServer::isProtocolVersionValid(u32 /* protocolVersion */) {
+    return true;
+}
+
+void ClientStateServer::setProtocolVersion(u32 protocolVersion) {
+    DEBUG("protocolVersion %u %u", m_index, protocolVersion);
+}
+
+ServerVersionReader *ClientStateServer::serverVersionReader() {
+    return this;
+}
+
+ServerIdentityReader *ClientStateServer::serverIdentityReader() {
+    return this;
+}
+
+bool ClientStateServer::isMajorValid(u8 /* major */) {
+    return true;
+}
+
+void ClientStateServer::setMajor(u8 major) {
+    DEBUG("major %u %u", m_index, major);
+}
+
+bool ClientStateServer::isMinorValid(u8 /* minor */) {
+    return true;
+}
+
+void ClientStateServer::setMinor(u8 minor) {
+    DEBUG("minor %u %u", m_index, minor);
+}
+
+bool ClientStateServer::isPatchValid(u8 /* patch */) {
+    return true;
+}
+
+void ClientStateServer::setPatch(u8 patch) {
+    DEBUG("patch %u %u", m_index, patch);
+}
+
+ServerIdentityUnspecifiedReader *ClientStateServer::unspecifiedReader() {
+    return this;
+}
+
+ServerIdentitySpecifiedReader *ClientStateServer::specifiedReader() {
+    return this;
+}
+
+ClientStateServerWriter &ClientStateServer::serverWriter() {
+    return *this;
+}
+
+u32 ClientStateServer::getProtocolVersion() {
+    return 5;
+}
+
+ClientVersionWriter &ClientStateServer::clientVersionWriter() {
+    return *this;
+}
+
+ClientIdentityWriter &ClientStateServer::clientIdentityWriter() {
+    return *this;
+}
+
+ClientIdentityUnspecifiedWriter &ClientStateServer::unspecifiedWriter() {
+    return *this;
+}
+
+u8 ClientStateServer::getMajor() {
+    return 6;
+}
+
+u8 ClientStateServer::getMinor() {
+    return 7;
+}
+
+u8 ClientStateServer::getPatch() {
+    return 8;
 }
 
 void ClientStateServer::checkConnections() {

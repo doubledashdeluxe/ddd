@@ -9,8 +9,10 @@ public:
             Session session);
     ~ConnectionStateSession() override;
     ConnectionState &reset() override;
-    ConnectionState &read(u8 *buffer, u32 size, const Socket::Address &address, bool &ok) override;
-    ConnectionState &write(u8 *buffer, u32 &size, Socket::Address &address, bool &ok) override;
+    ConnectionState &read(ServerStateReader &reader, u8 *buffer, u32 size,
+            const Socket::Address &address, bool &ok) override;
+    ConnectionState &write(ClientStateWriter &writer, u8 *buffer, u32 &size,
+            Socket::Address &address, bool &ok) override;
 
 private:
     Socket::Address m_address;
