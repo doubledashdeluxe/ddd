@@ -160,6 +160,7 @@
 800ff0e0 __register_global_object
 800ff1a4 __destroy_arr
 800ff21c __construct_array
+800ff4d4 __ptmf_test
 800ff504 __ptmf_scall
 800ff554 __cvt_fp2unsigned
 800ff6e0 __div2u
@@ -327,6 +328,8 @@
 802aaf34 doChange__8KartGameFv
 802afcb0 doStatus__8KartGameFv
 802b14a0 getDriveCont__8KartCtrlFUl
+
+80333a20 __ptmf_null
 
 80346c20 LanguageNames__10KartLocale
 80347af8 __vt__7JKRAram

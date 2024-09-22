@@ -11,6 +11,7 @@
 #include "payload/crypto/Random.hh"
 #include "payload/network/DNS.hh"
 #include "payload/network/Socket.hh"
+#include "payload/online/ClientK.hh"
 #include "payload/online/ServerManager.hh"
 
 #include <common/Clock.hh>
@@ -90,6 +91,10 @@ void Payload::Run(Context *context) {
     INFO("Initializing random number generator...");
     Random::Init();
     INFO("Initialized random number generator...");
+
+    INFO("Initializing client key...");
+    ClientK::Init();
+    INFO("Initialized client key...");
 
     if (context->hasVirtualDI) {
         INFO("Initializing virtual disc...");

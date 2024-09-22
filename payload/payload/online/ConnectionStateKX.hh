@@ -15,6 +15,5 @@ public:
 
 private:
     Socket::Address m_address;
-    Array<u8, KX::M1Size> m_m1;
     KX::ClientState m_clientState;
 };

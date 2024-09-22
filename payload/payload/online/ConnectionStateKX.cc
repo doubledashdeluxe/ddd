@@ -1,21 +1,14 @@
 #include "ConnectionStateKX.hh"
 
-#include "payload/crypto/Random.hh"
+#include "payload/online/ClientK.hh"
 #include "payload/online/ConnectionStateSession.hh"
 
 extern "C" {
-#include <monocypher/monocypher.h>
-
 #include <assert.h>
-#include <string.h>
 }
 
 ConnectionStateKX::ConnectionStateKX(JKRHeap *heap, Array<u8, 32> serverPK, Socket::Address address)
-    : ConnectionState(heap, serverPK), m_address(address) {
-    Array<u8, 32> clientK;
-    Random::Get(clientK.values(), clientK.count());
-    KX::IK1(clientK, m_serverPK, m_m1.values(), m_clientState);
-    crypto_wipe(clientK.values(), clientK.count());
+    : ConnectionState(heap, serverPK), m_address(address), m_clientState(ClientK::Get(), serverPK) {
 }
 
 ConnectionStateKX::~ConnectionStateKX() {}
@@ -36,26 +29,34 @@ ConnectionState &ConnectionStateKX::read(ServerStateReader & /* reader */, u8 *b
         return *this;
     }
 
-    Session session;
-    if (!KX::IK3(m_clientState, buffer, session)) {
-        return *this;
-    }
-
-    return *(new (m_heap, 0x4) ConnectionStateSession(m_heap, m_serverPK, m_address, session));
+    m_clientState.setM2(buffer);
+    return *this;
 }
 
 ConnectionState &ConnectionStateKX::write(ClientStateWriter & /* writer */, u8 *buffer, u32 &size,
         Socket::Address &address, bool &ok) {
-    assert(size >= m_m1.count());
+    assert(size >= KX::M1Size);
 
-    ok = true;
+    ok = false;
 
+    const Session *session = nullptr;
+    if (!m_clientState.update()) {
+        session = m_clientState.clientSession();
+        if (!session) {
+            m_clientState = KX::ClientState(ClientK::Get(), m_serverPK);
+        }
+    }
+
+    if (session) {
+        return *(new (m_heap, 0x4) ConnectionStateSession(m_heap, m_serverPK, m_address, *session));
+    }
+
+    ok = m_clientState.getM1(buffer);
     if (!ok) {
         return *this;
     }
 
-    memcpy(buffer, m_m1.values(), m_m1.count());
-    size = m_m1.count();
+    size = KX::M1Size;
     address = m_address;
     return *this;
 }

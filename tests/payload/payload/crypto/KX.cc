@@ -16,13 +16,16 @@ CASE("Invalid server PK") {
     Random::Get(invalidServerK.values(), invalidServerK.count());
     crypto_x25519_public_key(invalidServerPK.values(), invalidServerK.values());
 
+    KX::ClientState clientState(clientK, invalidServerPK);
     std::array<u8, KX::M1Size> m1;
-    KX::ClientState clientState;
-    KX::IK1(clientK, invalidServerPK, m1.data(), clientState);
-    std::array<u8, KX::M2Size> m2;
-    Array<u8, 32> clientPK;
-    Session serverSession;
-    EXPECT_NOT(KX::IK2(serverK, m1.data(), m2.data(), clientPK, serverSession));
+    while (!clientState.getM1(m1.data())) {
+        EXPECT(clientState.update());
+    }
+    KX::ServerState serverState(serverK);
+    EXPECT(serverState.setM1(m1.data()));
+    while (serverState.update()) {}
+    EXPECT_NOT(serverState.hasM2());
+    EXPECT_NOT(serverState.serverSession());
 }
 
 CASE("Invalid m1") {
@@ -31,15 +34,17 @@ CASE("Invalid m1") {
     Random::Get(serverK.values(), serverK.count());
     crypto_x25519_public_key(serverPK.values(), serverK.values());
 
-    std::array<u8, KX::M1Size> m1;
-    KX::ClientState clientState;
-    KX::IK1(clientK, serverPK, m1.data(), clientState);
+    KX::ClientState clientState(clientK, serverPK);
+    while (!clientState.hasM1()) {
+        EXPECT(clientState.update());
+    }
+    KX::ServerState serverState(serverK);
     std::array<u8, KX::M1Size> invalidM1;
     Random::Get(invalidM1.data(), invalidM1.size());
-    std::array<u8, KX::M2Size> m2;
-    Array<u8, 32> clientPK;
-    Session serverSession;
-    EXPECT_NOT(KX::IK2(serverK, invalidM1.data(), m2.data(), clientPK, serverSession));
+    EXPECT(serverState.setM1(invalidM1.data()));
+    while (serverState.update()) {}
+    EXPECT_NOT(serverState.hasM2());
+    EXPECT_NOT(serverState.serverSession());
 }
 
 CASE("Invalid m2") {
@@ -48,17 +53,15 @@ CASE("Invalid m2") {
     Random::Get(serverK.values(), serverK.count());
     crypto_x25519_public_key(serverPK.values(), serverK.values());
 
-    std::array<u8, KX::M1Size> m1;
-    KX::ClientState clientState;
-    KX::IK1(clientK, serverPK, m1.data(), clientState);
-    std::array<u8, KX::M2Size> m2;
-    Array<u8, 32> clientPK;
-    Session serverSession;
-    EXPECT(KX::IK2(serverK, m1.data(), m2.data(), clientPK, serverSession));
+    KX::ClientState clientState(clientK, serverPK);
+    while (!clientState.hasM1()) {
+        EXPECT(clientState.update());
+    }
     std::array<u8, KX::M2Size> invalidM2;
     Random::Get(invalidM2.data(), invalidM2.size());
-    Session clientSession;
-    EXPECT_NOT(KX::IK3(clientState, invalidM2.data(), clientSession));
+    EXPECT(clientState.setM2(invalidM2.data()));
+    while (clientState.update()) {}
+    EXPECT_NOT(clientState.clientSession());
 }
 
 CASE("Valid") {
@@ -67,22 +70,31 @@ CASE("Valid") {
     Random::Get(serverK.values(), serverK.count());
     crypto_x25519_public_key(serverPK.values(), serverK.values());
 
+    KX::ClientState clientState(clientK, serverPK);
     std::array<u8, KX::M1Size> m1;
-    KX::ClientState clientState;
-    KX::IK1(clientK, serverPK, m1.data(), clientState);
+    while (!clientState.getM1(m1.data())) {
+        EXPECT(clientState.update());
+    }
+    KX::ServerState serverState(serverK);
+    EXPECT(serverState.setM1(m1.data()));
+    while (serverState.update()) {}
     std::array<u8, KX::M2Size> m2;
-    Array<u8, 32> clientPK;
-    Session serverSession;
-    EXPECT(KX::IK2(serverK, m1.data(), m2.data(), clientPK, serverSession));
-    Session clientSession;
-    EXPECT(KX::IK3(clientState, m2.data(), clientSession));
+    EXPECT(serverState.getM2(m2.data()));
+    const Array<u8, 32> *clientPK = serverState.clientPK();
+    EXPECT(clientPK);
+    const Session *serverSession = serverState.serverSession();
+    EXPECT(serverSession);
+    EXPECT(clientState.setM2(m2.data()));
+    while (clientState.update()) {}
+    const Session *clientSession = clientState.clientSession();
+    EXPECT(clientSession);
 
     Array<u8, 32> expectedClientPK;
     crypto_x25519_public_key(expectedClientPK.values(), clientK.values());
-    EXPECT(clientPK == expectedClientPK);
-    EXPECT(serverSession.m_readK != serverSession.m_writeK);
-    EXPECT(serverSession.m_readK == clientSession.m_writeK);
-    EXPECT(serverSession.m_writeK == clientSession.m_readK);
+    EXPECT(*clientPK == expectedClientPK);
+    EXPECT(serverSession->m_readK != serverSession->m_writeK);
+    EXPECT(serverSession->m_readK == clientSession->m_writeK);
+    EXPECT(serverSession->m_writeK == clientSession->m_readK);
 }
 
 int main(int argc, char *argv[]) {
