@@ -1,9 +1,12 @@
 #pragma once
 
 #include <jsystem/J2DPicture.hh>
+#include <jsystem/J2DScreen.hh>
 
 class Kart2DCommon {
 public:
+    void changeAsciiTexture(const char *text, u32 count, J2DScreen &screen, const char *prefix,
+            f32 *startX = nullptr, f32 *endX = nullptr);
     void changeNumberTexture(s32 number, J2DPicture **pictures, u8 pictureCount, bool padWithZeros,
             bool fillWithHyphens);
     ResTIMG *getAsciiTexture(char c);

@@ -45,8 +45,8 @@ void SceneFactory::loadData(s32 sceneType, JKRHeap *heap) {
         return;
     case SceneType::ServerSelect:
         REPLACED(loadData)(SceneType::Menu, heap);
-        REPLACED(loadData)(SceneType::PackSelect, heap);
         REPLACED(loadData)(SceneType::GhostLoadSave, heap);
+        REPLACED(loadData)(SceneType::LanEntry, heap);
         return;
     }
 
@@ -88,7 +88,7 @@ Scene *SceneFactory::createScene(s32 sceneType, JKRHeap *heap) {
         break;
     case SceneType::ServerSelect:
         sysDebug->setHeapGroup("ServerSelect", heap);
-        scene = new (heap, 0x0) SceneServerSelect(m_archives[ArchiveType::Menu], heap);
+        scene = new (heap, 0x0) SceneServerSelect(m_archives[ArchiveType::GhostData], heap);
         break;
     default:
         return REPLACED(createScene)(sceneType, heap);
