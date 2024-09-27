@@ -1,9 +1,9 @@
 #include "Payload.hh"
 
 #include "payload/ArchiveStorage.hh"
-#include "payload/AssetsDirCreator.hh"
 #include "payload/CourseManager.hh"
 #include "payload/DVDStorage.hh"
+#include "payload/DirCreator.hh"
 #include "payload/Lock.hh"
 #include "payload/LogFile.hh"
 #include "payload/VirtualCard.hh"
@@ -40,9 +40,9 @@ void Payload::Run(Context *context) {
     WUP028::Init();
     INFO("Initialized WUP-028.");
 
-    INFO("Initializing assets directory creator...");
-    AssetsDirCreator::Init();
-    INFO("Initialized assets directory creator.");
+    INFO("Initializing directory creator...");
+    DirCreator::Init();
+    INFO("Initialized directory creator.");
 
     INFO("Initializing course manager...");
     CourseManager::Init();

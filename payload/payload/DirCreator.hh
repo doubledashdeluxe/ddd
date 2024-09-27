@@ -6,12 +6,12 @@ extern "C" {
 #include <dolphin/OSThread.h>
 }
 
-class AssetsDirCreator : public Storage::Observer {
+class DirCreator : public Storage::Observer {
 public:
     static void Init();
 
 private:
-    AssetsDirCreator();
+    DirCreator();
 
     void onAdd(const char *prefix) override;
     void onRemove(const char *prefix) override;
@@ -25,5 +25,5 @@ private:
     Array<u8, 4 * 1024> m_stack;
     OSThread m_thread;
 
-    static AssetsDirCreator *s_instance;
+    static DirCreator *s_instance;
 };
