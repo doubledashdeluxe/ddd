@@ -49,6 +49,7 @@ extern "C" const size_t italianArchive_size;
 
 extern "C" u32 consoleType;
 extern "C" u32 arenaLo;
+extern "C" u32 arenaHi;
 extern "C" u32 iosVersion;
 
 extern "C" volatile u32 aicr;
@@ -165,6 +166,7 @@ Channel::PayloadEntryFunc Channel::Run(Context *context) {
         consoleType |= 0x10000000;
     }
     arenaLo = reinterpret_cast<uintptr_t>(payloadDst) + payloadSize;
+    arenaHi = reinterpret_cast<uintptr_t>(MEM1Arena::Instance()->alloc(0x0, -0x4));
 
     INFO("Starting payload...");
     PayloadEntryFunc payloadEntry = reinterpret_cast<PayloadEntryFunc>(payloadDst);
