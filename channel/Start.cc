@@ -9,6 +9,7 @@
 #include "channel/ChannelBinary.hh"
 
 #include <common/Arena.hh>
+#include <common/Platform.hh>
 extern "C" {
 #include <common/StackCanary.h>
 
@@ -33,11 +34,15 @@ extern "C" void RunChannel() {
     }
 
     MEM1Arena::Init();
-    MEM2Arena::Init(0x90a24000, 0x93400000);
+    if (!Platform::IsGameCube()) {
+        MEM2Arena::Init(0x90a24000, 0x93400000);
+    }
     Context *context = new (MEM2Arena::Instance(), 0x4) Context;
     Channel::PayloadEntryFunc payloadEntry = Channel::Run(context);
-    context->mem2ArenaLo = reinterpret_cast<uintptr_t>(MEM2Arena::Instance()->alloc(0x0, 0x4));
-    context->mem2ArenaHi = reinterpret_cast<uintptr_t>(MEM2Arena::Instance()->alloc(0x0, -0x4));
+    if (!Platform::IsGameCube()) {
+        context->mem2ArenaLo = reinterpret_cast<uintptr_t>(MEM2Arena::Instance()->alloc(0x0, 0x4));
+        context->mem2ArenaHi = reinterpret_cast<uintptr_t>(MEM2Arena::Instance()->alloc(0x0, -0x4));
+    }
     context->console = Console::Instance();
     if (payloadEntry) {
         (*payloadEntry)(context);

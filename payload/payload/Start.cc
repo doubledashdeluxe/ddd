@@ -4,6 +4,7 @@
 
 #include <common/Arena.hh>
 #include <common/Context.hh>
+#include <common/Platform.hh>
 extern "C" {
 #include <dolphin/DB.h>
 #include <dolphin/OS.h>
@@ -30,7 +31,9 @@ extern "C" void RunPayload(Context *context) {
 
     Patcher::Run();
 
-    MEM2Arena::Init(context->mem2ArenaLo, context->mem2ArenaHi);
+    if (!Platform::IsGameCube()) {
+        MEM2Arena::Init(context->mem2ArenaLo, context->mem2ArenaHi);
+    }
     Console::Init(context->console);
 
     DBInit();
