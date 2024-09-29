@@ -14,9 +14,6 @@ args = parser.parse_args()
 with open(args.in_path, 'rb') as bin_file, open(args.out_path, 'w') as c_file:
     c_file.write('#include <common/Types.h>\n')
     c_file.write('\n')
-    bin_file.seek(0, io.SEEK_END)
-    c_file.write(f'const size_t {args.in_name}_size = {bin_file.tell():#x};\n')
-    bin_file.seek(0, io.SEEK_SET)
     c_file.write(f'const u8 {args.in_name}[] = {{\n')
     eof = False
     while not eof:
@@ -29,3 +26,5 @@ with open(args.in_path, 'rb') as bin_file, open(args.out_path, 'w') as c_file:
             c_file.write(f' 0x{byte[0]:02x},')
         c_file.write('\n')
     c_file.write('};\n')
+    bin_file.seek(0, io.SEEK_END)
+    c_file.write(f'const size_t {args.in_name}_size = {bin_file.tell():#x};\n')

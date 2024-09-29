@@ -2,6 +2,7 @@ PHDRS {
     text PT_LOAD;
     rodata PT_LOAD;
     data PT_LOAD;
+    bss PT_LOAD;
 }
 
 SECTIONS {
@@ -9,8 +10,8 @@ SECTIONS {
     .ctors : { *(.ctors*) } :rodata
     .dtors : { *(.dtors*) } :rodata
     .rodata : { *(.rodata*) } :rodata
-    .data : { *(.data*) } :rodata
-    .bss : { *(.bss*) } :data
+    .data : { *(.data*) } :data
+    .bss : { *(.bss*) } :bss
 
     payload_text_start = ADDR(.text);
     payload_text_end = payload_text_start + SIZEOF(.text);

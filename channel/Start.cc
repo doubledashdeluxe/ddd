@@ -62,10 +62,16 @@ extern "C" __declspec(section "first") asm void Start() {
     ori r1, r1, stackTop@l
 
     // Initialize the stack canary
-    bl StackCanary_Init
+    lis r3, StackCanary_Init@h
+    ori r3, r3, StackCanary_Init@l
+    mtctr r3
+    bctrl
 
     // Jump to C++ code
-    bl RunChannel
+    lis r3, RunChannel@h
+    ori r3, r3, RunChannel@l
+    mtctr r3
+    bctrl
 
 EnterRealMode:
     mflr r3
@@ -184,6 +190,7 @@ RunInRealMode:
     li r4, 0x0000
     stw r3, 0xc00 (r4)
 
+    // Exit real mode
     mflr r3
     oris r3, r3, 0x8000
     mtsrr0 r3

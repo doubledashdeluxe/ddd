@@ -3,16 +3,19 @@ PHDRS {
     text PT_LOAD;
     rodata PT_LOAD;
     data PT_LOAD;
+    bss PT_LOAD;
 }
 
 SECTIONS {
-    .first : { *(first) } :first
-    .text 0x80800000 : { *(.init*) *(.text*) } :text
-    .ctors : { *(.ctors*) } :rodata
-    .dtors : { *(.dtors*) } :rodata
-    .rodata : { *(.rodata*) } :rodata
-    .data : { *(.data*) } :rodata
-    .bss : { *(.bss*) } :data
+    . = 0x80003400;
+    .first : ALIGN(32) { *(first) } :first
+    . = 0x80800000 + 0x100 + SIZEOF(.first);
+    .text : ALIGN(32) { *(.init*) *(.text*) } :text
+    .ctors : ALIGN(32) { *(.ctors*) } :rodata
+    .dtors : ALIGN(32) { *(.dtors*) } :rodata
+    .rodata : ALIGN(32) { *(.rodata*) } :rodata
+    .data : ALIGN(32) { *(.data*) } :data
+    .bss : ALIGN(32) { *(.bss*) } :bss
 
     channel_text_start = ADDR(.text);
     channel_text_end = channel_text_start + SIZEOF(.text);

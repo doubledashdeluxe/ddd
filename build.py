@@ -705,7 +705,6 @@ n.build(
         'ldflags' : ' '.join([
             *common_ldflags,
             '--gc-sections',
-            '--image-base=0x80003400',
             '-T', os.path.join('$builddir', 'channel', 'GM4.ld'),
         ]),
     },
@@ -772,7 +771,6 @@ n.build(
         'ldflags' : ' '.join([
             *common_ldflags,
             '--gc-sections',
-            '--image-base=0x80800000',
             '-T', os.path.join('$builddir', 'bootstrap', 'GM4.ld'),
         ]),
     },

@@ -2,11 +2,16 @@
 #include "bootstrap/BootstrapBinary.hh"
 
 #include <common/Arena.hh>
+#include <common/Platform.hh>
 extern "C" {
 #include <common/StackCanary.h>
 
 #include <string.h>
 }
+
+typedef void (*ChannelEntryFunc)();
+
+extern "C" const u8 channel[];
 
 extern "C" u32 stackTop;
 
@@ -21,8 +26,14 @@ extern "C" void RunBootstrap() {
         (*ctor)();
     }
 
-    MEM2Arena::Init(0x90000000, 0x93400000);
-    Bootstrap::Run();
+    if (Platform::IsGameCube()) {
+        ChannelEntryFunc channelEntry =
+                reinterpret_cast<ChannelEntryFunc>(const_cast<u8 *>(channel + 0x100));
+        channelEntry();
+    } else {
+        MEM2Arena::Init(0x90000000, 0x93400000);
+        Bootstrap::Run();
+    }
 
     while (true) {} // We should never get there
 }

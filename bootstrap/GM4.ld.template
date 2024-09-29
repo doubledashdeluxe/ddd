@@ -2,15 +2,18 @@ PHDRS {
     text PT_LOAD;
     rodata PT_LOAD;
     data PT_LOAD;
+    bss PT_LOAD;
 }
 
 SECTIONS {
-    .text : { *(.init*) *(.text*) } :text
-    .ctors : { *(.ctors*) } :rodata
-    .dtors : { *(.dtors*) } :rodata
-    .rodata : { *(.rodata*) } :rodata
-    .data : { *(.data*) } :rodata
-    .bss : { *(.bss*) } :data
+    . = 0x80800000;
+    .first : ALIGN(32) { *channel.o (.rodata) } :rodata
+    .ctors : ALIGN(32) { *(.ctors*) } :rodata
+    .dtors : ALIGN(32) { *(.dtors*) } :rodata
+    .rodata : ALIGN(32) { *(.rodata*) } :rodata
+    .text : ALIGN(32) { *(.init*) *(.text*) } :text
+    .data : ALIGN(32) { *(.data*) } :data
+    .bss : ALIGN(32) { *(.bss*) } :bss
 
     bootstrap_text_start = ADDR(.text);
     bootstrap_text_end = bootstrap_text_start + SIZEOF(.text);
@@ -25,7 +28,7 @@ SECTIONS {
     bootstrap_bss_start = ADDR(.bss);
     bootstrap_bss_end = bootstrap_bss_start + SIZEOF(.bss);
 
-    stackTop = ADDR(.text) - 0x8;
+    stackTop = ADDR(.first) - 0x8;
 
 $symbols
 }
