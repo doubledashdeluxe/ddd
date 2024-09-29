@@ -43,9 +43,11 @@ extern "C" asm void Start() {
     // Jump to C++ code
     bl RunBootstrap
 
+#ifndef DOLPHIN_FORCE_GAMECUBE
     // Dummy: the presence of such an instruction is the criterion for Dolphin to load an ELF in Wii
     // mode instead of GameCube.
     mtspr 1011, r3
+#endif
 
     // clang-format on
 }

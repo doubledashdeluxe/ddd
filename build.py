@@ -26,6 +26,7 @@ for arg in sys.argv[1:]:
 parser = argparse.ArgumentParser()
 parser.add_argument('--dry', action='store_true')
 parser.add_argument('--ci', action='store_true')
+parser.add_argument('--dolphin-force-gamecube', action='store_true')
 args = parser.parse_args(our_argv)
 
 out_buf = io.StringIO()
@@ -241,6 +242,19 @@ if args.ci:
     ]
     common_nccflags += [
         '-Werror',
+    ]
+if args.dolphin_force_gamecube:
+    target_cflags['bootstrap'] += [
+        '-d', 'DOLPHIN_FORCE_GAMECUBE',
+    ]
+    target_ccflags['bootstrap'] += [
+        '-d', 'DOLPHIN_FORCE_GAMECUBE',
+    ]
+    target_ncflags['bootstrap'] += [
+        '-D', 'DOLPHIN_FORCE_GAMECUBE',
+    ]
+    target_nccflags['bootstrap'] += [
+        '-D', 'DOLPHIN_FORCE_GAMECUBE',
     ]
 
 n.rule(
