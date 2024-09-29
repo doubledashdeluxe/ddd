@@ -2,19 +2,16 @@
 
 #include <common/Align.hh>
 
-extern "C" u32 arenaLo;
-extern "C" u32 arenaHi;
+extern "C" {
+#include <assert.h>
+}
 
 void *MEM1Arena::alloc(size_t size, s32 align) {
-    if (align >= 0) {
-        arenaLo = AlignUp<u32>(arenaLo, align);
-        void *ptr = reinterpret_cast<void *>(arenaLo);
-        arenaLo += size;
-        return ptr;
-    } else {
-        arenaHi = AlignDown<u32>(arenaHi, -align);
-        void *ptr = reinterpret_cast<void *>(arenaHi);
-        arenaHi -= size;
-        return ptr;
-    }
+    assert(align <= 0);
+    s_hi -= size;
+    s_hi = AlignDown<u32>(s_hi, -align);
+    void *ptr = reinterpret_cast<void *>(s_hi);
+    return ptr;
 }
+
+u32 MEM1Arena::s_hi = 0x817fbb60;

@@ -4,7 +4,7 @@
 
 void MEM1Arena::Init() {
     MEM1Arena arena;
-    s_instance = new (&arena, 0x4) MEM1Arena(arena);
+    s_instance = new (&arena, -0x4) MEM1Arena(arena);
 }
 
 MEM1Arena *MEM1Arena::Instance() {

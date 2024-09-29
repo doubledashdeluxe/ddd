@@ -19,6 +19,7 @@ private:
     ~MEM1Arena();
 
     static MEM1Arena *s_instance;
+    static u32 s_hi;
 };
 
 class MEM2Arena : public Arena {
