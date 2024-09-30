@@ -138,7 +138,7 @@ Channel::PayloadEntryFunc Channel::Run(Context *context) {
     INFO("Copied payload.");
 
     INFO("Copying common archive...");
-    context->commonArchive = MEM2Arena::Instance()->alloc(commonArchive_size, 0x20);
+    context->commonArchive = MEM1Arena::Instance()->alloc(commonArchive_size, -0x20);
     context->commonArchiveSize = commonArchive_size;
     memcpy(context->commonArchive, &commonArchive, commonArchive_size);
     INFO("Copied common archive.");
@@ -163,7 +163,7 @@ Channel::PayloadEntryFunc Channel::Run(Context *context) {
     };
     const u8 *localizedArchive = localizedArchives[language];
     size_t localizedArchiveSize = localizedArchiveSizes[language];
-    context->localizedArchive = MEM2Arena::Instance()->alloc(localizedArchiveSize, 0x20);
+    context->localizedArchive = MEM1Arena::Instance()->alloc(localizedArchiveSize, -0x20);
     context->localizedArchiveSize = localizedArchiveSize;
     memcpy(context->localizedArchive, localizedArchive, localizedArchiveSize);
     INFO("Copied localized archive.");
