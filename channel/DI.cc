@@ -2,6 +2,7 @@
 
 #include <common/Clock.hh>
 #include <common/DCache.hh>
+#include <common/Platform.hh>
 
 extern "C" volatile u32 disr;
 extern "C" volatile u32 dicvr;
@@ -12,6 +13,8 @@ extern "C" volatile u32 dimar;
 extern "C" volatile u32 dilength;
 extern "C" volatile u32 dicr;
 extern "C" volatile u32 diimmbuf;
+
+extern "C" volatile u32 pirc;
 
 extern "C" volatile u32 gpio_out;
 extern "C" volatile u32 resets;
@@ -57,8 +60,14 @@ bool DI::IsInserted() {
 }
 
 void DI::Reset() {
-    gpio_out &= ~0x10;
-    resets &= ~0x400;
-    Clock::WaitMilliseconds(1);
-    resets |= 0x400;
+    if (Platform::IsGameCube()) {
+        pirc = (pirc & ~0x4) | 0x1;
+        Clock::WaitMicroseconds(12);
+        pirc = pirc | 0x5;
+    } else {
+        gpio_out &= ~0x10;
+        resets &= ~0x400;
+        Clock::WaitMilliseconds(1);
+        resets |= 0x400;
+    }
 }

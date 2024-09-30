@@ -35,12 +35,12 @@ s64 Clock::GetMonotonicTicks() {
     return OSGetSystemTime();
 }
 
-void Clock::WaitMilliseconds(u32 milliseconds) {
+void Clock::WaitTicks(s64 ticks) {
     OSAlarm alarm;
     OSCreateAlarm(&alarm);
     alarm.userData = OSGetCurrentThread();
     Lock<NoInterrupts> lock;
-    OSSetAlarm(&alarm, MillisecondsToTicks(milliseconds), HandleAlarm);
+    OSSetAlarm(&alarm, ticks, HandleAlarm);
     OSSuspendThread(OSGetCurrentThread());
 }
 

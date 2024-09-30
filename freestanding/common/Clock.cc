@@ -7,12 +7,19 @@ void Clock::Init() {
 }
 
 #ifdef __CWCC__
-void Clock::WaitMilliseconds(u32 milliseconds) {
-    u32 duration = MillisecondsToTicks(milliseconds);
-    u32 start;
-    asm volatile("mfspr %0, 268" : "=r"(start));
-    for (u32 current = start; current - start < duration;) {
-        asm volatile("mfspr %0, 268" : "=r"(current));
-    }
+s64 Clock::GetMonotonicTicks() {
+    u32 prevHi, currLo, currHi;
+    do {
+        asm volatile("mftb %0, 269" : "=r"(prevHi));
+        asm volatile("mftb %0, 268" : "=r"(currLo));
+        asm volatile("mftb %0, 269" : "=r"(currHi));
+    } while (currHi != prevHi);
+    return static_cast<s64>(currHi) << 32 | currLo << 0;
 }
 #endif
+
+void Clock::WaitTicks(s64 ticks) {
+    s64 start = GetMonotonicTicks();
+    s64 end = start + ticks;
+    while (GetMonotonicTicks() < end) {}
+}

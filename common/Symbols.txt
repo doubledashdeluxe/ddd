@@ -22,6 +22,7 @@ cc00206e visel
 
 cc003000 intsr
 cc003004 intmr
+cc003024 pirc
 
 cc00401e miirqflag
 
