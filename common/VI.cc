@@ -67,7 +67,7 @@ void VI::flushXFB() {
 }
 
 void VI::Init() {
-    s_instance = new (MEM2Arena::Instance(), 0x4) VI;
+    s_instance = new (MEM1Arena::Instance(), -0x4) VI;
 }
 
 VI *VI::Instance() {
@@ -80,7 +80,7 @@ VI::VI() {
     m_xfbWidth = 608;
     m_xfbHeight = isNtsc ? 448 : 538;
     m_xfbSize = m_xfbHeight * ((m_xfbWidth + 1) / 2) * sizeof(u32);
-    m_xfb = reinterpret_cast<u32 *>(MEM2Arena::Instance()->alloc(m_xfbSize, 0x20));
+    m_xfb = reinterpret_cast<u32 *>(MEM1Arena::Instance()->alloc(m_xfbSize, -0x20));
     for (u16 y = 0; y < m_xfbHeight; y++) {
         for (u16 x = 0; x < m_xfbWidth; x++) {
             writeToXFB(x, y, Color::Black);

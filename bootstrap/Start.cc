@@ -31,6 +31,7 @@ extern "C" void RunBootstrap() {
                 reinterpret_cast<ChannelEntryFunc>(const_cast<u8 *>(channel + 0x100));
         channelEntry();
     } else {
+        MEM1Arena::Init();
         MEM2Arena::Init(0x90000000, 0x93400000);
         Bootstrap::Run();
     }
