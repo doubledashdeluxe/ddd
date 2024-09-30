@@ -76,7 +76,7 @@ void Console::copyXFB(u16 xfbWidth, u16 xfbHeight, void *xfb) {
 }
 
 void Console::Init(VI *vi) {
-    s_instance = new (MEM2Arena::Instance(), 0x4) Console(vi);
+    s_instance = new (MEM1Arena::Instance(), -0x4) Console(vi);
 }
 
 void Console::Init(Console *instance) {
