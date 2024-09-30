@@ -11,7 +11,7 @@ extern "C" {
 }
 
 void VirtualDI::Init() {
-    s_file = new (MEM2Arena::Instance(), 0x4) Storage::FileHandle;
+    s_file = new (MEM1Arena::Instance(), -0x4) Storage::FileHandle;
 }
 
 bool VirtualDI::IsInit() {
