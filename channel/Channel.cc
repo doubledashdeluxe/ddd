@@ -86,11 +86,13 @@ Channel::PayloadEntryFunc Channel::Run(Context *context) {
         }
     }
 
-    // Use compat MMIO ranges for DI/SI/EXI/AI
-    aipprot &= ~(1 << 0);
+    if (!Platform::IsGameCube()) {
+        // Use compat MMIO ranges for DI/SI/EXI/AI
+        aipprot &= ~(1 << 0);
 
-    // Prevent Starlet from receiving DI interrupts
-    armirqmask &= ~(1 << 18);
+        // Prevent Starlet from receiving DI interrupts
+        armirqmask &= ~(1 << 18);
+    }
 
     // Reset the DSP: libogc apps like the HBC cannot initialize it properly, but the SDK can.
     aicr = 0;
