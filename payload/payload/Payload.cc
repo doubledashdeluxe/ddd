@@ -28,9 +28,11 @@
 void Payload::Run(Context *context) {
     INFO("Started payload.");
 
-    INFO("Initializing IOS...");
-    IOS::Resource::Init();
-    INFO("Initialized IOS.");
+    if (!Platform::IsGameCube()) {
+        INFO("Initializing IOS...");
+        IOS::Resource::Init();
+        INFO("Initialized IOS.");
+    }
 
     INFO("Initializing clock...");
     Clock::Init();

@@ -63,14 +63,16 @@ Channel::PayloadEntryFunc Channel::Run(Context *context) {
     Console::Init(VI::Instance());
     INFO("Double Dash Deluxe Channel");
 
-    if (iosVersion >> 16 != 58 && iosVersion >> 16 != 59) {
-        ERROR("Double Dash Deluxes needs IOS58 (or IOS59).");
-        ERROR("Please perform a Wii System Update or use the IOS58 Installer to install");
-        ERROR("IOS58.");
-        return nullptr;
-    }
+    if (!Platform::IsGameCube()) {
+        if (iosVersion >> 16 != 58 && iosVersion >> 16 != 59) {
+            ERROR("Double Dash Deluxes needs IOS58 (or IOS59).");
+            ERROR("Please perform a Wii System Update or use the IOS58 Installer to install");
+            ERROR("IOS58.");
+            return nullptr;
+        }
 
-    IOS::Resource::Init();
+        IOS::Resource::Init();
+    }
     Clock::Init();
 
     if (Platform::IsDolphin()) {
