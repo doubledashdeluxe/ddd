@@ -38,9 +38,11 @@ void Payload::Run(Context *context) {
     Clock::Init();
     INFO("Initialized clock.");
 
-    INFO("Initializing WUP-028...");
-    WUP028::Init();
-    INFO("Initialized WUP-028.");
+    if (!Platform::IsGameCube()) {
+        INFO("Initializing WUP-028...");
+        WUP028::Init();
+        INFO("Initialized WUP-028.");
+    }
 
     INFO("Initializing directory creator...");
     DirCreator::Init();
@@ -74,17 +76,19 @@ void Payload::Run(Context *context) {
     ArchiveStorage::Init("larc:", context->localizedArchive, context->localizedArchiveSize);
     INFO("Initialized localized archive storage.");
 
-    INFO("Initializing USB storage...");
-    USBStorage::Init();
-    INFO("Initialized USB storage.");
+    if (!Platform::IsGameCube()) {
+        INFO("Initializing USB storage...");
+        USBStorage::Init();
+        INFO("Initialized USB storage.");
 
-    INFO("Initializing USB...");
-    USB::Init();
-    INFO("Initialized USB.");
+        INFO("Initializing USB...");
+        USB::Init();
+        INFO("Initialized USB.");
 
-    INFO("Initializing SD storage...");
-    SDStorage::Init();
-    INFO("Initialized SD storage.");
+        INFO("Initializing SD storage...");
+        SDStorage::Init();
+        INFO("Initialized SD storage.");
+    }
 
     INFO("Initializing log file...");
     LogFile::Init();

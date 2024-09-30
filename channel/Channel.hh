@@ -28,6 +28,6 @@ private:
 
     static void RunApploader(Context *context);
     static bool RunApploaderFromVirtualDI();
-    static bool RunApploaderFromVirtualDI(bool enableUSB);
+    static bool RunApploaderFromVirtualDI(bool enableUSB, bool enableSD);
     static u32 GetLanguage();
 };

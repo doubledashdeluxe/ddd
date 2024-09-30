@@ -98,9 +98,11 @@ Channel::PayloadEntryFunc Channel::Run(Context *context) {
     aicr = 0;
 
     Storage::Init();
-    USBStorage::Init();
-    USB::Init();
-    SDStorage::Init();
+    if (!Platform::IsGameCube()) {
+        USBStorage::Init();
+        USB::Init();
+        SDStorage::Init();
+    }
     VirtualDI::Init();
 
     RunApploader(context);
@@ -224,17 +226,23 @@ void Channel::RunApploader(Context *context) {
 }
 
 bool Channel::RunApploaderFromVirtualDI() {
-    return RunApploaderFromVirtualDI(!Platform::IsDolphin());
+    bool enableUSB = !Platform::IsGameCube() && !Platform::IsDolphin();
+    bool enableSD = !Platform::IsGameCube();
+    return RunApploaderFromVirtualDI(enableUSB, enableSD);
 }
 
-bool Channel::RunApploaderFromVirtualDI(bool enableUSB) {
+bool Channel::RunApploaderFromVirtualDI(bool enableUSB, bool enableSD) {
     if (enableUSB) {
         USB::Handle usbHandle;
 
-        return RunApploaderFromVirtualDI(false);
+        return RunApploaderFromVirtualDI(false, enableSD);
     }
 
-    SDStorage sdStorage;
+    if (enableSD) {
+        SDStorage sdStorage;
+
+        return RunApploaderFromVirtualDI(enableUSB, false);
+    }
 
     if (!VirtualDI::Mount()) {
         return false;
