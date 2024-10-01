@@ -2,6 +2,7 @@
 
 #include "channel/Apploader.hh"
 #include "channel/DI.hh"
+#include "channel/SRAM.hh"
 
 #include <common/Arena.hh>
 #include <common/Clock.hh>
@@ -11,7 +12,6 @@
 #include <common/ICache.hh>
 #include <common/Log.hh>
 #include <common/Platform.hh>
-#include <common/SC.hh>
 #include <common/USB.hh>
 #include <common/VI.hh>
 #include <common/VirtualDI.hh>
@@ -144,25 +144,9 @@ Channel::PayloadEntryFunc Channel::Run(Context *context) {
     INFO("Copied common archive.");
 
     INFO("Copying localized archive...");
-    u32 language = GetLanguage();
-    const u8 *localizedArchives[] = {
-            japaneseArchive,
-            englishArchive,
-            germanArchive,
-            frenchArchive,
-            spanishArchive,
-            italianArchive,
-    };
-    size_t localizedArchiveSizes[] = {
-            japaneseArchive_size,
-            englishArchive_size,
-            germanArchive_size,
-            frenchArchive_size,
-            spanishArchive_size,
-            italianArchive_size,
-    };
-    const u8 *localizedArchive = localizedArchives[language];
-    size_t localizedArchiveSize = localizedArchiveSizes[language];
+    const u8 *localizedArchive;
+    size_t localizedArchiveSize;
+    GetLocalizedArchive(localizedArchive, localizedArchiveSize);
     context->localizedArchive = MEM1Arena::Instance()->alloc(localizedArchiveSize, -0x20);
     context->localizedArchiveSize = localizedArchiveSize;
     memcpy(context->localizedArchive, localizedArchive, localizedArchiveSize);
@@ -255,26 +239,51 @@ bool Channel::RunApploaderFromVirtualDI(bool enableUSB, bool enableSD) {
     return true;
 }
 
-u32 Channel::GetLanguage() {
+void Channel::GetLocalizedArchive(const u8 *&archive, size_t &archiveSize) {
     char region = DiscID::Get().gameID[3];
     if (region == 'J') {
-        return Language::Japanese;
+        archive = japaneseArchive;
+        archiveSize = japaneseArchive_size;
+        return;
     }
 
-    if (region == 'P') {
-        u8 language;
-        SC sc;
-        if (sc.get("IPL.LNG", language)) {
-            switch (language) {
-            case Language::English:
-            case Language::German:
-            case Language::French:
-            case Language::Spanish:
-            case Language::Italian:
-                return language;
-            }
-        }
+    archive = englishArchive;
+    archiveSize = englishArchive_size;
+
+    if (region != 'P') {
+        return;
     }
 
-    return Language::English;
+    SRAM sram;
+    u8 language;
+    if (!sram.getLanguage(language)) {
+        return;
+    }
+    switch (language) {
+    case SRAM::Language::English:
+    case SRAM::Language::German:
+    case SRAM::Language::French:
+    case SRAM::Language::Spanish:
+    case SRAM::Language::Italian:
+        break;
+    default:
+        return;
+    }
+
+    const u8 *archives[] = {
+            englishArchive,
+            germanArchive,
+            frenchArchive,
+            spanishArchive,
+            italianArchive,
+    };
+    size_t archiveSizes[] = {
+            englishArchive_size,
+            germanArchive_size,
+            frenchArchive_size,
+            spanishArchive_size,
+            italianArchive_size,
+    };
+    archive = archives[language];
+    archiveSize = archiveSizes[language];
 }

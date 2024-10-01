@@ -3,6 +3,7 @@
 #include <common/ios/Resource.hh>
 #include <lest.hpp>
 
+#include <cstring>
 #include <optional>
 #include <vector>
 

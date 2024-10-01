@@ -9,25 +9,10 @@ public:
     static PayloadEntryFunc Run(Context *context);
 
 private:
-    class Language {
-    public:
-        enum {
-            Japanese = 0,
-            English = 1,
-            German = 2,
-            French = 3,
-            Spanish = 4,
-            Italian = 5,
-        };
-
-    private:
-        Language();
-    };
-
     Channel();
 
     static void RunApploader(Context *context);
     static bool RunApploaderFromVirtualDI();
     static bool RunApploaderFromVirtualDI(bool enableUSB, bool enableSD);
-    static u32 GetLanguage();
+    static void GetLocalizedArchive(const u8 *&archive, size_t &archiveSize);
 };

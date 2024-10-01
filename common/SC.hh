@@ -3,10 +3,6 @@
 #include "common/Array.hh"
 #include "common/Bytes.hh"
 
-extern "C" {
-#include <string.h>
-}
-
 class SC {
 public:
     SC();

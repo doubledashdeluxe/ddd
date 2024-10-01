@@ -38,9 +38,10 @@ cc006018 dilength
 cc00601c dicr
 cc006020 diimmbuf
 
-cc006800 exi0csr
-cc006814 exi1csr
-cc006828 exi2csr
+cc006800 exi
+cc006800 exi0cpr
+cc006814 exi1cpr
+cc006828 exi2cpr
 
 cc006c00 aicr
 

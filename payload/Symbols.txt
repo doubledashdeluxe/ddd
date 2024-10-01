@@ -103,6 +103,7 @@
 800c22fc GXSetScissor
 800c2374 GXGetScissor
 800c3970 EXIImm
+800c3bcc EXIImmEx
 800c3d58 EXISync
 800c4068 __EXIProbe
 800c44d8 EXISelect

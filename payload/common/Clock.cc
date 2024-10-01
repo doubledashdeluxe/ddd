@@ -1,9 +1,9 @@
 #include <common/Clock.hh>
 
+#include <common/EXI.hh>
 #include <common/Log.hh>
 #include <common/SC.hh>
 extern "C" {
-#include <dolphin/EXIBios.h>
 #include <dolphin/OSAlarm.h>
 #include <dolphin/OSThread.h>
 #include <dolphin/OSTime.h>
@@ -45,39 +45,15 @@ void Clock::WaitTicks(s64 ticks) {
 }
 
 bool Clock::ReadRTC(u32 &rtc) {
-    if (!EXILock(0, 1, nullptr)) {
-        return false;
-    }
-    if (!EXISelect(0, 1, 3)) {
-        EXIUnlock(0);
+    EXI::Device device(0, 1, 3);
+    if (!device.ok()) {
         return false;
     }
     u32 cmd = 0x20000000;
-    if (!EXIImm(0, &cmd, sizeof(cmd), EXI_WRITE, nullptr)) {
-        EXIDeselect(0);
-        EXIUnlock(0);
+    if (!device.immWrite(&cmd, sizeof(cmd))) {
         return false;
     }
-    if (!EXISync(0)) {
-        EXIDeselect(0);
-        EXIUnlock(0);
-        return false;
-    }
-    if (!EXIImm(0, &rtc, sizeof(rtc), EXI_READ, nullptr)) {
-        EXIDeselect(0);
-        EXIUnlock(0);
-        return false;
-    }
-    if (!EXISync(0)) {
-        EXIDeselect(0);
-        EXIUnlock(0);
-        return false;
-    }
-    if (!EXIDeselect(0)) {
-        EXIUnlock(0);
-        return false;
-    }
-    if (!EXIUnlock(0)) {
+    if (!device.immRead(&rtc, sizeof(rtc))) {
         return false;
     }
     return true;

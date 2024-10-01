@@ -2,6 +2,10 @@
 
 #include "common/ios/File.hh"
 
+extern "C" {
+#include <string.h>
+}
+
 SC::SC() : m_buffer(0) {
     IOS::File file("/shared2/sys/SYSCONF", IOS::Mode::Read);
     if (!file.ok() || file.read(m_buffer.values(), m_buffer.count()) < 0) {

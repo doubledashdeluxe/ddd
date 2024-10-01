@@ -17,9 +17,9 @@ extern "C" volatile u16 miirqflag;
 
 extern "C" volatile u16 dspcsr;
 
-extern "C" volatile u32 exi0csr;
-extern "C" volatile u32 exi1csr;
-extern "C" volatile u32 exi2csr;
+extern "C" volatile u32 exi0cpr;
+extern "C" volatile u32 exi1cpr;
+extern "C" volatile u32 exi2cpr;
 
 extern "C" volatile u32 aicr;
 
@@ -155,31 +155,31 @@ extern "C" REPLACE void OSDispatchInterrupt(u8 /* exception */, OSContext *conte
         }
     }
     if (cachedIntsr & 1 << 4) {
-        u32 cachedExi0csr = exi0csr;
-        if (cachedExi0csr & 1 << 1) {
+        u32 cachedExi0cpr = exi0cpr;
+        if (cachedExi0cpr & 1 << 1) {
             interrupts |= 1 << (31 - 9);
         }
-        if (cachedExi0csr & 1 << 3) {
+        if (cachedExi0cpr & 1 << 3) {
             interrupts |= 1 << (31 - 10);
         }
-        if (cachedExi0csr & 1 << 11) {
+        if (cachedExi0cpr & 1 << 11) {
             interrupts |= 1 << (31 - 11);
         }
-        u32 cachedExi1csr = exi1csr;
-        if (cachedExi1csr & 1 << 1) {
+        u32 cachedExi1cpr = exi1cpr;
+        if (cachedExi1cpr & 1 << 1) {
             interrupts |= 1 << (31 - 12);
         }
-        if (cachedExi1csr & 1 << 3) {
+        if (cachedExi1cpr & 1 << 3) {
             interrupts |= 1 << (31 - 13);
         }
-        if (cachedExi1csr & 1 << 11) {
+        if (cachedExi1cpr & 1 << 11) {
             interrupts |= 1 << (31 - 14);
         }
-        u32 cachedExi2csr = exi2csr;
-        if (cachedExi2csr & 1 << 1) {
+        u32 cachedExi2cpr = exi2cpr;
+        if (cachedExi2cpr & 1 << 1) {
             interrupts |= 1 << (31 - 15);
         }
-        if (cachedExi2csr & 1 << 3) {
+        if (cachedExi2cpr & 1 << 3) {
             interrupts |= 1 << (31 - 16);
         }
     }
