@@ -59,8 +59,7 @@ extern "C" __declspec(section "first") asm void Start() {
 
     nofralloc
 
-    bl EnterRealMode
-    bl RunInRealMode
+    bl InitCPU
 
     // Initialize the stack pointer
     lis r1, stackTop@h
@@ -78,15 +77,13 @@ extern "C" __declspec(section "first") asm void Start() {
     mtctr r3
     bctrl
 
-EnterRealMode:
-    mflr r3
-    clrlwi r3, r3, 1
-    mtsrr0 r3
-    li r3, 0x0
-    mtsrr1 r3
-    rfi
+InitCPU:
+    // Check for real mode
+    mfmsr r3
+    rlwinm r3, r3, 0, 26, 27
+    cmpwi r3, 0x30
+    beqlr
 
-RunInRealMode:
     // Set DPM, NHR, ICFI, DCFI, DCFA, BTIC, BHT
     lis r3, 0x0011
     ori r3, r3, 0x0c64
