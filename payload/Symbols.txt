@@ -139,6 +139,8 @@
 800e9644 OSInitMutex
 800e967c OSLockMutex
 800e9758 OSUnlockMutex
+800ea670 __OSLockSram
+800eaa64 __OSUnlockSram
 800eb198 OSInitThreadQueue
 800eb1a8 OSGetCurrentThread
 800eb1e8 OSDisableScheduler

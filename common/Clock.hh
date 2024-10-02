@@ -29,7 +29,6 @@ private:
     Clock();
 
     static bool ReadRTC(u32 &rtc);
-    static bool ReadCounterBias(u32 &counterBias);
 
     static void HandleAlarm(OSAlarm *alarm, OSContext *context);
 };
