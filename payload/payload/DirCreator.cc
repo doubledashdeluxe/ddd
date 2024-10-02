@@ -7,7 +7,7 @@ extern "C" {
 }
 
 void DirCreator::Init() {
-    s_instance = new (MEM2Arena::Instance(), 0x4) DirCreator;
+    s_instance = new (MEM1Arena::Instance(), -0x4) DirCreator;
 }
 
 DirCreator::DirCreator() {
