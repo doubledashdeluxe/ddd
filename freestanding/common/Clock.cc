@@ -1,9 +1,13 @@
 #include <common/Clock.hh>
 
+#include <common/Platform.hh>
+
 extern "C" u32 busClock;
 
 void Clock::Init() {
-    busClock = 243000000;
+    if (!Platform::IsGameCube()) {
+        busClock = 243000000;
+    }
 }
 
 #ifdef __CWCC__
