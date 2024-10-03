@@ -8,7 +8,6 @@
 #include <common/Arena.hh>
 #include <common/DCache.hh>
 #include <common/Log.hh>
-#include <common/storage/Storage.hh>
 extern "C" {
 #include <coreJSON/core_json.h>
 }
@@ -321,9 +320,10 @@ void CourseManager::process() {
     Array<char, 256> path;
     snprintf(path.values(), path.count(), "main:/ddd/courses");
     Storage::CreateDir(path.values(), Storage::Mode::WriteAlways);
+    Storage::NodeInfo nodeInfo;
     Ring<u32, MaxCourseCount> raceCourseIndices;
     Ring<u32, MaxCourseCount> battleCourseIndices;
-    addCustomPacksAndCourses(path, raceCourseIndices, battleCourseIndices);
+    addCustomPacksAndCourses(path, nodeInfo, raceCourseIndices, battleCourseIndices);
     sortRacePacksByName();
     sortBattlePacksByName();
     addDefaultRacePacks();
@@ -584,15 +584,14 @@ void CourseManager::addDefaultBattleCourses() {
     }
 }
 
-void CourseManager::addCustomPacksAndCourses(Array<char, 256> &path,
+void CourseManager::addCustomPacksAndCourses(Array<char, 256> &path, Storage::NodeInfo &nodeInfo,
         Ring<u32, MaxCourseCount> &raceCourseIndices,
         Ring<u32, MaxCourseCount> &battleCourseIndices) {
     u32 length = strlen(path.values());
-    Storage::NodeInfo nodeInfo;
     for (Storage::DirHandle dir(path.values()); dir.read(nodeInfo);) {
         if (nodeInfo.type == Storage::NodeType::Dir) {
             snprintf(path.values() + length, path.count() - length, "/%s", nodeInfo.name.values());
-            addCustomPacksAndCourses(path, raceCourseIndices, battleCourseIndices);
+            addCustomPacksAndCourses(path, nodeInfo, raceCourseIndices, battleCourseIndices);
         }
     }
     path[length] = '\0';

@@ -62,17 +62,17 @@ void ServerManager::process() {
     Array<char, 256> path;
     snprintf(path.values(), path.count(), "main:/ddd/servers");
     Storage::CreateDir(path.values(), Storage::Mode::WriteAlways);
-    addServers(path);
+    Storage::NodeInfo nodeInfo;
+    addServers(path, nodeInfo);
     sortServersByName();
 }
 
-void ServerManager::addServers(Array<char, 256> &path) {
+void ServerManager::addServers(Array<char, 256> &path, Storage::NodeInfo &nodeInfo) {
     u32 length = strlen(path.values());
-    Storage::NodeInfo nodeInfo;
     for (Storage::DirHandle dir(path.values()); dir.read(nodeInfo);) {
         snprintf(path.values() + length, path.count() - length, "/%s", nodeInfo.name.values());
         if (nodeInfo.type == Storage::NodeType::Dir) {
-            addServers(path);
+            addServers(path, nodeInfo);
         } else {
             addServer(path);
         }

@@ -4,6 +4,7 @@
 
 #include <common/Ring.hh>
 #include <common/UniquePtr.hh>
+#include <common/storage/Storage.hh>
 #include <game/MinimapConfig.hh>
 #include <jsystem/JKRHeap.hh>
 
@@ -192,7 +193,7 @@ private:
 
     void addDefaultRaceCourses();
     void addDefaultBattleCourses();
-    void addCustomPacksAndCourses(Array<char, 256> &path,
+    void addCustomPacksAndCourses(Array<char, 256> &path, Storage::NodeInfo &nodeInfo,
             Ring<u32, MaxCourseCount> &raceCourseIndices,
             Ring<u32, MaxCourseCount> &battleCourseIndices);
     void addCustomCourse(const Array<char, 256> &path, Ring<u32, MaxCourseCount> &raceCourseIndices,

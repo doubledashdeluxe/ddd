@@ -4,6 +4,7 @@
 
 #include <common/Ring.hh>
 #include <common/UniquePtr.hh>
+#include <common/storage/Storage.hh>
 #include <jsystem/JKRHeap.hh>
 
 class ServerManager : public StorageScanner {
@@ -52,7 +53,7 @@ private:
 
     void process() override;
 
-    void addServers(Array<char, 256> &path);
+    void addServers(Array<char, 256> &path, Storage::NodeInfo &nodeInfo);
     void addServer(const Array<char, 256> &path);
     void sortServersByName();
 

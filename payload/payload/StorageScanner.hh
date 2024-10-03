@@ -74,7 +74,7 @@ private:
     Array<OSMessage, 1> m_messages;
     OSMessageQueue m_initQueue;
     Array<OSMessage, 1> m_initMessages;
-    Array<u8, 128 * 1024> m_stack;
+    Array<u8, 16 * 1024> m_stack;
     OSThread m_thread;
     bool m_currIsLocked;
     bool m_nextIsLocked;
