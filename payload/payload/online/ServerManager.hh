@@ -20,7 +20,8 @@ public:
 
     class Server {
     public:
-        Server(char *name, char *address, Array<u8, 32> publicKey);
+        Server(Array<char, INIFieldSize> name, Array<char, INIFieldSize> address,
+                Array<u8, 32> publicKey);
         ~Server();
 
         const char *name() const;
@@ -28,8 +29,8 @@ public:
         Array<u8, 32> publicKey() const;
 
     private:
-        UniquePtr<char[]> m_name;
-        UniquePtr<char[]> m_address;
+        Array<char, INIFieldSize> m_name;
+        Array<char, INIFieldSize> m_address;
         Array<u8, 32> m_publicKey;
     };
 
@@ -43,10 +44,10 @@ public:
 
 private:
     struct ServerINI {
-        Array<UniquePtr<char[]>, KartLocale::Language::Count> localizedNames;
-        UniquePtr<char[]> fallbackName;
-        UniquePtr<char[]> address;
-        UniquePtr<char[]> publicKey;
+        Array<Array<char, INIFieldSize>, KartLocale::Language::Count> localizedNames;
+        Array<char, INIFieldSize> fallbackName;
+        Array<char, INIFieldSize> address;
+        Array<char, INIFieldSize> publicKey;
     };
 
     ServerManager();
@@ -57,8 +58,6 @@ private:
     void addServer(const Array<char, 256> &path);
     void sortServersByName();
 
-    static int HandleServerINI(void *user, const char *section, const char *name,
-            const char *value);
     static bool CompareServersByName(const UniquePtr<Server> &a, const UniquePtr<Server> &b);
 
     JKRHeap *m_heap;

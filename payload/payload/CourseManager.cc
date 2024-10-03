@@ -13,9 +13,6 @@ extern "C" {
 }
 #include <game/CourseID.hh>
 #include <game/ResMgr.hh>
-extern "C" {
-#include <inih/ini.h>
-}
 #include <jsystem/JKRExpHeap.hh>
 extern "C" {
 #include <monocypher/monocypher.h>
@@ -80,23 +77,24 @@ void *CourseManager::DefaultPack::nameImage() const {
     return JKRFileLoader::GetGlbResource(name.values(), nullptr);
 }
 
-CourseManager::CustomPack::CustomPack(Ring<u32, MaxCourseCount> courseIndices, char *name,
-        char *author, char *version, u8 *nameImage)
+CourseManager::CustomPack::CustomPack(Ring<u32, MaxCourseCount> courseIndices,
+        Array<char, INIFieldSize> name, Array<char, INIFieldSize> author,
+        Array<char, INIFieldSize> version, u8 *nameImage)
     : Pack(courseIndices), m_name(name), m_author(author), m_version(version),
       m_nameImage(nameImage) {}
 
 CourseManager::CustomPack::~CustomPack() {}
 
 const char *CourseManager::CustomPack::name() const {
-    return m_name.get();
+    return m_name.values();
 }
 
 const char *CourseManager::CustomPack::author() const {
-    return m_author.get();
+    return m_author.values();
 }
 
 const char *CourseManager::CustomPack::version() const {
-    return m_version.get();
+    return m_version.values();
 }
 
 void *CourseManager::CustomPack::nameImage() const {
@@ -179,8 +177,9 @@ bool CourseManager::DefaultCourse::isCustom() const {
 }
 
 CourseManager::CustomCourse::CustomCourse(Array<u8, 32> archiveHash, Array<u8, 32> bolHash,
-        u32 musicID, char *name, char *author, char *version, MinimapConfig *minimapConfig,
-        u8 *thumbnail, u8 *nameImage, Array<char, 256> path, Array<char, 128> prefix)
+        u32 musicID, Array<char, INIFieldSize> name, Array<char, INIFieldSize> author,
+        Array<char, INIFieldSize> version, MinimapConfig *minimapConfig, u8 *thumbnail,
+        u8 *nameImage, Array<char, 256> path, Array<char, 128> prefix)
     : Course(archiveHash, bolHash), m_musicID(musicID), m_name(name), m_author(author),
       m_version(version), m_minimapConfig(minimapConfig), m_thumbnail(thumbnail),
       m_nameImage(nameImage), m_path(path), m_prefix(prefix) {}
@@ -192,15 +191,15 @@ u32 CourseManager::CustomCourse::musicID() const {
 }
 
 const char *CourseManager::CustomCourse::name() const {
-    return m_name.get();
+    return m_name.values();
 }
 
 const char *CourseManager::CustomCourse::author() const {
-    return m_author.get();
+    return m_author.values();
 }
 
 const char *CourseManager::CustomCourse::version() const {
-    return m_version.get();
+    return m_version.values();
 }
 
 const MinimapConfig *CourseManager::CustomCourse::minimapConfig() const {
@@ -619,7 +618,7 @@ void CourseManager::addCustomCourse(const Array<char, 256> &path,
 
     ZIPFile::CDNode cdNode;
     ZIPFile::LocalNode localNode;
-    INIStream iniStream;
+    INI::Stream iniStream;
     iniStream.ini.reset(reinterpret_cast<u8 *>(
             zipFile.readFile("trackinfo.ini", m_heap, -0x4, cdNode, localNode)));
     if (!iniStream.ini.get()) {
@@ -637,28 +636,38 @@ void CourseManager::addCustomCourse(const Array<char, 256> &path,
     memcpy(prefix.values(), cdNode.path.get(), prefixLength);
 
     CourseINI courseINI;
-    if (ini_parse_stream(ReadINI, &iniStream, HandleCourseINI, &courseINI)) {
+    Array<INI::Field, 5> iniFields;
+    iniFields[0] = (INI::Field){"trackname", &courseINI.fallbackName};
+    iniFields[1] = (INI::Field){"author", &courseINI.fallbackAuthor};
+    iniFields[2] = (INI::Field){"version", &courseINI.version};
+    iniFields[3] = (INI::Field){"replaces", &courseINI.defaultCourseName};
+    iniFields[4] = (INI::Field){"auxiliary_audio_track", &courseINI.defaultMusicName};
+    Array<INI::LocalizedField, 2> localizedINIFields;
+    localizedINIFields[0] = (INI::LocalizedField){"trackname_", &courseINI.localizedNames};
+    localizedINIFields[1] = (INI::LocalizedField){"author_", &courseINI.localizedAuthors};
+
+    INI ini(iniStream, iniFields.count(), iniFields.values(), localizedINIFields.count(),
+            localizedINIFields.values());
+    if (!ini.read()) {
         return;
     }
 
-    UniquePtr<char[]> name(
-            getLocalizedEntry(courseINI.localizedNames, courseINI.fallbackName).release());
-    if (!name.get()) {
+    Array<char, INIFieldSize> &name =
+            getLocalizedEntry(courseINI.localizedNames, courseINI.fallbackName);
+    if (strlen(name.values()) == 0) {
         return;
     }
-    UniquePtr<char[]> author(
-            getLocalizedEntry(courseINI.localizedAuthors, courseINI.fallbackAuthor).release());
-    UniquePtr<char[]> version(courseINI.version.release());
+    Array<char, INIFieldSize> &author =
+            getLocalizedEntry(courseINI.localizedAuthors, courseINI.fallbackAuthor);
+    Array<char, INIFieldSize> &version = courseINI.version;
 
     u32 courseID;
-    if (!courseINI.defaultCourseName.get() ||
-            !GetDefaultCourseID(courseINI.defaultCourseName.get(), courseID)) {
+    if (!GetDefaultCourseID(courseINI.defaultCourseName.values(), courseID)) {
         return;
     }
 
     u32 musicID;
-    if (!courseINI.defaultMusicName.get() ||
-            !GetDefaultCourseID(courseINI.defaultMusicName.get(), musicID)) {
+    if (!GetDefaultCourseID(courseINI.defaultMusicName.values(), musicID)) {
         musicID = courseID;
     }
 
@@ -802,9 +811,9 @@ void CourseManager::addCustomCourse(const Array<char, 256> &path,
     DEBUG("Adding custom %s course %s...", type, path.values());
     courseIndices->pushBack(courses->count());
     courses->pushBack();
-    Course *course = new (m_heap, 0x4) CustomCourse(archiveHash, bolHash, musicID, name.release(),
-            author.release(), version.release(), minimapConfig.release(), thumbnail.release(),
-            nameImage.release(), path, prefix);
+    Course *course = new (m_heap, 0x4) CustomCourse(archiveHash, bolHash, musicID, name, author,
+            version, minimapConfig.release(), thumbnail.release(), nameImage.release(), path,
+            prefix);
     courses->back()->reset(course);
 }
 
@@ -849,7 +858,7 @@ void CourseManager::addCustomPack(const Array<char, 256> &path,
         Ring<UniquePtr<Pack>, MaxPackCount> &packs, const char *type) {
     Array<char, 256> iniPath;
     snprintf(iniPath.values(), iniPath.count(), "%s/packinfo.ini", path.values());
-    INIStream iniStream;
+    INI::Stream iniStream;
     iniStream.ini.reset(
             reinterpret_cast<u8 *>(FileLoader::Load(iniPath.values(), m_heap, &iniStream.iniSize)));
     if (!iniStream.ini.get()) {
@@ -858,18 +867,29 @@ void CourseManager::addCustomPack(const Array<char, 256> &path,
     iniStream.iniOffset = 0x0;
 
     PackINI packINI;
-    if (ini_parse_stream(ReadINI, &iniStream, HandlePackINI, &packINI)) {
+    Array<INI::Field, 4> iniFields;
+    iniFields[0] = (INI::Field){"packname", &packINI.fallbackName};
+    iniFields[1] = (INI::Field){"author", &packINI.fallbackAuthor};
+    iniFields[2] = (INI::Field){"version", &packINI.version};
+    iniFields[3] = (INI::Field){"vanilla_tracks", &packINI.defaultCourses};
+    Array<INI::LocalizedField, 2> localizedINIFields;
+    localizedINIFields[0] = (INI::LocalizedField){"packname_", &packINI.localizedNames};
+    localizedINIFields[1] = (INI::LocalizedField){"author_", &packINI.localizedAuthors};
+
+    INI ini(iniStream, iniFields.count(), iniFields.values(), localizedINIFields.count(),
+            localizedINIFields.values());
+    if (!ini.read()) {
         return;
     }
 
-    UniquePtr<char[]> name(
-            getLocalizedEntry(packINI.localizedNames, packINI.fallbackName).release());
-    if (!name.get()) {
+    Array<char, INIFieldSize> &name =
+            getLocalizedEntry(packINI.localizedNames, packINI.fallbackName);
+    if (strlen(name.values()) == 0) {
         return;
     }
-    UniquePtr<char[]> author(
-            getLocalizedEntry(packINI.localizedAuthors, packINI.fallbackAuthor).release());
-    UniquePtr<char[]> version(packINI.version.release());
+    Array<char, INIFieldSize> &author =
+            getLocalizedEntry(packINI.localizedAuthors, packINI.fallbackAuthor);
+    Array<char, INIFieldSize> &version = packINI.version;
 
     Array<char, 256> nameImagePrefix;
     snprintf(nameImagePrefix.values(), nameImagePrefix.count(), "%s/pack_images/", path.values());
@@ -881,13 +901,11 @@ void CourseManager::addCustomPack(const Array<char, 256> &path,
     }
     DCache::Flush(nameImage.get(), nameImageSize);
 
-    if (packINI.defaultCourses) {
-        const char *c = packINI.defaultCourses.get();
-        for (u32 i = 0; i < defaultCourseOffset && *c; i++, c++) {}
-        for (u32 i = 0; i < defaultCourseCount && *c; i++, c++) {
-            if (*c == 'Y' || *c == 'y' || *c == '+') {
-                courseIndices.pushBack(i);
-            }
+    const char *c = packINI.defaultCourses.values();
+    for (u32 i = 0; i < defaultCourseOffset && *c; i++, c++) {}
+    for (u32 i = 0; i < defaultCourseCount && *c; i++, c++) {
+        if (*c == 'Y' || *c == 'y' || *c == '+') {
+            courseIndices.pushBack(i);
         }
     }
 
@@ -897,8 +915,8 @@ void CourseManager::addCustomPack(const Array<char, 256> &path,
 
     DEBUG("Adding custom %s pack %s (%u)...", type, path.values(), courseIndices.count());
     packs.pushBack();
-    Pack *pack = new (m_heap, 0x4) CustomPack(courseIndices, name.release(), author.release(),
-            version.release(), nameImage.release());
+    Pack *pack =
+            new (m_heap, 0x4) CustomPack(courseIndices, name, author, version, nameImage.release());
     packs.back()->reset(pack);
 }
 
@@ -1003,61 +1021,6 @@ void *CourseManager::loadCourseFile(ZIPFile &zipFile, const char *filePath, u32 
         *size = uncompressedSize;
     }
     return uncompressed.release();
-}
-
-int CourseManager::HandlePackINI(void *user, const char *section, const char *name,
-        const char *value) {
-    if (strcmp(section, "Config")) {
-        return 1;
-    }
-
-    PackINI *packINI = reinterpret_cast<PackINI *>(user);
-    Array<INIField, 4> iniFields;
-    iniFields[0] = (INIField){"packname", &packINI->fallbackName};
-    iniFields[1] = (INIField){"author", &packINI->fallbackAuthor};
-    iniFields[2] = (INIField){"version", &packINI->version};
-    iniFields[3] = (INIField){"vanilla_tracks", &packINI->defaultCourses};
-    if (HandleINIFields(name, value, iniFields.count(), iniFields.values(), s_instance->m_heap)) {
-        return 1;
-    }
-
-    Array<LocalizedINIField, 2> localizedINIFields;
-    localizedINIFields[0] = (LocalizedINIField){"packname_", &packINI->localizedNames};
-    localizedINIFields[1] = (LocalizedINIField){"author_", &packINI->localizedAuthors};
-    if (HandleLocalizedINIFields(name, value, localizedINIFields.count(),
-                localizedINIFields.values(), s_instance->m_heap)) {
-        return 1;
-    }
-
-    return 1;
-}
-
-int CourseManager::HandleCourseINI(void *user, const char *section, const char *name,
-        const char *value) {
-    if (strcmp(section, "Config")) {
-        return 1;
-    }
-
-    CourseINI *courseINI = reinterpret_cast<CourseINI *>(user);
-    Array<INIField, 5> iniFields;
-    iniFields[0] = (INIField){"trackname", &courseINI->fallbackName};
-    iniFields[1] = (INIField){"author", &courseINI->fallbackAuthor};
-    iniFields[2] = (INIField){"version", &courseINI->version};
-    iniFields[3] = (INIField){"replaces", &courseINI->defaultCourseName};
-    iniFields[4] = (INIField){"auxiliary_audio_track", &courseINI->defaultMusicName};
-    if (HandleINIFields(name, value, iniFields.count(), iniFields.values(), s_instance->m_heap)) {
-        return 1;
-    }
-
-    Array<LocalizedINIField, 2> localizedINIFields;
-    localizedINIFields[0] = (LocalizedINIField){"trackname_", &courseINI->localizedNames};
-    localizedINIFields[1] = (LocalizedINIField){"author_", &courseINI->localizedAuthors};
-    if (HandleLocalizedINIFields(name, value, localizedINIFields.count(),
-                localizedINIFields.values(), s_instance->m_heap)) {
-        return 1;
-    }
-
-    return 1;
 }
 
 bool CourseManager::GetDefaultCourseID(const char *name, u32 &courseID) {

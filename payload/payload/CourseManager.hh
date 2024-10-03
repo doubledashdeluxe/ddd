@@ -96,8 +96,8 @@ private:
 
     class CustomPack : public Pack {
     public:
-        CustomPack(Ring<u32, MaxCourseCount> courseIndices, char *name, char *author, char *version,
-                u8 *nameImage);
+        CustomPack(Ring<u32, MaxCourseCount> courseIndices, Array<char, INIFieldSize> name,
+                Array<char, INIFieldSize> author, Array<char, INIFieldSize> version, u8 *nameImage);
         ~CustomPack();
         const char *name() const override;
         const char *author() const override;
@@ -105,9 +105,9 @@ private:
         void *nameImage() const override;
 
     private:
-        UniquePtr<char[]> m_name;
-        UniquePtr<char[]> m_author;
-        UniquePtr<char[]> m_version;
+        Array<char, INIFieldSize> m_name;
+        Array<char, INIFieldSize> m_author;
+        Array<char, INIFieldSize> m_version;
         UniquePtr<u8[]> m_nameImage;
     };
 
@@ -138,8 +138,9 @@ private:
 
     class CustomCourse : public Course {
     public:
-        CustomCourse(Array<u8, 32> archiveHash, Array<u8, 32> bolHash, u32 musicID, char *name,
-                char *author, char *version, MinimapConfig *minimapConfig, u8 *thumbnail,
+        CustomCourse(Array<u8, 32> archiveHash, Array<u8, 32> bolHash, u32 musicID,
+                Array<char, INIFieldSize> name, Array<char, INIFieldSize> author,
+                Array<char, INIFieldSize> version, MinimapConfig *minimapConfig, u8 *thumbnail,
                 u8 *nameImage, Array<char, 256> path, Array<char, 128> prefix);
         ~CustomCourse() override;
 
@@ -158,9 +159,9 @@ private:
 
     private:
         u32 m_musicID;
-        UniquePtr<char[]> m_name;
-        UniquePtr<char[]> m_author;
-        UniquePtr<char[]> m_version;
+        Array<char, INIFieldSize> m_name;
+        Array<char, INIFieldSize> m_author;
+        Array<char, INIFieldSize> m_version;
         UniquePtr<MinimapConfig> m_minimapConfig;
         UniquePtr<u8[]> m_thumbnail;
         UniquePtr<u8[]> m_nameImage;
@@ -169,22 +170,22 @@ private:
     };
 
     struct PackINI {
-        Array<UniquePtr<char[]>, KartLocale::Language::Count> localizedNames;
-        UniquePtr<char[]> fallbackName;
-        Array<UniquePtr<char[]>, KartLocale::Language::Count> localizedAuthors;
-        UniquePtr<char[]> fallbackAuthor;
-        UniquePtr<char[]> version;
-        UniquePtr<char[]> defaultCourses;
+        Array<Array<char, INIFieldSize>, KartLocale::Language::Count> localizedNames;
+        Array<char, INIFieldSize> fallbackName;
+        Array<Array<char, INIFieldSize>, KartLocale::Language::Count> localizedAuthors;
+        Array<char, INIFieldSize> fallbackAuthor;
+        Array<char, INIFieldSize> version;
+        Array<char, INIFieldSize> defaultCourses;
     };
 
     struct CourseINI {
-        Array<UniquePtr<char[]>, KartLocale::Language::Count> localizedNames;
-        UniquePtr<char[]> fallbackName;
-        Array<UniquePtr<char[]>, KartLocale::Language::Count> localizedAuthors;
-        UniquePtr<char[]> fallbackAuthor;
-        UniquePtr<char[]> version;
-        UniquePtr<char[]> defaultCourseName;
-        UniquePtr<char[]> defaultMusicName;
+        Array<Array<char, INIFieldSize>, KartLocale::Language::Count> localizedNames;
+        Array<char, INIFieldSize> fallbackName;
+        Array<Array<char, INIFieldSize>, KartLocale::Language::Count> localizedAuthors;
+        Array<char, INIFieldSize> fallbackAuthor;
+        Array<char, INIFieldSize> version;
+        Array<char, INIFieldSize> defaultCourseName;
+        Array<char, INIFieldSize> defaultMusicName;
     };
 
     CourseManager();
@@ -216,9 +217,6 @@ private:
     void *loadCourseFile(const char *zipPath, const char *filePath, u32 *size = nullptr) const;
     void *loadCourseFile(ZIPFile &zipFile, const char *filePath, u32 *size = nullptr) const;
 
-    static int HandlePackINI(void *user, const char *section, const char *name, const char *value);
-    static int HandleCourseINI(void *user, const char *section, const char *name,
-            const char *value);
     static bool GetDefaultCourseID(const char *name, u32 &courseID);
     static bool SearchJSON(const char *json, u32 jsonSize, const char *query, f32 &value);
     static bool SearchJSON(const char *json, u32 jsonSize, const char *query, u32 &value);

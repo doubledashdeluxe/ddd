@@ -4,9 +4,6 @@
 
 #include <common/Arena.hh>
 #include <common/Log.hh>
-extern "C" {
-#include <inih/ini.h>
-}
 #include <jsystem/JKRExpHeap.hh>
 
 extern "C" {
@@ -15,17 +12,18 @@ extern "C" {
 #include <strings.h>
 }
 
-ServerManager::Server::Server(char *name, char *address, Array<u8, 32> publicKey)
+ServerManager::Server::Server(Array<char, INIFieldSize> name, Array<char, INIFieldSize> address,
+        Array<u8, 32> publicKey)
     : m_name(name), m_address(address), m_publicKey(publicKey) {}
 
 ServerManager::Server::~Server() {}
 
 const char *ServerManager::Server::name() const {
-    return m_name.get();
+    return m_name.values();
 }
 
 const char *ServerManager::Server::address() const {
-    return m_address.get();
+    return m_address.values();
 }
 
 Array<u8, 32> ServerManager::Server::publicKey() const {
@@ -81,7 +79,7 @@ void ServerManager::addServers(Array<char, 256> &path, Storage::NodeInfo &nodeIn
 }
 
 void ServerManager::addServer(const Array<char, 256> &path) {
-    INIStream iniStream;
+    INI::Stream iniStream;
     iniStream.ini.reset(
             reinterpret_cast<u8 *>(FileLoader::Load(path.values(), m_heap, &iniStream.iniSize)));
     if (!iniStream.ini.get()) {
@@ -90,26 +88,35 @@ void ServerManager::addServer(const Array<char, 256> &path) {
     iniStream.iniOffset = 0x0;
 
     ServerINI serverINI;
-    if (ini_parse_stream(ReadINI, &iniStream, HandleServerINI, &serverINI)) {
+    Array<INI::Field, 3> iniFields;
+    iniFields[0] = (INI::Field){"servername", &serverINI.fallbackName};
+    iniFields[1] = (INI::Field){"address", &serverINI.address};
+    iniFields[2] = (INI::Field){"publickey", &serverINI.publicKey};
+    Array<INI::LocalizedField, 1> localizedINIFields;
+    localizedINIFields[0] = (INI::LocalizedField){"servername_", &serverINI.localizedNames};
+
+    INI ini(iniStream, iniFields.count(), iniFields.values(), localizedINIFields.count(),
+            localizedINIFields.values());
+    if (!ini.read()) {
         return;
     }
 
-    UniquePtr<char[]> name(
-            getLocalizedEntry(serverINI.localizedNames, serverINI.fallbackName).release());
-    if (!name.get()) {
+    Array<char, INIFieldSize> &name =
+            getLocalizedEntry(serverINI.localizedNames, serverINI.fallbackName);
+    if (strlen(name.values()) == 0) {
         return;
     }
-    UniquePtr<char[]> address(serverINI.address.release());
-    if (!address.get()) {
+    Array<char, INIFieldSize> &address = serverINI.address;
+    if (strlen(address.values()) == 0) {
         return;
     }
     Array<u8, 32> publicKey(0x0);
-    if (!serverINI.publicKey.get() || strlen(serverINI.publicKey.get()) != publicKey.count() * 2) {
+    if (strlen(serverINI.publicKey.values()) != publicKey.count() * 2) {
         return;
     }
     for (u32 i = 0; i < publicKey.count() * 2; i++) {
         publicKey[i / 2] <<= 4;
-        char c = serverINI.publicKey.get()[i];
+        char c = serverINI.publicKey[i];
         if (c >= '0' && c <= '9') {
             publicKey[i / 2] |= c - '0';
         } else if (c >= 'A' && c <= 'Z') {
@@ -123,37 +130,12 @@ void ServerManager::addServer(const Array<char, 256> &path) {
 
     DEBUG("Adding server %s...", path.values());
     m_servers.pushBack();
-    Server *server = new (m_heap, 0x4) Server(name.release(), address.release(), publicKey);
+    Server *server = new (m_heap, 0x4) Server(name, address, publicKey);
     m_servers.back()->reset(server);
 }
 
 void ServerManager::sortServersByName() {
     Sort(m_servers, m_servers.count(), CompareServersByName);
-}
-
-int ServerManager::HandleServerINI(void *user, const char *section, const char *name,
-        const char *value) {
-    if (strcmp(section, "Config")) {
-        return 1;
-    }
-
-    ServerINI *serverINI = reinterpret_cast<ServerINI *>(user);
-    Array<INIField, 3> iniFields;
-    iniFields[0] = (INIField){"servername", &serverINI->fallbackName};
-    iniFields[1] = (INIField){"address", &serverINI->address};
-    iniFields[2] = (INIField){"publickey", &serverINI->publicKey};
-    if (HandleINIFields(name, value, iniFields.count(), iniFields.values(), s_instance->m_heap)) {
-        return 1;
-    }
-
-    Array<LocalizedINIField, 1> localizedINIFields;
-    localizedINIFields[0] = (LocalizedINIField){"servername_", &serverINI->localizedNames};
-    if (HandleLocalizedINIFields(name, value, localizedINIFields.count(),
-                localizedINIFields.values(), s_instance->m_heap)) {
-        return 1;
-    }
-
-    return 1;
 }
 
 bool ServerManager::CompareServersByName(const UniquePtr<Server> &a, const UniquePtr<Server> &b) {

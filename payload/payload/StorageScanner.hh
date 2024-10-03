@@ -13,35 +13,61 @@ extern "C" {
 
 class StorageScanner : public Storage::Observer {
 public:
+    enum {
+        INIFieldSize = 80,
+    };
+
     void start();
     bool isLocked() const;
     bool lock();
     void unlock();
 
 protected:
-    struct INIStream {
-        UniquePtr<u8[]> ini;
-        u32 iniSize;
-        u32 iniOffset;
-    };
+    class INI {
+    public:
+        struct Stream {
+            UniquePtr<u8[]> ini;
+            u32 iniSize;
+            u32 iniOffset;
+        };
 
-    struct INIField {
-        const char *name;
-        UniquePtr<char[]> *field;
-    };
+        struct Field {
+            const char *name;
+            Array<char, INIFieldSize> *field;
+        };
 
-    struct LocalizedINIField {
-        const char *name;
-        Array<UniquePtr<char[]>, KartLocale::Language::Count> *fields;
+        struct LocalizedField {
+            const char *name;
+            Array<Array<char, INIFieldSize>, KartLocale::Language::Count> *fields;
+        };
+
+        INI(Stream &stream, u32 fieldCount, Field *fields, u32 localizedFieldCount,
+                LocalizedField *localizedFields);
+        ~INI();
+        bool read();
+
+    private:
+        bool handleFields(const char *name, const char *value);
+        bool handleLocalizedFields(const char *name, const char *value);
+
+        static char *Read(char *str, int num, void *stream);
+        static int Handle(void *user, const char *section, const char *name, const char *value);
+        static void SetField(const char *value, Array<char, INIFieldSize> *field);
+
+        Stream &m_stream;
+        u32 m_fieldCount;
+        Field *m_fields;
+        u32 m_localizedFieldCount;
+        LocalizedField *m_localizedFields;
     };
 
     StorageScanner(u8 threadPriority);
 
     virtual void process() = 0;
 
-    UniquePtr<char[]> &getLocalizedEntry(
-            Array<UniquePtr<char[]>, KartLocale::Language::Count> &localizedEntries,
-            UniquePtr<char[]> &fallbackEntry);
+    Array<char, INIFieldSize> &getLocalizedEntry(
+            Array<Array<char, INIFieldSize>, KartLocale::Language::Count> &localizedEntries,
+            Array<char, INIFieldSize> &fallbackEntry);
     void *loadFile(const char *zipPath, const char *filePath, JKRHeap *heap,
             u32 *size = nullptr) const;
     void *loadFile(ZIPFile &zipFile, const char *filePath, JKRHeap *heap,
@@ -53,12 +79,6 @@ protected:
     void *loadLocalizedFile(const char *prefix, const char *suffix, JKRHeap *heap,
             u32 *size = nullptr) const;
 
-    static char *ReadINI(char *str, int num, void *stream);
-    static bool HandleINIFields(const char *name, const char *value, u32 fieldCount,
-            const INIField *fields, JKRHeap *heap);
-    static bool HandleLocalizedINIFields(const char *name, const char *value, u32 fieldCount,
-            const LocalizedINIField *fields, JKRHeap *heap);
-
 private:
     void onAdd(const char *prefix) override;
     void onRemove(const char *prefix) override;
@@ -68,7 +88,6 @@ private:
     void *run();
 
     static void *Run(void *param);
-    static bool SetINIField(const char *value, UniquePtr<char[]> *field, JKRHeap *heap);
 
     OSMessageQueue m_queue;
     Array<OSMessage, 1> m_messages;
