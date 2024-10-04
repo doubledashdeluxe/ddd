@@ -34,11 +34,10 @@ public:
 
     class Course {
     public:
-        Course(Array<u8, 32> archiveHash, Array<u8, 32> bolHash);
+        Course(Array<u8, 32> archiveHash);
         virtual ~Course();
 
         Array<u8, 32> archiveHash() const;
-        Array<u8, 32> bolHash() const;
 
         virtual u32 musicID() const = 0;
         virtual const char *name() const = 0;
@@ -55,7 +54,6 @@ public:
 
     protected:
         Array<u8, 32> m_archiveHash;
-        Array<u8, 32> m_bolHash;
     };
 
     void start();
@@ -113,8 +111,8 @@ private:
 
     class DefaultCourse : public Course {
     public:
-        DefaultCourse(Array<u8, 32> archiveHash, Array<u8, 32> bolHash, u32 courseID,
-                const char *thumbnail, const char *nameImage);
+        DefaultCourse(Array<u8, 32> archiveHash, u32 courseID, const char *thumbnail,
+                const char *nameImage);
         ~DefaultCourse() override;
 
         u32 musicID() const override;
@@ -138,10 +136,10 @@ private:
 
     class CustomCourse : public Course {
     public:
-        CustomCourse(Array<u8, 32> archiveHash, Array<u8, 32> bolHash, u32 musicID,
-                Array<char, INIFieldSize> name, Array<char, INIFieldSize> author,
-                Array<char, INIFieldSize> version, MinimapConfig *minimapConfig, u8 *thumbnail,
-                u8 *nameImage, Array<char, 256> path, Array<char, 128> prefix);
+        CustomCourse(Array<u8, 32> archiveHash, u32 musicID, Array<char, INIFieldSize> name,
+                Array<char, INIFieldSize> author, Array<char, INIFieldSize> version,
+                MinimapConfig *minimapConfig, u8 *thumbnail, u8 *nameImage, Array<char, 256> path,
+                Array<char, 128> prefix);
         ~CustomCourse() override;
 
         u32 musicID() const override;
