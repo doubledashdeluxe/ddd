@@ -1,6 +1,5 @@
 #include "StorageScanner.hh"
 
-#include "payload/FileLoader.hh"
 #include "payload/Lock.hh"
 
 extern "C" {
@@ -13,7 +12,7 @@ extern "C" {
 
 void StorageScanner::start() {
     notify();
-    OSResumeThread(&m_thread);
+    OSResumeThread(&thread());
     OSReceiveMessage(&m_initQueue, nullptr, OS_MESSAGE_BLOCK);
 }
 
@@ -126,13 +125,14 @@ void StorageScanner::INI::SetField(const char *value, Array<char, INIFieldSize> 
     snprintf(field->values(), field->count(), "%s", value);
 }
 
-StorageScanner::StorageScanner(u8 threadPriority)
+StorageScanner::StorageScanner()
     : m_currIsLocked(false), m_nextIsLocked(false), m_hasChanged(true) {
     OSInitMessageQueue(&m_queue, m_messages.values(), m_messages.count());
     OSInitMessageQueue(&m_initQueue, m_initMessages.values(), m_initMessages.count());
-    void *param = this;
-    OSCreateThread(&m_thread, Run, param, m_stack.values() + m_stack.count(), m_stack.count(),
-            threadPriority, 0);
+}
+
+const Array<u32, KartLocale::Language::Count> &StorageScanner::languages() const {
+    return m_languages;
 }
 
 Array<char, StorageScanner::INIFieldSize> &StorageScanner::getLocalizedEntry(
@@ -146,66 +146,8 @@ Array<char, StorageScanner::INIFieldSize> &StorageScanner::getLocalizedEntry(
     return fallbackEntry;
 }
 
-void *StorageScanner::loadFile(const char *zipPath, const char *filePath, JKRHeap *heap,
-        u32 *size) const {
-    bool ok;
-    ZIPFile zipFile(zipPath, ok);
-    if (!ok) {
-        return nullptr;
-    }
-    return loadFile(zipFile, filePath, heap, size);
-}
-
-void *StorageScanner::loadFile(ZIPFile &zipFile, const char *filePath, JKRHeap *heap,
-        u32 *size) const {
-    ZIPFile::CDNode cdNode;
-    ZIPFile::LocalNode localNode;
-    void *file = zipFile.readFile(filePath, heap, 0x20, cdNode, localNode);
-    if (!file) {
-        return nullptr;
-    }
-    if (size) {
-        *size = cdNode.uncompressedSize;
-    }
-    return file;
-}
-
-void *StorageScanner::loadLocalizedFile(const char *zipPath, const char *prefix, const char *suffix,
-        JKRHeap *heap, u32 *size) const {
-    bool ok;
-    ZIPFile zipFile(zipPath, ok);
-    if (!ok) {
-        return nullptr;
-    }
-    return loadLocalizedFile(zipFile, prefix, suffix, heap, size);
-}
-
-void *StorageScanner::loadLocalizedFile(ZIPFile &zipFile, const char *prefix, const char *suffix,
-        JKRHeap *heap, u32 *size) const {
-    for (u32 i = 0; i < m_languages.count(); i++) {
-        const char *languageName = KartLocale::GetLanguageName(m_languages[i]);
-        Array<char, 256> filePath;
-        snprintf(filePath.values(), filePath.count(), "%s%s%s", prefix, languageName, suffix);
-        void *file = loadFile(zipFile, filePath.values(), heap, size);
-        if (file) {
-            return file;
-        }
-    }
-    return nullptr;
-}
-
-void *StorageScanner::loadLocalizedFile(const char *prefix, const char *suffix, JKRHeap *heap,
-        u32 *size) const {
-    for (u32 i = 0; i < m_languages.count(); i++) {
-        const char *languageName = KartLocale::GetLanguageName(m_languages[i]);
-        Array<char, 256> filePath;
-        snprintf(filePath.values(), filePath.count(), "%s%s%s", prefix, languageName, suffix);
-        void *file = FileLoader::Load(filePath.values(), heap, size);
-        if (file) {
-            return file;
-        }
-    }
-    return nullptr;
+void *StorageScanner::Run(void *param) {
+    return reinterpret_cast<StorageScanner *>(param)->run();
 }
 
 void StorageScanner::onAdd(const char *prefix) {
@@ -263,8 +205,4 @@ void *StorageScanner::run() {
 
         process();
     }
-}
-
-void *StorageScanner::Run(void *param) {
-    return reinterpret_cast<StorageScanner *>(param)->run();
 }

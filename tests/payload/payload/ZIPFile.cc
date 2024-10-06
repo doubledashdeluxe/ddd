@@ -5,41 +5,49 @@
 #include <array>
 #include <cstring>
 #include <optional>
+#include <string>
+#include <vector>
 
 static lest::tests specification;
 
 #define CASE(name) lest_CASE(specification, name)
 
 CASE("ZIPFile") {
-    auto readFile = [&lest_env](ZIPFile &zipFile, const char *path, u8 *expectedFile,
-                            size_t expectedFileSize) {
-        ZIPFile::CDNode cdNode;
-        ZIPFile::LocalNode localNode;
-        UniquePtr<u8[]> actualFile(zipFile.readFile(path, nullptr, 0, cdNode, localNode));
-        EXPECT(actualFile.get());
-        EXPECT(!memcmp(actualFile.get(), expectedFile, expectedFileSize));
-        EXPECT(cdNode.uncompressedSize == expectedFileSize);
-        EXPECT(localNode.uncompressedSize == expectedFileSize);
-        EXPECT(std::string(cdNode.path.get()) == path + 1);
-        EXPECT(std::string(localNode.path.get()) == path + 1);
+    auto readFile = [&lest_env](ZIPFile &zipFile, const char *path,
+                            const std::vector<u8> &expectedFile) {
+        ZIPFile::Reader reader(zipFile, path);
+        EXPECT(reader.ok());
+        EXPECT(reader.cdNode()->uncompressedSize == expectedFile.size());
+        EXPECT(std::string(reader.cdNode()->path.values()) == path + 1);
+        EXPECT(reader.localNode()->uncompressedSize == expectedFile.size());
+        EXPECT(std::string(reader.localNode()->path.values()) == path + 1);
+        EXPECT(*reader.size() == expectedFile.size());
+        std::vector<u8> actualFile;
+        for (u32 offset = 0; offset < *reader.size();) {
+            const u8 *chunk;
+            u32 chunkSize;
+            EXPECT(reader.read(chunk, chunkSize));
+            actualFile.insert(actualFile.end(), chunk, chunk + chunkSize);
+            offset += chunkSize;
+        }
+        EXPECT(actualFile == expectedFile);
     };
 
-    auto writeFile = [&lest_env](ZIPFile &zipFile, const char *path, const u8 *expectedFile,
-                             size_t expectedFileSize) {
-        ZIPFile::CDNode cdNode;
-        ZIPFile::LocalNode localNode;
-        EXPECT(zipFile.writeFile(path, expectedFile, expectedFileSize, nullptr, 0, cdNode,
-                localNode));
-        EXPECT(cdNode.uncompressedSize == expectedFileSize);
-        EXPECT(localNode.uncompressedSize == expectedFileSize);
-        EXPECT(std::string(cdNode.path.get()) == path + 1);
-        EXPECT(std::string(localNode.path.get()) == path + 1);
+    auto writeFile = [&lest_env](ZIPFile &zipFile, const char *path,
+                             const std::vector<u8> &expectedFile) {
+        ZIPFile::Writer writer(zipFile, path, expectedFile.size());
+        EXPECT(writer.ok());
+        EXPECT(writer.write(expectedFile.data(), expectedFile.size()));
+        EXPECT(writer.cdNode()->uncompressedSize == expectedFile.size());
+        EXPECT(std::string(writer.cdNode()->path.values()) == path + 1);
+        EXPECT(writer.localNode()->uncompressedSize == expectedFile.size());
+        EXPECT(std::string(writer.localNode()->path.values()) == path + 1);
     };
 
     const char *zipPath = "fake:/archive.zip";
-    std::array<u8, 0x5> b{0x11, 0x22, 0x33, 0x44, 0x55};
-    std::array<u8, 0xb> c{0x00, 0x11, 0x00, 0x11, 0x00, 0x11, 0x00, 0x11, 0x00, 0x11, 0x00};
-    std::array<u8, 0x3> d{0x66, 0x77, 0x88};
+    std::vector<u8> b{0x11, 0x22, 0x33, 0x44, 0x55};
+    std::vector<u8> c{0x00, 0x11, 0x00, 0x11, 0x00, 0x11, 0x00, 0x11, 0x00, 0x11, 0x00};
+    std::vector<u8> d{0x66, 0x77, 0x88};
 
     SETUP("0 files") {
         FakeStorage fakeStorage;
@@ -47,29 +55,31 @@ CASE("ZIPFile") {
                 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
         EXPECT(Storage::WriteFile(zipPath, zip.data(), zip.size(), Storage::Mode::WriteNew));
 
-        bool ok;
         std::optional<ZIPFile> zipFile;
-        zipFile.emplace(zipPath, ok);
-        EXPECT(ok);
-
-        ZIPFile::CDNode cdNode;
-        ZIPFile::LocalNode localNode;
+        zipFile.emplace(zipPath);
+        EXPECT(zipFile->ok());
 
         SECTION("Read a") {
-            EXPECT(zipFile->eocd().cdNodeCount == 0);
-            UniquePtr<u8[]> actualFile(zipFile->readFile("/a", nullptr, 0, cdNode, localNode));
-            EXPECT(!actualFile.get());
+            EXPECT(zipFile->eocd()->cdNodeCount == 0);
+            ZIPFile::Reader reader(*zipFile, "/a");
+            EXPECT_NOT(reader.ok());
+            EXPECT_NOT(reader.cdNode());
+            EXPECT_NOT(reader.localNode());
+            EXPECT_NOT(reader.size());
+            const u8 *buffer;
+            u32 size;
+            EXPECT_NOT(reader.read(buffer, size));
         }
 
         SECTION("Write b") {
-            writeFile(*zipFile, "/b", b.data(), b.size());
-            EXPECT(zipFile->eocd().cdNodeCount == 1);
-            readFile(*zipFile, "/b", b.data(), b.size());
+            writeFile(*zipFile, "/b", b);
+            EXPECT(zipFile->eocd()->cdNodeCount == 1);
+            readFile(*zipFile, "/b", b);
             zipFile.reset();
-            zipFile.emplace(zipPath, ok);
-            EXPECT(ok);
-            EXPECT(zipFile->eocd().cdNodeCount == 1);
-            readFile(*zipFile, "/b", b.data(), b.size());
+            zipFile.emplace(zipPath);
+            EXPECT(zipFile->ok());
+            EXPECT(zipFile->eocd()->cdNodeCount == 1);
+            readFile(*zipFile, "/b", b);
         }
     }
 
@@ -85,30 +95,26 @@ CASE("ZIPFile") {
                 0x00, 0x2f, 0x00, 0x00, 0x00, 0x25, 0x00, 0x00, 0x00, 0x00, 0x00};
         EXPECT(Storage::WriteFile(zipPath, zip.data(), zip.size(), Storage::Mode::WriteNew));
 
-        bool ok;
         std::optional<ZIPFile> zipFile;
-        zipFile.emplace(zipPath, ok);
-        EXPECT(ok);
-
-        ZIPFile::CDNode cdNode;
-        ZIPFile::LocalNode localNode;
+        zipFile.emplace(zipPath);
+        EXPECT(zipFile->ok());
 
         SECTION("Read c") {
-            EXPECT(zipFile->eocd().cdNodeCount == 1);
-            readFile(*zipFile, "/c", c.data(), c.size());
+            EXPECT(zipFile->eocd()->cdNodeCount == 1);
+            readFile(*zipFile, "/c", c);
         }
 
         SECTION("Write b") {
-            writeFile(*zipFile, "/b", b.data(), b.size());
-            EXPECT(zipFile->eocd().cdNodeCount == 2);
-            readFile(*zipFile, "/b", b.data(), b.size());
-            readFile(*zipFile, "/c", c.data(), c.size());
+            writeFile(*zipFile, "/b", b);
+            EXPECT(zipFile->eocd()->cdNodeCount == 2);
+            readFile(*zipFile, "/b", b);
+            readFile(*zipFile, "/c", c);
             zipFile.reset();
-            zipFile.emplace(zipPath, ok);
-            EXPECT(ok);
-            EXPECT(zipFile->eocd().cdNodeCount == 2);
-            readFile(*zipFile, "/b", b.data(), b.size());
-            readFile(*zipFile, "/c", c.data(), c.size());
+            zipFile.emplace(zipPath);
+            EXPECT(zipFile->ok());
+            EXPECT(zipFile->eocd()->cdNodeCount == 2);
+            readFile(*zipFile, "/b", b);
+            readFile(*zipFile, "/c", c);
         }
     }
 
@@ -124,30 +130,26 @@ CASE("ZIPFile") {
                 0x00, 0x00, 0x22, 0x00, 0x00, 0x00, 0x00, 0x00};
         EXPECT(Storage::WriteFile(zipPath, zip.data(), zip.size(), Storage::Mode::WriteNew));
 
-        bool ok;
         std::optional<ZIPFile> zipFile;
-        zipFile.emplace(zipPath, ok);
-        EXPECT(ok);
-
-        ZIPFile::CDNode cdNode;
-        ZIPFile::LocalNode localNode;
+        zipFile.emplace(zipPath);
+        EXPECT(zipFile->ok());
 
         SECTION("Read d") {
-            EXPECT(zipFile->eocd().cdNodeCount == 1);
-            readFile(*zipFile, "/d", d.data(), d.size());
+            EXPECT(zipFile->eocd()->cdNodeCount == 1);
+            readFile(*zipFile, "/d", d);
         }
 
         SECTION("Write b") {
-            writeFile(*zipFile, "/b", b.data(), b.size());
-            EXPECT(zipFile->eocd().cdNodeCount == 2);
-            readFile(*zipFile, "/b", b.data(), b.size());
-            readFile(*zipFile, "/d", d.data(), d.size());
+            writeFile(*zipFile, "/b", b);
+            EXPECT(zipFile->eocd()->cdNodeCount == 2);
+            readFile(*zipFile, "/b", b);
+            readFile(*zipFile, "/d", d);
             zipFile.reset();
-            zipFile.emplace(zipPath, ok);
-            EXPECT(ok);
-            EXPECT(zipFile->eocd().cdNodeCount == 2);
-            readFile(*zipFile, "/b", b.data(), b.size());
-            readFile(*zipFile, "/d", d.data(), d.size());
+            zipFile.emplace(zipPath);
+            EXPECT(zipFile->ok());
+            EXPECT(zipFile->eocd()->cdNodeCount == 2);
+            readFile(*zipFile, "/b", b);
+            readFile(*zipFile, "/d", d);
         }
     }
 }

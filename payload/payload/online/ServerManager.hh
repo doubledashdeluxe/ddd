@@ -52,6 +52,7 @@ private:
 
     ServerManager();
 
+    OSThread &thread() override;
     void process() override;
 
     void addServers(Array<char, 256> &path, Storage::NodeInfo &nodeInfo);
@@ -60,6 +61,8 @@ private:
 
     static bool CompareServersByName(const UniquePtr<Server> &a, const UniquePtr<Server> &b);
 
+    Array<u8, 16 * 1024> m_stack;
+    OSThread m_thread;
     JKRHeap *m_heap;
     Ring<UniquePtr<Server>, MaxServerCount> m_servers;
 

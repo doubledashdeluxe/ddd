@@ -1,7 +1,5 @@
 #pragma once
 
-#include "payload/ZIPFile.hh"
-
 #include <common/UniquePtr.hh>
 #include <common/storage/Storage.hh>
 extern "C" {
@@ -61,23 +59,17 @@ protected:
         LocalizedField *m_localizedFields;
     };
 
-    StorageScanner(u8 threadPriority);
+    StorageScanner();
 
+    virtual OSThread &thread() = 0;
     virtual void process() = 0;
 
+    const Array<u32, KartLocale::Language::Count> &languages() const;
     Array<char, INIFieldSize> &getLocalizedEntry(
             Array<Array<char, INIFieldSize>, KartLocale::Language::Count> &localizedEntries,
             Array<char, INIFieldSize> &fallbackEntry);
-    void *loadFile(const char *zipPath, const char *filePath, JKRHeap *heap,
-            u32 *size = nullptr) const;
-    void *loadFile(ZIPFile &zipFile, const char *filePath, JKRHeap *heap,
-            u32 *size = nullptr) const;
-    void *loadLocalizedFile(const char *zipPath, const char *prefix, const char *suffix,
-            JKRHeap *heap, u32 *size = nullptr) const;
-    void *loadLocalizedFile(ZIPFile &zipFile, const char *prefix, const char *suffix, JKRHeap *heap,
-            u32 *size = nullptr) const;
-    void *loadLocalizedFile(const char *prefix, const char *suffix, JKRHeap *heap,
-            u32 *size = nullptr) const;
+
+    static void *Run(void *param);
 
 private:
     void onAdd(const char *prefix) override;
@@ -87,14 +79,10 @@ private:
     void notify();
     void *run();
 
-    static void *Run(void *param);
-
     OSMessageQueue m_queue;
     Array<OSMessage, 1> m_messages;
     OSMessageQueue m_initQueue;
     Array<OSMessage, 1> m_initMessages;
-    Array<u8, 16 * 1024> m_stack;
-    OSThread m_thread;
     bool m_currIsLocked;
     bool m_nextIsLocked;
     bool m_hasChanged;

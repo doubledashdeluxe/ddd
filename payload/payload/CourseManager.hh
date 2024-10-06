@@ -1,6 +1,7 @@
 #pragma once
 
 #include "payload/StorageScanner.hh"
+#include "payload/ZIPFile.hh"
 
 #include <common/Ring.hh>
 #include <common/UniquePtr.hh>
@@ -188,6 +189,7 @@ private:
 
     CourseManager();
 
+    OSThread &thread() override;
     void process() override;
 
     void addDefaultRaceCourses();
@@ -212,6 +214,16 @@ private:
             Ring<UniquePtr<Pack>, MaxPackCount> &packs, const char *base, const char *type);
     void sortRacePackCoursesByName();
     void sortBattlePackCoursesByName();
+    void *loadFile(const char *zipPath, const char *filePath, JKRHeap *heap,
+            u32 *size = nullptr) const;
+    void *loadFile(ZIPFile &zipFile, const char *filePath, JKRHeap *heap,
+            u32 *size = nullptr) const;
+    void *loadLocalizedFile(const char *zipPath, const char *prefix, const char *suffix,
+            JKRHeap *heap, u32 *size = nullptr) const;
+    void *loadLocalizedFile(ZIPFile &zipFile, const char *prefix, const char *suffix, JKRHeap *heap,
+            u32 *size = nullptr) const;
+    void *loadLocalizedFile(const char *prefix, const char *suffix, JKRHeap *heap,
+            u32 *size = nullptr) const;
     void *loadCourseFile(const char *zipPath, const char *filePath, u32 *size = nullptr) const;
     void *loadCourseFile(ZIPFile &zipFile, const char *filePath, u32 *size = nullptr) const;
 
@@ -223,6 +235,8 @@ private:
     static bool CompareRaceCourseIndicesByName(const u32 &a, const u32 &b);
     static bool CompareBattleCourseIndicesByName(const u32 &a, const u32 &b);
 
+    Array<u8, 128 * 1024> m_stack;
+    OSThread m_thread;
     JKRHeap *m_heap;
     JKRHeap *m_courseHeap;
     Ring<UniquePtr<Course>, MaxCourseCount> m_raceCourses;

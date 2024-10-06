@@ -53,7 +53,15 @@ ServerManager *ServerManager::Instance() {
     return s_instance;
 }
 
-ServerManager::ServerManager() : StorageScanner(27) {}
+ServerManager::ServerManager() {
+    StorageScanner *param = this;
+    OSCreateThread(&m_thread, Run, param, m_stack.values() + m_stack.count(), m_stack.count(), 27,
+            0);
+}
+
+OSThread &ServerManager::thread() {
+    return m_thread;
+}
 
 void ServerManager::process() {
     m_servers.reset();

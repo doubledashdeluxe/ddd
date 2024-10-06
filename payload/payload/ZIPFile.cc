@@ -2,16 +2,306 @@
 
 #include "payload/DOSTime.hh"
 
+#include <common/Algorithm.hh>
 #include <common/Bytes.hh>
-extern "C" {
-#include <tinf/tinf.h>
 
+extern "C" {
 #include <string.h>
 }
 
-ZIPFile::ZIPFile(const char *path, bool &ok) : m_file(path, Storage::Mode::ReadWrite) {
-    ok = false;
+ZIPFile::Reader::Reader(ZIPFile &zip, const char *path) : m_ok(false), m_zip(zip) {
+    if (!zip.m_ok) {
+        return;
+    }
 
+    u32 cdNodeIndex, cdNodeOffset;
+    for (cdNodeIndex = 0, cdNodeOffset = zip.m_eocd.cdOffset; cdNodeIndex < zip.m_eocd.cdNodeCount;
+            cdNodeIndex++, cdNodeOffset = m_cdNode.nextOffset) {
+        if (!zip.readCDNode(cdNodeOffset, m_cdNode)) {
+            return;
+        }
+
+        if (path[0] == '/') {
+            if (!strcmp(m_cdNode.path.values(), path + 1)) {
+                break;
+            }
+        } else {
+            char *cdNodeName = strrchr(m_cdNode.path.values(), '/');
+            cdNodeName = cdNodeName ? cdNodeName + 1 : m_cdNode.path.values();
+            if (!strcmp(cdNodeName, path)) {
+                break;
+            }
+        }
+    }
+    if (cdNodeIndex == zip.m_eocd.cdNodeCount) {
+        return;
+    }
+
+    if (!zip.readLocalNode(m_cdNode.localNodeOffset, m_localNode)) {
+        return;
+    }
+
+    switch (m_cdNode.compressionMethod) {
+    case CompressionMethod::Store:
+        break;
+    case CompressionMethod::Deflate:
+        tinfl_init(&m_decompressor);
+        m_status = TINFL_STATUS_NEEDS_MORE_INPUT;
+        m_compressedOffset = 0;
+        break;
+    default:
+        return;
+    }
+
+    m_uncompressedOffset = 0;
+    m_crc32 = MZ_CRC32_INIT;
+
+    m_ok = true;
+}
+
+ZIPFile::Reader::~Reader() {}
+
+bool ZIPFile::Reader::ok() const {
+    return m_ok;
+}
+
+const ZIPFile::CDNode *ZIPFile::Reader::cdNode() const {
+    return m_ok ? &m_cdNode : static_cast<CDNode *>(nullptr);
+}
+
+const ZIPFile::LocalNode *ZIPFile::Reader::localNode() const {
+    return m_ok ? &m_localNode : static_cast<LocalNode *>(nullptr);
+}
+
+const u32 *ZIPFile::Reader::size() const {
+    return m_ok ? &m_cdNode.uncompressedSize : static_cast<u32 *>(nullptr);
+}
+
+bool ZIPFile::Reader::read(const u8 *&buffer, u32 &size) {
+    if (!m_ok) {
+        return false;
+    }
+
+    u8 *uncompressed;
+    size_t uncompressedSize;
+    if (m_cdNode.compressionMethod == CompressionMethod::Store) {
+        uncompressed = m_uncompressedBuffer.values();
+        uncompressedSize = m_cdNode.uncompressedSize - m_uncompressedOffset;
+        if (uncompressedSize > m_uncompressedBuffer.count()) {
+            uncompressedSize = m_uncompressedBuffer.count();
+        }
+        if (!m_zip.m_file.read(uncompressed, uncompressedSize,
+                    m_localNode.compressedOffset + m_uncompressedOffset)) {
+            return m_ok = false;
+        }
+        m_uncompressedOffset += uncompressedSize;
+    } else {
+        s32 flags = 0;
+        u32 compressedBufferOffset = m_compressedOffset % m_compressedBuffer.count();
+        u8 *compressed = m_compressedBuffer.values() + compressedBufferOffset;
+        size_t compressedSize = m_compressedBuffer.count() - compressedBufferOffset;
+        if (compressedSize > m_cdNode.compressedSize - m_compressedOffset) {
+            compressedSize = m_cdNode.compressedSize - m_compressedOffset;
+        } else {
+            flags |= TINFL_FLAG_HAS_MORE_INPUT;
+        }
+        u32 uncompressedBufferOffset = m_uncompressedOffset % m_uncompressedBuffer.count();
+        uncompressed = m_uncompressedBuffer.values() + uncompressedBufferOffset;
+        uncompressedSize = m_uncompressedBuffer.count() - uncompressedBufferOffset;
+        if (m_status == TINFL_STATUS_NEEDS_MORE_INPUT) {
+            if (!m_zip.m_file.read(compressed, compressedSize,
+                        m_localNode.compressedOffset + m_compressedOffset)) {
+                return m_ok = false;
+            }
+        }
+        m_status = tinfl_decompress(&m_decompressor, compressed, &compressedSize,
+                m_uncompressedBuffer.values(), uncompressed, &uncompressedSize, flags);
+        m_compressedOffset += compressedSize;
+        m_uncompressedOffset += uncompressedSize;
+        if (m_compressedOffset > m_cdNode.compressedSize) {
+            return m_ok = false;
+        }
+        if (m_uncompressedOffset > m_cdNode.uncompressedSize) {
+            return m_ok = false;
+        }
+        switch (m_status) {
+        case TINFL_STATUS_DONE:
+            if (m_compressedOffset != m_cdNode.compressedSize) {
+                return m_ok = false;
+            }
+            if (m_uncompressedOffset != m_cdNode.uncompressedSize) {
+                return m_ok = false;
+            }
+            break;
+        case TINFL_STATUS_NEEDS_MORE_INPUT:
+            break;
+        case TINFL_STATUS_HAS_MORE_OUTPUT:
+            if (m_compressedOffset == m_cdNode.compressedSize) {
+                return m_ok = false;
+            }
+            break;
+        default:
+            return m_ok = false;
+        }
+    }
+    m_crc32 = mz_crc32(m_crc32, uncompressed, uncompressedSize);
+    if (m_uncompressedOffset == m_cdNode.uncompressedSize) {
+        if (m_crc32 != m_cdNode.uncompressedCRC32) {
+            return false;
+        }
+    }
+    buffer = uncompressed;
+    size = uncompressedSize;
+    return true;
+}
+
+ZIPFile::Writer::Writer(ZIPFile &zip, const char *path, u32 size)
+    : m_ok(false), m_zip(zip), m_size(size) {
+    if (path[0] != '/') {
+        return;
+    }
+
+    m_eocd.cdNodeCount = zip.m_eocd.cdNodeCount + 1;
+    if (m_eocd.cdNodeCount < zip.m_eocd.cdNodeCount) {
+        return;
+    }
+
+    u32 cdNodeIndex;
+    for (cdNodeIndex = 0, m_cdNodeOffset = zip.m_eocd.cdOffset;
+            cdNodeIndex < zip.m_eocd.cdNodeCount;
+            cdNodeIndex++, m_cdNodeOffset = m_cdNode.nextOffset) {
+        if (!zip.readCDNode(m_cdNodeOffset, m_cdNode)) {
+            return;
+        }
+
+        if (!strcmp(m_cdNode.path.values(), path + 1)) {
+            break;
+        }
+    }
+    m_isNew = cdNodeIndex == zip.m_eocd.cdNodeCount;
+
+    m_offset = zip.m_fileSize;
+    m_localNode.compressionMethod = CompressionMethod::Store;
+    u32 dosTime = DOSTime::Now();
+    m_localNode.time = dosTime >> 0;
+    m_localNode.date = dosTime >> 16;
+    m_localNode.uncompressedCRC32 = MZ_CRC32_INIT;
+    m_localNode.compressedSize = m_size;
+    m_localNode.uncompressedSize = m_size;
+    s32 pathLength = snprintf(m_localNode.path.values(), m_localNode.path.count(), "%s", path + 1);
+    if (pathLength >= static_cast<s32>(m_localNode.path.count())) {
+        return;
+    }
+    m_localNode.compressedOffset = m_offset + LocalNodeHeaderSize + pathLength;
+    if (m_offset + LocalNodeHeaderSize < m_offset) {
+        return;
+    }
+    if (m_localNode.compressedOffset < m_offset) {
+        return;
+    }
+    if (!zip.writeLocalNode(m_offset, m_localNode)) {
+        return;
+    }
+    m_offset = m_localNode.compressedOffset;
+
+    m_ok = true;
+}
+
+ZIPFile::Writer::~Writer() {
+    m_zip.m_file.truncate(m_zip.m_fileSize);
+}
+
+bool ZIPFile::Writer::ok() const {
+    return m_ok;
+}
+
+const ZIPFile::CDNode *ZIPFile::Writer::cdNode() const {
+    return m_ok ? &m_cdNode : static_cast<CDNode *>(nullptr);
+}
+
+const ZIPFile::LocalNode *ZIPFile::Writer::localNode() const {
+    return m_ok ? &m_localNode : static_cast<LocalNode *>(nullptr);
+}
+
+bool ZIPFile::Writer::write(const u8 *buffer, u32 size) {
+    if (!m_ok) {
+        return false;
+    }
+    if (size > m_size) {
+        return m_ok = false;
+    }
+    if (m_offset + size < m_offset) {
+        return m_ok = false;
+    }
+    m_localNode.uncompressedCRC32 = mz_crc32(m_localNode.uncompressedCRC32, buffer, size);
+    if (!m_zip.m_file.write(buffer, size, m_offset)) {
+        return m_ok = false;
+    }
+    m_size -= size;
+    m_offset += size;
+    if (m_size != 0) {
+        return true;
+    }
+
+    m_eocd.cdOffset = m_offset;
+
+    if (!m_zip.writeLocalNode(m_zip.m_fileSize, m_localNode)) {
+        return m_ok = false;
+    }
+
+    if (m_isNew) {
+        if (!m_zip.copy(m_zip.m_eocd.cdOffset, m_offset, m_zip.m_eocd.cdSize)) {
+            return m_ok = false;
+        }
+        m_offset += m_zip.m_eocd.cdSize;
+    } else {
+        if (!m_zip.copy(m_zip.m_eocd.cdOffset, m_offset, m_cdNodeOffset - m_zip.m_eocd.cdOffset)) {
+            return m_ok = false;
+        }
+        m_offset += m_cdNodeOffset - m_zip.m_eocd.cdOffset;
+        if (!m_zip.copy(m_cdNode.nextOffset, m_offset,
+                    m_zip.m_eocd.cdSize - (m_cdNodeOffset - m_zip.m_eocd.cdOffset))) {
+            return m_ok = false;
+        }
+        m_offset += m_eocd.cdSize - (m_cdNodeOffset - m_eocd.cdOffset);
+    }
+
+    m_cdNode.compressionMethod = m_localNode.compressionMethod;
+    m_cdNode.time = m_localNode.time;
+    m_cdNode.date = m_localNode.date;
+    m_cdNode.uncompressedCRC32 = m_localNode.uncompressedCRC32;
+    m_cdNode.compressedSize = m_localNode.compressedSize;
+    m_cdNode.uncompressedSize = m_localNode.uncompressedSize;
+    m_cdNode.localNodeOffset = m_zip.m_fileSize;
+    m_cdNode.path = m_localNode.path;
+    u32 pathLength = strlen(m_localNode.path.values());
+    m_cdNode.nextOffset = m_offset + CDNodeHeaderSize + pathLength;
+    if (m_offset + CDNodeHeaderSize < m_offset) {
+        return m_ok = false;
+    }
+    if (m_cdNode.nextOffset < m_offset) {
+        return m_ok = false;
+    }
+    if (!m_zip.writeCDNode(m_offset, m_cdNode)) {
+        return m_ok = false;
+    }
+    m_offset = m_cdNode.nextOffset;
+    m_eocd.cdSize = m_offset - m_eocd.cdOffset;
+
+    if (m_offset + EOCDHeaderSize < m_offset) {
+        return m_ok = false;
+    }
+    if (!m_zip.writeEOCD(m_offset, m_eocd)) {
+        return m_ok = false;
+    }
+    m_offset += EOCDHeaderSize;
+
+    m_zip.m_fileSize = m_offset;
+    m_zip.m_eocd = m_eocd;
+    return true;
+}
+
+ZIPFile::ZIPFile(const char *path) : m_ok(false), m_file(path, Storage::Mode::ReadWrite) {
     u64 fileSize;
     if (!m_file.size(fileSize)) {
         return;
@@ -25,202 +315,17 @@ ZIPFile::ZIPFile(const char *path, bool &ok) : m_file(path, Storage::Mode::ReadW
         return;
     }
 
-    ok = true;
+    m_ok = true;
 }
 
 ZIPFile::~ZIPFile() {}
 
-const ZIPFile::EOCD &ZIPFile::eocd() const {
-    return m_eocd;
+bool ZIPFile::ok() const {
+    return m_ok;
 }
 
-u8 *ZIPFile::readFile(const char *path, JKRHeap *heap, s32 alignment, CDNode &cdNode,
-        LocalNode &localNode) {
-    u32 cdNodeIndex, cdNodeOffset;
-    for (cdNodeIndex = 0, cdNodeOffset = m_eocd.cdOffset; cdNodeIndex < m_eocd.cdNodeCount;
-            cdNodeIndex++, cdNodeOffset = cdNode.nextOffset) {
-        if (!readCDNode(cdNodeOffset, heap, -alignment, cdNode)) {
-            return nullptr;
-        }
-
-        if (path[0] == '/') {
-            if (!strcmp(cdNode.path.get(), path + 1)) {
-                break;
-            }
-        } else {
-            char *cdNodeName = strrchr(cdNode.path.get(), '/');
-            cdNodeName = cdNodeName ? cdNodeName + 1 : cdNode.path.get();
-            if (!strcmp(cdNodeName, path)) {
-                break;
-            }
-        }
-    }
-    if (cdNodeIndex == m_eocd.cdNodeCount) {
-        return nullptr;
-    }
-
-    if (!readLocalNode(cdNode.localNodeOffset, heap, -alignment, localNode)) {
-        return nullptr;
-    }
-
-    UniquePtr<u8[]> uncompressed(new (heap, alignment) u8[cdNode.uncompressedSize]);
-    if (!uncompressed.get()) {
-        return nullptr;
-    }
-    if (cdNode.compressionMethod == CompressionMethod::Store) {
-        u32 uncompressedOffset = localNode.compressedOffset;
-        if (!m_file.read(uncompressed.get(), cdNode.uncompressedSize, uncompressedOffset)) {
-            return nullptr;
-        }
-    } else if (cdNode.compressionMethod == CompressionMethod::Deflate) {
-        UniquePtr<u8[]> compressed(new (heap, -alignment) u8[cdNode.compressedSize]);
-        if (!compressed.get()) {
-            return nullptr;
-        }
-        if (!m_file.read(compressed.get(), cdNode.compressedSize, localNode.compressedOffset)) {
-            return nullptr;
-        }
-
-        unsigned int uncompressedSize = cdNode.uncompressedSize;
-        if (tinf_uncompress(uncompressed.get(), &uncompressedSize, compressed.get(),
-                    cdNode.compressedSize) != TINF_OK) {
-            return nullptr;
-        }
-        if (uncompressedSize != cdNode.uncompressedSize) {
-            return nullptr;
-        }
-    } else {
-        return nullptr;
-    }
-
-    if (tinf_crc32(uncompressed.get(), cdNode.uncompressedSize) != cdNode.uncompressedCRC32) {
-        return nullptr;
-    }
-    return uncompressed.release();
-}
-
-bool ZIPFile::writeFile(const char *path, const void *uncompressed, u32 uncompressedSize,
-        JKRHeap *heap, s32 alignment, CDNode &cdNode, LocalNode &localNode) {
-    if (path[0] != '/') {
-        return false;
-    }
-
-    EOCD eocd;
-    eocd.cdNodeCount = m_eocd.cdNodeCount + 1;
-    if (eocd.cdNodeCount < m_eocd.cdNodeCount) {
-        return false;
-    }
-
-    u32 cdNodeIndex, cdNodeOffset;
-    for (cdNodeIndex = 0, cdNodeOffset = m_eocd.cdOffset; cdNodeIndex < m_eocd.cdNodeCount;
-            cdNodeIndex++, cdNodeOffset = cdNode.nextOffset) {
-        if (!readCDNode(cdNodeOffset, heap, -alignment, cdNode)) {
-            return false;
-        }
-
-        if (!strcmp(cdNode.path.get(), path + 1)) {
-            break;
-        }
-    }
-    bool isNew = cdNodeIndex == m_eocd.cdNodeCount;
-
-    AppendGuard appendGuard(*this);
-
-    u32 offset = m_fileSize;
-    localNode.compressionMethod = CompressionMethod::Store;
-    u32 dosTime = DOSTime::Now();
-    localNode.time = dosTime >> 0;
-    localNode.date = dosTime >> 16;
-    localNode.uncompressedCRC32 = tinf_crc32(uncompressed, uncompressedSize);
-    localNode.compressedSize = uncompressedSize;
-    localNode.uncompressedSize = uncompressedSize;
-    u32 pathLength = strlen(path + 1);
-    localNode.path.reset(new (heap, -alignment) char[pathLength + 1]);
-    if (!localNode.path.get()) {
-        return false;
-    }
-    localNode.path.get()[pathLength] = '\0';
-    memcpy(localNode.path.get(), path + 1, pathLength);
-    localNode.compressedOffset = offset + LocalNodeHeaderSize + pathLength;
-    if (offset + LocalNodeHeaderSize < offset) {
-        return false;
-    }
-    if (localNode.compressedOffset < offset) {
-        return false;
-    }
-    if (!writeLocalNode(offset, localNode)) {
-        return false;
-    }
-    offset = localNode.compressedOffset;
-
-    if (offset + uncompressedSize < offset) {
-        return false;
-    }
-    if (!m_file.write(uncompressed, uncompressedSize, offset)) {
-        return false;
-    }
-    offset += uncompressedSize;
-    eocd.cdOffset = offset;
-
-    if (isNew) {
-        if (!copy(m_eocd.cdOffset, offset, m_eocd.cdSize)) {
-            return false;
-        }
-        offset += m_eocd.cdSize;
-    } else {
-        if (!copy(m_eocd.cdOffset, offset, cdNodeOffset - m_eocd.cdOffset)) {
-            return false;
-        }
-        offset += cdNodeOffset - m_eocd.cdOffset;
-        if (!copy(cdNode.nextOffset, offset, m_eocd.cdSize - (cdNodeOffset - m_eocd.cdOffset))) {
-            return false;
-        }
-        offset += m_eocd.cdSize - (cdNodeOffset - m_eocd.cdOffset);
-    }
-
-    cdNode.compressionMethod = localNode.compressionMethod;
-    cdNode.time = localNode.time;
-    cdNode.date = localNode.date;
-    cdNode.uncompressedCRC32 = localNode.uncompressedCRC32;
-    cdNode.compressedSize = localNode.compressedSize;
-    cdNode.uncompressedSize = localNode.uncompressedSize;
-    cdNode.localNodeOffset = m_fileSize;
-    cdNode.path.reset(new (heap, -alignment) char[pathLength + 1]);
-    if (!cdNode.path.get()) {
-        return false;
-    }
-    cdNode.path.get()[pathLength] = '\0';
-    memcpy(cdNode.path.get(), path + 1, pathLength);
-    cdNode.nextOffset = offset + CDNodeHeaderSize + pathLength;
-    if (offset + CDNodeHeaderSize < offset) {
-        return false;
-    }
-    if (cdNode.nextOffset < offset) {
-        return false;
-    }
-    if (!writeCDNode(offset, cdNode)) {
-        return false;
-    }
-    offset = cdNode.nextOffset;
-    eocd.cdSize = offset - eocd.cdOffset;
-
-    if (offset + EOCDHeaderSize < offset) {
-        return false;
-    }
-    if (!writeEOCD(offset, eocd)) {
-        return false;
-    }
-    offset += EOCDHeaderSize;
-
-    m_fileSize = offset;
-    m_eocd = eocd;
-    return true;
-}
-
-ZIPFile::AppendGuard::AppendGuard(ZIPFile &zipFile) : m_zipFile(zipFile) {}
-
-ZIPFile::AppendGuard::~AppendGuard() {
-    m_zipFile.m_file.truncate(m_zipFile.m_fileSize);
+const ZIPFile::EOCD *ZIPFile::eocd() const {
+    return m_ok ? &m_eocd : static_cast<EOCD *>(nullptr);
 }
 
 bool ZIPFile::readEOCD(EOCD &eocd) {
@@ -290,7 +395,7 @@ bool ZIPFile::readEOCD(u32 eocdOffset, const Array<u8, EOCDHeaderSize> &eocdHead
     return true;
 }
 
-bool ZIPFile::readCDNode(u32 cdNodeOffset, JKRHeap *heap, s32 alignment, CDNode &cdNode) {
+bool ZIPFile::readCDNode(u32 cdNodeOffset, CDNode &cdNode) {
     Array<u8, CDNodeHeaderSize> cdNodeHeader;
     if (!m_file.read(cdNodeHeader.values(), cdNodeHeader.count(), cdNodeOffset)) {
         return false;
@@ -337,12 +442,14 @@ bool ZIPFile::readCDNode(u32 cdNodeOffset, JKRHeap *heap, s32 alignment, CDNode 
         return false;
     }
 
-    cdNode.path.reset(new (heap, alignment) char[cdNodePathSize + 1]);
-    if (!cdNode.path.get()) {
+    if (cdNodePathSize >= cdNode.path.count()) {
         return false;
     }
-    cdNode.path.get()[cdNodePathSize] = '\0';
-    if (!m_file.read(cdNode.path.get(), cdNodePathSize, cdNodePathOffset)) {
+    if (!m_file.read(cdNode.path.values(), cdNodePathSize, cdNodePathOffset)) {
+        return false;
+    }
+    cdNode.path[cdNodePathSize] = '\0';
+    if (strnlen(cdNode.path.values(), cdNode.path.count()) != cdNodePathSize) {
         return false;
     }
 
@@ -357,8 +464,7 @@ bool ZIPFile::readCDNode(u32 cdNodeOffset, JKRHeap *heap, s32 alignment, CDNode 
     return true;
 }
 
-bool ZIPFile::readLocalNode(u32 localNodeOffset, JKRHeap *heap, s32 alignment,
-        LocalNode &localNode) {
+bool ZIPFile::readLocalNode(u32 localNodeOffset, LocalNode &localNode) {
     Array<u8, LocalNodeHeaderSize> localNodeHeader;
     if (!m_file.read(localNodeHeader.values(), localNodeHeader.count(), localNodeOffset)) {
         return false;
@@ -396,12 +502,14 @@ bool ZIPFile::readLocalNode(u32 localNodeOffset, JKRHeap *heap, s32 alignment,
         return false;
     }
 
-    localNode.path.reset(new (heap, alignment) char[localNodePathSize + 1]);
-    if (!localNode.path.get()) {
+    if (localNodePathSize >= localNode.path.count()) {
         return false;
     }
-    localNode.path.get()[localNodePathSize] = '\0';
-    if (!m_file.read(localNode.path.get(), localNodePathSize, localNodePathOffset)) {
+    if (!m_file.read(localNode.path.values(), localNodePathSize, localNodePathOffset)) {
+        return false;
+    }
+    localNode.path[localNodePathSize] = '\0';
+    if (strnlen(localNode.path.values(), localNode.path.count()) != localNodePathSize) {
         return false;
     }
 
@@ -445,7 +553,7 @@ bool ZIPFile::writeCDNode(u32 cdNodeOffset, const CDNode &cdNode) {
     Bytes::WriteLE<u32>(cdNodeHeader.values(), 0x10, cdNode.uncompressedCRC32);
     Bytes::WriteLE<u32>(cdNodeHeader.values(), 0x14, cdNode.compressedSize);
     Bytes::WriteLE<u32>(cdNodeHeader.values(), 0x18, cdNode.uncompressedSize);
-    u32 cdNodePathSize = strlen(cdNode.path.get());
+    u32 cdNodePathSize = strlen(cdNode.path.values());
     Bytes::WriteLE<u32>(cdNodeHeader.values(), 0x1c, cdNodePathSize);
     Bytes::WriteLE<u32>(cdNodeHeader.values(), 0x2a, cdNode.localNodeOffset);
 
@@ -453,7 +561,7 @@ bool ZIPFile::writeCDNode(u32 cdNodeOffset, const CDNode &cdNode) {
         return false;
     }
 
-    if (!m_file.write(cdNode.path.get(), cdNodePathSize, cdNodeOffset + cdNodeHeader.count())) {
+    if (!m_file.write(cdNode.path.values(), cdNodePathSize, cdNodeOffset + cdNodeHeader.count())) {
         return false;
     }
 
@@ -472,14 +580,14 @@ bool ZIPFile::writeLocalNode(u32 localNodeOffset, const LocalNode &localNode) {
     Bytes::WriteLE<u32>(localNodeHeader.values(), 0x0e, localNode.uncompressedCRC32);
     Bytes::WriteLE<u32>(localNodeHeader.values(), 0x12, localNode.compressedSize);
     Bytes::WriteLE<u32>(localNodeHeader.values(), 0x16, localNode.uncompressedSize);
-    u32 localNodePathSize = strlen(localNode.path.get());
+    u32 localNodePathSize = strlen(localNode.path.values());
     Bytes::WriteLE<u32>(localNodeHeader.values(), 0x1a, localNodePathSize);
 
     if (!m_file.write(localNodeHeader.values(), localNodeHeader.count(), localNodeOffset)) {
         return false;
     }
 
-    if (!m_file.write(localNode.path.get(), localNodePathSize,
+    if (!m_file.write(localNode.path.values(), localNodePathSize,
                 localNodeOffset + localNodeHeader.count())) {
         return false;
     }
@@ -495,12 +603,12 @@ bool ZIPFile::copy(u32 srcOffset, u32 dstOffset, u32 size) {
         return false;
     }
     while (size > 0) {
-        Array<u8, 512> buffer;
-        u32 chunkSize = Min<u32>(size, buffer.count());
-        if (!m_file.read(buffer.values(), chunkSize, srcOffset)) {
+        alignas(0x20) Array<u8, 1024> chunk;
+        u32 chunkSize = Min<u32>(size, chunk.count());
+        if (!m_file.read(chunk.values(), chunkSize, srcOffset)) {
             return false;
         }
-        if (!m_file.write(buffer.values(), chunkSize, dstOffset)) {
+        if (!m_file.write(chunk.values(), chunkSize, dstOffset)) {
             return false;
         }
         srcOffset += chunkSize;

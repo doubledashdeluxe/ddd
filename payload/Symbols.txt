@@ -25,6 +25,7 @@
 800157cc __dla__FPv
 80015f40 Create__12JKRSolidHeapFUlP7JKRHeapb
 80016890 __ct__9JKRThreadFUlll
+80016df8 Create__7JKRTaskFllUlP7JKRHeap
 80017094 request__7JKRTaskFPFPv_vPvPv
 800179a0 prepend__10JSUPtrListFP10JSUPtrLink
 80018ed4 print__10JUTConsoleFPCc

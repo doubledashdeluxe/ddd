@@ -299,7 +299,15 @@ CourseManager *CourseManager::Instance() {
     return s_instance;
 }
 
-CourseManager::CourseManager() : StorageScanner(26) {}
+CourseManager::CourseManager() {
+    StorageScanner *param = this;
+    OSCreateThread(&m_thread, Run, param, m_stack.values() + m_stack.count(), m_stack.count(), 26,
+            0);
+}
+
+OSThread &CourseManager::thread() {
+    return m_thread;
+}
 
 void CourseManager::process() {
     m_courseHeap->freeAll();
@@ -535,30 +543,39 @@ void CourseManager::addCustomPacksAndCourses(Array<char, 256> &path, Storage::No
 void CourseManager::addCustomCourse(const Array<char, 256> &path,
         Ring<u32, MaxCourseCount> &raceCourseIndices,
         Ring<u32, MaxCourseCount> &battleCourseIndices) {
-    bool ok;
-    ZIPFile zipFile(path.values(), ok);
-    if (!ok) {
+    ZIPFile zipFile(path.values());
+    if (!zipFile.ok()) {
         return;
     }
-
-    ZIPFile::CDNode cdNode;
-    ZIPFile::LocalNode localNode;
-    INI::Stream iniStream;
-    iniStream.ini.reset(reinterpret_cast<u8 *>(
-            zipFile.readFile("trackinfo.ini", m_heap, -0x4, cdNode, localNode)));
-    if (!iniStream.ini.get()) {
-        return;
-    }
-    iniStream.iniSize = cdNode.uncompressedSize;
-    iniStream.iniOffset = 0x0;
 
     Array<char, 128> prefix;
-    u32 prefixLength = strlen(cdNode.path.get()) - strlen("trackinfo.ini");
-    if (prefixLength > prefix.count()) {
-        return;
+    INI::Stream iniStream;
+    {
+        ZIPFile::Reader reader(zipFile, "trackinfo.ini");
+        if (!reader.ok()) {
+            return;
+        }
+
+        prefix = reader.cdNode()->path;
+        u32 prefixLength = strlen(reader.cdNode()->path.values()) - strlen("trackinfo.ini");
+        prefix[prefixLength] = '\0';
+
+        iniStream.iniSize = *reader.size();
+        iniStream.ini.reset(new (m_heap, -0x4) u8[iniStream.iniSize]);
+        if (!iniStream.ini.get()) {
+            return;
+        }
+        for (u32 offset = 0; offset < iniStream.iniSize;) {
+            const u8 *chunk;
+            u32 chunkSize;
+            if (!reader.read(chunk, chunkSize)) {
+                return;
+            }
+            memcpy(iniStream.ini.get() + offset, chunk, chunkSize);
+            offset += chunkSize;
+        }
     }
-    prefix[prefixLength] = '\0';
-    memcpy(prefix.values(), cdNode.path.get(), prefixLength);
+    iniStream.iniOffset = 0x0;
 
     CourseINI courseINI;
     Array<INI::Field, 5> iniFields;
@@ -647,8 +664,8 @@ void CourseManager::addCustomCourse(const Array<char, 256> &path,
         }
         crypto_blake2b(archiveHash.values(), archiveHash.count(), course.get(), courseSize);
 
-        if (!zipFile.writeFile(hashPath.values(), archiveHash.values(), archiveHash.count(), m_heap,
-                    0x4, cdNode, localNode)) {
+        ZIPFile::Writer writer(zipFile, hashPath.values(), archiveHash.count());
+        if (!writer.write(archiveHash.values(), archiveHash.count())) {
             return;
         }
     }
@@ -879,10 +896,80 @@ void CourseManager::sortBattlePackCoursesByName() {
     }
 }
 
+void *CourseManager::loadFile(const char *zipPath, const char *filePath, JKRHeap *heap,
+        u32 *size) const {
+    ZIPFile zipFile(zipPath);
+    if (!zipFile.ok()) {
+        return nullptr;
+    }
+    return loadFile(zipFile, filePath, heap, size);
+}
+
+void *CourseManager::loadFile(ZIPFile &zipFile, const char *filePath, JKRHeap *heap,
+        u32 *size) const {
+    ZIPFile::Reader reader(zipFile, filePath);
+    if (!reader.ok()) {
+        return nullptr;
+    }
+    UniquePtr<u8[]> data(new (heap, 0x20) u8[*reader.size()]);
+    if (!data.get()) {
+        return nullptr;
+    }
+    for (u32 offset = 0; offset < *reader.size();) {
+        const u8 *chunk;
+        u32 chunkSize;
+        if (!reader.read(chunk, chunkSize)) {
+            return nullptr;
+        }
+        memcpy(data.get() + offset, chunk, chunkSize);
+        offset += chunkSize;
+    }
+    if (size) {
+        *size = *reader.size();
+    }
+    return data.release();
+}
+
+void *CourseManager::loadLocalizedFile(const char *zipPath, const char *prefix, const char *suffix,
+        JKRHeap *heap, u32 *size) const {
+    ZIPFile zipFile(zipPath);
+    if (!zipFile.ok()) {
+        return nullptr;
+    }
+    return loadLocalizedFile(zipFile, prefix, suffix, heap, size);
+}
+
+void *CourseManager::loadLocalizedFile(ZIPFile &zipFile, const char *prefix, const char *suffix,
+        JKRHeap *heap, u32 *size) const {
+    for (u32 i = 0; i < languages().count(); i++) {
+        const char *languageName = KartLocale::GetLanguageName(languages()[i]);
+        Array<char, 256> filePath;
+        snprintf(filePath.values(), filePath.count(), "%s%s%s", prefix, languageName, suffix);
+        void *data = loadFile(zipFile, filePath.values(), heap, size);
+        if (data) {
+            return data;
+        }
+    }
+    return nullptr;
+}
+
+void *CourseManager::loadLocalizedFile(const char *prefix, const char *suffix, JKRHeap *heap,
+        u32 *size) const {
+    for (u32 i = 0; i < languages().count(); i++) {
+        const char *languageName = KartLocale::GetLanguageName(languages()[i]);
+        Array<char, 256> filePath;
+        snprintf(filePath.values(), filePath.count(), "%s%s%s", prefix, languageName, suffix);
+        void *data = FileLoader::Load(filePath.values(), heap, size);
+        if (data) {
+            return data;
+        }
+    }
+    return nullptr;
+}
+
 void *CourseManager::loadCourseFile(const char *zipPath, const char *filePath, u32 *size) const {
-    bool ok;
-    ZIPFile zipFile(zipPath, ok);
-    if (!ok) {
+    ZIPFile zipFile(zipPath);
+    if (!zipFile.ok()) {
         return nullptr;
     }
     return loadCourseFile(zipFile, filePath, size);

@@ -10,4 +10,5 @@ char *strchr(const char *s, int c);
 int strcmp(const char *s1, const char *s2);
 size_t strlen(const char *s);
 int strncmp(const char *s1, const char *s2, size_t n);
+size_t strnlen(const char *s, size_t maxlen);
 char *strrchr(const char *s, int c);
