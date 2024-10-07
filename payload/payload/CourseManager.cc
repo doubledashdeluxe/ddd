@@ -1,15 +1,13 @@
 #include "CourseManager.hh"
 
 #include "payload/FileLoader.hh"
+#include "payload/MinimapConfigReader.hh"
 #include "payload/SZS.hh"
 #include "payload/ZIPFile.hh"
 
 #include <common/Arena.hh>
 #include <common/DCache.hh>
 #include <common/Log.hh>
-extern "C" {
-#include <coreJSON/core_json.h>
-}
 #include <game/CourseID.hh>
 #include <game/ResMgr.hh>
 #include <jsystem/JKRExpHeap.hh>
@@ -171,7 +169,7 @@ bool CourseManager::DefaultCourse::isCustom() const {
 
 CourseManager::CustomCourse::CustomCourse(Array<u8, 32> archiveHash, u32 musicID,
         Array<char, INIFieldSize> name, Array<char, INIFieldSize> author,
-        Array<char, INIFieldSize> version, MinimapConfig *minimapConfig, u8 *thumbnail,
+        Array<char, INIFieldSize> version, Optional<MinimapConfig> minimapConfig, u8 *thumbnail,
         u8 *nameImage, Array<char, 256> path, Array<char, 128> prefix)
     : Course(archiveHash), m_musicID(musicID), m_name(name), m_author(author), m_version(version),
       m_minimapConfig(minimapConfig), m_thumbnail(thumbnail), m_nameImage(nameImage), m_path(path),
@@ -613,15 +611,10 @@ void CourseManager::addCustomCourse(const Array<char, 256> &path,
         musicID = courseID;
     }
 
-    UniquePtr<MinimapConfig> minimapConfig;
     Array<char, 256> minimapJSONPath;
     snprintf(minimapJSONPath.values(), minimapJSONPath.count(), "/%sminimap.json", prefix.values());
-    u32 minimapJSONSize;
-    UniquePtr<char[]> minimapJSON(reinterpret_cast<char *>(
-            loadFile(zipFile, minimapJSONPath.values(), m_heap, &minimapJSONSize)));
-    if (minimapJSON.get()) {
-        minimapConfig.reset(readMinimapConfig(minimapJSON.get(), minimapJSONSize));
-    }
+    Optional<MinimapConfig> minimapConfig =
+            MinimapConfigReader::Read(zipFile, minimapJSONPath.values());
 
     Array<char, 256> thumbnailPrefix;
     snprintf(thumbnailPrefix.values(), thumbnailPrefix.count(), "/%scourse_images/",
@@ -720,33 +713,8 @@ void CourseManager::addCustomCourse(const Array<char, 256> &path,
     courseIndices->pushBack(courses->count());
     courses->pushBack();
     Course *course = new (m_heap, 0x4) CustomCourse(archiveHash, musicID, name, author, version,
-            minimapConfig.release(), thumbnail.release(), nameImage.release(), path, prefix);
+            minimapConfig, thumbnail.release(), nameImage.release(), path, prefix);
     courses->back()->reset(course);
-}
-
-MinimapConfig *CourseManager::readMinimapConfig(const char *json, u32 jsonSize) {
-    if (JSON_Validate(json, jsonSize) != JSONSuccess) {
-        return nullptr;
-    }
-
-    UniquePtr<MinimapConfig> minimapConfig(new (m_heap, 0x4) MinimapConfig);
-    if (!SearchJSON(json, jsonSize, "Top Left Corner X", minimapConfig->box.start.x)) {
-        return nullptr;
-    }
-    if (!SearchJSON(json, jsonSize, "Top Left Corner Z", minimapConfig->box.start.y)) {
-        return nullptr;
-    }
-    if (!SearchJSON(json, jsonSize, "Bottom Right Corner X", minimapConfig->box.end.x)) {
-        return nullptr;
-    }
-    if (!SearchJSON(json, jsonSize, "Bottom Right Corner Z", minimapConfig->box.end.y)) {
-        return nullptr;
-    }
-    if (!SearchJSON(json, jsonSize, "Orientation", minimapConfig->orientation)) {
-        return nullptr;
-    }
-
-    return minimapConfig.release();
 }
 
 void CourseManager::addCustomRacePack(const Array<char, 256> &path,
@@ -1051,36 +1019,6 @@ bool CourseManager::GetDefaultCourseID(const char *name, u32 &courseID) {
         return false;
     }
     return true;
-}
-
-bool CourseManager::SearchJSON(const char *json, u32 jsonSize, const char *query, f32 &value) {
-    const char *svalue;
-    size_t svalueSize;
-    JSONTypes_t type;
-    if (JSON_SearchConst(json, jsonSize, query, strlen(query), &svalue, &svalueSize, &type) !=
-            JSONSuccess) {
-        return false;
-    }
-    if (type != JSONNumber) {
-        return false;
-    }
-
-    return sscanf(svalue, "%f", &value) == 1;
-}
-
-bool CourseManager::SearchJSON(const char *json, u32 jsonSize, const char *query, u32 &value) {
-    const char *svalue;
-    size_t svalueSize;
-    JSONTypes_t type;
-    if (JSON_SearchConst(json, jsonSize, query, strlen(query), &svalue, &svalueSize, &type) !=
-            JSONSuccess) {
-        return false;
-    }
-    if (type != JSONNumber) {
-        return false;
-    }
-
-    return sscanf(svalue, "%u", &value) == 1;
 }
 
 void CourseManager::SortPacksByName(Ring<UniquePtr<Pack>, MaxPackCount> &packs) {

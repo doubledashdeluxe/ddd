@@ -3,6 +3,7 @@
 #include "payload/StorageScanner.hh"
 #include "payload/ZIPFile.hh"
 
+#include <common/Optional.hh>
 #include <common/Ring.hh>
 #include <common/UniquePtr.hh>
 #include <common/storage/Storage.hh>
@@ -139,8 +140,8 @@ private:
     public:
         CustomCourse(Array<u8, 32> archiveHash, u32 musicID, Array<char, INIFieldSize> name,
                 Array<char, INIFieldSize> author, Array<char, INIFieldSize> version,
-                MinimapConfig *minimapConfig, u8 *thumbnail, u8 *nameImage, Array<char, 256> path,
-                Array<char, 128> prefix);
+                Optional<MinimapConfig> minimapConfig, u8 *thumbnail, u8 *nameImage,
+                Array<char, 256> path, Array<char, 128> prefix);
         ~CustomCourse() override;
 
         u32 musicID() const override;
@@ -161,7 +162,7 @@ private:
         Array<char, INIFieldSize> m_name;
         Array<char, INIFieldSize> m_author;
         Array<char, INIFieldSize> m_version;
-        UniquePtr<MinimapConfig> m_minimapConfig;
+        Optional<MinimapConfig> m_minimapConfig;
         UniquePtr<u8[]> m_thumbnail;
         UniquePtr<u8[]> m_nameImage;
         Array<char, 256> m_path;
@@ -199,7 +200,6 @@ private:
             Ring<u32, MaxCourseCount> &battleCourseIndices);
     void addCustomCourse(const Array<char, 256> &path, Ring<u32, MaxCourseCount> &raceCourseIndices,
             Ring<u32, MaxCourseCount> &battleCourseIndices);
-    MinimapConfig *readMinimapConfig(const char *json, u32 jsonSize);
     void addCustomRacePack(const Array<char, 256> &path, Ring<u32, MaxCourseCount> &courseIndices);
     void addCustomBattlePack(const Array<char, 256> &path,
             Ring<u32, MaxCourseCount> &courseIndices);
@@ -228,8 +228,6 @@ private:
     void *loadCourseFile(ZIPFile &zipFile, const char *filePath, u32 *size = nullptr) const;
 
     static bool GetDefaultCourseID(const char *name, u32 &courseID);
-    static bool SearchJSON(const char *json, u32 jsonSize, const char *query, f32 &value);
-    static bool SearchJSON(const char *json, u32 jsonSize, const char *query, u32 &value);
     static void SortPacksByName(Ring<UniquePtr<Pack>, MaxPackCount> &packs);
     static bool ComparePacksByName(const UniquePtr<Pack> &a, const UniquePtr<Pack> &b);
     static bool CompareRaceCourseIndicesByName(const u32 &a, const u32 &b);

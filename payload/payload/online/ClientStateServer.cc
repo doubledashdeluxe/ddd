@@ -6,10 +6,10 @@
 
 ClientStateServer::ClientStateServer(JKRHeap *heap, UDPSocket *socket, Array<u8, 512> *buffer)
     : ClientState(heap), m_socket(socket), m_buffer(buffer), m_index(0) {
-    if (!m_socket) {
+    if (!m_socket.get()) {
         m_socket.reset(new (m_heap, 0x20) UDPSocket);
     }
-    if (!m_buffer) {
+    if (!m_buffer.get()) {
         m_buffer.reset(new (m_heap, 0x20) Array<u8, 512>);
     }
 }
