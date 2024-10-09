@@ -48,9 +48,9 @@ public:
         virtual const MinimapConfig *minimapConfig() const = 0;
         virtual void *thumbnail() const = 0;
         virtual void *nameImage() const = 0;
-        virtual void *loadLogo() const = 0;
-        virtual void *loadStaffGhost() const = 0;
-        virtual void *loadCourse(u32 courseOrder, u32 raceLevel) const = 0;
+        virtual void *loadLogo(JKRHeap *heap) const = 0;
+        virtual void *loadStaffGhost(JKRHeap *heap) const = 0;
+        virtual void *loadCourse(u32 courseOrder, u32 raceLevel, JKRHeap *heap) const = 0;
         virtual bool isDefault() const = 0;
         virtual bool isCustom() const = 0;
 
@@ -59,7 +59,6 @@ public:
     };
 
     void start();
-    void freeAll();
 
     u32 racePackCount() const;
     u32 battlePackCount() const;
@@ -124,9 +123,9 @@ private:
         const MinimapConfig *minimapConfig() const override;
         void *thumbnail() const override;
         void *nameImage() const override;
-        void *loadLogo() const override;
-        void *loadStaffGhost() const override;
-        void *loadCourse(u32 courseOrder, u32 raceLevel) const override;
+        void *loadLogo(JKRHeap *heap) const override;
+        void *loadStaffGhost(JKRHeap *heap) const override;
+        void *loadCourse(u32 courseOrder, u32 raceLevel, JKRHeap *heap) const override;
         bool isDefault() const override;
         bool isCustom() const override;
 
@@ -151,9 +150,9 @@ private:
         const MinimapConfig *minimapConfig() const override;
         void *thumbnail() const override;
         void *nameImage() const override;
-        void *loadLogo() const override;
-        void *loadStaffGhost() const override;
-        void *loadCourse(u32 courseOrder, u32 raceLevel) const override;
+        void *loadLogo(JKRHeap *heap) const override;
+        void *loadStaffGhost(JKRHeap *heap) const override;
+        void *loadCourse(u32 courseOrder, u32 raceLevel, JKRHeap *heap) const override;
         bool isDefault() const override;
         bool isCustom() const override;
 
@@ -226,8 +225,10 @@ private:
             u32 *size = nullptr) const;
     void *loadLocalizedFile(const char *prefix, const char *suffix, JKRHeap *heap,
             u32 *size = nullptr) const;
-    void *loadCourseFile(const char *zipPath, const char *filePath, u32 *size = nullptr) const;
-    void *loadCourseFile(ZIPFile &zipFile, const char *filePath, u32 *size = nullptr) const;
+    void *loadCourseFile(const char *zipPath, const char *filePath, JKRHeap *heap,
+            u32 *size = nullptr) const;
+    void *loadCourseFile(ZIPFile &zipFile, const char *filePath, JKRHeap *heap,
+            u32 *size = nullptr) const;
 
     static bool GetDefaultCourseID(const char *name, u32 &courseID);
     static void SortPacksByName(Ring<UniquePtr<Pack>, MaxPackCount> &packs);
@@ -238,7 +239,6 @@ private:
     Array<u8, 128 * 1024> m_stack;
     OSThread m_thread;
     JKRHeap *m_heap;
-    JKRHeap *m_courseHeap;
     Ring<UniquePtr<Course>, MaxCourseCount> m_raceCourses;
     Ring<UniquePtr<Course>, MaxCourseCount> m_battleCourses;
     Ring<UniquePtr<Pack>, MaxPackCount> m_racePacks;

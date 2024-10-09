@@ -133,22 +133,23 @@ void *CourseManager::DefaultCourse::nameImage() const {
     return JKRFileLoader::GetGlbResource(m_nameImage, nullptr);
 }
 
-void *CourseManager::DefaultCourse::loadLogo() const {
+void *CourseManager::DefaultCourse::loadLogo(JKRHeap *heap) const {
     const char *base = ResMgr::GetCrsArcName(m_courseID);
     const char *languageName = KartLocale::GetLanguageName();
     Array<char, 256> path;
     snprintf(path.values(), path.count(), "dvd:/CourseName/%s/%s_name.bti", languageName, base);
-    return FileLoader::Load(path.values(), s_instance->m_courseHeap);
+    return FileLoader::Load(path.values(), heap);
 }
 
-void *CourseManager::DefaultCourse::loadStaffGhost() const {
+void *CourseManager::DefaultCourse::loadStaffGhost(JKRHeap *heap) const {
     const char *base = ResMgr::GetCrsArcName(m_courseID);
     Array<char, 256> path;
     snprintf(path.values(), path.count(), "dvd:/StaffGhosts/%s.ght", base);
-    return FileLoader::Load(path.values(), s_instance->m_courseHeap);
+    return FileLoader::Load(path.values(), heap);
 }
 
-void *CourseManager::DefaultCourse::loadCourse(u32 courseOrder, u32 raceLevel) const {
+void *CourseManager::DefaultCourse::loadCourse(u32 courseOrder, u32 raceLevel,
+        JKRHeap *heap) const {
     const char *base = ResMgr::GetCrsArcName(m_courseID);
     const char *suffix = courseOrder == 1 ? "L" : "";
     Array<char, 256> path;
@@ -157,7 +158,7 @@ void *CourseManager::DefaultCourse::loadCourse(u32 courseOrder, u32 raceLevel) c
     } else {
         snprintf(path.values(), path.count(), "dvd:/Course/%s%s.arc", base, suffix);
     }
-    return FileLoader::Load(path.values(), s_instance->m_courseHeap);
+    return FileLoader::Load(path.values(), heap);
 }
 
 bool CourseManager::DefaultCourse::isDefault() const {
@@ -206,30 +207,32 @@ void *CourseManager::CustomCourse::nameImage() const {
     return m_nameImage.get();
 }
 
-void *CourseManager::CustomCourse::loadLogo() const {
+void *CourseManager::CustomCourse::loadLogo(JKRHeap *heap) const {
     Array<char, 256> logoPrefix;
     snprintf(logoPrefix.values(), logoPrefix.count(), "/%scourse_images/", m_prefix.values());
     u32 logoSize;
     void *logo = s_instance->loadLocalizedFile(m_path.values(), logoPrefix.values(),
-            "/track_big_logo.bti", s_instance->m_courseHeap, &logoSize);
+            "/track_big_logo.bti", heap, &logoSize);
     if (logo) {
         DCache::Flush(logo, logoSize);
     }
     return logo;
 }
 
-void *CourseManager::CustomCourse::loadStaffGhost() const {
+void *CourseManager::CustomCourse::loadStaffGhost(JKRHeap *heap) const {
     Array<char, 256> staffGhostPath;
     snprintf(staffGhostPath.values(), staffGhostPath.count(), "/%sstaffghost.ght",
             m_prefix.values());
-    return s_instance->loadFile(m_path.values(), staffGhostPath.values(), s_instance->m_courseHeap);
+    return s_instance->loadFile(m_path.values(), staffGhostPath.values(), heap);
 }
 
-void *CourseManager::CustomCourse::loadCourse(u32 /* courseOrder */, u32 /* raceLevel */) const {
+void *CourseManager::CustomCourse::loadCourse(u32 /* courseOrder */, u32 /* raceLevel */,
+        JKRHeap *heap) const {
     Array<char, 256> coursePath;
     snprintf(coursePath.values(), coursePath.count(), "/%strack.arc", m_prefix.values());
     u32 courseSize;
-    void *course = s_instance->loadCourseFile(m_path.values(), coursePath.values(), &courseSize);
+    void *course =
+            s_instance->loadCourseFile(m_path.values(), coursePath.values(), heap, &courseSize);
     if (course) {
         DCache::Flush(course, courseSize);
     }
@@ -248,14 +251,7 @@ void CourseManager::start() {
     size_t heapSize = 0x500000;
     void *heapPtr = MEM2Arena::Instance()->alloc(heapSize, 0x4);
     m_heap = JKRExpHeap::Create(heapPtr, heapSize, JKRHeap::GetRootHeap(), false);
-    size_t courseHeapSize = 0x500000;
-    void *courseHeapPtr = MEM2Arena::Instance()->alloc(courseHeapSize, 0x4);
-    m_courseHeap = JKRExpHeap::Create(courseHeapPtr, courseHeapSize, JKRHeap::GetRootHeap(), false);
     StorageScanner::start();
-}
-
-void CourseManager::freeAll() {
-    m_courseHeap->freeAll();
 }
 
 u32 CourseManager::racePackCount() const {
@@ -309,7 +305,6 @@ OSThread &CourseManager::thread() {
 }
 
 void CourseManager::process() {
-    m_courseHeap->freeAll();
     m_raceCourses.reset();
     m_battleCourses.reset();
     m_racePacks.reset();
@@ -961,21 +956,23 @@ void *CourseManager::loadLocalizedFile(const char *prefix, const char *suffix, J
     return nullptr;
 }
 
-void *CourseManager::loadCourseFile(const char *zipPath, const char *filePath, u32 *size) const {
+void *CourseManager::loadCourseFile(const char *zipPath, const char *filePath, JKRHeap *heap,
+        u32 *size) const {
     ZIPFile zipFile(zipPath);
     if (!zipFile.ok()) {
         return nullptr;
     }
-    return loadCourseFile(zipFile, filePath, size);
+    return loadCourseFile(zipFile, filePath, heap, size);
 }
 
-void *CourseManager::loadCourseFile(ZIPFile &zipFile, const char *filePath, u32 *size) const {
-    void *data = SZSCourseLoader::Load(zipFile, filePath, m_courseHeap, size);
+void *CourseManager::loadCourseFile(ZIPFile &zipFile, const char *filePath, JKRHeap *heap,
+        u32 *size) const {
+    void *data = SZSCourseLoader::Load(zipFile, filePath, heap, size);
     if (data) {
         return data;
     }
 
-    return loadFile(zipFile, filePath, m_courseHeap, size);
+    return loadFile(zipFile, filePath, heap, size);
 }
 
 bool CourseManager::GetDefaultCourseID(const char *name, u32 &courseID) {

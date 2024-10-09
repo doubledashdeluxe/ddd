@@ -50,7 +50,7 @@ void ResMgr::LoadExtendedCourseData(const CourseManager::Course *course, u32 cou
     s_course = course;
     s_musicID = course->musicID();
     s_courseOrder = courseOrder;
-    CourseManager::Instance()->freeAll();
+    s_courseHeap->freeAll();
     s_loadFlag &= ~(1 << ArchiveID::Course);
     s_loaders[ArchiveID::Course] = nullptr;
     System::GetLoadTask()->request(LoadExtendedCourseData, nullptr, nullptr);
@@ -86,10 +86,10 @@ void ResMgr::LoadCourseData(void * /* userData */) {
 void ResMgr::LoadExtendedCourseData(void * /* userData */) {
     s_loadingFlag |= 1 << ArchiveID::Course;
 
-    s_courseName = s_course->loadLogo();
-    s_staffGhost = s_course->loadStaffGhost();
+    s_courseName = s_course->loadLogo(s_courseHeap);
+    s_staffGhost = s_course->loadStaffGhost(s_courseHeap);
     u32 raceLevel = RaceInfo::Instance().getRaceLevel();
-    void *courseArchive = s_course->loadCourse(s_courseOrder, raceLevel);
+    void *courseArchive = s_course->loadCourse(s_courseOrder, raceLevel, s_courseHeap);
     s_loaders[ArchiveID::Course] =
             JKRArchive::Mount(courseArchive, s_courseHeap, JKRArchive::MountDirection::Head, false);
 
