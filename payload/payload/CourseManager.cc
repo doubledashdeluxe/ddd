@@ -2,7 +2,8 @@
 
 #include "payload/FileLoader.hh"
 #include "payload/MinimapConfigReader.hh"
-#include "payload/SZS.hh"
+#include "payload/SZSCourseHasher.hh"
+#include "payload/SZSCourseLoader.hh"
 #include "payload/ZIPFile.hh"
 
 #include <common/Arena.hh>
@@ -649,13 +650,9 @@ void CourseManager::addCustomCourse(const Array<char, 256> &path,
     } else {
         Array<char, 256> coursePath;
         snprintf(coursePath.values(), coursePath.count(), "/%strack.arc", prefix.values());
-        u32 courseSize;
-        UniquePtr<u8[]> course(
-                reinterpret_cast<u8 *>(loadCourseFile(zipFile, coursePath.values(), &courseSize)));
-        if (!course.get()) {
+        if (!hashCourseFile(zipFile, coursePath.values(), archiveHash)) {
             return;
         }
-        crypto_blake2b(archiveHash.values(), archiveHash.count(), course.get(), courseSize);
 
         ZIPFile::Writer writer(zipFile, hashPath.values(), archiveHash.count());
         if (!writer.write(archiveHash.values(), archiveHash.count())) {
@@ -864,6 +861,35 @@ void CourseManager::sortBattlePackCoursesByName() {
     }
 }
 
+bool CourseManager::hashFile(ZIPFile &zipFile, const char *filePath, Array<u8, 32> &hash) const {
+    ZIPFile::Reader reader(zipFile, filePath);
+    if (!reader.ok()) {
+        return false;
+    }
+    crypto_blake2b_ctx ctx;
+    crypto_blake2b_init(&ctx, hash.count());
+    for (u32 offset = 0; offset < *reader.size();) {
+        const u8 *chunk;
+        u32 chunkSize;
+        if (!reader.read(chunk, chunkSize)) {
+            return false;
+        }
+        crypto_blake2b_update(&ctx, chunk, chunkSize);
+        offset += chunkSize;
+    }
+    crypto_blake2b_final(&ctx, hash.values());
+    return true;
+}
+
+bool CourseManager::hashCourseFile(ZIPFile &zipFile, const char *filePath,
+        Array<u8, 32> &hash) const {
+    if (SZSCourseHasher::Hash(zipFile, filePath, hash)) {
+        return true;
+    }
+
+    return hashFile(zipFile, filePath, hash);
+}
+
 void *CourseManager::loadFile(const char *zipPath, const char *filePath, JKRHeap *heap,
         u32 *size) const {
     ZIPFile zipFile(zipPath);
@@ -944,28 +970,12 @@ void *CourseManager::loadCourseFile(const char *zipPath, const char *filePath, u
 }
 
 void *CourseManager::loadCourseFile(ZIPFile &zipFile, const char *filePath, u32 *size) const {
-    u32 compressedSize;
-    UniquePtr<u8[]> compressed(
-            reinterpret_cast<u8 *>(loadFile(zipFile, filePath, m_courseHeap, &compressedSize)));
-    if (!compressed.get()) {
-        return nullptr;
+    void *data = SZSCourseLoader::Load(zipFile, filePath, m_courseHeap, size);
+    if (data) {
+        return data;
     }
-    UniquePtr<u8[]> uncompressed;
-    u32 uncompressedSize;
-    if (SZS::GetUncompressedSize(compressed.get(), compressedSize, uncompressedSize)) {
-        uncompressed.reset(new (m_courseHeap, 0x20) u8[uncompressedSize]);
-        if (!SZS::Uncompress(compressed.get(), compressedSize, uncompressed.get(),
-                    uncompressedSize)) {
-            return nullptr;
-        }
-    } else {
-        uncompressed.reset(compressed.release());
-        uncompressedSize = compressedSize;
-    }
-    if (size) {
-        *size = uncompressedSize;
-    }
-    return uncompressed.release();
+
+    return loadFile(zipFile, filePath, m_courseHeap, size);
 }
 
 bool CourseManager::GetDefaultCourseID(const char *name, u32 &courseID) {
