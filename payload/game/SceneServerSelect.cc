@@ -24,7 +24,7 @@ SceneServerSelect::SceneServerSelect(JKRArchive *archive, JKRHeap *heap) : Scene
 
     m_mainScreen.set("GDIndexLayout.blo", 0x20000, m_archive);
     for (u32 i = 0; i < m_serverScreens.count(); i++) {
-        m_serverScreens[i].set("Server.blo", 0x20000, menuArchive);
+        m_serverScreens[i].set("Line.blo", 0x20000, menuArchive);
     }
 
     for (u32 i = 0; i < m_serverScreens.count(); i++) {
@@ -37,10 +37,15 @@ SceneServerSelect::SceneServerSelect(JKRArchive *archive, JKRHeap *heap) : Scene
         m_mainScreen.search("Num%02u", i)->appendChild(&m_serverScreens[i]);
     }
     m_mainScreen.search("NSaveGD")->m_isVisible = false;
+    for (u32 i = 0; i < m_serverScreens.count(); i++) {
+        m_serverScreens[i].search("Desc41")->m_isVisible = false;
+        m_serverScreens[i].search("CIcon")->m_isVisible = false;
+        m_serverScreens[i].search("CCount")->m_isVisible = false;
+    }
 
     m_mainAnmTransform = J2DAnmLoaderDataBase::Load("GDIndexLayout.bck", m_archive);
-    m_arrowAnmTransform = J2DAnmLoaderDataBase::Load("GDIndexLayout.bck", m_archive);
     m_mainScreen.setAnimation(m_mainAnmTransform);
+    m_arrowAnmTransform = J2DAnmLoaderDataBase::Load("GDIndexLayout.bck", m_archive);
     for (u32 i = 0; i < 2; i++) {
         m_mainScreen.search("MArrow%02u", i + 1)->setAnimation(m_arrowAnmTransform);
     }
@@ -48,9 +53,14 @@ SceneServerSelect::SceneServerSelect(JKRArchive *archive, JKRHeap *heap) : Scene
         m_serverAnmTransforms[i] = J2DAnmLoaderDataBase::Load("GDIndexLine.bck", m_archive);
         m_serverScreens[i].setAnimation(m_serverAnmTransforms[i]);
     }
+    m_descAnmTransform = J2DAnmLoaderDataBase::Load("LineDesc.bck", menuArchive);
+    for (u32 i = 0; i < m_serverScreens.count(); i++) {
+        m_serverScreens[i].search("Desc")->setAnimation(m_descAnmTransform);
+    }
 
     m_arrowAnmTransformFrame = 0;
     m_serverAnmTransformFrames.fill(0);
+    m_descAnmTransformFrame = 0;
 }
 
 SceneServerSelect::~SceneServerSelect() {}
@@ -104,6 +114,7 @@ void SceneServerSelect::calc() {
     for (u32 i = 0; i < m_serverAnmTransforms.count(); i++) {
         m_serverAnmTransforms[i]->m_frame = m_serverAnmTransformFrames[i];
     }
+    m_descAnmTransform->m_frame = m_descAnmTransformFrame;
 
     for (u32 i = 0; i < m_arrowAlphas.count(); i++) {
         m_mainScreen.search("MArrow%02u", i + 1)->setAlpha(m_arrowAlphas[i]);
@@ -117,10 +128,10 @@ void SceneServerSelect::calc() {
         for (u32 j = 0; j < 41; j++) {
             m_serverScreens[i].search("Desc%u", j)->setAlpha(m_serverAlphas[i]);
         }
-        m_serverScreens[i].search("Icon")->setAlpha(m_serverAlphas[i]);
+        m_serverScreens[i].search("PIcon")->setAlpha(m_serverAlphas[i]);
         for (u32 j = 1; j <= 3; j++) {
             for (u32 k = 0; k < j; k++) {
-                m_serverScreens[i].search("Count%u%u", j, k)->setAlpha(m_serverAlphas[i]);
+                m_serverScreens[i].search("PCount%u%u", j, k)->setAlpha(m_serverAlphas[i]);
             }
         }
     }
@@ -300,19 +311,7 @@ void SceneServerSelect::refreshServers() {
         kart2DCommon->changeAsciiTexture(desc, 41, screen, "Desc");
         u16 playerCounts[] = {1, 23, 456};
         u16 playerCount = playerCounts[serverIndex % 3];
-        playerCount = Min<u16>(playerCount, 999);
-        u16 digits = playerCount <= 9 ? 1 : playerCount <= 99 ? 2 : 3;
-        Array<J2DPicture *, 3> pictures;
-        for (u32 j = 0; j < digits; j++) {
-            pictures[j] = screen.search("Count%u%u", digits, j)->downcast<J2DPicture>();
-        }
-        kart2DCommon->changeNumberTexture(playerCount, pictures.values(), digits, false, false);
-        for (u32 j = 1; j <= 3; j++) {
-            for (u32 k = 0; k < j; k++) {
-                J2DPicture *picture = screen.search("Count%u%u", j, k)->downcast<J2DPicture>();
-                picture->m_isVisible = j == digits;
-            }
-        }
+        kart2DCommon->changeNumberTexture(playerCount, 3, screen, "PCount");
     }
 }
 

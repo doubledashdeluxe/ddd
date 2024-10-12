@@ -67,7 +67,7 @@ Scene *SceneFactory::createScene(s32 sceneType, JKRHeap *heap) {
         break;
     case SceneType::PackSelect:
         sysDebug->setHeapGroup("PackSelect", heap);
-        scene = new (heap, 0x0) ScenePackSelect(m_archives[ArchiveType::Menu], heap);
+        scene = new (heap, 0x0) ScenePackSelect(m_archives[ArchiveType::GhostData], heap);
         break;
     case SceneType::MapSelect:
         sysDebug->setHeapGroup("MapSelect", heap);

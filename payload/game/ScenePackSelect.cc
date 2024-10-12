@@ -21,72 +21,55 @@ extern "C" {
 
 ScenePackSelect::ScenePackSelect(JKRArchive *archive, JKRHeap *heap) : Scene(archive, heap) {
     SceneFactory *sceneFactory = SceneFactory::Instance();
+    JKRArchive *menuArchive = sceneFactory->archive(SceneFactory::ArchiveType::Menu);
+    JKRArchive *mapSelectArchive = sceneFactory->archive(SceneFactory::ArchiveType::MapSelect);
     JKRArchive *backgroundArchive = sceneFactory->archive(SceneFactory::ArchiveType::Background);
     JKRArchive *titleLineArchive = sceneFactory->archive(SceneFactory::ArchiveType::TitleLine);
-    JKRArchive *mapSelectArchive = sceneFactory->archive(SceneFactory::ArchiveType::MapSelect);
-    JKRArchive *ghostDataArchive = sceneFactory->archive(SceneFactory::ArchiveType::GhostData);
 
     MenuBackground::Create(backgroundArchive);
     MenuTitleLine::Create(titleLineArchive, heap);
 
-    m_mainScreen.set("SelectPack.blo", 0x1040000, m_archive);
+    m_mainScreen.set("GDIndexLayout.blo", 0x20000, m_archive);
     m_modeScreen.set("SelectMapLayout.blo", 0x1040000, mapSelectArchive);
-    for (u32 i = 0; i < m_countScreens.count(); i++) {
-        m_countScreens[i].set("SelectPackCount.blo", 0x1040000, m_archive);
+    for (u32 i = 0; i < m_packScreens.count(); i++) {
+        m_packScreens[i].set("Line.blo", 0x20000, menuArchive);
     }
-    m_arrowScreen.set("GDIndexLayout.blo", 0x20000, ghostDataArchive);
 
-    for (u32 i = 0; i < m_countScreens.count(); i++) {
-        m_mainScreen.search("Ecount%u", i + 1)->appendChild(&m_countScreens[i]);
+    for (u32 i = 0; i < m_packScreens.count(); i++) {
+        m_packScreens[i].search("GDCurs")->setHasARTrans(false, true);
+        m_packScreens[i].search("GDCurs")->setHasARShift(false, true);
+        m_packScreens[i].search("GDCurs")->setHasARScale(false, true);
     }
+
+    for (u32 i = 0; i < m_packScreens.count(); i++) {
+        m_mainScreen.search("Num%02u", i)->appendChild(&m_packScreens[i]);
+    }
+    m_mainScreen.search("NSaveGD")->m_isVisible = false;
     m_modeScreen.search("OK_wb11")->m_isVisible = false;
-    m_arrowScreen.search("NSaveGD")->m_isVisible = false;
+    for (u32 i = 0; i < m_packScreens.count(); i++) {
+        m_packScreens[i].search("PIcon")->m_isVisible = false;
+        m_packScreens[i].search("PCount")->m_isVisible = false;
+    }
 
-    m_mainAnmTransform = J2DAnmLoaderDataBase::Load("SelectPack.bck", m_archive);
-    m_mainScreen.search("N_Entry")->setAnimation(m_mainAnmTransform);
-    m_mainAnmTextureSRTKey = J2DAnmLoaderDataBase::Load("HowManyDrivers.btk", m_archive);
-    m_mainAnmTextureSRTKey->searchUpdateMaterialID(&m_mainScreen);
-    m_mainScreen.setAnimation(m_mainAnmTextureSRTKey);
-    for (u32 i = 0; i < m_packAnmTransforms.count(); i++) {
-        m_packAnmTransforms[i] = J2DAnmLoaderDataBase::Load("SelectPack.bck", m_archive);
-        m_mainScreen.search("Ecrsr%u", i + 1)->setAnimation(m_packAnmTransforms[i]);
-        m_mainScreen.search("ENplay%u", i + 1)->setAnimation(m_packAnmTransforms[i]);
-        m_mainScreen.search("Ecount%u", i + 1)->setAnimation(m_packAnmTransforms[i]);
-    }
-    for (u32 i = 0; i < m_packAnmColors.count(); i++) {
-        m_packAnmColors[i] = J2DAnmLoaderDataBase::Load("SelectPack.bpk", m_archive);
-        m_packAnmColors[i]->searchUpdateMaterialID(&m_mainScreen);
-        m_mainScreen.search("Ecrsr%u", i + 1)->setAnimation(m_packAnmColors[i]);
-    }
-    for (u32 i = 0; i < m_packAnmTevRegKeys.count(); i++) {
-        m_packAnmTevRegKeys[i] = J2DAnmLoaderDataBase::Load("HowManyDrivers.brk", m_archive);
-        m_packAnmTevRegKeys[i]->searchUpdateMaterialID(&m_mainScreen);
-        m_mainScreen.search("Ebar%u", i + 1)->setAnimation(m_packAnmTevRegKeys[i]);
-        m_mainScreen.search("Eplay%u", i + 1)->setAnimation(m_packAnmTevRegKeys[i]);
-        m_mainScreen.search("Eplay%ub", i + 1)->setAnimation(m_packAnmTevRegKeys[i]);
-        m_countScreens[i].setAnimation(m_packAnmTevRegKeys[i]);
-    }
-    for (u32 i = 0; i < m_circleAnmTransforms.count(); i++) {
-        m_circleAnmTransforms[i] = J2DAnmLoaderDataBase::Load("SelectPack.bck", m_archive);
-        m_mainScreen.search("Eplay%ub", i + 1)->setAnimation(m_circleAnmTransforms[i]);
-    }
+    m_mainAnmTransform = J2DAnmLoaderDataBase::Load("SelectPackLayout.bck", m_archive);
+    m_mainScreen.setAnimation(m_mainAnmTransform);
     m_modeAnmTransform = J2DAnmLoaderDataBase::Load("SelectMapLayout.bck", mapSelectArchive);
     m_modeScreen.search("NSlMap")->setAnimation(m_modeAnmTransform);
-    for (u32 i = 0; i < m_countAnmTransforms.count(); i++) {
-        m_countAnmTransforms[i] = J2DAnmLoaderDataBase::Load("SelectPackCount.bck", m_archive);
-        m_countScreens[i].setAnimation(m_countAnmTransforms[i]);
-    }
-    m_arrowAnmTransform = J2DAnmLoaderDataBase::Load("GDIndexLayout.bck", ghostDataArchive);
+    m_arrowAnmTransform = J2DAnmLoaderDataBase::Load("SelectPackLayout.bck", m_archive);
     for (u32 i = 0; i < 2; i++) {
-        m_arrowScreen.search("MArrow%02u", i + 1)->setAnimation(m_arrowAnmTransform);
+        m_mainScreen.search("MArrow%02u", i + 1)->setAnimation(m_arrowAnmTransform);
+    }
+    for (u32 i = 0; i < m_packAnmTransforms.count(); i++) {
+        m_packAnmTransforms[i] = J2DAnmLoaderDataBase::Load("GDIndexLine.bck", m_archive);
+        m_packScreens[i].setAnimation(m_packAnmTransforms[i]);
+    }
+    for (u32 i = 0; i < m_descAnmTransforms.count(); i++) {
+        m_descAnmTransforms[i] = J2DAnmLoaderDataBase::Load("LineDesc.bck", menuArchive);
+        m_packScreens[i].search("Desc")->setAnimation(m_descAnmTransforms[i]);
     }
 
-    m_mainAnmTextureSRTKeyFrame = 0;
-    m_packAnmTransformFrames.fill(14);
-    m_packAnmColorFrames.fill(0);
-    m_packAnmTevRegKeyFrames.fill(0);
-    m_circleAnmTransformFrames.fill(14);
     m_arrowAnmTransformFrame = 0;
+    m_packAnmTransformFrames.fill(0);
 }
 
 ScenePackSelect::~ScenePackSelect() {}
@@ -113,6 +96,16 @@ void ScenePackSelect::init() {
         namePicture->changeTexture("Entry_Versus.bti", 0);
         break;
     }
+    for (u32 i = 0; i < m_packScreens.count(); i++) {
+        J2DPicture *picture = m_packScreens[i].search("CIcon")->downcast<J2DPicture>();
+        if (RaceInfo::Instance().isRace()) {
+            picture->changeTexture("Course.bti", 0);
+        } else {
+            picture->changeTexture("Arena.bti", 0);
+        }
+    }
+
+    m_packCount = 0;
 
     if (CourseManager::Instance()->lock()) {
         slideIn();
@@ -129,7 +122,6 @@ void ScenePackSelect::draw() {
 
     m_mainScreen.draw(0.0f, 0.0f, m_graphContext);
     m_modeScreen.draw(0.0f, 0.0f, m_graphContext);
-    m_arrowScreen.draw(0.0f, 0.0f, m_graphContext);
 }
 
 void ScenePackSelect::calc() {
@@ -138,62 +130,64 @@ void ScenePackSelect::calc() {
     MenuBackground::Instance()->calc();
     MenuTitleLine::Instance()->calc();
 
-    m_mainAnmTextureSRTKeyFrame = (m_mainAnmTextureSRTKeyFrame + 1) % 180;
-    for (u32 i = 0; i < 4; i++) {
+    m_descOffset += 5;
+    refreshPacks();
+
+    m_arrowAnmTransformFrame = (m_arrowAnmTransformFrame + 1) % 35;
+    for (u32 i = 0; i < 6; i++) {
         u32 packIndex = m_rowIndex + i;
         if (packIndex == m_packIndex) {
-            if (m_packAnmTransformFrames[i] < 22) {
+            if (m_packAnmTransformFrames[i] < 7) {
                 m_packAnmTransformFrames[i]++;
             }
-            m_packAnmTevRegKeyFrames[i] = 1;
-            m_circleAnmTransformFrames[i] = 14 + (m_circleAnmTransformFrames[i] - 13) % 61;
         } else {
-            if (m_packAnmTransformFrames[i] > 14) {
+            if (m_packAnmTransformFrames[i] > 0) {
                 m_packAnmTransformFrames[i]--;
             }
-            m_packAnmTevRegKeyFrames[i] = 0;
-            m_circleAnmTransformFrames[i] = 14;
         }
-        m_packAnmColorFrames[i] = (m_packAnmColorFrames[i] + 1) % 120;
     }
-    m_arrowAnmTransformFrame = (m_arrowAnmTransformFrame + 1) % 35;
 
     m_mainAnmTransform->m_frame = m_mainAnmTransformFrame;
-    m_mainAnmTextureSRTKey->m_frame = m_mainAnmTextureSRTKeyFrame;
+    m_modeAnmTransform->m_frame = m_modeAnmTransformFrame;
+    m_arrowAnmTransform->m_frame = m_arrowAnmTransformFrame;
     for (u32 i = 0; i < m_packAnmTransforms.count(); i++) {
         m_packAnmTransforms[i]->m_frame = m_packAnmTransformFrames[i];
     }
-    for (u32 i = 0; i < m_packAnmColors.count(); i++) {
-        m_packAnmColors[i]->m_frame = m_packAnmColorFrames[i];
+    for (u32 i = 0; i < m_descAnmTransforms.count(); i++) {
+        m_descAnmTransforms[i]->m_frame = m_descAnmTransformFrames[i];
     }
-    for (u32 i = 0; i < m_packAnmTevRegKeys.count(); i++) {
-        m_packAnmTevRegKeys[i]->m_frame = m_packAnmTevRegKeyFrames[i];
-    }
-    for (u32 i = 0; i < m_circleAnmTransforms.count(); i++) {
-        m_circleAnmTransforms[i]->m_frame = m_circleAnmTransformFrames[i];
-    }
-    m_modeAnmTransform->m_frame = m_modeAnmTransformFrame;
-    m_arrowAnmTransform->m_frame = m_arrowAnmTransformFrame;
 
-    for (u32 i = 0; i < m_packAlphas.count(); i++) {
-        m_mainScreen.search("Ebar%u", i + 1)->setAlpha(m_packAlphas[i]);
-        m_mainScreen.search("Eplay%u", i + 1)->setAlpha(m_packAlphas[i]);
-        m_mainScreen.search("Eplay%ub", i + 1)->setAlpha(m_packAlphas[i]);
-        for (u32 j = 0; j < 3; j++) {
-            m_countScreens[i].search("Eplay%u", j + 1)->setAlpha(m_packAlphas[i]);
-        }
-        m_packAnmColors[i]->m_frame += m_packAlphas[i] / 51 * 121;
-    }
     for (u32 i = 0; i < m_arrowAlphas.count(); i++) {
-        m_arrowScreen.search("MArrow%02u", i + 1)->setAlpha(m_arrowAlphas[i]);
+        m_mainScreen.search("MArrow%02u", i + 1)->setAlpha(m_arrowAlphas[i]);
+    }
+    for (u32 i = 0; i < m_packAlphas.count(); i++) {
+        m_packScreens[i].search("GDCurs")->setAlpha(m_packAlphas[i]);
+        m_packScreens[i].search("GDCurs1")->setAlpha(m_packAlphas[i]);
+        for (u32 j = 0; j < 26; j++) {
+            m_packScreens[i].search("Name%u", j)->setAlpha(m_packAlphas[i]);
+        }
+        for (u32 j = 0; j < 42; j++) {
+            u8 alpha = m_packAlphas[i];
+            if (j == 0) {
+                alpha = (alpha * (255 - m_descAlphas[i])) >> 8;
+            } else if (j == 41) {
+                alpha = (alpha * m_descAlphas[i]) >> 8;
+            }
+            m_packScreens[i].search("Desc%u", j)->setAlpha(alpha);
+        }
+        m_packScreens[i].search("CIcon")->setAlpha(m_packAlphas[i]);
+        for (u32 j = 1; j <= 3; j++) {
+            for (u32 k = 0; k < j; k++) {
+                m_packScreens[i].search("CCount%u%u", j, k)->setAlpha(m_packAlphas[i]);
+            }
+        }
     }
 
     m_mainScreen.animation();
     m_modeScreen.animation();
-    for (u32 i = 0; i < m_countScreens.count(); i++) {
-        m_countScreens[i].animationMaterials();
+    for (u32 i = 0; i < m_packScreens.count(); i++) {
+        m_packScreens[i].animationMaterials();
     }
-    m_arrowScreen.animation();
 }
 
 void ScenePackSelect::wait() {
@@ -212,21 +206,23 @@ void ScenePackSelect::slideIn() {
         SequenceApp::Instance()->ready(SceneType::Menu);
     }
     m_rowIndex = m_packIndex;
-    m_rowIndex = Min(m_rowIndex, m_packCount - Min<u32>(m_packCount, 3));
+    m_rowIndex = Min(m_rowIndex, m_packCount - Min<u32>(m_packCount, 5));
+    m_descOffset = 0;
 
     MenuTitleLine::Instance()->drop("SelectPack.bti");
-    m_modeAnmTransformFrame = 0;
     m_mainAnmTransformFrame = 0;
+    m_modeAnmTransformFrame = 0;
+    m_descAnmTransformFrames.fill(0);
+    m_arrowAlphas.fill(0);
     for (u32 i = 0; i < m_packAlphas.count(); i++) {
         u32 packIndex = m_rowIndex + i;
-        if (i < 3 && packIndex < m_packCount) {
+        if (i < 5 && packIndex < m_packCount) {
             m_packAlphas[i] = 255;
         } else {
             m_packAlphas[i] = 0;
         }
     }
-    m_arrowAlphas.fill(0);
-    refreshPacks();
+    m_descAlphas.fill(0);
     m_state = &ScenePackSelect::stateSlideIn;
 }
 
@@ -242,18 +238,15 @@ void ScenePackSelect::idle() {
 void ScenePackSelect::scrollUp() {
     m_packIndex--;
     m_rowIndex--;
-    m_mainAnmTransformFrame = 21;
+    m_mainAnmTransformFrame = 46;
     m_packAnmTransformFrames.rotateRight(1);
-    m_packAnmTevRegKeyFrames.rotateRight(1);
-    m_circleAnmTransformFrames.rotateRight(1);
     m_packAlphas.rotateRight(1);
-    refreshPacks();
     m_state = &ScenePackSelect::stateScrollUp;
 }
 
 void ScenePackSelect::scrollDown() {
     m_packIndex++;
-    m_mainAnmTransformFrame = 15;
+    m_mainAnmTransformFrame = 40;
     m_state = &ScenePackSelect::stateScrollDown;
 }
 
@@ -268,12 +261,10 @@ void ScenePackSelect::stateWait() {
 }
 
 void ScenePackSelect::stateSlideIn() {
-    if (m_modeAnmTransformFrame < 15) {
-        m_modeAnmTransformFrame++;
-        if (m_modeAnmTransformFrame <= 14) {
-            m_mainAnmTransformFrame = m_modeAnmTransformFrame;
-        }
-        if (m_modeAnmTransformFrame > 10) {
+    if (m_mainAnmTransformFrame < 30) {
+        m_mainAnmTransformFrame++;
+        m_modeAnmTransformFrame = Min<u32>(m_mainAnmTransformFrame, 15);
+        if (m_mainAnmTransformFrame > 25) {
             showArrows(0);
         }
     } else {
@@ -282,11 +273,9 @@ void ScenePackSelect::stateSlideIn() {
 }
 
 void ScenePackSelect::stateSlideOut() {
-    if (m_modeAnmTransformFrame > 0) {
-        m_modeAnmTransformFrame--;
-        if (m_modeAnmTransformFrame <= 14) {
-            m_mainAnmTransformFrame = m_modeAnmTransformFrame;
-        }
+    if (m_mainAnmTransformFrame > 0) {
+        m_mainAnmTransformFrame--;
+        m_modeAnmTransformFrame = Min<u32>(m_mainAnmTransformFrame, 15);
         hideArrows();
     } else {
         nextScene();
@@ -316,7 +305,7 @@ void ScenePackSelect::stateIdle() {
     } else if (button.repeat() & JUTGamePad::PAD_MSTICK_DOWN) {
         if (m_packIndex + 1 < m_packCount) {
             GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CURSOL);
-            if (m_packIndex == m_rowIndex + 2) {
+            if (m_packIndex == m_rowIndex + 4) {
                 scrollDown();
             } else {
                 m_packIndex++;
@@ -329,7 +318,7 @@ void ScenePackSelect::stateScrollUp() {
     m_mainAnmTransformFrame--;
     showPacks(0);
     showArrows(0);
-    if (m_mainAnmTransformFrame == 14) {
+    if (m_mainAnmTransformFrame == 39) {
         idle();
     }
 }
@@ -338,14 +327,11 @@ void ScenePackSelect::stateScrollDown() {
     m_mainAnmTransformFrame++;
     showPacks(1);
     showArrows(1);
-    if (m_mainAnmTransformFrame == 22) {
+    if (m_mainAnmTransformFrame == 47) {
         m_rowIndex++;
-        m_mainAnmTransformFrame = 14;
+        m_mainAnmTransformFrame = 39;
         m_packAnmTransformFrames.rotateLeft(1);
-        m_packAnmTevRegKeyFrames.rotateLeft(1);
-        m_circleAnmTransformFrames.rotateLeft(1);
         m_packAlphas.rotateLeft(1);
-        refreshPacks();
         idle();
     }
 }
@@ -359,8 +345,9 @@ void ScenePackSelect::stateNextScene() {
 }
 
 void ScenePackSelect::refreshPacks() {
+    Kart2DCommon *kart2DCommon = Kart2DCommon::Instance();
     CourseManager *courseManager = CourseManager::Instance();
-    for (u32 i = 0; i < 4; i++) {
+    for (u32 i = 0; i < 6; i++) {
         u32 packIndex = m_rowIndex + i;
         if (packIndex >= m_packCount) {
             break;
@@ -371,21 +358,60 @@ void ScenePackSelect::refreshPacks() {
         } else {
             pack = &courseManager->battlePack(packIndex);
         }
-        J2DPicture *picture = m_mainScreen.search("Eplay%u", i + 1)->downcast<J2DPicture>();
-        picture->changeTexture(reinterpret_cast<ResTIMG *>(pack->nameImage()), 0);
-        Array<J2DPicture *, 3> pictures;
-        pictures[0] = m_countScreens[i].search("Eplay3")->downcast<J2DPicture>();
-        pictures[1] = m_countScreens[i].search("Eplay2")->downcast<J2DPicture>();
-        pictures[2] = m_countScreens[i].search("Eplay1")->downcast<J2DPicture>();
-        Kart2DCommon::Instance()->changeNumberTexture(pack->courseIndices().count(),
-                pictures.values(), pictures.count(), false, false);
+        J2DScreen &screen = m_packScreens[i];
+        kart2DCommon->changeAsciiTexture(pack->name(), 26, screen, "Name");
+        u32 descLength = 0;
+        u32 courseCount = pack->courseIndices().count();
+        const char *sep = " / ";
+        for (u32 j = 0; j < courseCount; j++) {
+            const CourseManager::Course *course;
+            if (RaceInfo::Instance().isRace()) {
+                course = &courseManager->raceCourse(packIndex, j);
+            } else {
+                course = &courseManager->battleCourse(packIndex, j);
+            }
+            descLength += strlen(course->name()) + strlen(sep);
+        }
+        u32 descOffset = 0;
+        if (descLength <= 41 + strlen(sep)) {
+            descLength -= strlen(sep);
+            m_descAnmTransformFrames[i] = 0;
+            m_descAlphas[i] = 0;
+        } else {
+            descOffset = m_descOffset / 60 % descLength;
+            m_descAnmTransformFrames[i] = m_descOffset / 5 % 12;
+            m_descAlphas[i] = m_descOffset / 4 % 15 * 17;
+        }
+        Array<char, 42 + 1> desc;
+        for (u32 j = 0, k = 0; j < courseCount; j++) {
+            const CourseManager::Course *course;
+            if (RaceInfo::Instance().isRace()) {
+                course = &courseManager->raceCourse(packIndex, j);
+            } else {
+                course = &courseManager->battleCourse(packIndex, j);
+            }
+            for (u32 l = 0; l < 2; l++) {
+                for (const char *p = l == 0 ? course->name() : sep; *p; p++, k++) {
+                    u32 m = k;
+                    if (descLength > 41) {
+                        m = (descLength + k - descOffset) % descLength;
+                    }
+                    if (m < 42) {
+                        desc[m] = *p;
+                    }
+                }
+            }
+        }
+        desc[descLength] = '\0';
+        kart2DCommon->changeAsciiTexture(desc.values(), 42, screen, "Desc");
+        kart2DCommon->changeNumberTexture(courseCount, 3, screen, "CCount");
     }
 }
 
 void ScenePackSelect::showPacks(s32 rowOffset) {
     for (u32 i = 0; i < m_packAlphas.count(); i++) {
         u32 packIndex = m_rowIndex + i;
-        if (static_cast<s32>(i) >= rowOffset && static_cast<s32>(i) < 3 + rowOffset &&
+        if (static_cast<s32>(i) >= rowOffset && static_cast<s32>(i) < 5 + rowOffset &&
                 packIndex < m_packCount) {
             if (m_packAlphas[i] < 255) {
                 m_packAlphas[i] += 51;
@@ -408,7 +434,7 @@ void ScenePackSelect::showArrows(s32 rowOffset) {
             m_arrowAlphas[0] -= 51;
         }
     }
-    if (m_rowIndex + rowOffset + 3 < m_packCount) {
+    if (m_rowIndex + rowOffset + 5 < m_packCount) {
         if (m_arrowAlphas[1] < 255) {
             m_arrowAlphas[1] += 51;
         }

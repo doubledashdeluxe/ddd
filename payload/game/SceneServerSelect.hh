@@ -53,9 +53,11 @@ private:
     J2DAnmBase *m_mainAnmTransform;
     J2DAnmBase *m_arrowAnmTransform;
     Array<J2DAnmBase *, 6> m_serverAnmTransforms;
+    J2DAnmBase *m_descAnmTransform;
     u8 m_mainAnmTransformFrame;
     u8 m_arrowAnmTransformFrame;
     Array<u8, 6> m_serverAnmTransformFrames;
+    u8 m_descAnmTransformFrame;
     Array<u8, 2> m_arrowAlphas;
     Array<u8, 6> m_serverAlphas;
 };

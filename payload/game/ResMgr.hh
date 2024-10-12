@@ -37,6 +37,7 @@ public:
             ARAM = 0x2,
             Course = 0x3,
             System = 0x4,
+            Race2D = 0x5,
         };
 
     private:
