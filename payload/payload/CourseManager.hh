@@ -28,7 +28,6 @@ public:
         virtual const char *name() const = 0;
         virtual const char *author() const = 0;
         virtual const char *version() const = 0;
-        virtual void *nameImage() const = 0;
 
     protected:
         Ring<u32, MaxCourseCount> m_courseIndices;
@@ -87,7 +86,6 @@ private:
         const char *name() const override;
         const char *author() const override;
         const char *version() const override;
-        void *nameImage() const override;
 
     private:
         Array<char, 32> m_name;
@@ -96,18 +94,16 @@ private:
     class CustomPack : public Pack {
     public:
         CustomPack(Ring<u32, MaxCourseCount> courseIndices, Array<char, INIFieldSize> name,
-                Array<char, INIFieldSize> author, Array<char, INIFieldSize> version, u8 *nameImage);
+                Array<char, INIFieldSize> author, Array<char, INIFieldSize> version);
         ~CustomPack();
         const char *name() const override;
         const char *author() const override;
         const char *version() const override;
-        void *nameImage() const override;
 
     private:
         Array<char, INIFieldSize> m_name;
         Array<char, INIFieldSize> m_author;
         Array<char, INIFieldSize> m_version;
-        UniquePtr<u8[]> m_nameImage;
     };
 
     class DefaultCourse : public Course {

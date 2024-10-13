@@ -64,17 +64,10 @@ const char *CourseManager::DefaultPack::version() const {
     return nullptr;
 }
 
-void *CourseManager::DefaultPack::nameImage() const {
-    Array<char, 32> name;
-    snprintf(name.values(), name.count(), "%s.bti", m_name.values());
-    return JKRFileLoader::GetGlbResource(name.values(), nullptr);
-}
-
 CourseManager::CustomPack::CustomPack(Ring<u32, MaxCourseCount> courseIndices,
         Array<char, INIFieldSize> name, Array<char, INIFieldSize> author,
-        Array<char, INIFieldSize> version, u8 *nameImage)
-    : Pack(courseIndices), m_name(name), m_author(author), m_version(version),
-      m_nameImage(nameImage) {}
+        Array<char, INIFieldSize> version)
+    : Pack(courseIndices), m_name(name), m_author(author), m_version(version) {}
 
 CourseManager::CustomPack::~CustomPack() {}
 
@@ -88,10 +81,6 @@ const char *CourseManager::CustomPack::author() const {
 
 const char *CourseManager::CustomPack::version() const {
     return m_version.values();
-}
-
-void *CourseManager::CustomPack::nameImage() const {
-    return m_nameImage.get();
 }
 
 CourseManager::DefaultCourse::DefaultCourse(Array<u8, 32> archiveHash, u32 courseID,
@@ -758,16 +747,6 @@ void CourseManager::addCustomPack(const Array<char, 256> &path,
             getLocalizedEntry(packINI.localizedAuthors, packINI.fallbackAuthor);
     Array<char, INIFieldSize> &version = packINI.version;
 
-    Array<char, 256> nameImagePrefix;
-    snprintf(nameImagePrefix.values(), nameImagePrefix.count(), "%s/pack_images/", path.values());
-    u32 nameImageSize;
-    UniquePtr<u8[]> nameImage(reinterpret_cast<u8 *>(
-            loadLocalizedFile(nameImagePrefix.values(), "/pack_name.bti", m_heap, &nameImageSize)));
-    if (!nameImage.get() || nameImageSize < 0x20) {
-        return;
-    }
-    DCache::Flush(nameImage.get(), nameImageSize);
-
     const char *c = packINI.defaultCourses.values();
     for (u32 i = 0; i < defaultCourseOffset && *c; i++, c++) {}
     for (u32 i = 0; i < defaultCourseCount && *c; i++, c++) {
@@ -782,8 +761,7 @@ void CourseManager::addCustomPack(const Array<char, 256> &path,
 
     DEBUG("Adding custom %s pack %s (%u)...", type, path.values(), courseIndices.count());
     packs.pushBack();
-    Pack *pack =
-            new (m_heap, 0x4) CustomPack(courseIndices, name, author, version, nameImage.release());
+    Pack *pack = new (m_heap, 0x4) CustomPack(courseIndices, name, author, version);
     packs.back()->reset(pack);
 }
 
