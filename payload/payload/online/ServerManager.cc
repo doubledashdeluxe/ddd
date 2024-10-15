@@ -38,7 +38,7 @@ const ServerManager::Server &ServerManager::server(u32 index) const {
 }
 
 void ServerManager::Init() {
-    s_instance = new (MEM2Arena::Instance(), 0x4) ServerManager;
+    s_instance = new (MEM1Arena::Instance(), 0x4) ServerManager;
 }
 
 ServerManager *ServerManager::Instance() {
