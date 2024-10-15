@@ -305,7 +305,7 @@ const CourseManager::Course &CourseManager::battleCourse(u32 packIndex, u32 inde
 }
 
 void CourseManager::Init() {
-    s_instance = new (MEM2Arena::Instance(), 0x4) CourseManager;
+    s_instance = new (MEM1Arena::Instance(), 0x4) CourseManager;
 }
 
 CourseManager *CourseManager::Instance() {
