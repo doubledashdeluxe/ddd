@@ -3,9 +3,9 @@
 #include "payload/StorageScanner.hh"
 #include "payload/ZIPFile.hh"
 
+#include <common/Array.hh>
 #include <common/Optional.hh>
 #include <common/Ring.hh>
-#include <common/UniquePtr.hh>
 #include <common/storage/Storage.hh>
 #include <game/MinimapConfig.hh>
 #include <jsystem/JKRHeap.hh>
@@ -14,23 +14,23 @@ class CourseManager : public StorageScanner {
 public:
     enum {
         MaxCourseCount = 256,
-        MaxPackCount = 128,
+        MaxPackCount = 64,
     };
 
     class Pack {
     public:
-        Pack(Ring<u32, MaxCourseCount> courseIndices);
+        Pack(Ring<u8, MaxCourseCount> courseIndices);
         virtual ~Pack();
 
-        const Ring<u32, MaxCourseCount> &courseIndices() const;
-        Ring<u32, MaxCourseCount> &courseIndices();
+        const Ring<u8, MaxCourseCount> &courseIndices() const;
+        Ring<u8, MaxCourseCount> &courseIndices();
 
         virtual const char *name() const = 0;
         virtual const char *author() const = 0;
         virtual const char *version() const = 0;
 
     protected:
-        Ring<u32, MaxCourseCount> m_courseIndices;
+        Ring<u8, MaxCourseCount> m_courseIndices;
     };
 
     class Course {
@@ -57,8 +57,6 @@ public:
         Array<u8, 32> m_archiveHash;
     };
 
-    void start();
-
     u32 racePackCount() const;
     u32 battlePackCount() const;
     const Pack &racePack(u32 index) const;
@@ -75,12 +73,15 @@ private:
     enum {
         DefaultRaceCourseCount = 16,
         DefaultBattleCourseCount = 6,
+        MaxCustomRaceCourseCount = MaxCourseCount - DefaultRaceCourseCount,
+        MaxCustomBattleCourseCount = MaxCourseCount - DefaultBattleCourseCount,
         DefaultPackCount = 3,
+        MaxCustomPackCount = MaxPackCount - DefaultPackCount,
     };
 
     class DefaultPack : public Pack {
     public:
-        DefaultPack(Ring<u32, MaxCourseCount> courseIndices, Array<char, 32> name);
+        DefaultPack(Ring<u8, MaxCourseCount> courseIndices, Array<char, 32> name);
         ~DefaultPack() override;
 
         const char *name() const override;
@@ -93,7 +94,7 @@ private:
 
     class CustomPack : public Pack {
     public:
-        CustomPack(Ring<u32, MaxCourseCount> courseIndices, Array<char, INIReader::FieldSize> name,
+        CustomPack(Ring<u8, MaxCourseCount> courseIndices, Array<char, INIReader::FieldSize> name,
                 Array<char, INIReader::FieldSize> author,
                 Array<char, INIReader::FieldSize> version);
         ~CustomPack();
@@ -187,27 +188,36 @@ private:
     OSThread &thread() override;
     void process() override;
 
+    u32 raceCourseCount() const;
+    u32 battleCourseCount() const;
+    const Course &raceCourse(u32 index) const;
+    const Course &battleCourse(u32 index) const;
+
     void addDefaultRaceCourses();
     void addDefaultBattleCourses();
     void addCustomPacksAndCourses(Array<char, 256> &path, Storage::NodeInfo &nodeInfo,
-            Ring<u32, MaxCourseCount> &raceCourseIndices,
-            Ring<u32, MaxCourseCount> &battleCourseIndices);
-    void addCustomCourse(const Array<char, 256> &path, Ring<u32, MaxCourseCount> &raceCourseIndices,
-            Ring<u32, MaxCourseCount> &battleCourseIndices);
-    void addCustomRacePack(const Array<char, 256> &path, Ring<u32, MaxCourseCount> &courseIndices);
-    void addCustomBattlePack(const Array<char, 256> &path,
-            Ring<u32, MaxCourseCount> &courseIndices);
-    void addCustomPack(const Array<char, 256> &path, Ring<u32, MaxCourseCount> &courseIndices,
+            Ring<u8, MaxCourseCount> &raceCourseIndices,
+            Ring<u8, MaxCourseCount> &battleCourseIndices);
+    void addCustomCourse(const Array<char, 256> &path, Ring<u8, MaxCourseCount> &raceCourseIndices,
+            Ring<u8, MaxCourseCount> &battleCourseIndices);
+    void addCustomRaceCourse(Ring<u8, MaxCourseCount> &courseIndices, const Array<char, 256> &path,
+            const CustomCourse &course);
+    void addCustomBattleCourse(Ring<u8, MaxCourseCount> &courseIndices,
+            const Array<char, 256> &path, const CustomCourse &course);
+    void addCustomRacePack(const Array<char, 256> &path, Ring<u8, MaxCourseCount> &courseIndices);
+    void addCustomBattlePack(const Array<char, 256> &path, Ring<u8, MaxCourseCount> &courseIndices);
+    void addCustomPack(const Array<char, 256> &path, Ring<u8, MaxCourseCount> &courseIndices,
             u32 defaultCourseOffset, u32 defaultCourseCount,
-            Ring<UniquePtr<Pack>, MaxPackCount> &packs, const char *type);
-    void sortRacePacksByName();
-    void sortBattlePacksByName();
+            Ring<CustomPack, MaxCustomPackCount> &packs, const char *type);
+    void sortCustomRacePacksByName();
+    void sortCustomBattlePacksByName();
     void addDefaultRacePacks();
     void addDefaultBattlePacks();
-    void addDefaultPacks(const Ring<UniquePtr<Course>, MaxCourseCount> &courses,
-            Ring<UniquePtr<Pack>, MaxPackCount> &packs, const char *base, const char *type);
+    void addDefaultPacks(u32 defaultCourseCount, u32 customCourseCount,
+            Ring<DefaultPack, DefaultPackCount> &packs, const char *base, const char *type);
     void sortRacePackCoursesByName();
     void sortBattlePackCoursesByName();
+
     bool hashFile(ZIPFile &zipFile, const char *filePath, Array<u8, 32> &hash) const;
     bool hashCourseFile(ZIPFile &zipFile, const char *filePath, Array<u8, 32> &hash) const;
     bool loadCourseHash(ZIPFile &zipFile, const char *filePath, Array<u8, 32> &hash) const;
@@ -227,18 +237,21 @@ private:
             u32 *size = nullptr) const;
 
     static bool GetDefaultCourseID(const char *name, u32 &courseID);
-    static void SortPacksByName(Ring<UniquePtr<Pack>, MaxPackCount> &packs);
-    static bool ComparePacksByName(const UniquePtr<Pack> &a, const UniquePtr<Pack> &b);
+    static void SortCustomPacksByName(Ring<CustomPack, MaxCustomPackCount> &packs);
+    static bool ComparePacksByName(const Pack &a, const Pack &b);
     static bool CompareRaceCourseIndicesByName(const u32 &a, const u32 &b);
     static bool CompareBattleCourseIndicesByName(const u32 &a, const u32 &b);
 
     Array<u8, 128 * 1024> m_stack;
     OSThread m_thread;
-    JKRHeap *m_heap;
-    Ring<UniquePtr<Course>, MaxCourseCount> m_raceCourses;
-    Ring<UniquePtr<Course>, MaxCourseCount> m_battleCourses;
-    Ring<UniquePtr<Pack>, MaxPackCount> m_racePacks;
-    Ring<UniquePtr<Pack>, MaxPackCount> m_battlePacks;
+    Ring<DefaultCourse, DefaultRaceCourseCount> m_defaultRaceCourses;
+    Ring<CustomCourse, MaxCustomRaceCourseCount> m_customRaceCourses;
+    Ring<DefaultCourse, DefaultBattleCourseCount> m_defaultBattleCourses;
+    Ring<CustomCourse, MaxCustomBattleCourseCount> m_customBattleCourses;
+    Ring<DefaultPack, DefaultPackCount> m_defaultRacePacks;
+    Ring<CustomPack, MaxCustomPackCount> m_customRacePacks;
+    Ring<DefaultPack, DefaultPackCount> m_defaultBattlePacks;
+    Ring<CustomPack, MaxCustomPackCount> m_customBattlePacks;
 
     static CourseManager *s_instance;
 };

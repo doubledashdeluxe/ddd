@@ -13,7 +13,6 @@
 #include <common/Log.hh>
 #include <game/CourseID.hh>
 #include <game/ResMgr.hh>
-#include <jsystem/JKRExpHeap.hh>
 extern "C" {
 #include <monocypher/monocypher.h>
 
@@ -22,16 +21,16 @@ extern "C" {
 #include <strings.h>
 }
 
-CourseManager::Pack::Pack(Ring<u32, MaxCourseCount> courseIndices)
+CourseManager::Pack::Pack(Ring<u8, MaxCourseCount> courseIndices)
     : m_courseIndices(courseIndices) {}
 
 CourseManager::Pack::~Pack() {}
 
-const Ring<u32, CourseManager::MaxCourseCount> &CourseManager::Pack::courseIndices() const {
+const Ring<u8, CourseManager::MaxCourseCount> &CourseManager::Pack::courseIndices() const {
     return m_courseIndices;
 }
 
-Ring<u32, CourseManager::MaxCourseCount> &CourseManager::Pack::courseIndices() {
+Ring<u8, CourseManager::MaxCourseCount> &CourseManager::Pack::courseIndices() {
     return m_courseIndices;
 }
 
@@ -43,7 +42,7 @@ Array<u8, 32> CourseManager::Course::archiveHash() const {
     return m_archiveHash;
 }
 
-CourseManager::DefaultPack::DefaultPack(Ring<u32, MaxCourseCount> courseIndices,
+CourseManager::DefaultPack::DefaultPack(Ring<u8, MaxCourseCount> courseIndices,
         Array<char, 32> name)
     : Pack(courseIndices), m_name(name) {}
 
@@ -66,7 +65,7 @@ const char *CourseManager::DefaultPack::version() const {
     return nullptr;
 }
 
-CourseManager::CustomPack::CustomPack(Ring<u32, MaxCourseCount> courseIndices,
+CourseManager::CustomPack::CustomPack(Ring<u8, MaxCourseCount> courseIndices,
         Array<char, INIReader::FieldSize> name, Array<char, INIReader::FieldSize> author,
         Array<char, INIReader::FieldSize> version)
     : Pack(courseIndices), m_name(name), m_author(author), m_version(version) {}
@@ -267,43 +266,42 @@ bool CourseManager::CustomCourse::isCustom() const {
     return true;
 }
 
-void CourseManager::start() {
-    size_t heapSize = 0x500000;
-    void *heapPtr = MEM2Arena::Instance()->alloc(heapSize, 0x4);
-    m_heap = JKRExpHeap::Create(heapPtr, heapSize, JKRHeap::GetRootHeap(), false);
-    StorageScanner::start();
-}
-
 u32 CourseManager::racePackCount() const {
-    return m_racePacks.count();
+    return m_defaultRacePacks.count() + m_customRacePacks.count();
 }
 
 u32 CourseManager::battlePackCount() const {
-    return m_battlePacks.count();
+    return m_defaultBattlePacks.count() + m_customBattlePacks.count();
 }
 
 const CourseManager::Pack &CourseManager::racePack(u32 index) const {
-    return *m_racePacks[index];
+    if (index < m_defaultRacePacks.count()) {
+        return m_defaultRacePacks[index];
+    }
+    return m_customRacePacks[index - m_defaultRacePacks.count()];
 }
 
 const CourseManager::Pack &CourseManager::battlePack(u32 index) const {
-    return *m_battlePacks[index];
+    if (index < m_defaultBattlePacks.count()) {
+        return m_defaultBattlePacks[index];
+    }
+    return m_customBattlePacks[index - m_defaultBattlePacks.count()];
 }
 
 u32 CourseManager::raceCourseCount(u32 packIndex) const {
-    return m_racePacks[packIndex]->courseIndices().count();
+    return racePack(packIndex).courseIndices().count();
 }
 
 u32 CourseManager::battleCourseCount(u32 packIndex) const {
-    return m_battlePacks[packIndex]->courseIndices().count();
+    return battlePack(packIndex).courseIndices().count();
 }
 
 const CourseManager::Course &CourseManager::raceCourse(u32 packIndex, u32 index) const {
-    return *m_raceCourses[m_racePacks[packIndex]->courseIndices()[index]];
+    return raceCourse(racePack(packIndex).courseIndices()[index]);
 }
 
 const CourseManager::Course &CourseManager::battleCourse(u32 packIndex, u32 index) const {
-    return *m_battleCourses[m_battlePacks[packIndex]->courseIndices()[index]];
+    return battleCourse(battlePack(packIndex).courseIndices()[index]);
 }
 
 void CourseManager::Init() {
@@ -325,25 +323,51 @@ OSThread &CourseManager::thread() {
 }
 
 void CourseManager::process() {
-    m_raceCourses.reset();
-    m_battleCourses.reset();
-    m_racePacks.reset();
-    m_battlePacks.reset();
+    m_defaultRaceCourses.reset();
+    m_customRaceCourses.reset();
+    m_defaultBattleCourses.reset();
+    m_customBattleCourses.reset();
+    m_defaultRacePacks.reset();
+    m_customRacePacks.reset();
+    m_defaultBattlePacks.reset();
+    m_customBattlePacks.reset();
     addDefaultRaceCourses();
     addDefaultBattleCourses();
     Array<char, 256> path;
     snprintf(path.values(), path.count(), "main:/ddd/courses");
     Storage::CreateDir(path.values(), Storage::Mode::WriteAlways);
     Storage::NodeInfo nodeInfo;
-    Ring<u32, MaxCourseCount> raceCourseIndices;
-    Ring<u32, MaxCourseCount> battleCourseIndices;
+    Ring<u8, MaxCourseCount> raceCourseIndices;
+    Ring<u8, MaxCourseCount> battleCourseIndices;
     addCustomPacksAndCourses(path, nodeInfo, raceCourseIndices, battleCourseIndices);
-    sortRacePacksByName();
-    sortBattlePacksByName();
+    sortCustomRacePacksByName();
+    sortCustomBattlePacksByName();
     addDefaultRacePacks();
     addDefaultBattlePacks();
     sortRacePackCoursesByName();
     sortBattlePackCoursesByName();
+}
+
+u32 CourseManager::raceCourseCount() const {
+    return m_defaultRaceCourses.count() + m_customRaceCourses.count();
+}
+
+u32 CourseManager::battleCourseCount() const {
+    return m_defaultBattleCourses.count() + m_customBattleCourses.count();
+}
+
+const CourseManager::Course &CourseManager::raceCourse(u32 index) const {
+    if (index < m_defaultRaceCourses.count()) {
+        return m_defaultRaceCourses[index];
+    }
+    return m_customRaceCourses[index - m_defaultRaceCourses.count()];
+}
+
+const CourseManager::Course &CourseManager::battleCourse(u32 index) const {
+    if (index < m_defaultBattleCourses.count()) {
+        return m_defaultBattleCourses[index];
+    }
+    return m_customBattleCourses[index - m_defaultBattleCourses.count()];
 }
 
 void CourseManager::addDefaultRaceCourses() {
@@ -466,10 +490,8 @@ void CourseManager::addDefaultRaceCourses() {
 
     for (u32 i = 0; i < DefaultRaceCourseCount; i++) {
         DEBUG("Adding default race course 0x%02x...", courseIDs[i]);
-        m_raceCourses.pushBack();
-        Course *course = new (m_heap, 0x4)
-                DefaultCourse(archiveHashes[i], courseIDs[i], thumbnails[i], nameImages[i]);
-        m_raceCourses.back()->reset(course);
+        DefaultCourse course(archiveHashes[i], courseIDs[i], thumbnails[i], nameImages[i]);
+        m_defaultRaceCourses.pushBack(course);
     }
 }
 
@@ -523,16 +545,14 @@ void CourseManager::addDefaultBattleCourses() {
 
     for (u32 i = 0; i < DefaultBattleCourseCount; i++) {
         DEBUG("Adding default battle course 0x%02x...", courseIDs[i]);
-        m_battleCourses.pushBack();
-        Course *course = new (m_heap, 0x4)
-                DefaultCourse(archiveHashes[i], courseIDs[i], thumbnails[i], nameImages[i]);
-        m_battleCourses.back()->reset(course);
+        DefaultCourse course(archiveHashes[i], courseIDs[i], thumbnails[i], nameImages[i]);
+        m_defaultBattleCourses.pushBack(course);
     }
 }
 
 void CourseManager::addCustomPacksAndCourses(Array<char, 256> &path, Storage::NodeInfo &nodeInfo,
-        Ring<u32, MaxCourseCount> &raceCourseIndices,
-        Ring<u32, MaxCourseCount> &battleCourseIndices) {
+        Ring<u8, MaxCourseCount> &raceCourseIndices,
+        Ring<u8, MaxCourseCount> &battleCourseIndices) {
     u32 length = strlen(path.values());
     for (Storage::DirHandle dir(path.values()); dir.read(nodeInfo);) {
         if (nodeInfo.type == Storage::NodeType::Dir) {
@@ -555,8 +575,8 @@ void CourseManager::addCustomPacksAndCourses(Array<char, 256> &path, Storage::No
 }
 
 void CourseManager::addCustomCourse(const Array<char, 256> &path,
-        Ring<u32, MaxCourseCount> &raceCourseIndices,
-        Ring<u32, MaxCourseCount> &battleCourseIndices) {
+        Ring<u8, MaxCourseCount> &raceCourseIndices,
+        Ring<u8, MaxCourseCount> &battleCourseIndices) {
     ZIPFile zipFile(path.values());
     if (!zipFile.ok()) {
         return;
@@ -629,9 +649,7 @@ void CourseManager::addCustomCourse(const Array<char, 256> &path,
         }
     }
 
-    Ring<UniquePtr<Course>, MaxCourseCount> *courses = nullptr;
-    Ring<u32, MaxCourseCount> *courseIndices = nullptr;
-    const char *type = nullptr;
+    CustomCourse course(archiveHash, musicID, name, author, version, minimapConfig, path, prefix);
     switch (courseID) {
     case CourseID::BabyLuigi:
     case CourseID::Peach:
@@ -649,9 +667,7 @@ void CourseManager::addCustomCourse(const Array<char, 256> &path,
     case CourseID::Rainbow:
     case CourseID::Desert:
     case CourseID::Snow:
-        courses = &m_raceCourses;
-        courseIndices = &raceCourseIndices;
-        type = "race";
+        addCustomRaceCourse(raceCourseIndices, path, course);
         break;
     case CourseID::Mini1:
     case CourseID::Mini2:
@@ -659,43 +675,53 @@ void CourseManager::addCustomCourse(const Array<char, 256> &path,
     case CourseID::Mini5:
     case CourseID::Mini7:
     case CourseID::Mini8:
-        courses = &m_battleCourses;
-        courseIndices = &battleCourseIndices;
-        type = "battle";
+        addCustomBattleCourse(battleCourseIndices, path, course);
         break;
-    default:
-        return;
     }
+}
 
-    for (u32 i = 0; i < courses->count(); i++) {
-        if (archiveHash == (*courses)[i]->archiveHash()) {
-            courseIndices->pushBack(i);
+void CourseManager::addCustomRaceCourse(Ring<u8, MaxCourseCount> &courseIndices,
+        const Array<char, 256> &path, const CustomCourse &course) {
+    for (u32 i = 0; i < raceCourseCount(); i++) {
+        if (raceCourse(i).archiveHash() == course.archiveHash()) {
+            courseIndices.pushBack(i);
             return;
         }
     }
 
-    DEBUG("Adding custom %s course %s...", type, path.values());
-    courseIndices->pushBack(courses->count());
-    courses->pushBack();
-    Course *course = new (m_heap, 0x4)
-            CustomCourse(archiveHash, musicID, name, author, version, minimapConfig, path, prefix);
-    courses->back()->reset(course);
+    DEBUG("Adding custom race course %s...", path.values());
+    courseIndices.pushBack(raceCourseCount());
+    m_customRaceCourses.pushBack(course);
+}
+
+void CourseManager::addCustomBattleCourse(Ring<u8, MaxCourseCount> &courseIndices,
+        const Array<char, 256> &path, const CustomCourse &course) {
+    for (u32 i = 0; i < battleCourseCount(); i++) {
+        if (battleCourse(i).archiveHash() == course.archiveHash()) {
+            courseIndices.pushBack(i);
+            return;
+        }
+    }
+
+    DEBUG("Adding custom battle course %s...", path.values());
+    courseIndices.pushBack(battleCourseCount());
+    m_customBattleCourses.pushBack(course);
 }
 
 void CourseManager::addCustomRacePack(const Array<char, 256> &path,
-        Ring<u32, MaxCourseCount> &courseIndices) {
-    addCustomPack(path, courseIndices, 0, DefaultRaceCourseCount, m_racePacks, "race");
+        Ring<u8, MaxCourseCount> &courseIndices) {
+    addCustomPack(path, courseIndices, 0, DefaultRaceCourseCount, m_customRacePacks, "race");
 }
 
 void CourseManager::addCustomBattlePack(const Array<char, 256> &path,
-        Ring<u32, MaxCourseCount> &courseIndices) {
+        Ring<u8, MaxCourseCount> &courseIndices) {
     addCustomPack(path, courseIndices, DefaultRaceCourseCount, DefaultBattleCourseCount,
-            m_battlePacks, "battle");
+            m_customBattlePacks, "battle");
 }
 
 void CourseManager::addCustomPack(const Array<char, 256> &path,
-        Ring<u32, MaxCourseCount> &courseIndices, u32 defaultCourseOffset, u32 defaultCourseCount,
-        Ring<UniquePtr<Pack>, MaxPackCount> &packs, const char *type) {
+        Ring<u8, MaxCourseCount> &courseIndices, u32 defaultCourseOffset, u32 defaultCourseCount,
+        Ring<CustomPack, MaxCustomPackCount> &packs, const char *type) {
     PackINI packINI;
     Array<INIReader::Field, 4> iniFields;
     iniFields[0] = (INIReader::Field){"packname", &packINI.fallbackName};
@@ -734,76 +760,74 @@ void CourseManager::addCustomPack(const Array<char, 256> &path,
     }
 
     DEBUG("Adding custom %s pack %s (%u)...", type, path.values(), courseIndices.count());
-    packs.pushBack();
-    Pack *pack = new (m_heap, 0x4) CustomPack(courseIndices, name, author, version);
-    packs.back()->reset(pack);
+    CustomPack pack(courseIndices, name, author, version);
+    packs.pushBack(pack);
 }
 
-void CourseManager::sortRacePacksByName() {
-    SortPacksByName(m_racePacks);
+void CourseManager::sortCustomRacePacksByName() {
+    SortCustomPacksByName(m_customRacePacks);
 }
 
-void CourseManager::sortBattlePacksByName() {
-    SortPacksByName(m_battlePacks);
+void CourseManager::sortCustomBattlePacksByName() {
+    SortCustomPacksByName(m_customBattlePacks);
 }
 
 void CourseManager::addDefaultRacePacks() {
-    addDefaultPacks(m_raceCourses, m_racePacks, "Courses", "race");
+    addDefaultPacks(m_defaultRaceCourses.count(), m_customRaceCourses.count(), m_defaultRacePacks,
+            "Courses", "race");
 }
 
 void CourseManager::addDefaultBattlePacks() {
-    addDefaultPacks(m_battleCourses, m_battlePacks, "Stages", "battle");
+    addDefaultPacks(m_defaultBattleCourses.count(), m_customBattleCourses.count(),
+            m_defaultBattlePacks, "Stages", "battle");
 }
 
-void CourseManager::addDefaultPacks(const Ring<UniquePtr<Course>, MaxCourseCount> &courses,
-        Ring<UniquePtr<Pack>, MaxPackCount> &packs, const char *base, const char *type) {
-    Array<Ring<u32, MaxCourseCount>, DefaultPackCount> courseIndices;
-    Array<Array<char, 32>, DefaultPackCount> names;
-
-    for (u32 i = 0; i < courses.count(); i++) {
+void CourseManager::addDefaultPacks(u32 defaultCourseCount, u32 customCourseCount,
+        Ring<DefaultPack, DefaultPackCount> &packs, const char *base, const char *type) {
+    Array<Ring<u8, MaxCourseCount>, DefaultPackCount> courseIndices;
+    for (u32 i = 0; i < defaultCourseCount; i++) {
         courseIndices[0].pushBack(i);
+        courseIndices[1].pushBack(i);
     }
+    for (u32 i = defaultCourseCount; i < defaultCourseCount + customCourseCount; i++) {
+        courseIndices[0].pushBack(i);
+        courseIndices[2].pushBack(i);
+    }
+
+    Array<Array<char, 32>, DefaultPackCount> names;
     snprintf(names[0].values(), names[0].count(), "All%s", base);
-
-    for (u32 i = 0; i < courses.count(); i++) {
-        if (courses[i]->isDefault()) {
-            courseIndices[1].pushBack(i);
-        }
-    }
     snprintf(names[1].values(), names[1].count(), "Vanilla%s", base);
-
-    for (u32 i = 0; i < courses.count(); i++) {
-        if (courses[i]->isCustom()) {
-            courseIndices[2].pushBack(i);
-        }
-    }
     snprintf(names[2].values(), names[2].count(), "Custom%s", base);
 
-    for (u32 i = DefaultPackCount; i-- > 0;) {
+    for (u32 i = 0; i < DefaultPackCount; i++) {
         if (courseIndices[i].empty()) {
             continue;
         }
         DEBUG("Adding default %s pack %s (%u)...", type, names[i].values(),
                 courseIndices[i].count());
-        if (packs.full()) {
-            packs.popBack();
-        }
-        packs.pushFront();
-        Pack *pack = new (m_heap, 0x4) DefaultPack(courseIndices[i], names[i]);
-        packs.front()->reset(pack);
+        DefaultPack pack(courseIndices[i], names[i]);
+        packs.pushBack(pack);
     }
 }
 
 void CourseManager::sortRacePackCoursesByName() {
-    for (u32 i = 0; i < m_racePacks.count(); i++) {
-        Ring<u32, MaxCourseCount> &courseIndices = m_racePacks[i]->courseIndices();
+    for (u32 i = 0; i < m_defaultRacePacks.count(); i++) {
+        Ring<u8, MaxCourseCount> &courseIndices = m_defaultRacePacks[i].courseIndices();
+        Sort(courseIndices, courseIndices.count(), CompareRaceCourseIndicesByName);
+    }
+    for (u32 i = 0; i < m_customRacePacks.count(); i++) {
+        Ring<u8, MaxCourseCount> &courseIndices = m_customRacePacks[i].courseIndices();
         Sort(courseIndices, courseIndices.count(), CompareRaceCourseIndicesByName);
     }
 }
 
 void CourseManager::sortBattlePackCoursesByName() {
-    for (u32 i = 0; i < m_battlePacks.count(); i++) {
-        Ring<u32, MaxCourseCount> &courseIndices = m_battlePacks[i]->courseIndices();
+    for (u32 i = 0; i < m_defaultBattlePacks.count(); i++) {
+        Ring<u8, MaxCourseCount> &courseIndices = m_defaultBattlePacks[i].courseIndices();
+        Sort(courseIndices, courseIndices.count(), CompareBattleCourseIndicesByName);
+    }
+    for (u32 i = 0; i < m_customBattlePacks.count(); i++) {
+        Ring<u8, MaxCourseCount> &courseIndices = m_customBattlePacks[i].courseIndices();
         Sort(courseIndices, courseIndices.count(), CompareBattleCourseIndicesByName);
     }
 }
@@ -1001,22 +1025,20 @@ bool CourseManager::GetDefaultCourseID(const char *name, u32 &courseID) {
     return true;
 }
 
-void CourseManager::SortPacksByName(Ring<UniquePtr<Pack>, MaxPackCount> &packs) {
+void CourseManager::SortCustomPacksByName(Ring<CustomPack, MaxCustomPackCount> &packs) {
     Sort(packs, packs.count(), ComparePacksByName);
 }
 
-bool CourseManager::ComparePacksByName(const UniquePtr<Pack> &a, const UniquePtr<Pack> &b) {
-    return strcasecmp(a->name(), b->name()) <= 0;
+bool CourseManager::ComparePacksByName(const Pack &a, const Pack &b) {
+    return strcasecmp(a.name(), b.name()) <= 0;
 }
 
 bool CourseManager::CompareRaceCourseIndicesByName(const u32 &a, const u32 &b) {
-    Ring<UniquePtr<Course>, MaxCourseCount> &courses = s_instance->m_raceCourses;
-    return strcasecmp(courses[a]->name(), courses[b]->name()) <= 0;
+    return strcasecmp(s_instance->raceCourse(a).name(), s_instance->raceCourse(b).name()) <= 0;
 }
 
 bool CourseManager::CompareBattleCourseIndicesByName(const u32 &a, const u32 &b) {
-    Ring<UniquePtr<Course>, MaxCourseCount> &courses = s_instance->m_battleCourses;
-    return strcasecmp(courses[a]->name(), courses[b]->name()) <= 0;
+    return strcasecmp(s_instance->battleCourse(a).name(), s_instance->battleCourse(b).name()) <= 0;
 }
 
 CourseManager *CourseManager::s_instance = nullptr;
