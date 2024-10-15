@@ -4,7 +4,6 @@
 
 #include <common/Arena.hh>
 #include <common/Log.hh>
-#include <jsystem/JKRExpHeap.hh>
 
 extern "C" {
 #include <stdio.h>
@@ -30,19 +29,12 @@ Array<u8, 32> ServerManager::Server::publicKey() const {
     return m_publicKey;
 }
 
-void ServerManager::start() {
-    size_t heapSize = 0x80000;
-    void *heapPtr = MEM2Arena::Instance()->alloc(heapSize, 0x4);
-    m_heap = JKRExpHeap::Create(heapPtr, heapSize, JKRHeap::GetRootHeap(), false);
-    StorageScanner::start();
-}
-
 u32 ServerManager::serverCount() const {
     return m_servers.count();
 }
 
 const ServerManager::Server &ServerManager::server(u32 index) const {
-    return *m_servers[index];
+    return m_servers[index];
 }
 
 void ServerManager::Init() {
@@ -127,17 +119,16 @@ void ServerManager::addServer(const Array<char, 256> &path) {
     }
 
     DEBUG("Adding server %s...", path.values());
-    m_servers.pushBack();
-    Server *server = new (m_heap, 0x4) Server(name, address, publicKey);
-    m_servers.back()->reset(server);
+    Server server(name, address, publicKey);
+    m_servers.pushBack(server);
 }
 
 void ServerManager::sortServersByName() {
     Sort(m_servers, m_servers.count(), CompareServersByName);
 }
 
-bool ServerManager::CompareServersByName(const UniquePtr<Server> &a, const UniquePtr<Server> &b) {
-    return strcasecmp(a->name(), b->name()) <= 0;
+bool ServerManager::CompareServersByName(const Server &a, const Server &b) {
+    return strcasecmp(a.name(), b.name()) <= 0;
 }
 
 ServerManager *ServerManager::s_instance = nullptr;
