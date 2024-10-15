@@ -613,22 +613,17 @@ void CourseManager::addCustomCourse(const Array<char, 256> &path,
     Optional<MinimapConfig> minimapConfig =
             MinimapConfigReader::Read(zipFile, minimapJSONPath.values());
 
+    Array<char, 256> archiveHashPath;
+    snprintf(archiveHashPath.values(), archiveHashPath.count(), "/%shash.bin", prefix.values());
     Array<u8, 32> archiveHash;
-    Array<char, 256> hashPath;
-    snprintf(hashPath.values(), hashPath.count(), "/%shash.bin", prefix.values());
-    u32 hashSize;
-    UniquePtr<u8[]> hash(
-            reinterpret_cast<u8 *>(loadFile(zipFile, hashPath.values(), m_heap, &hashSize)));
-    if (hash.get() && hashSize == archiveHash.count()) {
-        memcpy(archiveHash.values(), hash.get(), archiveHash.count());
-    } else {
+    if (!loadCourseHash(zipFile, archiveHashPath.values(), archiveHash)) {
         Array<char, 256> coursePath;
         snprintf(coursePath.values(), coursePath.count(), "/%strack.arc", prefix.values());
         if (!hashCourseFile(zipFile, coursePath.values(), archiveHash)) {
             return;
         }
 
-        ZIPFile::Writer writer(zipFile, hashPath.values(), archiveHash.count());
+        ZIPFile::Writer writer(zipFile, archiveHashPath.values(), archiveHash.count());
         if (!writer.write(archiveHash.values(), archiveHash.count())) {
             return;
         }
@@ -673,8 +668,7 @@ void CourseManager::addCustomCourse(const Array<char, 256> &path,
     }
 
     for (u32 i = 0; i < courses->count(); i++) {
-        if (!memcmp(archiveHash.values(), (*courses)[i]->archiveHash().values(),
-                    archiveHash.count())) {
+        if (archiveHash == (*courses)[i]->archiveHash()) {
             courseIndices->pushBack(i);
             return;
         }
@@ -841,6 +835,27 @@ bool CourseManager::hashCourseFile(ZIPFile &zipFile, const char *filePath,
     }
 
     return hashFile(zipFile, filePath, hash);
+}
+
+bool CourseManager::loadCourseHash(ZIPFile &zipFile, const char *filePath,
+        Array<u8, 32> &hash) const {
+    ZIPFile::Reader reader(zipFile, filePath);
+    if (!reader.ok()) {
+        return false;
+    }
+    if (*reader.size() != hash.count()) {
+        return false;
+    }
+    for (u32 offset = 0; offset < *reader.size();) {
+        const u8 *chunk;
+        u32 chunkSize;
+        if (!reader.read(chunk, chunkSize)) {
+            return false;
+        }
+        memcpy(hash.values() + offset, chunk, chunkSize);
+        offset += chunkSize;
+    }
+    return true;
 }
 
 void *CourseManager::loadFile(const char *zipPath, const char *filePath, JKRHeap *heap,

@@ -210,6 +210,7 @@ private:
     void sortBattlePackCoursesByName();
     bool hashFile(ZIPFile &zipFile, const char *filePath, Array<u8, 32> &hash) const;
     bool hashCourseFile(ZIPFile &zipFile, const char *filePath, Array<u8, 32> &hash) const;
+    bool loadCourseHash(ZIPFile &zipFile, const char *filePath, Array<u8, 32> &hash) const;
     void *loadFile(const char *zipPath, const char *filePath, JKRHeap *heap,
             u32 *size = nullptr) const;
     void *loadFile(ZIPFile &zipFile, const char *filePath, JKRHeap *heap,
