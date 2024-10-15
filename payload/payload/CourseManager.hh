@@ -218,6 +218,7 @@ private:
     void sortRacePackCoursesByName();
     void sortBattlePackCoursesByName();
 
+    bool findPrefix(ZIPFile &zipFile, const char *filePath, Array<char, 128> &prefix) const;
     bool hashFile(ZIPFile &zipFile, const char *filePath, Array<u8, 32> &hash) const;
     bool hashCourseFile(ZIPFile &zipFile, const char *filePath, Array<u8, 32> &hash) const;
     bool loadCourseHash(ZIPFile &zipFile, const char *filePath, Array<u8, 32> &hash) const;
@@ -242,7 +243,7 @@ private:
     static bool CompareRaceCourseIndicesByName(const u32 &a, const u32 &b);
     static bool CompareBattleCourseIndicesByName(const u32 &a, const u32 &b);
 
-    Array<u8, 128 * 1024> m_stack;
+    Array<u8, 64 * 1024> m_stack;
     OSThread m_thread;
     Ring<DefaultCourse, DefaultRaceCourseCount> m_defaultRaceCourses;
     Ring<CustomCourse, MaxCustomRaceCourseCount> m_customRaceCourses;

@@ -583,15 +583,8 @@ void CourseManager::addCustomCourse(const Array<char, 256> &path,
     }
 
     Array<char, 128> prefix;
-    {
-        ZIPFile::Reader reader(zipFile, "trackinfo.ini");
-        if (!reader.ok()) {
-            return;
-        }
-
-        prefix = reader.cdNode()->path;
-        u32 prefixLength = strlen(reader.cdNode()->path.values()) - strlen("trackinfo.ini");
-        prefix[prefixLength] = '\0';
+    if (!findPrefix(zipFile, "trackinfo.ini", prefix)) {
+        return;
     }
 
     CourseINI courseINI;
@@ -830,6 +823,19 @@ void CourseManager::sortBattlePackCoursesByName() {
         Ring<u8, MaxCourseCount> &courseIndices = m_customBattlePacks[i].courseIndices();
         Sort(courseIndices, courseIndices.count(), CompareBattleCourseIndicesByName);
     }
+}
+
+bool CourseManager::findPrefix(ZIPFile &zipFile, const char *filePath,
+        Array<char, 128> &prefix) const {
+    ZIPFile::Reader reader(zipFile, filePath);
+    if (!reader.ok()) {
+        return false;
+    }
+
+    prefix = reader.cdNode()->path;
+    u32 prefixLength = strlen(reader.cdNode()->path.values()) - strlen(filePath);
+    prefix[prefixLength] = '\0';
+    return true;
 }
 
 bool CourseManager::hashFile(ZIPFile &zipFile, const char *filePath, Array<u8, 32> &hash) const {
