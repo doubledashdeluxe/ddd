@@ -1,6 +1,6 @@
 #include "ServerManager.hh"
 
-#include "payload/FileLoader.hh"
+#include "payload/INIFileReader.hh"
 
 #include <common/Arena.hh>
 #include <common/Log.hh>
@@ -12,8 +12,8 @@ extern "C" {
 #include <strings.h>
 }
 
-ServerManager::Server::Server(Array<char, INIFieldSize> name, Array<char, INIFieldSize> address,
-        Array<u8, 32> publicKey)
+ServerManager::Server::Server(Array<char, INIReader::FieldSize> name,
+        Array<char, INIReader::FieldSize> address, Array<u8, 32> publicKey)
     : m_name(name), m_address(address), m_publicKey(publicKey) {}
 
 ServerManager::Server::~Server() {}
@@ -87,34 +87,24 @@ void ServerManager::addServers(Array<char, 256> &path, Storage::NodeInfo &nodeIn
 }
 
 void ServerManager::addServer(const Array<char, 256> &path) {
-    INI::Stream iniStream;
-    iniStream.ini.reset(
-            reinterpret_cast<u8 *>(FileLoader::Load(path.values(), m_heap, &iniStream.iniSize)));
-    if (!iniStream.ini.get()) {
-        return;
-    }
-    iniStream.iniOffset = 0x0;
-
     ServerINI serverINI;
-    Array<INI::Field, 3> iniFields;
-    iniFields[0] = (INI::Field){"servername", &serverINI.fallbackName};
-    iniFields[1] = (INI::Field){"address", &serverINI.address};
-    iniFields[2] = (INI::Field){"publickey", &serverINI.publicKey};
-    Array<INI::LocalizedField, 1> localizedINIFields;
-    localizedINIFields[0] = (INI::LocalizedField){"servername_", &serverINI.localizedNames};
-
-    INI ini(iniStream, iniFields.count(), iniFields.values(), localizedINIFields.count(),
-            localizedINIFields.values());
-    if (!ini.read()) {
+    Array<INIReader::Field, 3> iniFields;
+    iniFields[0] = (INIReader::Field){"servername", &serverINI.fallbackName};
+    iniFields[1] = (INIReader::Field){"address", &serverINI.address};
+    iniFields[2] = (INIReader::Field){"publickey", &serverINI.publicKey};
+    Array<INIReader::LocalizedField, 1> localizedINIFields;
+    localizedINIFields[0] = (INIReader::LocalizedField){"servername_", &serverINI.localizedNames};
+    if (!INIFileReader::Read(iniFields.count(), iniFields.values(), localizedINIFields.count(),
+                localizedINIFields.values(), path.values())) {
         return;
     }
 
-    Array<char, INIFieldSize> &name =
+    Array<char, INIReader::FieldSize> &name =
             getLocalizedEntry(serverINI.localizedNames, serverINI.fallbackName);
     if (strlen(name.values()) == 0) {
         return;
     }
-    Array<char, INIFieldSize> &address = serverINI.address;
+    Array<char, INIReader::FieldSize> &address = serverINI.address;
     if (strlen(address.values()) == 0) {
         return;
     }

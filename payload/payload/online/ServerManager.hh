@@ -20,7 +20,7 @@ public:
 
     class Server {
     public:
-        Server(Array<char, INIFieldSize> name, Array<char, INIFieldSize> address,
+        Server(Array<char, INIReader::FieldSize> name, Array<char, INIReader::FieldSize> address,
                 Array<u8, 32> publicKey);
         ~Server();
 
@@ -29,8 +29,8 @@ public:
         Array<u8, 32> publicKey() const;
 
     private:
-        Array<char, INIFieldSize> m_name;
-        Array<char, INIFieldSize> m_address;
+        Array<char, INIReader::FieldSize> m_name;
+        Array<char, INIReader::FieldSize> m_address;
         Array<u8, 32> m_publicKey;
     };
 
@@ -44,10 +44,10 @@ public:
 
 private:
     struct ServerINI {
-        Array<Array<char, INIFieldSize>, KartLocale::Language::Count> localizedNames;
-        Array<char, INIFieldSize> fallbackName;
-        Array<char, INIFieldSize> address;
-        Array<char, INIFieldSize> publicKey;
+        Array<Array<char, INIReader::FieldSize>, KartLocale::Language::Count> localizedNames;
+        Array<char, INIReader::FieldSize> fallbackName;
+        Array<char, INIReader::FieldSize> address;
+        Array<char, INIReader::FieldSize> publicKey;
     };
 
     ServerManager();

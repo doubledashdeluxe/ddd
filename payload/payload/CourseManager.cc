@@ -1,6 +1,8 @@
 #include "CourseManager.hh"
 
 #include "payload/FileLoader.hh"
+#include "payload/INIFileReader.hh"
+#include "payload/INIZIPFileReader.hh"
 #include "payload/MinimapConfigReader.hh"
 #include "payload/SZSCourseHasher.hh"
 #include "payload/SZSCourseLoader.hh"
@@ -65,8 +67,8 @@ const char *CourseManager::DefaultPack::version() const {
 }
 
 CourseManager::CustomPack::CustomPack(Ring<u32, MaxCourseCount> courseIndices,
-        Array<char, INIFieldSize> name, Array<char, INIFieldSize> author,
-        Array<char, INIFieldSize> version)
+        Array<char, INIReader::FieldSize> name, Array<char, INIReader::FieldSize> author,
+        Array<char, INIReader::FieldSize> version)
     : Pack(courseIndices), m_name(name), m_author(author), m_version(version) {}
 
 CourseManager::CustomPack::~CustomPack() {}
@@ -169,8 +171,8 @@ bool CourseManager::DefaultCourse::isCustom() const {
 }
 
 CourseManager::CustomCourse::CustomCourse(Array<u8, 32> archiveHash, u32 musicID,
-        Array<char, INIFieldSize> name, Array<char, INIFieldSize> author,
-        Array<char, INIFieldSize> version, Optional<MinimapConfig> minimapConfig,
+        Array<char, INIReader::FieldSize> name, Array<char, INIReader::FieldSize> author,
+        Array<char, INIReader::FieldSize> version, Optional<MinimapConfig> minimapConfig,
         Array<char, 256> path, Array<char, 128> prefix)
     : Course(archiveHash), m_musicID(musicID), m_name(name), m_author(author), m_version(version),
       m_minimapConfig(minimapConfig), m_path(path), m_prefix(prefix) {}
@@ -561,7 +563,6 @@ void CourseManager::addCustomCourse(const Array<char, 256> &path,
     }
 
     Array<char, 128> prefix;
-    INI::Stream iniStream;
     {
         ZIPFile::Reader reader(zipFile, "trackinfo.ini");
         if (!reader.ok()) {
@@ -571,49 +572,31 @@ void CourseManager::addCustomCourse(const Array<char, 256> &path,
         prefix = reader.cdNode()->path;
         u32 prefixLength = strlen(reader.cdNode()->path.values()) - strlen("trackinfo.ini");
         prefix[prefixLength] = '\0';
-
-        iniStream.iniSize = *reader.size();
-        iniStream.ini.reset(new (m_heap, -0x4) u8[iniStream.iniSize]);
-        if (!iniStream.ini.get()) {
-            return;
-        }
-        for (u32 offset = 0; offset < iniStream.iniSize;) {
-            const u8 *chunk;
-            u32 chunkSize;
-            if (!reader.read(chunk, chunkSize)) {
-                return;
-            }
-            memcpy(iniStream.ini.get() + offset, chunk, chunkSize);
-            offset += chunkSize;
-        }
     }
-    iniStream.iniOffset = 0x0;
 
     CourseINI courseINI;
-    Array<INI::Field, 5> iniFields;
-    iniFields[0] = (INI::Field){"trackname", &courseINI.fallbackName};
-    iniFields[1] = (INI::Field){"author", &courseINI.fallbackAuthor};
-    iniFields[2] = (INI::Field){"version", &courseINI.version};
-    iniFields[3] = (INI::Field){"replaces", &courseINI.defaultCourseName};
-    iniFields[4] = (INI::Field){"auxiliary_audio_track", &courseINI.defaultMusicName};
-    Array<INI::LocalizedField, 2> localizedINIFields;
-    localizedINIFields[0] = (INI::LocalizedField){"trackname_", &courseINI.localizedNames};
-    localizedINIFields[1] = (INI::LocalizedField){"author_", &courseINI.localizedAuthors};
-
-    INI ini(iniStream, iniFields.count(), iniFields.values(), localizedINIFields.count(),
-            localizedINIFields.values());
-    if (!ini.read()) {
+    Array<INIReader::Field, 5> iniFields;
+    iniFields[0] = (INIReader::Field){"trackname", &courseINI.fallbackName};
+    iniFields[1] = (INIReader::Field){"author", &courseINI.fallbackAuthor};
+    iniFields[2] = (INIReader::Field){"version", &courseINI.version};
+    iniFields[3] = (INIReader::Field){"replaces", &courseINI.defaultCourseName};
+    iniFields[4] = (INIReader::Field){"auxiliary_audio_track", &courseINI.defaultMusicName};
+    Array<INIReader::LocalizedField, 2> localizedINIFields;
+    localizedINIFields[0] = (INIReader::LocalizedField){"trackname_", &courseINI.localizedNames};
+    localizedINIFields[1] = (INIReader::LocalizedField){"author_", &courseINI.localizedAuthors};
+    if (!INIZIPFileReader::Read(iniFields.count(), iniFields.values(), localizedINIFields.count(),
+                localizedINIFields.values(), zipFile, "trackinfo.ini")) {
         return;
     }
 
-    Array<char, INIFieldSize> &name =
+    Array<char, INIReader::FieldSize> &name =
             getLocalizedEntry(courseINI.localizedNames, courseINI.fallbackName);
     if (strlen(name.values()) == 0) {
         return;
     }
-    Array<char, INIFieldSize> &author =
+    Array<char, INIReader::FieldSize> &author =
             getLocalizedEntry(courseINI.localizedAuthors, courseINI.fallbackAuthor);
-    Array<char, INIFieldSize> &version = courseINI.version;
+    Array<char, INIReader::FieldSize> &version = courseINI.version;
 
     u32 courseID;
     if (!GetDefaultCourseID(courseINI.defaultCourseName.values(), courseID)) {
@@ -719,40 +702,30 @@ void CourseManager::addCustomBattlePack(const Array<char, 256> &path,
 void CourseManager::addCustomPack(const Array<char, 256> &path,
         Ring<u32, MaxCourseCount> &courseIndices, u32 defaultCourseOffset, u32 defaultCourseCount,
         Ring<UniquePtr<Pack>, MaxPackCount> &packs, const char *type) {
+    PackINI packINI;
+    Array<INIReader::Field, 4> iniFields;
+    iniFields[0] = (INIReader::Field){"packname", &packINI.fallbackName};
+    iniFields[1] = (INIReader::Field){"author", &packINI.fallbackAuthor};
+    iniFields[2] = (INIReader::Field){"version", &packINI.version};
+    iniFields[3] = (INIReader::Field){"vanilla_tracks", &packINI.defaultCourses};
+    Array<INIReader::LocalizedField, 2> localizedINIFields;
+    localizedINIFields[0] = (INIReader::LocalizedField){"packname_", &packINI.localizedNames};
+    localizedINIFields[1] = (INIReader::LocalizedField){"author_", &packINI.localizedAuthors};
     Array<char, 256> iniPath;
     snprintf(iniPath.values(), iniPath.count(), "%s/packinfo.ini", path.values());
-    INI::Stream iniStream;
-    iniStream.ini.reset(
-            reinterpret_cast<u8 *>(FileLoader::Load(iniPath.values(), m_heap, &iniStream.iniSize)));
-    if (!iniStream.ini.get()) {
-        return;
-    }
-    iniStream.iniOffset = 0x0;
-
-    PackINI packINI;
-    Array<INI::Field, 4> iniFields;
-    iniFields[0] = (INI::Field){"packname", &packINI.fallbackName};
-    iniFields[1] = (INI::Field){"author", &packINI.fallbackAuthor};
-    iniFields[2] = (INI::Field){"version", &packINI.version};
-    iniFields[3] = (INI::Field){"vanilla_tracks", &packINI.defaultCourses};
-    Array<INI::LocalizedField, 2> localizedINIFields;
-    localizedINIFields[0] = (INI::LocalizedField){"packname_", &packINI.localizedNames};
-    localizedINIFields[1] = (INI::LocalizedField){"author_", &packINI.localizedAuthors};
-
-    INI ini(iniStream, iniFields.count(), iniFields.values(), localizedINIFields.count(),
-            localizedINIFields.values());
-    if (!ini.read()) {
+    if (!INIFileReader::Read(iniFields.count(), iniFields.values(), localizedINIFields.count(),
+                localizedINIFields.values(), iniPath.values())) {
         return;
     }
 
-    Array<char, INIFieldSize> &name =
+    Array<char, INIReader::FieldSize> &name =
             getLocalizedEntry(packINI.localizedNames, packINI.fallbackName);
     if (strlen(name.values()) == 0) {
         return;
     }
-    Array<char, INIFieldSize> &author =
+    Array<char, INIReader::FieldSize> &author =
             getLocalizedEntry(packINI.localizedAuthors, packINI.fallbackAuthor);
-    Array<char, INIFieldSize> &version = packINI.version;
+    Array<char, INIReader::FieldSize> &version = packINI.version;
 
     const char *c = packINI.defaultCourses.values();
     for (u32 i = 0; i < defaultCourseOffset && *c; i++, c++) {}

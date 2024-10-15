@@ -93,17 +93,18 @@ private:
 
     class CustomPack : public Pack {
     public:
-        CustomPack(Ring<u32, MaxCourseCount> courseIndices, Array<char, INIFieldSize> name,
-                Array<char, INIFieldSize> author, Array<char, INIFieldSize> version);
+        CustomPack(Ring<u32, MaxCourseCount> courseIndices, Array<char, INIReader::FieldSize> name,
+                Array<char, INIReader::FieldSize> author,
+                Array<char, INIReader::FieldSize> version);
         ~CustomPack();
         const char *name() const override;
         const char *author() const override;
         const char *version() const override;
 
     private:
-        Array<char, INIFieldSize> m_name;
-        Array<char, INIFieldSize> m_author;
-        Array<char, INIFieldSize> m_version;
+        Array<char, INIReader::FieldSize> m_name;
+        Array<char, INIReader::FieldSize> m_author;
+        Array<char, INIReader::FieldSize> m_version;
     };
 
     class DefaultCourse : public Course {
@@ -133,8 +134,8 @@ private:
 
     class CustomCourse : public Course {
     public:
-        CustomCourse(Array<u8, 32> archiveHash, u32 musicID, Array<char, INIFieldSize> name,
-                Array<char, INIFieldSize> author, Array<char, INIFieldSize> version,
+        CustomCourse(Array<u8, 32> archiveHash, u32 musicID, Array<char, INIReader::FieldSize> name,
+                Array<char, INIReader::FieldSize> author, Array<char, INIReader::FieldSize> version,
                 Optional<MinimapConfig> minimapConfig, Array<char, 256> path,
                 Array<char, 128> prefix);
         ~CustomCourse() override;
@@ -154,31 +155,31 @@ private:
 
     private:
         u32 m_musicID;
-        Array<char, INIFieldSize> m_name;
-        Array<char, INIFieldSize> m_author;
-        Array<char, INIFieldSize> m_version;
+        Array<char, INIReader::FieldSize> m_name;
+        Array<char, INIReader::FieldSize> m_author;
+        Array<char, INIReader::FieldSize> m_version;
         Optional<MinimapConfig> m_minimapConfig;
         Array<char, 256> m_path;
         Array<char, 128> m_prefix;
     };
 
     struct PackINI {
-        Array<Array<char, INIFieldSize>, KartLocale::Language::Count> localizedNames;
-        Array<char, INIFieldSize> fallbackName;
-        Array<Array<char, INIFieldSize>, KartLocale::Language::Count> localizedAuthors;
-        Array<char, INIFieldSize> fallbackAuthor;
-        Array<char, INIFieldSize> version;
-        Array<char, INIFieldSize> defaultCourses;
+        Array<Array<char, INIReader::FieldSize>, KartLocale::Language::Count> localizedNames;
+        Array<char, INIReader::FieldSize> fallbackName;
+        Array<Array<char, INIReader::FieldSize>, KartLocale::Language::Count> localizedAuthors;
+        Array<char, INIReader::FieldSize> fallbackAuthor;
+        Array<char, INIReader::FieldSize> version;
+        Array<char, INIReader::FieldSize> defaultCourses;
     };
 
     struct CourseINI {
-        Array<Array<char, INIFieldSize>, KartLocale::Language::Count> localizedNames;
-        Array<char, INIFieldSize> fallbackName;
-        Array<Array<char, INIFieldSize>, KartLocale::Language::Count> localizedAuthors;
-        Array<char, INIFieldSize> fallbackAuthor;
-        Array<char, INIFieldSize> version;
-        Array<char, INIFieldSize> defaultCourseName;
-        Array<char, INIFieldSize> defaultMusicName;
+        Array<Array<char, INIReader::FieldSize>, KartLocale::Language::Count> localizedNames;
+        Array<char, INIReader::FieldSize> fallbackName;
+        Array<Array<char, INIReader::FieldSize>, KartLocale::Language::Count> localizedAuthors;
+        Array<char, INIReader::FieldSize> fallbackAuthor;
+        Array<char, INIReader::FieldSize> version;
+        Array<char, INIReader::FieldSize> defaultCourseName;
+        Array<char, INIReader::FieldSize> defaultMusicName;
     };
 
     CourseManager();
