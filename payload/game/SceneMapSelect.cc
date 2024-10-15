@@ -20,12 +20,14 @@ extern "C" {
 #include <jsystem/J2DAnmLoaderDataBase.hh>
 #include <jsystem/J2DPicture.hh>
 #include <payload/CourseManager.hh>
+#include <payload/Lock.hh>
 
 extern "C" {
 #include <stdio.h>
 }
 
-SceneMapSelect::SceneMapSelect(JKRArchive *archive, JKRHeap *heap) : Scene(archive, heap) {
+SceneMapSelect::SceneMapSelect(JKRArchive *archive, JKRHeap *heap)
+    : Scene(archive, heap), m_heap(heap) {
     SceneFactory *sceneFactory = SceneFactory::Instance();
     JKRArchive *backgroundArchive = sceneFactory->archive(SceneFactory::ArchiveType::Background);
     JKRArchive *titleLineArchive = sceneFactory->archive(SceneFactory::ArchiveType::TitleLine);
@@ -161,6 +163,41 @@ void SceneMapSelect::draw() {
 void SceneMapSelect::calc() {
     (this->*m_state)();
 
+    for (u32 i = 0; i < m_mapScreens.count(); i++) {
+        Lock<Mutex> lock(m_mutex);
+        u32 mapIndex = m_rowIndex * 3 + i;
+        if (mapIndex >= m_mapCount) {
+            break;
+        }
+        u32 j;
+        for (j = 0; j < m_nextMapIndices.count(); j++) {
+            if (m_nextMapIndices[j] == mapIndex) {
+                break;
+            }
+        }
+        if (j == m_nextMapIndices.count()) {
+            continue;
+        }
+        ResTIMG *thumbnail = nullptr, *nameImage = nullptr;
+        for (u32 j = 0; j < m_currMapIndices.count(); j++) {
+            if (m_currMapIndices[j] == mapIndex) {
+                thumbnail = m_thumbnails[j].get();
+                nameImage = m_nameImages[j].get();
+                break;
+            }
+        }
+        if (thumbnail) {
+            J2DPicture *picture = m_mapScreens[i].search("MapPict")->downcast<J2DPicture>();
+            picture->m_isVisible = true;
+            picture->changeTexture(thumbnail, 0);
+        }
+        if (nameImage) {
+            J2DPicture *picture = m_mapScreens[i].search("Name")->downcast<J2DPicture>();
+            picture->m_isVisible = true;
+            picture->changeTexture(nameImage, 0);
+        }
+    }
+
     MenuBackground::Instance()->calc();
     MenuTitleLine::Instance()->calc();
 
@@ -253,6 +290,11 @@ void SceneMapSelect::slideIn() {
         }
     }
     m_arrowAlphas.fill(0);
+    m_currMapIndices.fill(UINT32_MAX);
+    OSInitMessageQueue(&m_queue, m_messages.values(), m_messages.count());
+    OSCreateThread(&m_loadThread, Load, this, m_loadStack.values() + m_loadStack.count(),
+            m_loadStack.count(), 25, 0);
+    OSResumeThread(&m_loadThread);
     refreshMaps();
     m_state = &SceneMapSelect::stateSlideIn;
 }
@@ -341,6 +383,7 @@ void SceneMapSelect::select() {
 
 void SceneMapSelect::spin() {
     m_spinFrame = 1;
+    refreshSpin();
     if (m_gridAnmTransformFrame > 21) {
         m_gridAnmTransformFrame--;
     }
@@ -374,6 +417,8 @@ void SceneMapSelect::stateSlideIn() {
 }
 
 void SceneMapSelect::stateSlideOut() {
+    uintptr_t msg = false;
+    OSSendMessage(&m_queue, reinterpret_cast<void *>(msg), OS_MESSAGE_NOBLOCK);
     if (m_mainAnmTransformFrame > 0) {
         m_mainAnmTransformFrame--;
         if (m_mainAnmTransformFrame <= 10) {
@@ -386,10 +431,13 @@ void SceneMapSelect::stateSlideOut() {
             hideArrows();
         }
     } else {
-        if (m_nextScene == SceneType::None) {
-            nextBattle();
-        } else {
-            nextScene();
+        if (OSIsThreadTerminated(&m_loadThread)) {
+            OSDetachThread(&m_loadThread);
+            if (m_nextScene == SceneType::None) {
+                nextBattle();
+            } else {
+                nextScene();
+            }
         }
     }
 }
@@ -540,15 +588,9 @@ void SceneMapSelect::stateSpin() {
     if (((button.level() & PAD_TRIGGER_R) && (button.level() & PAD_TRIGGER_L)) ||
             m_spinFrame < 30) {
         if (m_spinFrame % 5 == 0) {
-            m_mapIndex = OSGetTime() % m_mapCount;
-            m_rowIndex = m_mapIndex / 3;
-            if (m_rowIndex > 0) {
-                m_rowIndex -= OSGetTime() % 2;
-            }
-            if (m_rowCount >= 2 && m_rowIndex == m_rowCount - 1) {
-                m_rowIndex--;
-            }
-            refreshMaps();
+            m_mapIndex = m_spinMapIndex;
+            m_rowIndex = m_spinRowIndex;
+            refreshSpin();
             GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CURSOL);
         }
         showMaps(0);
@@ -566,25 +608,50 @@ void SceneMapSelect::stateNextScene() {
     SequenceApp::Instance()->setNextScene(m_nextScene);
 }
 
-void SceneMapSelect::refreshMaps() {
-    SequenceInfo &sequenceInfo = SequenceInfo::Instance();
-    CourseManager *courseManager = CourseManager::Instance();
-    for (u32 i = 0; i < m_mapScreens.count(); i++) {
-        u32 mapIndex = m_rowIndex * 3 + i;
-        if (mapIndex >= m_mapCount) {
-            break;
-        }
-        const CourseManager::Course *course;
-        if (RaceInfo::Instance().isRace()) {
-            course = &courseManager->raceCourse(sequenceInfo.m_packIndex, mapIndex);
-        } else {
-            course = &courseManager->battleCourse(sequenceInfo.m_packIndex, mapIndex);
-        }
-        J2DPicture *picture = m_mapScreens[i].search("MapPict")->downcast<J2DPicture>();
-        picture->changeTexture(reinterpret_cast<ResTIMG *>(course->thumbnail()), 0);
-        picture = m_mapScreens[i].search("Name")->downcast<J2DPicture>();
-        picture->changeTexture(reinterpret_cast<ResTIMG *>(course->nameImage()), 0);
+void SceneMapSelect::refreshSpin() {
+    m_spinMapIndex = OSGetTime() % m_mapCount;
+    m_spinRowIndex = m_spinMapIndex / 3;
+    if (m_spinRowIndex > 0) {
+        m_spinRowIndex -= OSGetTime() % 2;
     }
+    if (m_rowCount >= 2 && m_spinRowIndex == m_rowCount - 1) {
+        m_spinRowIndex--;
+    }
+    Array<u32, 12> mapIndices;
+    for (u32 i = 0; i < 6; i++) {
+        mapIndices[0 + i] = m_rowIndex * 3 + i;
+    }
+    for (u32 i = 0; i < 6; i++) {
+        mapIndices[6 + i] = m_spinRowIndex * 3 + i;
+    }
+    refreshMaps(mapIndices);
+}
+
+void SceneMapSelect::refreshMaps() {
+    Array<u32, 12> mapIndices;
+    u32 rowIndex = m_rowIndex == 0 ? 0 : m_rowIndex - 1;
+    for (u32 i = 0; i < mapIndices.count(); i++) {
+        mapIndices[i] = rowIndex * 3 + i;
+    }
+    refreshMaps(mapIndices);
+}
+
+void SceneMapSelect::refreshMaps(const Array<u32, 12> &nextMapIndices) {
+    for (u32 i = 0; i < m_mapScreens.count(); i++) {
+        Array<const char *, 2> names;
+        names[0] = "MapPict";
+        names[1] = "Name";
+        for (u32 j = 0; j < names.count(); j++) {
+            J2DPicture *picture = m_mapScreens[i].search(names[j])->downcast<J2DPicture>();
+            picture->m_isVisible = false;
+            picture->changeTexture("SelCourse_Pict_Box1.bti", 0);
+        }
+    }
+
+    Lock<Mutex> m_lock(m_mutex);
+    m_nextMapIndices = nextMapIndices;
+    uintptr_t msg = true;
+    OSSendMessage(&m_queue, reinterpret_cast<void *>(msg), OS_MESSAGE_NOBLOCK);
 }
 
 void SceneMapSelect::showMaps(s32 rowOffset) {
@@ -630,4 +697,99 @@ void SceneMapSelect::hideArrows() {
             m_arrowAlphas[i] -= 51;
         }
     }
+}
+
+void *SceneMapSelect::load() {
+    while (true) {
+        uintptr_t msg;
+        OSReceiveMessage(&m_queue, reinterpret_cast<void **>(&msg), OS_MESSAGE_BLOCK);
+        if (!msg) {
+            return nullptr;
+        }
+
+        while (true) {
+            Array<u32, 12> nextMapIndices;
+            {
+                Lock<Mutex> lock(m_mutex);
+                nextMapIndices = m_nextMapIndices;
+            }
+
+            if (load(nextMapIndices)) {
+                break;
+            }
+
+            if (OSReceiveMessage(&m_queue, reinterpret_cast<void **>(&msg), OS_MESSAGE_NOBLOCK)) {
+                if (!msg) {
+                    return nullptr;
+                }
+            }
+        }
+    }
+}
+
+bool SceneMapSelect::load(const Array<u32, 12> &nextMapIndices) {
+    SequenceInfo &sequenceInfo = SequenceInfo::Instance();
+    CourseManager *courseManager = CourseManager::Instance();
+    for (u32 i = 0; i < nextMapIndices.count(); i++) {
+        u32 mapIndex = nextMapIndices[i];
+        if (mapIndex >= m_mapCount) {
+            continue;
+        }
+        const CourseManager::Course *course;
+        if (RaceInfo::Instance().isRace()) {
+            course = &courseManager->raceCourse(sequenceInfo.m_packIndex, mapIndex);
+        } else {
+            course = &courseManager->battleCourse(sequenceInfo.m_packIndex, mapIndex);
+        }
+        UniquePtr<ResTIMG> &thumbnail = findTexture(m_thumbnails, nextMapIndices, mapIndex);
+        if (!thumbnail.get()) {
+            void *texture = course->loadThumbnail(m_heap);
+            {
+                Lock<Mutex> lock(m_mutex);
+                thumbnail.reset(reinterpret_cast<ResTIMG *>(texture));
+            }
+            return false;
+        }
+        UniquePtr<ResTIMG> &nameImage = findTexture(m_nameImages, nextMapIndices, mapIndex);
+        if (!nameImage.get()) {
+            void *texture = course->loadNameImage(m_heap);
+            {
+                Lock<Mutex> lock(m_mutex);
+                nameImage.reset(reinterpret_cast<ResTIMG *>(texture));
+            }
+            return false;
+        }
+    }
+    return true;
+}
+
+UniquePtr<ResTIMG> &SceneMapSelect::findTexture(Array<UniquePtr<ResTIMG>, 12> &textures,
+        const Array<u32, 12> &nextMapIndices, u32 mapIndex) {
+    for (u32 i = 0; i < m_currMapIndices.count(); i++) {
+        if (m_currMapIndices[i] == mapIndex) {
+            return textures[i];
+        }
+    }
+    u32 i;
+    for (i = 0; i < m_currMapIndices.count(); i++) {
+        u32 j;
+        for (j = 0; j < nextMapIndices.count(); j++) {
+            if (nextMapIndices[j] == m_currMapIndices[i]) {
+                break;
+            }
+        }
+        if (j == nextMapIndices.count()) {
+            break;
+        }
+    }
+    assert(i < m_currMapIndices.count());
+    Lock<Mutex> lock(m_mutex);
+    m_thumbnails[i].reset();
+    m_nameImages[i].reset();
+    m_currMapIndices[i] = mapIndex;
+    return textures[i];
+}
+
+void *SceneMapSelect::Load(void *param) {
+    return reinterpret_cast<SceneMapSelect *>(param)->load();
 }

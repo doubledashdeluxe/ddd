@@ -45,8 +45,8 @@ public:
         virtual const char *author() const = 0;
         virtual const char *version() const = 0;
         virtual const MinimapConfig *minimapConfig() const = 0;
-        virtual void *thumbnail() const = 0;
-        virtual void *nameImage() const = 0;
+        virtual void *loadThumbnail(JKRHeap *heap) const = 0;
+        virtual void *loadNameImage(JKRHeap *heap) const = 0;
         virtual void *loadLogo(JKRHeap *heap) const = 0;
         virtual void *loadStaffGhost(JKRHeap *heap) const = 0;
         virtual void *loadCourse(u32 courseOrder, u32 raceLevel, JKRHeap *heap) const = 0;
@@ -117,8 +117,8 @@ private:
         const char *author() const override;
         const char *version() const override;
         const MinimapConfig *minimapConfig() const override;
-        void *thumbnail() const override;
-        void *nameImage() const override;
+        void *loadThumbnail(JKRHeap *heap) const override;
+        void *loadNameImage(JKRHeap *heap) const override;
         void *loadLogo(JKRHeap *heap) const override;
         void *loadStaffGhost(JKRHeap *heap) const override;
         void *loadCourse(u32 courseOrder, u32 raceLevel, JKRHeap *heap) const override;
@@ -135,8 +135,8 @@ private:
     public:
         CustomCourse(Array<u8, 32> archiveHash, u32 musicID, Array<char, INIFieldSize> name,
                 Array<char, INIFieldSize> author, Array<char, INIFieldSize> version,
-                Optional<MinimapConfig> minimapConfig, u8 *thumbnail, u8 *nameImage,
-                Array<char, 256> path, Array<char, 128> prefix);
+                Optional<MinimapConfig> minimapConfig, Array<char, 256> path,
+                Array<char, 128> prefix);
         ~CustomCourse() override;
 
         u32 musicID() const override;
@@ -144,8 +144,8 @@ private:
         const char *author() const override;
         const char *version() const override;
         const MinimapConfig *minimapConfig() const override;
-        void *thumbnail() const override;
-        void *nameImage() const override;
+        void *loadThumbnail(JKRHeap *heap) const override;
+        void *loadNameImage(JKRHeap *heap) const override;
         void *loadLogo(JKRHeap *heap) const override;
         void *loadStaffGhost(JKRHeap *heap) const override;
         void *loadCourse(u32 courseOrder, u32 raceLevel, JKRHeap *heap) const override;
@@ -158,8 +158,6 @@ private:
         Array<char, INIFieldSize> m_author;
         Array<char, INIFieldSize> m_version;
         Optional<MinimapConfig> m_minimapConfig;
-        UniquePtr<u8[]> m_thumbnail;
-        UniquePtr<u8[]> m_nameImage;
         Array<char, 256> m_path;
         Array<char, 128> m_prefix;
     };

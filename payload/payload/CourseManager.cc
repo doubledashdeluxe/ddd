@@ -114,12 +114,22 @@ const MinimapConfig *CourseManager::DefaultCourse::minimapConfig() const {
     return nullptr;
 }
 
-void *CourseManager::DefaultCourse::thumbnail() const {
-    return JKRFileLoader::GetGlbResource(m_thumbnail, nullptr);
+void *CourseManager::DefaultCourse::loadThumbnail(JKRHeap *heap) const {
+    void *src = JKRFileLoader::GetGlbResource(m_thumbnail, nullptr);
+    s32 size = JKRFileLoader::GetGlbResSize(src, nullptr);
+    u8 *dst = new (heap, 0x20) u8[size];
+    memcpy(dst, src, size);
+    DCache::Flush(dst, size);
+    return dst;
 }
 
-void *CourseManager::DefaultCourse::nameImage() const {
-    return JKRFileLoader::GetGlbResource(m_nameImage, nullptr);
+void *CourseManager::DefaultCourse::loadNameImage(JKRHeap *heap) const {
+    void *src = JKRFileLoader::GetGlbResource(m_nameImage, nullptr);
+    s32 size = JKRFileLoader::GetGlbResSize(src, nullptr);
+    u8 *dst = new (heap, 0x20) u8[size];
+    memcpy(dst, src, size);
+    DCache::Flush(dst, size);
+    return dst;
 }
 
 void *CourseManager::DefaultCourse::loadLogo(JKRHeap *heap) const {
@@ -160,11 +170,10 @@ bool CourseManager::DefaultCourse::isCustom() const {
 
 CourseManager::CustomCourse::CustomCourse(Array<u8, 32> archiveHash, u32 musicID,
         Array<char, INIFieldSize> name, Array<char, INIFieldSize> author,
-        Array<char, INIFieldSize> version, Optional<MinimapConfig> minimapConfig, u8 *thumbnail,
-        u8 *nameImage, Array<char, 256> path, Array<char, 128> prefix)
+        Array<char, INIFieldSize> version, Optional<MinimapConfig> minimapConfig,
+        Array<char, 256> path, Array<char, 128> prefix)
     : Course(archiveHash), m_musicID(musicID), m_name(name), m_author(author), m_version(version),
-      m_minimapConfig(minimapConfig), m_thumbnail(thumbnail), m_nameImage(nameImage), m_path(path),
-      m_prefix(prefix) {}
+      m_minimapConfig(minimapConfig), m_path(path), m_prefix(prefix) {}
 
 CourseManager::CustomCourse::~CustomCourse() {}
 
@@ -188,12 +197,32 @@ const MinimapConfig *CourseManager::CustomCourse::minimapConfig() const {
     return m_minimapConfig.get();
 }
 
-void *CourseManager::CustomCourse::thumbnail() const {
-    return m_thumbnail.get();
+void *CourseManager::CustomCourse::loadThumbnail(JKRHeap *heap) const {
+    Array<char, 256> thumbnailPrefix;
+    snprintf(thumbnailPrefix.values(), thumbnailPrefix.count(), "/%scourse_images/",
+            m_prefix.values());
+    u32 thumbnailSize;
+    UniquePtr<u8[]> thumbnail(reinterpret_cast<u8 *>(s_instance->loadLocalizedFile(m_path.values(),
+            thumbnailPrefix.values(), "/track_image.bti", heap, &thumbnailSize)));
+    if (!thumbnail.get() || thumbnailSize < 0x20) {
+        return nullptr;
+    }
+    DCache::Flush(thumbnail.get(), thumbnailSize);
+    return thumbnail.release();
 }
 
-void *CourseManager::CustomCourse::nameImage() const {
-    return m_nameImage.get();
+void *CourseManager::CustomCourse::loadNameImage(JKRHeap *heap) const {
+    Array<char, 256> nameImagePrefix;
+    snprintf(nameImagePrefix.values(), nameImagePrefix.count(), "/%scourse_images/",
+            m_prefix.values());
+    u32 nameImageSize;
+    UniquePtr<u8[]> nameImage(reinterpret_cast<u8 *>(s_instance->loadLocalizedFile(m_path.values(),
+            nameImagePrefix.values(), "/track_name.bti", heap, &nameImageSize)));
+    if (!nameImage.get() || nameImageSize < 0x20) {
+        return nullptr;
+    }
+    DCache::Flush(nameImage.get(), nameImageSize);
+    return nameImage.release();
 }
 
 void *CourseManager::CustomCourse::loadLogo(JKRHeap *heap) const {
@@ -601,28 +630,6 @@ void CourseManager::addCustomCourse(const Array<char, 256> &path,
     Optional<MinimapConfig> minimapConfig =
             MinimapConfigReader::Read(zipFile, minimapJSONPath.values());
 
-    Array<char, 256> thumbnailPrefix;
-    snprintf(thumbnailPrefix.values(), thumbnailPrefix.count(), "/%scourse_images/",
-            prefix.values());
-    u32 thumbnailSize;
-    UniquePtr<u8[]> thumbnail(reinterpret_cast<u8 *>(loadLocalizedFile(zipFile,
-            thumbnailPrefix.values(), "/track_image.bti", m_heap, &thumbnailSize)));
-    if (!thumbnail.get() || thumbnailSize < 0x20) {
-        return;
-    }
-    DCache::Flush(thumbnail.get(), thumbnailSize);
-
-    Array<char, 256> nameImagePrefix;
-    snprintf(nameImagePrefix.values(), nameImagePrefix.count(), "/%scourse_images/",
-            prefix.values());
-    u32 nameImageSize;
-    UniquePtr<u8[]> nameImage(reinterpret_cast<u8 *>(loadLocalizedFile(zipFile,
-            nameImagePrefix.values(), "/track_name.bti", m_heap, &nameImageSize)));
-    if (!nameImage.get() || nameImageSize < 0x20) {
-        return;
-    }
-    DCache::Flush(nameImage.get(), nameImageSize);
-
     Array<u8, 32> archiveHash;
     Array<char, 256> hashPath;
     snprintf(hashPath.values(), hashPath.count(), "/%shash.bin", prefix.values());
@@ -693,8 +700,8 @@ void CourseManager::addCustomCourse(const Array<char, 256> &path,
     DEBUG("Adding custom %s course %s...", type, path.values());
     courseIndices->pushBack(courses->count());
     courses->pushBack();
-    Course *course = new (m_heap, 0x4) CustomCourse(archiveHash, musicID, name, author, version,
-            minimapConfig, thumbnail.release(), nameImage.release(), path, prefix);
+    Course *course = new (m_heap, 0x4)
+            CustomCourse(archiveHash, musicID, name, author, version, minimapConfig, path, prefix);
     courses->back()->reset(course);
 }
 

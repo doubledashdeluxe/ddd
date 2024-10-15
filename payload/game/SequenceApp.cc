@@ -38,7 +38,7 @@ SequenceApp *SequenceApp::Instance() {
 }
 
 SequenceApp::SequenceApp()
-    : GameApp(0x75f400, "Sequence", nullptr), m_scene(nullptr), m_loadingFlag(0), m_loadFlag(0),
+    : GameApp(0x7df400, "Sequence", nullptr), m_scene(nullptr), m_loadingFlag(0), m_loadFlag(0),
       m_state(0), _48(0), m_scenes(nullptr) {
     SceneFactory::Create();
     if (s_nextScene != SceneType::None) {

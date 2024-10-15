@@ -15,6 +15,7 @@ size_assert(OSThread, 0x318);
 
 void OSInitThreadQueue(OSThreadQueue *queue);
 OSThread *OSGetCurrentThread(void);
+BOOL OSIsThreadTerminated(OSThread *thread);
 void OSSleepThread(OSThreadQueue *queue);
 void OSWakeupThread(OSThreadQueue *queue);
 
@@ -24,5 +25,6 @@ void OSReschedule(void);
 
 BOOL OSCreateThread(OSThread *thread, void *(*func)(void *), void *param, void *stack,
         u32 stackSize, s32 priority, u16 attr);
+void OSDetachThread(OSThread *thread);
 s32 OSResumeThread(OSThread *thread);
 s32 OSSuspendThread(OSThread *thread);

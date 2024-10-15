@@ -144,10 +144,12 @@
 800eaa64 __OSUnlockSram
 800eb198 OSInitThreadQueue
 800eb1a8 OSGetCurrentThread
+800eb1b4 OSIsThreadTerminated
 800eb1e8 OSDisableScheduler
 800eb228 OSEnableScheduler
 800eb744 OSReschedule
 800eb7b0 OSCreateThread
+800ebc38 OSDetachThread
 800ebcd8 OSResumeThread
 800ebf60 OSSuspendThread
 800ec0d0 OSSleepThread

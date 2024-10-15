@@ -6,9 +6,20 @@ class JKRFileLoader {
 public:
     JKRFileLoader();
     virtual ~JKRFileLoader();
+    virtual void vf_0c();
+    virtual void vf_10();
+    virtual void vf_14();
+    virtual void vf_18();
+    virtual void vf_1c();
+    virtual void vf_20();
+    virtual void vf_24();
+    virtual void vf_28();
+    virtual void vf_2c();
+    virtual s32 getResSize(const void *ptr) const;
     // ...
 
     static void *GetGlbResource(const char *name, JKRFileLoader *fileLoader);
+    static s32 GetGlbResSize(const void *ptr, JKRFileLoader *fileLoader);
 
 protected:
     u8 _04[0x18 - 0x04];
