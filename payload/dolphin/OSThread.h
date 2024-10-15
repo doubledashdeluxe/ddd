@@ -9,7 +9,9 @@ size_assert(OSThreadQueue, 0x8);
 
 typedef struct OSThread {
     OSContext context;
-    u8 _2c8[0x318 - 0x2c8];
+    u8 _2c8[0x308 - 0x2c8];
+    u32 *stackTop;
+    u8 _30c[0x318 - 0x30c];
 } OSThread;
 size_assert(OSThread, 0x318);
 

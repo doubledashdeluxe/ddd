@@ -142,6 +142,7 @@
 800e9758 OSUnlockMutex
 800ea670 __OSLockSram
 800eaa64 __OSUnlockSram
+800eb03c DefaultSwitchThreadCallback
 800eb198 OSInitThreadQueue
 800eb1a8 OSGetCurrentThread
 800eb1b4 OSIsThreadTerminated
