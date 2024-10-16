@@ -96,11 +96,11 @@ void Payload::Run(Context *context) {
 
     INFO("Initializing random number generator...");
     Random::Init();
-    INFO("Initialized random number generator...");
+    INFO("Initialized random number generator.");
 
     INFO("Initializing client key...");
     ClientK::Init();
-    INFO("Initialized client key...");
+    INFO("Initialized client key.");
 
     if (context->hasVirtualDI) {
         INFO("Initializing virtual disc...");
