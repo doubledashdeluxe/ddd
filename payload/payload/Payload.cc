@@ -117,9 +117,11 @@ void Payload::Run(Context *context) {
         INFO("Initialized sockets.");
     }
 
-    INFO("Initializing DNS...");
-    DNS::Init();
-    INFO("Initialized DNS.");
+    if (!Platform::IsGameCube()) {
+        INFO("Initializing DNS...");
+        DNS::Init();
+        INFO("Initialized DNS.");
+    }
 
     Console::Instance()->setIsDirect(false);
 }
