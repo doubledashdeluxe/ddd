@@ -348,7 +348,7 @@ s32 VirtualCard::rename(const char *oldName, const char *newName) {
 
 void VirtualCard::Init() {
     for (u32 chan = 0; chan < s_instances.count(); chan++) {
-        s_instances[chan].reset(new (MEM2Arena::Instance(), 0x4) VirtualCard(chan));
+        s_instances[chan].reset(new (MEM1Arena::Instance(), 0x4) VirtualCard(chan));
     }
 }
 
