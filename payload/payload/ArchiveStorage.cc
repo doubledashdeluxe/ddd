@@ -10,7 +10,7 @@ extern "C" {
 }
 
 void ArchiveStorage::Init(const char *prefix, void *archive, u32 archiveSize) {
-    s_head = new (MEM2Arena::Instance(), 0x20) ArchiveStorage(prefix, archive, archiveSize);
+    s_head = new (MEM1Arena::Instance(), 0x20) ArchiveStorage(prefix, archive, archiveSize);
 }
 
 ArchiveStorage::File::File() : m_storage(nullptr), m_node(nullptr) {}
