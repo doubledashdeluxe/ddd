@@ -58,7 +58,7 @@ public:
         char *getName(char *names) const;
         Dir getDir(Tree tree) const;
         u32 getFileOffset() const;
-        void *getFile(u8 *files) const;
+        u8 *getFile(u8 *files) const;
         u32 getFileSize() const;
 
     private:

@@ -2,8 +2,9 @@
 
 #include <common/Arena.hh>
 #include <common/Bytes.hh>
-
 extern "C" {
+#include <miniz/miniz.h>
+
 #include <stdio.h>
 #include <string.h>
 }
@@ -20,17 +21,13 @@ void ArchiveStorage::File::close() {
 }
 
 bool ArchiveStorage::File::read(void *dst, u32 size, u32 offset) {
-    const void *file = m_node.getFile(m_storage->m_archive.getFiles());
-    u32 fileSize = m_node.getFileSize();
-    if (offset > fileSize || size > fileSize) {
-        return false;
-    }
-    if (offset + size < offset || offset + size > fileSize) {
+    const u8 *file = m_node.getFile(m_storage->m_archive.getFiles());
+    if (size > Bytes::ReadBE<u32>(file, 0) || offset != 0) {
         return false;
     }
 
-    memcpy(dst, reinterpret_cast<const u8 *>(file) + offset, size);
-    return true;
+    u32 fileSize = m_node.getFileSize();
+    return tinfl_decompress_mem_to_mem(dst, size, file + 4, fileSize - 4, 0) == size;
 }
 
 bool ArchiveStorage::File::write(const void * /* src */, u32 /* size */, u32 /* offset */) {
@@ -46,7 +43,8 @@ bool ArchiveStorage::File::truncate(u64 /* size */) {
 }
 
 bool ArchiveStorage::File::size(u64 &size) {
-    size = m_node.getFileSize();
+    const u8 *file = m_node.getFile(m_storage->m_archive.getFiles());
+    size = Bytes::ReadBE<u32>(file, 0);
     return true;
 }
 
@@ -124,6 +122,9 @@ Storage::File *ArchiveStorage::openFile(const char *path, u32 mode) {
         return nullptr;
     }
     if (!file->m_node.isFile()) {
+        return nullptr;
+    }
+    if (file->m_node.getFileSize() < 4) {
         return nullptr;
     }
 

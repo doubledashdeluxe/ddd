@@ -299,7 +299,7 @@ n.newline()
 
 n.rule(
     'dir2arc',
-    command = f'{sys.executable} $dir2arc $in_dir $out',
+    command = f'{sys.executable} $dir2arc --compress $in_dir $out',
     description = 'DIR2ARC $out',
 )
 n.newline()
@@ -422,6 +422,7 @@ for in_dir in sorted(glob.glob(os.path.join('assets', '*'))):
         variables = {
             'in_dir': in_dir,
         },
+        implicit = '$dir2arc',
     )
     n.newline()
 

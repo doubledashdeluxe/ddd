@@ -291,7 +291,7 @@ u32 Archive::Node::getFileOffset() const {
     return Bytes::ReadBE<u32>(m_node, 0x08);
 }
 
-void *Archive::Node::getFile(u8 *files) const {
+u8 *Archive::Node::getFile(u8 *files) const {
     return files + getFileOffset();
 }
 

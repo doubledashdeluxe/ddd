@@ -4,6 +4,7 @@
 from argparse import ArgumentParser
 import os
 import struct
+import zlib
 
 
 def pack_u8(val, **kwargs):
@@ -22,11 +23,16 @@ def pack_hash16(name):
         h += c
     return pack_u16(h & 0xffff)
 
-def pack_file(path, name, node_index, files, nodes, names):
+def pack_file(compress, path, name, node_index, files, nodes, names):
     with open(path, 'rb') as file:
         file = file.read()
     if path.endswith('.txt'):
         file = file.replace(b'\r\n', b'\n')
+    if compress:
+        file = b''.join([
+            pack_u32(len(file)),
+            zlib.compress(file, level = zlib.Z_BEST_COMPRESSION, wbits = -15),
+        ])
     nodes[node_index * 0x14:(node_index + 1) * 0x14] = b''.join([
         pack_u16(node_index),
         pack_hash16(name),
@@ -40,7 +46,7 @@ def pack_file(path, name, node_index, files, nodes, names):
     file = file.ljust((len(file) + 0x1f) & ~0x1f, b'\0')
     files += file
 
-def pack_dir(path, name, node_index, files, dirs, nodes, names):
+def pack_dir(compress, path, name, node_index, files, dirs, nodes, names):
     node_names = sorted(os.listdir(path))
     first_node_index = len(nodes) // 0x14
     if node_index is not None:
@@ -65,20 +71,20 @@ def pack_dir(path, name, node_index, files, dirs, nodes, names):
         nodes += bytearray(0x14)
     for node_index, node_name in enumerate(node_names, start = first_node_index):
         node_path = os.path.join(path, node_name)
-        pack_node(node_path, node_name, node_index, files, dirs, nodes, names)
+        pack_node(compress, node_path, node_name, node_index, files, dirs, nodes, names)
 
-def pack_node(path, name, node_index, files, dirs, nodes, names):
+def pack_node(compress, path, name, node_index, files, dirs, nodes, names):
     if os.path.isdir(path):
-        pack_dir(path, name, node_index, files, dirs, nodes, names)
+        pack_dir(compress, path, name, node_index, files, dirs, nodes, names)
     else:
-        pack_file(path, name, node_index, files, nodes, names)
+        pack_file(compress, path, name, node_index, files, nodes, names)
 
-def pack_tree(path, tree, files):
+def pack_tree(compress, path, tree, files):
     dirs = bytearray()
     nodes = bytearray()
     names = bytearray()
     name = os.path.basename(path).removesuffix('.arc.d')
-    pack_dir(path, name, None, files, dirs, nodes, names)
+    pack_dir(compress, path, name, None, files, dirs, nodes, names)
     dir_count = len(dirs) // 0x10
     node_count = len(nodes) // 0x14
     dirs[:] = dirs.ljust((len(dirs) + 0x1f) & ~0x1f, b'\0')
@@ -100,10 +106,10 @@ def pack_tree(path, tree, files):
         names,
     ])
 
-def pack_archive(path):
+def pack_archive(compress, path):
     tree = bytearray()
     files = bytearray()
-    pack_tree(path, tree, files)
+    pack_tree(compress, path, tree, files)
     return b''.join([
         b'RARC',
         pack_u32(0x20 + len(tree) + len(files)),
@@ -118,6 +124,7 @@ def pack_archive(path):
     ])
 
 parser = ArgumentParser()
+parser.add_argument('--compress', action = 'store_true')
 parser.add_argument('in_path')
 parser.add_argument('out_path', nargs = '?')
 args = parser.parse_args()
@@ -130,4 +137,4 @@ else:
     else:
         out_path = args.in_path + '.arc'
 with open(out_path, 'wb') as file:
-    file.write(pack_archive(args.in_path))
+    file.write(pack_archive(args.compress, args.in_path))
