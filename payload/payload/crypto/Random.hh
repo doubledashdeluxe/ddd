@@ -17,6 +17,9 @@ private:
     Random();
 
 #ifdef __CWCC__
+    static bool InitWithDiscTimings();
+    static void InitWithES();
+
     static bool s_isInit;
     static Mutex *s_mutex;
     static Array<u8, 32 + 256> s_buffer;

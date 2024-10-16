@@ -5,7 +5,10 @@
 
 #include <common/Algorithm.hh>
 #include <common/Arena.hh>
+#include <common/Clock.hh>
 #include <common/ES.hh>
+#include <common/Platform.hh>
+#include <common/storage/Storage.hh>
 extern "C" {
 #include <monocypher/monocypher.h>
 
@@ -19,13 +22,13 @@ void Random::Init() {
     s_mutex = new (MEM1Arena::Instance(), 0x4) Mutex;
     assert(s_mutex);
 
-    ES es;
-    assert(es.ok());
-
-    Array<u8, 0x3c> signature;
-    Array<u8, 0x180> certificate;
-    assert(es.sign(nullptr, 0, signature, certificate));
-    memcpy(s_buffer.values(), signature.values(), 32);
+    if (Platform::IsGameCube()) {
+        while (!InitWithDiscTimings()) {
+            Clock::WaitSeconds(1);
+        }
+    } else {
+        InitWithES();
+    }
 
     s_isInit = true;
 }
@@ -51,6 +54,37 @@ void Random::Get(void *data, size_t size) {
     }
 
     crypto_wipe(s_buffer.values() + 32, s_offset - 32);
+}
+
+bool Random::InitWithDiscTimings() {
+    Storage::FileHandle file("dvd:/Movie/play1.thp", Storage::Mode::Read);
+    alignas(0x20) Array<u8, 256> buffer;
+    if (!file.read(buffer.values(), buffer.count(), 0)) {
+        return false;
+    }
+    s64 start = Clock::GetMonotonicTicks();
+    for (u32 i = 0; i < 32; i++) {
+        for (u32 j = 0; j < 8; j++) {
+            if (!file.read(buffer.values(), buffer.count(), (1 + i) * 4096)) {
+                return false;
+            }
+            s64 now = Clock::GetMonotonicTicks();
+            s_buffer[i] &= ~(1 << j);
+            s_buffer[i] |= ((now - start) & 1) << j;
+            start = now;
+        }
+    }
+    return true;
+}
+
+void Random::InitWithES() {
+    ES es;
+    assert(es.ok());
+
+    Array<u8, 0x3c> signature;
+    Array<u8, 0x180> certificate;
+    assert(es.sign(nullptr, 0, signature, certificate));
+    memcpy(s_buffer.values(), signature.values(), 32);
 }
 
 bool Random::s_isInit = false;
