@@ -111,9 +111,11 @@ void Payload::Run(Context *context) {
         INFO("Initialized virtual disc.");
     }
 
-    INFO("Initializing sockets...");
-    Socket::Init();
-    INFO("Initialized sockets.");
+    if (!Platform::IsGameCube()) {
+        INFO("Initializing sockets...");
+        Socket::Init();
+        INFO("Initialized sockets.");
+    }
 
     INFO("Initializing DNS...");
     DNS::Init();
