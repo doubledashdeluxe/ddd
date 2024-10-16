@@ -13,10 +13,10 @@ extern "C" {
 }
 
 void Storage::Init() {
-    Array<OSMessage, 1> *messages = new (MEM2Arena::Instance(), 0x4) Array<OSMessage, 1>;
+    Array<OSMessage, 1> *messages = new (MEM1Arena::Instance(), 0x4) Array<OSMessage, 1>;
     OSInitMessageQueue(&s_queue, messages->values(), messages->count());
-    Array<u8, 4 * 1024> *stack = new (MEM2Arena::Instance(), 0x8) Array<u8, 4 * 1024>;
-    OSThread *thread = new (MEM2Arena::Instance(), 0x4) OSThread;
+    Array<u8, 4 * 1024> *stack = new (MEM1Arena::Instance(), 0x8) Array<u8, 4 * 1024>;
+    OSThread *thread = new (MEM1Arena::Instance(), 0x4) OSThread;
     OSCreateThread(thread, Poll, nullptr, stack->values() + stack->count(), stack->count(), 11, 0);
     OSResumeThread(thread);
 }
