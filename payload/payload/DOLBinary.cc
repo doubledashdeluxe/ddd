@@ -34,11 +34,11 @@ void *DOLBinary::Start() {
 }
 
 void *DOLBinary::End() {
-    return dol_bss_end;
+    return dol_sbss2_end;
 }
 
 size_t DOLBinary::Size() {
-    return dol_bss_end - dol_text_start;
+    return dol_sbss2_end - dol_text_start;
 }
 
 void *DOLBinary::InitSectionStart() {

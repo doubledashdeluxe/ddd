@@ -1,5 +1,13 @@
 #include "JKRHeap.hh"
 
+void *JKRHeap::getStartAddr() const {
+    return m_startAddr;
+}
+
+void *JKRHeap::getEndAddr() const {
+    return m_endAddr;
+}
+
 JKRHeap *JKRHeap::GetSystemHeap() {
     return s_systemHeap;
 }

@@ -9,13 +9,19 @@ public:
     void freeAll();
     s32 resize(void *ptr, u32 size);
 
+    void *getStartAddr() const;
+    void *getEndAddr() const;
+
     static JKRHeap *GetSystemHeap();
     static JKRHeap *GetCurrentHeap();
     static JKRHeap *GetRootHeap();
     static JKRHeap *FindFromRoot(void *ptr);
 
 private:
-    u8 _00[0x6c - 0x00];
+    u8 _00[0x30 - 0x00];
+    void *m_startAddr;
+    void *m_endAddr;
+    u8 _38[0x6c - 0x38];
 
     static JKRHeap *s_systemHeap;
     static JKRHeap *s_currentHeap;

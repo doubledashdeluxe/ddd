@@ -38,6 +38,10 @@ void ResMgr::Create(JKRHeap *parentHeap) {
     SysDebug::GetManager()->createHeapInfo(s_courseHeap, "Crs.arc");
 }
 
+const JKRHeap *ResMgr::GetCourseHeap() {
+    return s_courseHeap;
+}
+
 void ResMgr::LoadCourseData(u32 courseID, u32 courseOrder) {
     delete s_loaders[ArchiveID::Course];
     s_course = nullptr;

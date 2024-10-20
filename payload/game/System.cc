@@ -8,13 +8,19 @@
 #include "game/MoviePlayer.hh"
 #include "game/NetGameMgr.hh"
 #include "game/PadMgr.hh"
+#include "game/ResMgr.hh"
 
+#include <common/Log.hh>
 #include <common/SC.hh>
 extern "C" {
 #include <dolphin/DVD.h>
 }
 #include <jsystem/J2DPane.hh>
 #include <jsystem/J3DSys.hh>
+#include <payload/CourseManager.hh>
+#include <payload/DOLBinary.hh>
+#include <payload/PayloadBinary.hh>
+#include <payload/online/ServerManager.hh>
 
 void System::Init() {
     REPLACED(Init)();
@@ -25,6 +31,20 @@ void System::Init() {
     if (sc.get("IPL.AR", ar) && ar) {
         s_defaultAspectRatio = 38.0f / 21.0f;
     }
+
+    DEBUG("%p %p main.dol", DOLBinary::Start(), DOLBinary::End());
+    DEBUG("%p %p payload.bin", PayloadBinary::Start(), PayloadBinary::End());
+    const u8 *courseManagerStart = reinterpret_cast<u8 *>(CourseManager::Instance());
+    const u8 *courseManagerEnd = courseManagerStart + sizeof(CourseManager);
+    DEBUG("%p %p CourseManager", courseManagerStart, courseManagerEnd);
+    const u8 *serverManagerStart = reinterpret_cast<u8 *>(ServerManager::Instance());
+    const u8 *serverManagerEnd = serverManagerStart + sizeof(ServerManager);
+    DEBUG("%p %p ServerManager", serverManagerStart, serverManagerEnd);
+    const JKRHeap *systemHeap = JKRHeap::GetSystemHeap();
+    DEBUG("%p %p SystemHeap", systemHeap->getStartAddr(), systemHeap->getEndAddr());
+    const JKRHeap *courseHeap = ResMgr::GetCourseHeap();
+    DEBUG("%p %p CourseHeap", courseHeap->getStartAddr(), courseHeap->getEndAddr());
+    DEBUG("%p %p AppHeap", s_appHeap->getStartAddr(), s_appHeap->getEndAddr());
 }
 
 void System::Run() {
