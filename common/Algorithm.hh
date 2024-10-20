@@ -52,3 +52,30 @@ void Sort(S &sequence, size_t count, C compare) {
         }
     }
 }
+
+template <typename S>
+void Reverse(S &sequence, size_t count, size_t offset = 0) {
+    for (size_t i = 0; i < count / 2; i++) {
+        Swap(sequence[offset + i], sequence[offset + count - 1 - i]);
+    }
+}
+
+template <typename S>
+void RotateLeft(S &sequence, size_t count, size_t amount) {
+    if (count != 0 && amount != 0) {
+        amount %= count;
+        Reverse(sequence, amount, 0);
+        Reverse(sequence, count - amount, amount);
+        Reverse(sequence, count);
+    }
+}
+
+template <typename S>
+void RotateRight(S &sequence, size_t count, size_t amount) {
+    if (count != 0 && amount != 0) {
+        amount %= count;
+        Reverse(sequence, count - amount, 0);
+        Reverse(sequence, amount, count - amount);
+        Reverse(sequence, count);
+    }
+}

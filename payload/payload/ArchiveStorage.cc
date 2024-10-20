@@ -5,6 +5,7 @@
 extern "C" {
 #include <miniz/miniz.h>
 
+#include <assert.h>
 #include <stdio.h>
 #include <string.h>
 }
@@ -82,11 +83,10 @@ Storage *ArchiveStorage::Dir::storage() {
 ArchiveStorage::ArchiveStorage(const char *prefix, void *archive, u32 archiveSize)
     : Storage(&m_mutex), m_next(s_head), m_prefix(prefix),
       m_archive(reinterpret_cast<u8 *>(archive)), m_archiveSize(archiveSize) {
-    if (m_archive.isValid(m_archiveSize)) {
-        OSInitMessageQueue(&m_initQueue, m_initMessages.values(), m_initMessages.count());
-        notify();
-        OSReceiveMessage(&m_initQueue, nullptr, OS_MESSAGE_BLOCK);
-    }
+    assert(m_archive.isValid(m_archiveSize));
+    OSInitMessageQueue(&m_initQueue, m_initMessages.values(), m_initMessages.count());
+    notify();
+    OSReceiveMessage(&m_initQueue, nullptr, OS_MESSAGE_BLOCK);
 }
 
 void ArchiveStorage::poll() {

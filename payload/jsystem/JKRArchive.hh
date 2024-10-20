@@ -3,6 +3,7 @@
 #include "jsystem/JKRFileLoader.hh"
 #include "jsystem/JKRHeap.hh"
 
+#include <payload/Archive.hh>
 #include <payload/Replace.hh>
 
 class JKRArchive : public JKRFileLoader {
@@ -42,9 +43,15 @@ public:
     static JKRArchive *Mount(const char *path, JKRHeap *heap, u32 mountDirection,
             bool patchesAllowed);
     static JKRArchive *Mount(s32 entrynum, JKRHeap *heap, u32 mountDirection, bool patchesAllowed);
-    static JKRArchive *Mount(void *archive, JKRHeap *heap, u32 mountDirection, bool patchesAllowed);
+    static JKRArchive *Mount(void *archive, u32 archiveSize, JKRHeap *heap, u32 mountDirection,
+            bool patchesAllowed);
 
 protected:
+    static JKRArchive *Mount(Archive archive, u32 archiveSize, JKRHeap *heap, u32 mountDirection,
+            bool patchesAllowed);
+    static JKRArchive *Mount(const char *bare, s32 entrynum, Archive archive, u32 archiveSize,
+            JKRHeap *heap, u32 mountDirection, bool ownsMemory, bool patchesAllowed);
+
     JKRHeap *m_heap;
     u8 m_mountMode;
     u8 _3d[0x40 - 0x3d];

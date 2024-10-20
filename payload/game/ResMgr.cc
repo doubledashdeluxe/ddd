@@ -27,7 +27,7 @@ void ResMgr::Create(JKRHeap *parentHeap) {
         s_aramResArgs[i].status = 2;
     }
     s_loaders[ArchiveID::System] = JKRArchive::Mount(DOLBinary::BinarySectionStart(), parentHeap,
-            JKRArchive::MountDirection::Head, true);
+            JKRArchive::MountDirection::Head);
 
     size_t keepHeapSize = 0xf00000;
     void *keepHeapPtr = MEM2Arena::Instance()->alloc(keepHeapSize, 0x4);
@@ -89,9 +89,11 @@ void ResMgr::LoadExtendedCourseData(void * /* userData */) {
     s_courseName = s_course->loadLogo(s_courseHeap);
     s_staffGhost = s_course->loadStaffGhost(s_courseHeap);
     u32 raceLevel = RaceInfo::Instance().getRaceLevel();
-    void *courseArchive = s_course->loadCourse(s_courseOrder, raceLevel, s_courseHeap);
-    s_loaders[ArchiveID::Course] =
-            JKRArchive::Mount(courseArchive, s_courseHeap, JKRArchive::MountDirection::Head, false);
+    u32 courseArchiveSize;
+    void *courseArchive =
+            s_course->loadCourse(s_courseOrder, raceLevel, s_courseHeap, courseArchiveSize);
+    s_loaders[ArchiveID::Course] = JKRArchive::Mount(courseArchive, courseArchiveSize, s_courseHeap,
+            JKRArchive::MountDirection::Head, false);
 
     for (s_courseID = CourseID::BabyLuigi; s_courseID <= CourseID::Mini8; s_courseID++) {
         const char *base = GetCrsArcName(s_courseID);

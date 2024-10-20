@@ -49,7 +49,8 @@ public:
         virtual void *loadNameImage(JKRHeap *heap) const = 0;
         virtual void *loadLogo(JKRHeap *heap) const = 0;
         virtual void *loadStaffGhost(JKRHeap *heap) const = 0;
-        virtual void *loadCourse(u32 courseOrder, u32 raceLevel, JKRHeap *heap) const = 0;
+        virtual void *loadCourse(u32 courseOrder, u32 raceLevel, JKRHeap *heap,
+                u32 &courseSize) const = 0;
         virtual bool isDefault() const = 0;
         virtual bool isCustom() const = 0;
 
@@ -123,7 +124,8 @@ private:
         void *loadNameImage(JKRHeap *heap) const override;
         void *loadLogo(JKRHeap *heap) const override;
         void *loadStaffGhost(JKRHeap *heap) const override;
-        void *loadCourse(u32 courseOrder, u32 raceLevel, JKRHeap *heap) const override;
+        void *loadCourse(u32 courseOrder, u32 raceLevel, JKRHeap *heap,
+                u32 &courseSize) const override;
         bool isDefault() const override;
         bool isCustom() const override;
 
@@ -150,7 +152,8 @@ private:
         void *loadNameImage(JKRHeap *heap) const override;
         void *loadLogo(JKRHeap *heap) const override;
         void *loadStaffGhost(JKRHeap *heap) const override;
-        void *loadCourse(u32 courseOrder, u32 raceLevel, JKRHeap *heap) const override;
+        void *loadCourse(u32 courseOrder, u32 raceLevel, JKRHeap *heap,
+                u32 &courseSize) const override;
         bool isDefault() const override;
         bool isCustom() const override;
 

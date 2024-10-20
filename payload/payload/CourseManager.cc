@@ -148,8 +148,8 @@ void *CourseManager::DefaultCourse::loadStaffGhost(JKRHeap *heap) const {
     return FileLoader::Load(path.values(), heap);
 }
 
-void *CourseManager::DefaultCourse::loadCourse(u32 courseOrder, u32 raceLevel,
-        JKRHeap *heap) const {
+void *CourseManager::DefaultCourse::loadCourse(u32 courseOrder, u32 raceLevel, JKRHeap *heap,
+        u32 &courseSize) const {
     const char *base = ResMgr::GetCrsArcName(m_courseID);
     const char *suffix = courseOrder == 1 ? "L" : "";
     Array<char, 256> path;
@@ -158,7 +158,7 @@ void *CourseManager::DefaultCourse::loadCourse(u32 courseOrder, u32 raceLevel,
     } else {
         snprintf(path.values(), path.count(), "dvd:/Course/%s%s.arc", base, suffix);
     }
-    return FileLoader::Load(path.values(), heap);
+    return FileLoader::Load(path.values(), heap, &courseSize);
 }
 
 bool CourseManager::DefaultCourse::isDefault() const {
@@ -246,10 +246,9 @@ void *CourseManager::CustomCourse::loadStaffGhost(JKRHeap *heap) const {
 }
 
 void *CourseManager::CustomCourse::loadCourse(u32 /* courseOrder */, u32 /* raceLevel */,
-        JKRHeap *heap) const {
+        JKRHeap *heap, u32 &courseSize) const {
     Array<char, 256> coursePath;
     snprintf(coursePath.values(), coursePath.count(), "/%strack.arc", m_prefix.values());
-    u32 courseSize;
     void *course =
             s_instance->loadCourseFile(m_path.values(), coursePath.values(), heap, &courseSize);
     if (course) {
