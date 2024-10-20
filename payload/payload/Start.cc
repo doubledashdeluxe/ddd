@@ -34,6 +34,7 @@ extern "C" void RunPayload(Context *context) {
     if (!Platform::IsGameCube()) {
         MEM2Arena::Init(context->mem2ArenaLo, context->mem2ArenaHi);
     }
+    VI::Init(context->vi);
     Console::Init(context->console);
 
     DBInit();

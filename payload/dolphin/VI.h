@@ -1,6 +1,7 @@
 #pragma once
 
 #include <common/Types.h>
+#include <payload/Replace.h>
 
 enum {
     VI_NTSC = 0,
@@ -14,9 +15,11 @@ enum {
 };
 
 void VIInit(void);
-void VIFlush(void);
 void VIWaitForRetrace(void);
-
-void VISetBlack(BOOL black);
+void VIFlush(void);
+void REPLACED(VISetNextFrameBuffer)(void *fb);
+REPLACE void VISetNextFrameBuffer(void *fb);
+void REPLACED(VISetBlack)(BOOL black);
+REPLACE void VISetBlack(BOOL black);
 u32 VIGetTvFormat(void);
 u32 VIGetDTVStatus(void);

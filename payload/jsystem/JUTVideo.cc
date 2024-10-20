@@ -1,13 +1,7 @@
 #include "JUTVideo.hh"
 
-#include "jsystem/JUTXfb.hh"
-
-#include <common/Algorithm.hh>
-#include <common/Console.hh>
 extern "C" {
 #include <dolphin/VI.h>
-
-#include <string.h>
 }
 
 void JUTVideo::setRenderMode(const GXRenderModeObj * /* renderMode */) {
@@ -52,15 +46,6 @@ void JUTVideo::setRenderMode(const GXRenderModeObj * /* renderMode */) {
     s_renderMode.vfilter[6] = 0;
 
     REPLACED(setRenderMode)(&s_renderMode);
-}
-
-void JUTVideo::DummyNoDrawWait() {
-    REPLACED(DummyNoDrawWait)();
-
-    u16 xfbWidth = s_renderMode.fbWidth;
-    u16 xfbHeight = s_renderMode.xfbHeight;
-    void *xfb = JUTXfb::GetManager()->getDrawingXfb();
-    Console::Instance()->copyXFB(xfbWidth, xfbHeight, xfb);
 }
 
 GXRenderModeObj JUTVideo::s_renderMode;

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common/Console.hh"
+#include "common/VI.hh"
 
 struct Context {
     bool hasVirtualDI;
@@ -10,5 +11,6 @@ struct Context {
     u32 localizedArchiveSize;
     uintptr_t mem2ArenaLo;
     uintptr_t mem2ArenaHi;
+    VI *vi;
     Console *console;
 };

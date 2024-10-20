@@ -35,6 +35,7 @@
 8001eee0 StopMotor__Q210JUTGamePad7CRumbleFlb
 80023d44 DummyNoDrawWait__8JUTVideoFv
 80023e24 setRenderMode__8JUTVideoFPC15GXRenderModeObj
+80023fdc initiate__6JUTXfbFUsUsP7JKRHeapl
 80028b1c changeUseTrans__7J2DPaneFP7J2DPane
 80028d84 appendChild__7J2DPaneFP7J2DPane
 8002a020 getFirstChildPane__7J2DPaneFv
@@ -73,6 +74,7 @@
 800af1d8 VIInit
 800af688 VIWaitForRetrace
 800b0378 VIFlush
+800b04a8 VISetNextFrameBuffer
 800b0524 VISetBlack
 800b0780 VIGetTvFormat
 800b147c ARAlloc
@@ -98,6 +100,7 @@
 800b9fac CARDGetStatus
 800ba234 CARDSetStatus
 800ba478 CARDRename
+800bea44 GXCopyDisp
 800bf31c GXInitTexObj
 800bf904 GXInitTlutObj
 800c22b4 GXSetViewport

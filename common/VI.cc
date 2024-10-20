@@ -1,5 +1,6 @@
 #include "VI.hh"
 
+#include "common/Align.hh"
 #include "common/Arena.hh"
 #include "common/DCache.hh"
 #include "common/Memory.hh"
@@ -70,6 +71,10 @@ void VI::Init() {
     s_instance = new (MEM1Arena::Instance(), -0x4) VI;
 }
 
+void VI::Init(VI *instance) {
+    s_instance = instance;
+}
+
 VI *VI::Instance() {
     return s_instance;
 }
@@ -79,7 +84,7 @@ VI::VI() {
     m_isProgressive = isNtsc && (visel & 1 || dcr & 4);
     m_xfbWidth = 608;
     m_xfbHeight = isNtsc ? 448 : 538;
-    m_xfbSize = m_xfbHeight * ((m_xfbWidth + 1) / 2) * sizeof(u32);
+    m_xfbSize = m_xfbHeight * AlignUp(m_xfbWidth, 16) * sizeof(u16);
     m_xfb = reinterpret_cast<u32 *>(MEM1Arena::Instance()->alloc(m_xfbSize, -0x20));
     for (u16 y = 0; y < m_xfbHeight; y++) {
         for (u16 x = 0; x < m_xfbWidth; x++) {

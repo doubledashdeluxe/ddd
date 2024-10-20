@@ -43,6 +43,7 @@ extern "C" void RunChannel() {
         context->mem2ArenaLo = reinterpret_cast<uintptr_t>(MEM2Arena::Instance()->alloc(0x0, 0x4));
         context->mem2ArenaHi = reinterpret_cast<uintptr_t>(MEM2Arena::Instance()->alloc(0x0, -0x4));
     }
+    context->vi = VI::Instance();
     context->console = Console::Instance();
     if (payloadEntry) {
         (*payloadEntry)(context);

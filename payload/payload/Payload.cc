@@ -15,7 +15,6 @@
 #include "payload/online/ServerManager.hh"
 
 #include <common/Clock.hh>
-#include <common/Console.hh>
 #include <common/Log.hh>
 #include <common/Platform.hh>
 #include <common/USB.hh>
@@ -122,6 +121,4 @@ void Payload::Run(Context *context) {
         DNS::Init();
         INFO("Initialized DNS.");
     }
-
-    Console::Instance()->setIsDirect(false);
 }

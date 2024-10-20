@@ -24,6 +24,7 @@ public:
     void flushXFB();
 
     static void Init();
+    static void Init(VI *instance);
     static VI *Instance();
 
 private:
