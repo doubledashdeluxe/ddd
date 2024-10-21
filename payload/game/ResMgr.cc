@@ -29,7 +29,7 @@ void ResMgr::Create(JKRHeap *parentHeap) {
     s_loaders[ArchiveID::System] = JKRArchive::Mount(DOLBinary::BinarySectionStart(), parentHeap,
             JKRArchive::MountDirection::Head);
 
-    size_t keepHeapSize = 0xf00000;
+    size_t keepHeapSize = 0x800000;
     void *keepHeapPtr = MEM2Arena::Instance()->alloc(keepHeapSize, 0x4);
     s_keepHeap = JKRExpHeap::Create(keepHeapPtr, keepHeapSize, parentHeap, false);
     SysDebug::GetManager()->createHeapInfo(s_keepHeap, "MRAM.arc");
@@ -40,6 +40,20 @@ void ResMgr::Create(JKRHeap *parentHeap) {
 
 const JKRHeap *ResMgr::GetCourseHeap() {
     return s_courseHeap;
+}
+
+void ResMgr::LoadKeepData(void *userData) {
+    if (!(s_loadFlag & 1 << ArchiveID::ARAM)) {
+        s_loadingFlag |= 1 << ArchiveID::ARAM;
+
+        s_loaders[ArchiveID::ARAM] = JKRArchive::Mount("/ARAM.arc", JKRArchive::MountMode::Aram,
+                s_keepHeap, JKRArchive::MountDirection::Head);
+
+        s_loadingFlag &= ~(1 << ArchiveID::ARAM);
+        s_loadFlag |= 1 << ArchiveID::ARAM;
+    }
+
+    REPLACED(LoadKeepData)(userData);
 }
 
 void ResMgr::LoadCourseData(u32 courseID, u32 courseOrder) {
@@ -78,8 +92,8 @@ void ResMgr::LoadCourseData(void * /* userData */) {
     } else {
         snprintf(path.values(), path.count(), "Course/%s%s.arc", base, suffix);
     }
-    s_loaders[ArchiveID::Course] =
-            JKRArchive::Mount(path.values(), s_courseHeap, JKRArchive::MountDirection::Head, false);
+    s_loaders[ArchiveID::Course] = JKRArchive::Mount(path.values(), JKRArchive::MountMode::Mem,
+            s_courseHeap, JKRArchive::MountDirection::Head, false);
 
     s_mountCourseID = s_courseID;
     s_mountCourseOrder = s_courseOrder;
@@ -96,8 +110,8 @@ void ResMgr::LoadExtendedCourseData(void * /* userData */) {
     u32 courseArchiveSize;
     void *courseArchive =
             s_course->loadCourse(s_courseOrder, raceLevel, s_courseHeap, courseArchiveSize);
-    s_loaders[ArchiveID::Course] = JKRArchive::Mount(courseArchive, courseArchiveSize, s_courseHeap,
-            JKRArchive::MountDirection::Head, false);
+    s_loaders[ArchiveID::Course] = JKRArchive::Mount(courseArchive, courseArchiveSize,
+            JKRArchive::MountMode::Mem, s_courseHeap, JKRArchive::MountDirection::Head, false);
 
     for (s_courseID = CourseID::BabyLuigi; s_courseID <= CourseID::Mini8; s_courseID++) {
         const char *base = GetCrsArcName(s_courseID);

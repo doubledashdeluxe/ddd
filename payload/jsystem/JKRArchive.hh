@@ -35,22 +35,39 @@ public:
 
     JKRArchive(s32 entrynum, u32 mountMode);
     ~JKRArchive();
-    // ...
+    void vf_10() override;
+    void vf_14() override;
+    void vf_18() override;
+    void vf_1c() override;
+    void vf_20() override;
+    void vf_24() override;
+    void vf_28() override;
+    void vf_2c() override;
+    s32 getResSize(const void *ptr) const override;
+    void vf_34() override;
+    void vf_38() override;
+    virtual void vf_3c();
+    virtual void vf_40() = 0;
+    virtual void vf_44() = 0;
+    virtual void vf_48();
+    virtual void vf_4c();
 
     REPLACE static JKRArchive *Mount(const char *path, u32 mountMode, JKRHeap *heap,
             u32 mountDirection);
     REPLACE static JKRArchive *Mount(void *archive, JKRHeap *heap, u32 mountDirection);
-    static JKRArchive *Mount(const char *path, JKRHeap *heap, u32 mountDirection,
+    static JKRArchive *Mount(const char *path, u32 mountMode, JKRHeap *heap, u32 mountDirection,
             bool patchesAllowed);
-    static JKRArchive *Mount(s32 entrynum, JKRHeap *heap, u32 mountDirection, bool patchesAllowed);
-    static JKRArchive *Mount(void *archive, u32 archiveSize, JKRHeap *heap, u32 mountDirection,
+    static JKRArchive *Mount(s32 entrynum, u32 mountMode, JKRHeap *heap, u32 mountDirection,
             bool patchesAllowed);
+    static JKRArchive *Mount(void *archive, u32 archiveSize, u32 mountMode, JKRHeap *heap,
+            u32 mountDirection, bool patchesAllowed);
 
 protected:
-    static JKRArchive *Mount(Archive archive, u32 archiveSize, JKRHeap *heap, u32 mountDirection,
-            bool patchesAllowed);
+    static JKRArchive *Mount(Archive archive, u32 archiveSize, u32 mountMode, JKRHeap *heap,
+            u32 mountDirection, bool patchesAllowed);
     static JKRArchive *Mount(const char *bare, s32 entrynum, Archive archive, u32 archiveSize,
-            JKRHeap *heap, u32 mountDirection, bool ownsMemory, bool patchesAllowed);
+            u32 mountMode, JKRHeap *heap, u32 mountDirection, bool ownsMemory, bool patchesAllowed,
+            u8 *archivePtr);
 
     JKRHeap *m_heap;
     u8 m_mountMode;
@@ -59,7 +76,7 @@ protected:
     u8 *m_tree;
     u8 *m_dirs;
     u8 *m_nodes;
-    u8 _50[0x54 - 0x50];
+    u32 *m_expandSizes;
     char *m_names;
     u8 _58[0x60 - 0x58];
     u32 m_mountDirection;

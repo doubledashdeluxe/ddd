@@ -1,9 +1,11 @@
 #include "JKRArchive.hh"
 
+#include "jsystem/JKRAramArchive.hh"
 #include "jsystem/JKRMemArchive.hh"
 
 #include <common/Bytes.hh>
 #include <common/Log.hh>
+#include <common/New.hh>
 #include <common/storage/Storage.hh>
 extern "C" {
 #include <dolphin/DVD.h>
@@ -16,24 +18,23 @@ extern "C" {
 #include <string.h>
 }
 
-JKRArchive *JKRArchive::Mount(const char *path, u32 /* mountMode */, JKRHeap *heap,
-        u32 mountDirection) {
-    return Mount(path, heap, mountDirection, true);
+JKRArchive *JKRArchive::Mount(const char *path, u32 mountMode, JKRHeap *heap, u32 mountDirection) {
+    return Mount(path, mountMode, heap, mountDirection, true);
 }
 
 JKRArchive *JKRArchive::Mount(void *archive, JKRHeap *heap, u32 mountDirection) {
-    u32 archiveSize = Bytes::ReadBE<u32>(reinterpret_cast<u8 *>(archive), 0x04);
-    return Mount(archive, archiveSize, heap, mountDirection, true);
+    u32 archiveSize = Archive(reinterpret_cast<u8 *>(archive)).getArchiveSize();
+    return Mount(archive, archiveSize, MountMode::Mem, heap, mountDirection, true);
 }
 
-JKRArchive *JKRArchive::Mount(const char *path, JKRHeap *heap, u32 mountDirection,
+JKRArchive *JKRArchive::Mount(const char *path, u32 mountMode, JKRHeap *heap, u32 mountDirection,
         bool patchesAllowed) {
     s32 entrynum = DVDConvertPathToEntrynum(path);
     assert(entrynum >= 0);
-    return Mount(entrynum, heap, mountDirection, patchesAllowed);
+    return Mount(entrynum, mountMode, heap, mountDirection, patchesAllowed);
 }
 
-JKRArchive *JKRArchive::Mount(s32 entrynum, JKRHeap *heap, u32 mountDirection,
+JKRArchive *JKRArchive::Mount(s32 entrynum, u32 mountMode, JKRHeap *heap, u32 mountDirection,
         bool patchesAllowed) {
     Array<char, 256> path;
     assert(DVDConvertEntrynumToPath(entrynum, path.values(), path.count()));
@@ -41,6 +42,20 @@ JKRArchive *JKRArchive::Mount(s32 entrynum, JKRHeap *heap, u32 mountDirection,
     const char *bare = strrchr(path.values(), '/');
     bare = bare ? bare + 1 : path.values();
     INFO("Loading %s...", bare);
+
+    if (!heap) {
+        heap = JKRHeap::GetCurrentHeap();
+    }
+    s32 alignment = mountDirection == MountDirection::Head ? 0x20 : -0x20;
+    u8 *archivePtr;
+    switch (mountMode) {
+    case MountMode::Aram:
+        archivePtr = new (heap, alignment) u8[sizeof(JKRAramArchive)];
+        break;
+    default:
+        archivePtr = new (heap, alignment) u8[sizeof(JKRMemArchive)];
+        break;
+    }
 
     Array<char, 256> filePath;
     s32 length = snprintf(filePath.values(), filePath.count(), "dvd:%s", path.values());
@@ -50,27 +65,24 @@ JKRArchive *JKRArchive::Mount(s32 entrynum, JKRHeap *heap, u32 mountDirection,
     u64 fileSize;
     assert(file.size(fileSize) && fileSize <= UINT32_MAX);
 
-    if (!heap) {
-        heap = JKRHeap::GetCurrentHeap();
-    }
-    s32 alignment = mountDirection == MountDirection::Head ? 0x20 : -0x20;
     Archive archive(new (heap, alignment) u8[fileSize]);
     assert(archive.get());
 
     assert(file.read(archive.get(), fileSize, 0));
     assert(archive.isValid(fileSize));
 
-    return Mount(bare, entrynum, archive, fileSize, heap, mountDirection, true, patchesAllowed);
+    return Mount(bare, entrynum, archive, fileSize, mountMode, heap, mountDirection, true,
+            patchesAllowed, archivePtr);
 }
 
-JKRArchive *JKRArchive::Mount(void *archive, u32 archiveSize, JKRHeap *heap, u32 mountDirection,
-        bool patchesAllowed) {
-    return Mount(Archive(reinterpret_cast<u8 *>(archive)), archiveSize, heap, mountDirection,
-            patchesAllowed);
+JKRArchive *JKRArchive::Mount(void *archive, u32 archiveSize, u32 mountMode, JKRHeap *heap,
+        u32 mountDirection, bool patchesAllowed) {
+    return Mount(Archive(reinterpret_cast<u8 *>(archive)), archiveSize, mountMode, heap,
+            mountDirection, patchesAllowed);
 }
 
-JKRArchive *JKRArchive::Mount(Archive archive, u32 archiveSize, JKRHeap *heap, u32 mountDirection,
-        bool patchesAllowed) {
+JKRArchive *JKRArchive::Mount(Archive archive, u32 archiveSize, u32 mountMode, JKRHeap *heap,
+        u32 mountDirection, bool patchesAllowed) {
     assert(archive.isValid(archiveSize));
     Archive::Tree tree = archive.getTree();
     Archive::Dir dir = tree.getDir(0);
@@ -82,13 +94,16 @@ JKRArchive *JKRArchive::Mount(Archive archive, u32 archiveSize, JKRHeap *heap, u
     if (!heap) {
         heap = JKRHeap::GetCurrentHeap();
     }
+    s32 alignment = mountDirection == MountDirection::Head ? 0x20 : -0x20;
+    u8 *archivePtr = new (heap, alignment) u8[sizeof(JKRMemArchive)];
 
-    return Mount(bare.values(), entrynum, archive, archiveSize, heap, mountDirection, false,
-            patchesAllowed);
+    return Mount(bare.values(), entrynum, archive, archiveSize, mountMode, heap, mountDirection,
+            false, patchesAllowed, archivePtr);
 }
 
 JKRArchive *JKRArchive::Mount(const char *bare, s32 entrynum, Archive archive, u32 archiveSize,
-        JKRHeap *heap, u32 mountDirection, bool ownsMemory, bool patchesAllowed) {
+        u32 mountMode, JKRHeap *heap, u32 mountDirection, bool ownsMemory, bool patchesAllowed,
+        u8 *archivePtr) {
     for (JSUPtrLink *link = s_volumeList.getFirstLink(); link; link = link->getNext()) {
         JKRArchive *volume = reinterpret_cast<JKRArchive *>(link->getObjectPtr());
         if (volume->m_entrynum == entrynum) {
@@ -103,5 +118,10 @@ JKRArchive *JKRArchive::Mount(const char *bare, s32 entrynum, Archive archive, u
     }
 
     INFO("Loaded %s.", bare);
-    return new (heap, alignment) JKRMemArchive(entrynum, archive, mountDirection, ownsMemory);
+    switch (mountMode) {
+    case MountMode::Aram:
+        return new (archivePtr) JKRAramArchive(entrynum, archive, mountDirection);
+    default:
+        return new (archivePtr) JKRMemArchive(entrynum, archive, mountDirection, ownsMemory);
+    }
 }

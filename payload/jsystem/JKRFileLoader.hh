@@ -7,16 +7,17 @@ public:
     JKRFileLoader();
     virtual ~JKRFileLoader();
     virtual void vf_0c();
-    virtual void vf_10();
-    virtual void vf_14();
-    virtual void vf_18();
-    virtual void vf_1c();
-    virtual void vf_20();
-    virtual void vf_24();
-    virtual void vf_28();
-    virtual void vf_2c();
-    virtual s32 getResSize(const void *ptr) const;
-    // ...
+    virtual void vf_10() = 0;
+    virtual void vf_14() = 0;
+    virtual void vf_18() = 0;
+    virtual void vf_1c() = 0;
+    virtual void vf_20() = 0;
+    virtual void vf_24() = 0;
+    virtual void vf_28() = 0;
+    virtual void vf_2c() = 0;
+    virtual s32 getResSize(const void *ptr) const = 0;
+    virtual void vf_34() = 0;
+    virtual void vf_38() = 0;
 
     static void *GetGlbResource(const char *name, JKRFileLoader *fileLoader);
     static s32 GetGlbResSize(const void *ptr, JKRFileLoader *fileLoader);

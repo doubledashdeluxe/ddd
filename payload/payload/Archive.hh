@@ -100,6 +100,7 @@ public:
     bool isValid(u32 archiveSize) const;
     bool isHeaderValid(u32 archiveSize) const;
     u8 *get() const;
+    u32 getArchiveSize() const;
     u32 getTreeOffset() const;
     Tree getTree() const;
     u32 getTreeSize() const;
@@ -107,6 +108,7 @@ public:
     u8 *getFiles() const;
     u32 getFilesSize() const;
 
+    void setArchiveSize(u32 archiveSize) const;
     void setTreeOffset(u32 treeOffset) const;
     void setTree(Tree tree) const;
     void setTreeSize(u32 treeSize) const;

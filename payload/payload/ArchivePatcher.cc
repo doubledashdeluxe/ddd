@@ -41,6 +41,7 @@ Archive ArchivePatcher::patch() {
     addDir("larc:/");
     addDir("main:/ddd/assets/");
     shrink();
+    m_archive.setArchiveSize(m_archiveSize);
     return m_archive;
 }
 

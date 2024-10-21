@@ -35,7 +35,7 @@ extern "C" void RunChannel() {
 
     MEM1Arena::Init();
     if (!Platform::IsGameCube()) {
-        MEM2Arena::Init(0x90a24000, 0x93400000);
+        MEM2Arena::Init(0x91000000, 0x93400000);
     }
     Context *context = new (MEM1Arena::Instance(), -0x4) Context;
     Channel::PayloadEntryFunc payloadEntry = Channel::Run(context);

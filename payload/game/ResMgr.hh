@@ -70,6 +70,8 @@ private:
 
     ResMgr();
 
+    static void REPLACED(LoadKeepData)(void *userData);
+    REPLACE static void LoadKeepData(void *userData);
     REPLACE static void LoadCourseData(void *userData);
     static void LoadExtendedCourseData(void *userData);
 

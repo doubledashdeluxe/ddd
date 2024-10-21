@@ -469,6 +469,10 @@ u8 *Archive::get() const {
     return m_archive;
 }
 
+u32 Archive::getArchiveSize() const {
+    return Bytes::ReadBE<u32>(m_archive, 0x04);
+}
+
 u32 Archive::getTreeOffset() const {
     return Bytes::ReadBE<u32>(m_archive, 0x08);
 }
@@ -491,6 +495,10 @@ u8 *Archive::getFiles() const {
 
 u32 Archive::getFilesSize() const {
     return Bytes::ReadBE<u32>(m_archive, 0x10);
+}
+
+void Archive::setArchiveSize(u32 archiveSize) const {
+    Bytes::WriteBE<u32>(m_archive, 0x04, archiveSize);
 }
 
 void Archive::setTreeOffset(u32 treeOffset) const {

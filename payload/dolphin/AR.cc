@@ -25,5 +25,5 @@ extern "C" u32 ARAlloc(u32 length) {
 }
 
 extern "C" u32 ARGetSize() {
-    return 0xa24000;
+    return 0x1000000;
 }

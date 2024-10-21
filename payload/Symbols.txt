@@ -8,11 +8,30 @@
 
 8000a5d8 __ct__7JKRAramFUlUll
 8000a7d8 MainRamToAram__7JKRAramFPCUcUlUllUlP7JKRHeaplPUl
+8000b944 vf_40__14JKRAramArchiveFv
+8000ba5c vf_44__14JKRAramArchiveFv
+8000bd74 vf_3c__14JKRAramArchiveFv
 8000c138 __ct__11JKRAramHeapFUlUl
+8000c2a8 alloc__11JKRAramHeapFUlUl
 8000ceb0 __ct__10JKRArchiveFlUl
+8000cf4c __dt__10JKRArchiveFv
+8000dac8 vf_48__10JKRArchiveFv
+8000db04 vf_4c__10JKRArchiveFv
 8000db44 Mount__10JKRArchiveFPCcUlP7JKRHeapUl
 8000db98 Mount__10JKRArchiveFPvP7JKRHeapUl
+8000de64 vf_10__10JKRArchiveFv
+8000e01c vf_14__10JKRArchiveFv
+8000e09c vf_18__10JKRArchiveFv
+8000e1b8 vf_1c__10JKRArchiveFv
+8000e11c vf_20__10JKRArchiveFv
+8000e2c0 vf_24__10JKRArchiveFv
+8000e340 vf_28__10JKRArchiveFv
+8000e398 vf_2c__10JKRArchiveFv
+8000e3d4 getResSize__10JKRArchiveCFPCv
+8000e408 vf_34__10JKRArchiveFv
+8000e474 vf_38__10JKRArchiveFv
 8001287c Create__10JKRExpHeapFPvUlP7JKRHeapb
+800144f4 vf_0c__13JKRFileLoaderFv
 80014594 GetGlbResource__13JKRFileLoaderFPCcP13JKRFileLoader
 80014bc4 alloc__7JKRHeapFUll
 80014c3c free__7JKRHeapFPv
@@ -275,6 +294,7 @@
 801cdb54 ctrlRace__7RaceAppFv
 801ce300 GetCrsArcName__6ResMgrFUl
 801ce530 Create__6ResMgrFP7JKRHeap
+801ce610 LoadKeepData__6ResMgrFPv
 801ce7d8 LoadCourseData__6ResMgrFPv
 801ceb3c LoadKeepData__6ResMgrFv
 801cebac LoadCourseData__6ResMgrFUlUl
@@ -365,6 +385,7 @@
 
 803d4980 s_language__10KartLocale
 
+803d4998 s_aramObject__7JKRAram
 803d4aa0 s_systemHeap__7JKRHeap
 803d4aa4 s_currentHeap__7JKRHeap
 803d4aa8 s_rootHeap__7JKRHeap
