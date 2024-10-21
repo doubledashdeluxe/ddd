@@ -6,7 +6,6 @@
 #include "game/KartGamePad.hh"
 #include "game/MenuTitleLine.hh"
 #include "game/OnlineBackground.hh"
-#include "game/SceneFactory.hh"
 #include "game/SequenceApp.hh"
 #include "game/SequenceInfo.hh"
 
@@ -19,12 +18,9 @@ extern "C" {
 }
 
 SceneServerSelect::SceneServerSelect(JKRArchive *archive, JKRHeap *heap) : Scene(archive, heap) {
-    SceneFactory *sceneFactory = SceneFactory::Instance();
-    JKRArchive *menuArchive = sceneFactory->archive(SceneFactory::ArchiveType::Menu);
-
     m_mainScreen.set("GDIndexLayout.blo", 0x20000, m_archive);
     for (u32 i = 0; i < m_serverScreens.count(); i++) {
-        m_serverScreens[i].set("Line.blo", 0x20000, menuArchive);
+        m_serverScreens[i].set("Line.blo", 0x20000, m_archive);
     }
 
     for (u32 i = 0; i < m_serverScreens.count(); i++) {
@@ -53,7 +49,7 @@ SceneServerSelect::SceneServerSelect(JKRArchive *archive, JKRHeap *heap) : Scene
         m_serverAnmTransforms[i] = J2DAnmLoaderDataBase::Load("GDIndexLine.bck", m_archive);
         m_serverScreens[i].setAnimation(m_serverAnmTransforms[i]);
     }
-    m_descAnmTransform = J2DAnmLoaderDataBase::Load("LineDesc.bck", menuArchive);
+    m_descAnmTransform = J2DAnmLoaderDataBase::Load("LineDesc.bck", m_archive);
     for (u32 i = 0; i < m_serverScreens.count(); i++) {
         m_serverScreens[i].search("Desc")->setAnimation(m_descAnmTransform);
     }

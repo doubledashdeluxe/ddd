@@ -24,16 +24,18 @@ ClientState &ClientStateServer::read(ClientReadHandler &handler) {
     checkConnections();
     checkSocket();
 
-    for (u32 i = 0; i < 16; i++) {
-        Socket::Address address;
-        s32 result = m_socket->recvFrom(m_buffer->values(), m_buffer->count(), address);
-        if (result < 0) {
-            break;
-        }
-        for (u32 j = 0; j < m_connections.count(); j++) {
-            m_index = (m_index + 1) % m_connections.count();
-            if (m_connections[m_index]->read(*this, m_buffer->values(), result, address)) {
+    if (!m_connections.empty()) {
+        for (u32 i = 0; i < 16; i++) {
+            Socket::Address address;
+            s32 result = m_socket->recvFrom(m_buffer->values(), m_buffer->count(), address);
+            if (result < 0) {
                 break;
+            }
+            for (u32 j = 0; j < m_connections.count(); j++) {
+                m_index = (m_index + 1) % m_connections.count();
+                if (m_connections[m_index]->read(*this, m_buffer->values(), result, address)) {
+                    break;
+                }
             }
         }
     }
@@ -53,12 +55,14 @@ ClientState &ClientStateServer::writeStateServer() {
     checkConnections();
     checkSocket();
 
-    u32 size = m_buffer->count();
-    Socket::Address address;
-    if (m_connections[m_index]->write(*this, m_buffer->values(), size, address)) {
-        m_socket->sendTo(m_buffer->values(), size, address);
+    if (!m_connections.empty()) {
+        u32 size = m_buffer->count();
+        Socket::Address address;
+        if (m_connections[m_index]->write(*this, m_buffer->values(), size, address)) {
+            m_socket->sendTo(m_buffer->values(), size, address);
+        }
+        m_index = (m_index + 1) % m_connections.count();
     }
-    m_index = (m_index + 1) % m_connections.count();
 
     return *this;
 }

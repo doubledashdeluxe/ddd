@@ -313,6 +313,7 @@
 801d96e8 calc__11SequenceAppFv
 801d983c reset__11SequenceAppFv
 801d98ac ready__11SequenceAppFl
+801d9928 checkFinishAllLoading__11SequenceAppFv
 801d9990 createScene__11SequenceAppFl
 801dc140 Framework__6PadMgrFv
 801dd7cc getState__6BBAMgrFv

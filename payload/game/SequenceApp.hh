@@ -9,7 +9,9 @@
 
 class SequenceApp : public GameApp {
 public:
-    bool ready(s32 sceneType);
+    bool REPLACED(ready)(s32 sceneType);
+    REPLACE bool ready(s32 sceneType);
+    bool checkFinishAllLoading();
     s32 prevScene() const;
     void setNextScene(s32 sceneType);
 
@@ -22,7 +24,8 @@ private:
     SequenceApp();
     ~SequenceApp() override;
     void draw() override;
-    void calc() override;
+    void REPLACED(calc)();
+    REPLACE void calc() override;
     void reset() override;
 
     REPLACE void freeForMovieApp();

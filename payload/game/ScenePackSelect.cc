@@ -21,7 +21,6 @@ extern "C" {
 
 ScenePackSelect::ScenePackSelect(JKRArchive *archive, JKRHeap *heap) : Scene(archive, heap) {
     SceneFactory *sceneFactory = SceneFactory::Instance();
-    JKRArchive *menuArchive = sceneFactory->archive(SceneFactory::ArchiveType::Menu);
     JKRArchive *mapSelectArchive = sceneFactory->archive(SceneFactory::ArchiveType::MapSelect);
     JKRArchive *backgroundArchive = sceneFactory->archive(SceneFactory::ArchiveType::Background);
     JKRArchive *titleLineArchive = sceneFactory->archive(SceneFactory::ArchiveType::TitleLine);
@@ -32,7 +31,7 @@ ScenePackSelect::ScenePackSelect(JKRArchive *archive, JKRHeap *heap) : Scene(arc
     m_mainScreen.set("GDIndexLayout.blo", 0x20000, m_archive);
     m_modeScreen.set("SelectMapLayout.blo", 0x1040000, mapSelectArchive);
     for (u32 i = 0; i < m_packScreens.count(); i++) {
-        m_packScreens[i].set("Line.blo", 0x20000, menuArchive);
+        m_packScreens[i].set("Line.blo", 0x20000, m_archive);
     }
 
     for (u32 i = 0; i < m_packScreens.count(); i++) {
@@ -64,7 +63,7 @@ ScenePackSelect::ScenePackSelect(JKRArchive *archive, JKRHeap *heap) : Scene(arc
         m_packScreens[i].setAnimation(m_packAnmTransforms[i]);
     }
     for (u32 i = 0; i < m_descAnmTransforms.count(); i++) {
-        m_descAnmTransforms[i] = J2DAnmLoaderDataBase::Load("LineDesc.bck", menuArchive);
+        m_descAnmTransforms[i] = J2DAnmLoaderDataBase::Load("LineDesc.bck", m_archive);
         m_packScreens[i].search("Desc")->setAnimation(m_descAnmTransforms[i]);
     }
 

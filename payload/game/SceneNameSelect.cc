@@ -6,6 +6,7 @@
 #include "game/KartGamePad.hh"
 #include "game/MenuTitleLine.hh"
 #include "game/OnlineBackground.hh"
+#include "game/SceneFactory.hh"
 #include "game/SequenceApp.hh"
 #include "game/SequenceInfo.hh"
 #include "game/SystemRecord.hh"
@@ -19,20 +20,23 @@ extern "C" {
 }
 
 SceneNameSelect::SceneNameSelect(JKRArchive *archive, JKRHeap *heap) : Scene(archive, heap) {
-    m_mainScreen.set("SelectName.blo", 0x1040000, m_archive);
+    SceneFactory *sceneFactory = SceneFactory::Instance();
+    JKRArchive *lanEntryArchive = sceneFactory->archive(SceneFactory::ArchiveType::LanEntry);
+
+    m_mainScreen.set("SelectName.blo", 0x1040000, lanEntryArchive);
     m_padCountScreen.set("PlayerIcon.blo", 0x1040000, m_archive);
 
     m_padCountScreen.search("Ns1234")->m_isVisible = false;
     m_padCountScreen.search("Ns12_3_4")->m_isVisible = false;
     m_padCountScreen.search("Ns12_34")->m_isVisible = false;
 
-    m_mainAnmTransform = J2DAnmLoaderDataBase::Load("SelectName.bck", m_archive);
+    m_mainAnmTransform = J2DAnmLoaderDataBase::Load("SelectName.bck", lanEntryArchive);
     m_mainScreen.search("N_Entry")->setAnimation(m_mainAnmTransform);
-    m_nameAnmTransform = J2DAnmLoaderDataBase::Load("SelectName.bck", m_archive);
+    m_nameAnmTransform = J2DAnmLoaderDataBase::Load("SelectName.bck", lanEntryArchive);
     for (u32 i = 0; i < 4; i++) {
         m_mainScreen.search("ENplay%u", i + 1)->setAnimation(m_nameAnmTransform);
     }
-    m_nameCircleAnmTransform = J2DAnmLoaderDataBase::Load("SelectName.bck", m_archive);
+    m_nameCircleAnmTransform = J2DAnmLoaderDataBase::Load("SelectName.bck", lanEntryArchive);
     for (u32 i = 0; i < 4; i++) {
         m_mainScreen.search("Eplay%ub", i + 1)->setAnimation(m_nameCircleAnmTransform);
     }

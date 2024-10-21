@@ -211,8 +211,6 @@ void SceneTitle::stateFadeIn() {
     }
 
     SequenceApp::Instance()->ready(SceneType::Menu);
-    SequenceApp::Instance()->ready(SceneType::Option);
-    SequenceApp::Instance()->ready(SceneType::Record);
 
     if (System::GetDisplay()->getFaderStatus() != JUTFader::Status::In) {
         return;

@@ -8,6 +8,14 @@
 #include "game/System.hh"
 #include "game/SystemRecord.hh"
 
+bool SequenceApp::ready(s32 sceneType) {
+    if (sceneType == SceneType::Title) {
+        return true;
+    }
+
+    return REPLACED(ready)(sceneType);
+}
+
 s32 SequenceApp::prevScene() const {
     return m_prevScene;
 }
@@ -38,7 +46,7 @@ SequenceApp *SequenceApp::Instance() {
 }
 
 SequenceApp::SequenceApp()
-    : GameApp(0x7df400, "Sequence", nullptr), m_scene(nullptr), m_loadingFlag(0), m_loadFlag(0),
+    : GameApp(0x600000, "Sequence", nullptr), m_scene(nullptr), m_loadingFlag(0), m_loadFlag(0),
       m_state(0), _48(0), m_scenes(nullptr) {
     SceneFactory::Create();
     if (s_nextScene != SceneType::None) {
@@ -60,6 +68,25 @@ SequenceApp::~SequenceApp() {
     s_nextScene = SceneType::None;
     s_scene = SceneType::None;
     s_instance = nullptr;
+}
+
+void SequenceApp::calc() {
+    if (m_state == 0 && s_nextScene == SceneType::Title) {
+        if (checkFinishAllLoading()) {
+            freeForMovieApp();
+            m_state = 3;
+        } else {
+            return;
+        }
+    }
+    if (m_state == 3) {
+        if (REPLACED(ready)(SceneType::Title)) {
+            m_state = 1;
+        } else {
+            return;
+        }
+    }
+    REPLACED(calc)();
 }
 
 void SequenceApp::freeForMovieApp() {
