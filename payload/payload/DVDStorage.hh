@@ -75,7 +75,6 @@ private:
     Mutex m_mutex;
     Array<File, 32> m_files;
     Array<Dir, 32> m_dirs;
-    alignas(0x20) Array<u8, 0x10000> m_buffer;
     OSMessageQueue m_initQueue;
     Array<OSMessage, 1> m_initMessages;
 

@@ -42,6 +42,8 @@ void System::Init() {
     DEBUG("%p %p ServerManager", serverManagerStart, serverManagerEnd);
     const JKRHeap *systemHeap = JKRHeap::GetSystemHeap();
     DEBUG("%p %p SystemHeap", systemHeap->getStartAddr(), systemHeap->getEndAddr());
+    const JKRHeap *keepHeap = ResMgr::GetKeepHeap();
+    DEBUG("%p %p KeepHeap", keepHeap->getStartAddr(), keepHeap->getEndAddr());
     const JKRHeap *courseHeap = ResMgr::GetCourseHeap();
     DEBUG("%p %p CourseHeap", courseHeap->getStartAddr(), courseHeap->getEndAddr());
     DEBUG("%p %p AppHeap", s_appHeap->getStartAddr(), s_appHeap->getEndAddr());

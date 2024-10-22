@@ -4,6 +4,7 @@
 
 class JKRExpHeap : public JKRHeap {
 public:
+    static JKRExpHeap *Create(size_t size, JKRHeap *parent, bool errorFlag);
     static JKRExpHeap *Create(void *ptr, size_t size, JKRHeap *parent, bool errorFlag);
 
 private:

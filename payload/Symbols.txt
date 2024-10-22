@@ -30,6 +30,7 @@
 8000e3d4 getResSize__10JKRArchiveCFPCv
 8000e408 vf_34__10JKRArchiveFv
 8000e474 vf_38__10JKRArchiveFv
+800127a8 Create__10JKRExpHeapFUlP7JKRHeapb
 8001287c Create__10JKRExpHeapFPvUlP7JKRHeapb
 800144f4 vf_0c__13JKRFileLoaderFv
 80014594 GetGlbResource__13JKRFileLoaderFPCcP13JKRFileLoader

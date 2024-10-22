@@ -8,7 +8,6 @@
 #include "game/SysDebug.hh"
 #include "game/System.hh"
 
-#include <common/Arena.hh>
 #include <common/Array.hh>
 #include <jsystem/JKRExpHeap.hh>
 #include <jsystem/JKRSolidHeap.hh>
@@ -31,13 +30,15 @@ void ResMgr::Create(JKRHeap *parentHeap) {
     s_loaders[ArchiveID::System] = JKRArchive::Mount(DOLBinary::BinarySectionStart(), parentHeap,
             JKRArchive::MountDirection::Head);
 
-    size_t keepHeapSize = 0x7c0000;
-    void *keepHeapPtr = MEM2Arena::Instance()->alloc(keepHeapSize, 0x4);
-    s_keepHeap = JKRExpHeap::Create(keepHeapPtr, keepHeapSize, parentHeap, false);
+    s_keepHeap = JKRExpHeap::Create(0x7c0000, parentHeap, false);
     SysDebug::GetManager()->createHeapInfo(s_keepHeap, "MRAM.arc");
 
     s_courseHeap = JKRSolidHeap::Create(0x280000, parentHeap, false);
     SysDebug::GetManager()->createHeapInfo(s_courseHeap, "Crs.arc");
+}
+
+const JKRHeap *ResMgr::GetKeepHeap() {
+    return s_keepHeap;
 }
 
 const JKRHeap *ResMgr::GetCourseHeap() {
