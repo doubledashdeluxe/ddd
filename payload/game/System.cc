@@ -11,6 +11,7 @@
 #include "game/ResMgr.hh"
 
 #include <common/Log.hh>
+#include <common/Platform.hh>
 #include <common/SC.hh>
 extern "C" {
 #include <dolphin/DVD.h>
@@ -26,10 +27,12 @@ void System::Init() {
     REPLACED(Init)();
     s_loadTask->request(REPLACED(StartAudio), nullptr, nullptr);
 
-    SC sc;
-    u8 ar;
-    if (sc.get("IPL.AR", ar) && ar) {
-        s_defaultAspectRatio = 38.0f / 21.0f;
+    if (!Platform::IsGameCube()) {
+        SC sc;
+        u8 ar;
+        if (sc.get("IPL.AR", ar) && ar) {
+            s_defaultAspectRatio = 38.0f / 21.0f;
+        }
     }
 
     DEBUG("%p %p main.dol", DOLBinary::Start(), DOLBinary::End());
