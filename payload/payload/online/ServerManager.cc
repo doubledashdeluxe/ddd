@@ -11,8 +11,8 @@ extern "C" {
 #include <strings.h>
 }
 
-ServerManager::Server::Server(Array<char, INIReader::FieldSize> name,
-        Array<char, INIReader::FieldSize> address, Array<u8, 32> publicKey)
+ServerManager::Server::Server(Array<char, 32> name, Array<char, 32> address,
+        Array<u8, 32> publicKey)
     : m_name(name), m_address(address), m_publicKey(publicKey) {}
 
 ServerManager::Server::~Server() {}
@@ -91,22 +91,23 @@ void ServerManager::addServer(const Array<char, 256> &path) {
         return;
     }
 
-    Array<char, INIReader::FieldSize> &name =
+    Array<char, INIReader::FieldSize> &nameField =
             getLocalizedEntry(serverINI.localizedNames, serverINI.fallbackName);
-    if (strlen(name.values()) == 0) {
+    if (strlen(nameField.values()) == 0) {
         return;
     }
-    Array<char, INIReader::FieldSize> &address = serverINI.address;
-    if (strlen(address.values()) == 0) {
+    Array<char, INIReader::FieldSize> &addressField = serverINI.address;
+    if (strlen(addressField.values()) == 0) {
         return;
     }
+    Array<char, INIReader::FieldSize> &publicKeyField = serverINI.publicKey;
     Array<u8, 32> publicKey(0x0);
-    if (strlen(serverINI.publicKey.values()) != publicKey.count() * 2) {
+    if (strlen(publicKeyField.values()) != publicKey.count() * 2) {
         return;
     }
     for (u32 i = 0; i < publicKey.count() * 2; i++) {
         publicKey[i / 2] <<= 4;
-        char c = serverINI.publicKey[i];
+        char c = publicKeyField[i];
         if (c >= '0' && c <= '9') {
             publicKey[i / 2] |= c - '0';
         } else if (c >= 'A' && c <= 'Z') {
@@ -117,6 +118,11 @@ void ServerManager::addServer(const Array<char, 256> &path) {
             return;
         }
     }
+
+    Array<char, 32> name;
+    snprintf(name.values(), name.count(), "%s", nameField.values());
+    Array<char, 32> address;
+    snprintf(address.values(), address.count(), "%s", addressField.values());
 
     DEBUG("Adding server %s...", path.values());
     Server server(name, address, publicKey);

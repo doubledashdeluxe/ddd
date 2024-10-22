@@ -18,8 +18,7 @@ public:
 
     class Server {
     public:
-        Server(Array<char, INIReader::FieldSize> name, Array<char, INIReader::FieldSize> address,
-                Array<u8, 32> publicKey);
+        Server(Array<char, 32> name, Array<char, 32> address, Array<u8, 32> publicKey);
         ~Server();
 
         const char *name() const;
@@ -27,8 +26,8 @@ public:
         Array<u8, 32> publicKey() const;
 
     private:
-        Array<char, INIReader::FieldSize> m_name;
-        Array<char, INIReader::FieldSize> m_address;
+        Array<char, 32> m_name;
+        Array<char, 32> m_address;
         Array<u8, 32> m_publicKey;
     };
 
