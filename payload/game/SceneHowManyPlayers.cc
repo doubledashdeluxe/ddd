@@ -9,6 +9,7 @@
 #include "game/SequenceInfo.hh"
 #include "game/System.hh"
 
+#include <common/Platform.hh>
 #include <jsystem/J2DAnmLoaderDataBase.hh>
 
 SceneHowManyPlayers::SceneHowManyPlayers(JKRArchive *archive, JKRHeap *heap)
@@ -163,7 +164,9 @@ void SceneHowManyPlayers::stateIdle() {
         if (m_padCount == 1) {
             sequenceInfo.m_statusCount = 1;
         }
-        slideOut();
+        if (!Platform::IsGameCube()) {
+            slideOut();
+        }
     } else if (button.risingEdge() & PAD_BUTTON_B) {
         m_nextScene = SceneType::Title;
         GameAudio::Main::Instance()->fadeOutAll(15);

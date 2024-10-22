@@ -7,6 +7,7 @@
 #include "game/System.hh"
 
 #include <common/Log.hh>
+#include <common/Platform.hh>
 #include <payload/CourseManager.hh>
 #include <payload/online/Client.hh>
 #include <payload/online/ServerManager.hh>
@@ -47,7 +48,9 @@ void LogoApp::calc() {
         ServerManager::Instance()->start();
         break;
     case 7:
-        Client::Init();
+        if (!Platform::IsGameCube()) {
+            Client::Init();
+        }
         break;
     case 8:
         SequenceApp::Call(SceneType::Title);
