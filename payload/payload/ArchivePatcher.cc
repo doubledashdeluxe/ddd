@@ -13,13 +13,19 @@ extern "C" {
 #include <string.h>
 }
 
-Archive ArchivePatcher::Patch(const char *bare, Archive archive, u32 archiveSize, JKRHeap *heap,
+bool ArchivePatcher::Patch(const char *bare, Archive &archive, u32 archiveSize, JKRHeap *heap,
         s32 alignment, bool &ownsMemory) {
     ArchivePatcher patcher(bare, archive, archiveSize, heap, alignment, ownsMemory);
-    return patcher.patch();
+    if (!patcher.patch()) {
+        if (ownsMemory) {
+            delete[] archive.get();
+        }
+        return false;
+    }
+    return true;
 }
 
-ArchivePatcher::ArchivePatcher(const char *bare, Archive archive, u32 archiveSize, JKRHeap *heap,
+ArchivePatcher::ArchivePatcher(const char *bare, Archive &archive, u32 archiveSize, JKRHeap *heap,
         s32 alignment, bool &ownsMemory)
     : m_bare(bare), m_archive(archive), m_archiveSize(archiveSize), m_heap(heap),
       m_alignment(alignment), m_ownsMemory(ownsMemory) {
@@ -36,24 +42,30 @@ ArchivePatcher::ArchivePatcher(const char *bare, Archive archive, u32 archiveSiz
 
 ArchivePatcher::~ArchivePatcher() {}
 
-Archive ArchivePatcher::patch() {
-    addDir("carc:/");
-    addDir("larc:/");
-    addDir("main:/ddd/assets/");
+bool ArchivePatcher::patch() {
+    if (!addDir("carc:/")) {
+        return false;
+    }
+    if (!addDir("larc:/")) {
+        return false;
+    }
+    if (!addDir("main:/ddd/assets/")) {
+        return false;
+    }
     shrink();
     m_archive.setArchiveSize(m_archiveSize);
-    return m_archive;
+    return true;
 }
 
-void ArchivePatcher::addDir(const char *prefix) {
+bool ArchivePatcher::addDir(const char *prefix) {
     Array<char, 256> path;
     s32 rootLength = snprintf(path.values(), path.count(), "%s%s", prefix, m_bare);
     assert(rootLength >= 0 && static_cast<u32>(rootLength) < path.count());
     Storage::NodeInfo nodeInfo;
-    addDir(rootLength, path, nodeInfo);
+    return addDir(rootLength, path, nodeInfo);
 }
 
-void ArchivePatcher::addDir(u32 rootLength, Array<char, 256> &path, Storage::NodeInfo &nodeInfo) {
+bool ArchivePatcher::addDir(u32 rootLength, Array<char, 256> &path, Storage::NodeInfo &nodeInfo) {
     const char *searchPath = path.values() + rootLength;
     if (searchPath[0] == '\0') {
         searchPath = "/";
@@ -62,9 +74,13 @@ void ArchivePatcher::addDir(u32 rootLength, Array<char, 256> &path, Storage::Nod
     Archive::Dir dir(nullptr);
     Archive::Node node(nullptr);
     bool exists;
-    assert(m_archive.getTree().search(searchPath, name, dir, node, exists));
+    if (!m_archive.getTree().search(searchPath, name, dir, node, exists)) {
+        return false;
+    }
     if (exists) {
-        assert(!node.get() || node.isDir());
+        if (node.get() && !node.isDir()) {
+            return false;
+        }
     } else {
         u32 archiveSize = m_ownsMemory ? m_archiveSize : 0;
 
@@ -72,7 +88,9 @@ void ArchivePatcher::addDir(u32 rootLength, Array<char, 256> &path, Storage::Nod
         u32 dirIndex = (dir.get() - tree.getDir(0).get()) / 0x10;
         u32 nodeIndex = (node.get() - tree.getNode(0).get()) / 0x14;
 
-        addNode(0x10, name, dirIndex, nodeIndex);
+        if (!addNode(0x10, name, dirIndex, nodeIndex)) {
+            return false;
+        }
         tree = m_archive.getTree();
         dirIndex = tree.getDirCount();
         node = tree.getNode(nodeIndex);
@@ -107,21 +125,30 @@ void ArchivePatcher::addDir(u32 rootLength, Array<char, 256> &path, Storage::Nod
     for (Storage::DirHandle dir(path.values()); dir.read(nodeInfo);) {
         snprintf(path.values() + length, path.count() - length, "/%s", nodeInfo.name.values());
         if (nodeInfo.type == Storage::NodeType::Dir) {
-            addDir(rootLength, path, nodeInfo);
+            if (!addDir(rootLength, path, nodeInfo)) {
+                return false;
+            }
         } else {
-            addFile(rootLength, path);
+            if (!addFile(rootLength, path)) {
+                return false;
+            }
         }
     }
+    return true;
 }
 
-void ArchivePatcher::addFile(u32 rootLength, Array<char, 256> &path) {
+bool ArchivePatcher::addFile(u32 rootLength, Array<char, 256> &path) {
     u32 archiveSize = m_ownsMemory ? m_archiveSize : 0;
 
     Storage::FileHandle file(path.values(), Storage::Mode::Read);
     u64 fileSize;
-    assert(file.size(fileSize));
+    if (!file.size(fileSize)) {
+        return false;
+    }
     u64 alignedFileSize = AlignUp(fileSize, 0x20);
-    assert(alignedFileSize <= UINT32_MAX);
+    if (alignedFileSize > UINT32_MAX) {
+        return false;
+    }
 
     Archive::Tree tree = m_archive.getTree();
     const char *searchPath = path.values() + rootLength;
@@ -132,14 +159,22 @@ void ArchivePatcher::addFile(u32 rootLength, Array<char, 256> &path) {
     Archive::Dir dir(nullptr);
     Archive::Node node(nullptr);
     bool exists;
-    assert(tree.search(searchPath, name, dir, node, exists));
-    assert(node.get());
+    if (!tree.search(searchPath, name, dir, node, exists)) {
+        return false;
+    }
+    if (!node.get()) {
+        return false;
+    }
     u32 nodeIndex = (node.get() - tree.getNode(0).get()) / 0x14;
     if (exists) {
-        assert(node.isFile());
+        if (!node.isFile()) {
+            return false;
+        }
 
         if (!m_ownsMemory || alignedFileSize > node.getFileSize()) {
-            grow(alignedFileSize);
+            if (!grow(alignedFileSize)) {
+                return false;
+            }
             tree = Archive::Tree(m_archive.getFiles() + m_archive.getFilesSize() + alignedFileSize);
             u32 treeSize = m_archiveSize - alignedFileSize - m_archive.getTreeOffset();
             memmove(tree.get(), m_archive.getTree().get(), treeSize);
@@ -153,7 +188,9 @@ void ArchivePatcher::addFile(u32 rootLength, Array<char, 256> &path) {
         u32 dirIndex = (dir.get() - tree.getDir(0).get()) / 0x10;
         u32 nodesOffset = tree.getNode(0).get() - tree.get();
 
-        addNode(alignedFileSize, name, dirIndex, nodeIndex);
+        if (!addNode(alignedFileSize, name, dirIndex, nodeIndex)) {
+            return false;
+        }
         tree = m_archive.getTree();
         node = tree.getNode(nodeIndex);
         node.setFileIndex(tree.getFileCount());
@@ -175,14 +212,17 @@ void ArchivePatcher::addFile(u32 rootLength, Array<char, 256> &path) {
     node.setFileSize(fileSize);
 
     u8 *files = m_archive.getFiles();
-    assert(file.read(node.getFile(files), fileSize, 0x0));
+    if (!file.read(node.getFile(files), fileSize, 0x0)) {
+        return false;
+    }
     DCache::Flush(node.getFile(files), fileSize);
 
     u32 size = m_archiveSize - archiveSize;
     DEBUG("Added %s to %s (0x%lx)", searchPath, m_bare, size);
+    return true;
 }
 
-void ArchivePatcher::addNode(u32 fileSize, const char *name, u32 dirIndex, u32 nodeIndex) {
+bool ArchivePatcher::addNode(u32 fileSize, const char *name, u32 dirIndex, u32 nodeIndex) {
     u32 nameLength = strlen(name);
     u32 nameSize = AlignUp(nameLength + 1, 0x4);
     u16 nameHash = 0;
@@ -191,7 +231,9 @@ void ArchivePatcher::addNode(u32 fileSize, const char *name, u32 dirIndex, u32 n
         nameHash += name[i];
     }
 
-    grow(fileSize + 0x14 + nameSize);
+    if (!grow(fileSize + 0x14 + nameSize)) {
+        return false;
+    }
     Archive::Tree tree = m_archive.getTree();
 
     u32 nameOffset = tree.getNamesSize();
@@ -227,15 +269,20 @@ void ArchivePatcher::addNode(u32 fileSize, const char *name, u32 dirIndex, u32 n
 
     Archive::Dir dir = tree.getDir(dirIndex);
     dir.setNodeCount(dir.getNodeCount() + 1);
+    return true;
 }
 
-void ArchivePatcher::grow(u32 size) {
+bool ArchivePatcher::grow(u32 size) {
     if (m_ownsMemory) {
         u32 archiveSize = m_archiveSize + size;
-        assert(archiveSize >= m_archiveSize);
+        if (archiveSize < m_archiveSize) {
+            return false;
+        }
         if (m_heap->resize(m_archive.get(), archiveSize) < 0) {
             Archive archive(new (m_heap, m_alignment) u8[archiveSize]);
-            assert(archive.get());
+            if (!archive.get()) {
+                return false;
+            }
             memcpy(archive.get(), m_archive.get(), m_archiveSize);
             delete[] m_archive.get();
             m_archive = archive;
@@ -244,7 +291,9 @@ void ArchivePatcher::grow(u32 size) {
     } else {
         u32 archiveSize = 0x20 + m_archive.getTreeSize() + size;
         Archive archive(new (m_heap, m_alignment) u8[archiveSize]);
-        assert(archive.get());
+        if (!archive.get()) {
+            return false;
+        }
         memcpy(archive.get(), m_archive.get(), 0x20);
         memcpy(archive.getTree().get(), m_archive.getTree().get(), m_archive.getTreeSize());
         archive.setFiles(m_archive.getFiles());
@@ -253,6 +302,7 @@ void ArchivePatcher::grow(u32 size) {
         m_archiveSize = archiveSize;
         m_ownsMemory = true;
     }
+    return true;
 }
 
 void ArchivePatcher::shrink() {

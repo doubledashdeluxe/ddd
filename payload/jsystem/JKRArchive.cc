@@ -73,18 +73,25 @@ JKRArchive *JKRArchive::Mount(s32 entrynum, u32 mountMode, JKRHeap *heap, u32 mo
     s32 length = snprintf(filePath.values(), filePath.count(), "dvd:%s", path.values());
     assert(length >= 0 && static_cast<size_t>(length) < filePath.count());
 
-    Storage::FileHandle file(filePath.values(), Storage::Mode::Read);
-    u64 fileSize;
-    assert(file.size(fileSize) && fileSize <= UINT32_MAX);
+    while (true) {
+        Storage::FileHandle file(filePath.values(), Storage::Mode::Read);
+        u64 fileSize;
+        assert(file.size(fileSize) && fileSize <= UINT32_MAX);
 
-    Archive archive(new (heap, alignment) u8[fileSize]);
-    assert(archive.get());
+        Archive archive(new (heap, alignment) u8[fileSize]);
+        assert(archive.get());
 
-    assert(file.read(archive.get(), fileSize, 0));
-    assert(archive.isValid(fileSize));
+        assert(file.read(archive.get(), fileSize, 0));
+        assert(archive.isValid(fileSize));
 
-    return Mount(bare, entrynum, archive, fileSize, mountMode, heap, mountDirection, true,
-            patchesAllowed, archivePtr);
+        JKRArchive *volume = Mount(bare, entrynum, archive, fileSize, mountMode, heap,
+                mountDirection, true, patchesAllowed, archivePtr);
+        if (volume) {
+            return volume;
+        }
+
+        delete[] archive.get();
+    }
 }
 
 JKRArchive *JKRArchive::Mount(void *archive, u32 archiveSize, u32 mountMode, JKRHeap *heap,
@@ -126,7 +133,9 @@ JKRArchive *JKRArchive::Mount(const char *bare, s32 entrynum, Archive archive, u
         u8 *archivePtr) {
     s32 alignment = mountDirection == MountDirection::Head ? 0x20 : -0x20;
     if (patchesAllowed) {
-        archive = ArchivePatcher::Patch(bare, archive, archiveSize, heap, alignment, ownsMemory);
+        if (!ArchivePatcher::Patch(bare, archive, archiveSize, heap, alignment, ownsMemory)) {
+            return nullptr;
+        }
     }
 
     INFO("Loaded %s.", bare);
