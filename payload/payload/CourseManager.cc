@@ -65,9 +65,8 @@ const char *CourseManager::DefaultPack::version() const {
     return nullptr;
 }
 
-CourseManager::CustomPack::CustomPack(Ring<u8, MaxCourseCount> courseIndices,
-        Array<char, INIReader::FieldSize> name, Array<char, INIReader::FieldSize> author,
-        Array<char, INIReader::FieldSize> version)
+CourseManager::CustomPack::CustomPack(Ring<u8, MaxCourseCount> courseIndices, Array<char, 32> name,
+        Array<char, 32> author, Array<char, 32> version)
     : Pack(courseIndices), m_name(name), m_author(author), m_version(version) {}
 
 CourseManager::CustomPack::~CustomPack() {}
@@ -170,9 +169,8 @@ bool CourseManager::DefaultCourse::isCustom() const {
 }
 
 CourseManager::CustomCourse::CustomCourse(Array<u8, 32> archiveHash, u32 musicID,
-        Array<char, INIReader::FieldSize> name, Array<char, INIReader::FieldSize> author,
-        Array<char, INIReader::FieldSize> version, Optional<MinimapConfig> minimapConfig,
-        Array<char, 256> path, Array<char, 128> prefix)
+        Array<char, 32> name, Array<char, 32> author, Array<char, 32> version,
+        Optional<MinimapConfig> minimapConfig, Array<char, 128> path, Array<char, 128> prefix)
     : Course(archiveHash), m_musicID(musicID), m_name(name), m_author(author), m_version(version),
       m_minimapConfig(minimapConfig), m_path(path), m_prefix(prefix) {}
 
@@ -332,7 +330,7 @@ void CourseManager::process() {
     m_customBattlePacks.reset();
     addDefaultRaceCourses();
     addDefaultBattleCourses();
-    Array<char, 256> path;
+    Array<char, 128> path;
     snprintf(path.values(), path.count(), "main:/ddd/courses");
     Storage::CreateDir(path.values(), Storage::Mode::WriteAlways);
     Storage::NodeInfo nodeInfo;
@@ -549,7 +547,7 @@ void CourseManager::addDefaultBattleCourses() {
     }
 }
 
-void CourseManager::addCustomPacksAndCourses(Array<char, 256> &path, Storage::NodeInfo &nodeInfo,
+void CourseManager::addCustomPacksAndCourses(Array<char, 128> &path, Storage::NodeInfo &nodeInfo,
         Ring<u8, MaxCourseCount> &raceCourseIndices,
         Ring<u8, MaxCourseCount> &battleCourseIndices) {
     u32 length = strlen(path.values());
@@ -573,7 +571,7 @@ void CourseManager::addCustomPacksAndCourses(Array<char, 256> &path, Storage::No
     addCustomBattlePack(path, battleCourseIndices);
 }
 
-void CourseManager::addCustomCourse(const Array<char, 256> &path,
+void CourseManager::addCustomCourse(const Array<char, 128> &path,
         Ring<u8, MaxCourseCount> &raceCourseIndices,
         Ring<u8, MaxCourseCount> &battleCourseIndices) {
     ZIPFile zipFile(path.values());
@@ -601,14 +599,21 @@ void CourseManager::addCustomCourse(const Array<char, 256> &path,
         return;
     }
 
-    Array<char, INIReader::FieldSize> &name =
+    Array<char, INIReader::FieldSize> &nameField =
             getLocalizedEntry(courseINI.localizedNames, courseINI.fallbackName);
-    if (strlen(name.values()) == 0) {
+    if (strlen(nameField.values()) == 0) {
         return;
     }
-    Array<char, INIReader::FieldSize> &author =
+    Array<char, INIReader::FieldSize> &authorField =
             getLocalizedEntry(courseINI.localizedAuthors, courseINI.fallbackAuthor);
-    Array<char, INIReader::FieldSize> &version = courseINI.version;
+    Array<char, INIReader::FieldSize> &versionField = courseINI.version;
+
+    Array<char, 32> name;
+    snprintf(name.values(), name.count(), "%s", nameField.values());
+    Array<char, 32> author;
+    snprintf(author.values(), author.count(), "%s", authorField.values());
+    Array<char, 32> version;
+    snprintf(version.values(), version.count(), "%s", versionField.values());
 
     u32 courseID;
     if (!GetDefaultCourseID(courseINI.defaultCourseName.values(), courseID)) {
@@ -673,7 +678,7 @@ void CourseManager::addCustomCourse(const Array<char, 256> &path,
 }
 
 void CourseManager::addCustomRaceCourse(Ring<u8, MaxCourseCount> &courseIndices,
-        const Array<char, 256> &path, const CustomCourse &course) {
+        const Array<char, 128> &path, const CustomCourse &course) {
     for (u32 i = 0; i < raceCourseCount(); i++) {
         if (raceCourse(i).archiveHash() == course.archiveHash()) {
             courseIndices.pushBack(i);
@@ -687,7 +692,7 @@ void CourseManager::addCustomRaceCourse(Ring<u8, MaxCourseCount> &courseIndices,
 }
 
 void CourseManager::addCustomBattleCourse(Ring<u8, MaxCourseCount> &courseIndices,
-        const Array<char, 256> &path, const CustomCourse &course) {
+        const Array<char, 128> &path, const CustomCourse &course) {
     for (u32 i = 0; i < battleCourseCount(); i++) {
         if (battleCourse(i).archiveHash() == course.archiveHash()) {
             courseIndices.pushBack(i);
@@ -700,18 +705,18 @@ void CourseManager::addCustomBattleCourse(Ring<u8, MaxCourseCount> &courseIndice
     m_customBattleCourses.pushBack(course);
 }
 
-void CourseManager::addCustomRacePack(const Array<char, 256> &path,
+void CourseManager::addCustomRacePack(const Array<char, 128> &path,
         Ring<u8, MaxCourseCount> &courseIndices) {
     addCustomPack(path, courseIndices, 0, DefaultRaceCourseCount, m_customRacePacks, "race");
 }
 
-void CourseManager::addCustomBattlePack(const Array<char, 256> &path,
+void CourseManager::addCustomBattlePack(const Array<char, 128> &path,
         Ring<u8, MaxCourseCount> &courseIndices) {
     addCustomPack(path, courseIndices, DefaultRaceCourseCount, DefaultBattleCourseCount,
             m_customBattlePacks, "battle");
 }
 
-void CourseManager::addCustomPack(const Array<char, 256> &path,
+void CourseManager::addCustomPack(const Array<char, 128> &path,
         Ring<u8, MaxCourseCount> &courseIndices, u32 defaultCourseOffset, u32 defaultCourseCount,
         Ring<CustomPack, MaxCustomPackCount> &packs, const char *type) {
     PackINI packINI;
@@ -730,14 +735,21 @@ void CourseManager::addCustomPack(const Array<char, 256> &path,
         return;
     }
 
-    Array<char, INIReader::FieldSize> &name =
+    Array<char, INIReader::FieldSize> &nameField =
             getLocalizedEntry(packINI.localizedNames, packINI.fallbackName);
-    if (strlen(name.values()) == 0) {
+    if (strlen(nameField.values()) == 0) {
         return;
     }
-    Array<char, INIReader::FieldSize> &author =
+    Array<char, INIReader::FieldSize> &authorField =
             getLocalizedEntry(packINI.localizedAuthors, packINI.fallbackAuthor);
-    Array<char, INIReader::FieldSize> &version = packINI.version;
+    Array<char, INIReader::FieldSize> &versionField = packINI.version;
+
+    Array<char, 32> name;
+    snprintf(name.values(), name.count(), "%s", nameField.values());
+    Array<char, 32> author;
+    snprintf(author.values(), author.count(), "%s", authorField.values());
+    Array<char, 32> version;
+    snprintf(version.values(), version.count(), "%s", versionField.values());
 
     const char *c = packINI.defaultCourses.values();
     for (u32 i = 0; i < defaultCourseOffset && *c; i++, c++) {}

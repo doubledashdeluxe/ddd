@@ -95,18 +95,17 @@ private:
 
     class CustomPack : public Pack {
     public:
-        CustomPack(Ring<u8, MaxCourseCount> courseIndices, Array<char, INIReader::FieldSize> name,
-                Array<char, INIReader::FieldSize> author,
-                Array<char, INIReader::FieldSize> version);
+        CustomPack(Ring<u8, MaxCourseCount> courseIndices, Array<char, 32> name,
+                Array<char, 32> author, Array<char, 32> version);
         ~CustomPack();
         const char *name() const override;
         const char *author() const override;
         const char *version() const override;
 
     private:
-        Array<char, INIReader::FieldSize> m_name;
-        Array<char, INIReader::FieldSize> m_author;
-        Array<char, INIReader::FieldSize> m_version;
+        Array<char, 32> m_name;
+        Array<char, 32> m_author;
+        Array<char, 32> m_version;
     };
 
     class DefaultCourse : public Course {
@@ -137,9 +136,9 @@ private:
 
     class CustomCourse : public Course {
     public:
-        CustomCourse(Array<u8, 32> archiveHash, u32 musicID, Array<char, INIReader::FieldSize> name,
-                Array<char, INIReader::FieldSize> author, Array<char, INIReader::FieldSize> version,
-                Optional<MinimapConfig> minimapConfig, Array<char, 256> path,
+        CustomCourse(Array<u8, 32> archiveHash, u32 musicID, Array<char, 32> name,
+                Array<char, 32> author, Array<char, 32> version,
+                Optional<MinimapConfig> minimapConfig, Array<char, 128> path,
                 Array<char, 128> prefix);
         ~CustomCourse() override;
 
@@ -159,11 +158,11 @@ private:
 
     private:
         u32 m_musicID;
-        Array<char, INIReader::FieldSize> m_name;
-        Array<char, INIReader::FieldSize> m_author;
-        Array<char, INIReader::FieldSize> m_version;
+        Array<char, 32> m_name;
+        Array<char, 32> m_author;
+        Array<char, 32> m_version;
         Optional<MinimapConfig> m_minimapConfig;
-        Array<char, 256> m_path;
+        Array<char, 128> m_path;
         Array<char, 128> m_prefix;
     };
 
@@ -198,18 +197,18 @@ private:
 
     void addDefaultRaceCourses();
     void addDefaultBattleCourses();
-    void addCustomPacksAndCourses(Array<char, 256> &path, Storage::NodeInfo &nodeInfo,
+    void addCustomPacksAndCourses(Array<char, 128> &path, Storage::NodeInfo &nodeInfo,
             Ring<u8, MaxCourseCount> &raceCourseIndices,
             Ring<u8, MaxCourseCount> &battleCourseIndices);
-    void addCustomCourse(const Array<char, 256> &path, Ring<u8, MaxCourseCount> &raceCourseIndices,
+    void addCustomCourse(const Array<char, 128> &path, Ring<u8, MaxCourseCount> &raceCourseIndices,
             Ring<u8, MaxCourseCount> &battleCourseIndices);
-    void addCustomRaceCourse(Ring<u8, MaxCourseCount> &courseIndices, const Array<char, 256> &path,
+    void addCustomRaceCourse(Ring<u8, MaxCourseCount> &courseIndices, const Array<char, 128> &path,
             const CustomCourse &course);
     void addCustomBattleCourse(Ring<u8, MaxCourseCount> &courseIndices,
-            const Array<char, 256> &path, const CustomCourse &course);
-    void addCustomRacePack(const Array<char, 256> &path, Ring<u8, MaxCourseCount> &courseIndices);
-    void addCustomBattlePack(const Array<char, 256> &path, Ring<u8, MaxCourseCount> &courseIndices);
-    void addCustomPack(const Array<char, 256> &path, Ring<u8, MaxCourseCount> &courseIndices,
+            const Array<char, 128> &path, const CustomCourse &course);
+    void addCustomRacePack(const Array<char, 128> &path, Ring<u8, MaxCourseCount> &courseIndices);
+    void addCustomBattlePack(const Array<char, 128> &path, Ring<u8, MaxCourseCount> &courseIndices);
+    void addCustomPack(const Array<char, 128> &path, Ring<u8, MaxCourseCount> &courseIndices,
             u32 defaultCourseOffset, u32 defaultCourseCount,
             Ring<CustomPack, MaxCustomPackCount> &packs, const char *type);
     void sortCustomRacePacksByName();
