@@ -2,10 +2,13 @@
 
 #include <jsystem/J2DPicture.hh>
 #include <jsystem/J2DScreen.hh>
+#include <jsystem/JKRHeap.hh>
 #include <payload/Replace.hh>
 
 class Kart2DCommon {
 public:
+    Kart2DCommon();
+
     void changeAsciiTexture(const char *text, u32 count, J2DScreen &screen, const char *prefix,
             f32 *startX = nullptr, f32 *endX = nullptr);
     void changeNumberTexture(s32 number, J2DPicture **pictures, u8 pictureCount, bool padWithZeros,
@@ -17,6 +20,7 @@ public:
     ResTIMG *getCharacterIcon(u32 index);
     ResTIMG *getBattleIcon(u32 index);
 
+    static Kart2DCommon *Create(JKRHeap *heap);
     static Kart2DCommon *Instance();
 
 private:
@@ -29,5 +33,7 @@ private:
     u8 _0e8[0x198 - 0x0e8];
     ResTIMG *m_battleIcons[3];
     u8 _1a4[0x1bc - 0x1a4];
+
+    static Kart2DCommon *s_instance;
 };
 size_assert(Kart2DCommon, 0x1bc);

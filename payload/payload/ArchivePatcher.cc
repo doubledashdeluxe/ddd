@@ -270,6 +270,9 @@ void ArchivePatcher::shrink() {
             if (!node.isFile()) {
                 continue;
             }
+            if (node.getFileSize() == 0) {
+                continue;
+            }
             u8 *file = node.getFile(m_archive.getFiles());
             if (file >= dst && file < tree.get()) {
                 if (!src || file < src) {

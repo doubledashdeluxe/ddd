@@ -34,6 +34,7 @@ public:
     public:
         enum {
             MRAM = 0x0,
+            MRAMLoc = 0x1,
             ARAM = 0x2,
             Course = 0x3,
             System = 0x4,
@@ -54,7 +55,8 @@ public:
     static bool IsFinishedLoadingArc(u32 archiveID);
     static void *REPLACED(GetPtr)(u32 courseDataID);
     REPLACE static void *GetPtr(u32 courseDataID);
-    static void *GetPtr(u32 archiveID, const char *path);
+    static void *REPLACED(GetPtr)(u32 archiveID, const char *path);
+    REPLACE static void *GetPtr(u32 archiveID, const char *path);
     static u32 GetResSize(u32 archiveID, const void *ptr);
     static const CourseManager::Course *GetCourse();
     static u32 GetMusicID();
@@ -70,7 +72,6 @@ private:
 
     ResMgr();
 
-    static void REPLACED(LoadKeepData)(void *userData);
     REPLACE static void LoadKeepData(void *userData);
     REPLACE static void LoadCourseData(void *userData);
     static void LoadExtendedCourseData(void *userData);

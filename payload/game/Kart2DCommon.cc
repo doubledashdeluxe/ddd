@@ -72,6 +72,13 @@ ResTIMG *Kart2DCommon::getBattleIcon(u32 index) {
     return m_battleIcons[index];
 }
 
+Kart2DCommon *Kart2DCommon::Create(JKRHeap *heap) {
+    if (!s_instance) {
+        s_instance = new (heap, 0x4) Kart2DCommon;
+    }
+    return s_instance;
+}
+
 u32 Kart2DCommon::CountDigits(u32 number) {
     u32 digits = 0;
     do {

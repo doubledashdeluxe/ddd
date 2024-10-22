@@ -36,7 +36,7 @@ void LogoApp::calc() {
         ResMgr::LoadKeepData();
         break;
     case 4:
-        if (!ResMgr::IsFinishedLoadingArc(ResMgr::ArchiveID::Race2D)) {
+        if (!ResMgr::IsFinishedLoadingArc(ResMgr::ArchiveID::MRAMLoc)) {
             return;
         }
         break;

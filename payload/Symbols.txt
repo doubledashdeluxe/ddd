@@ -340,6 +340,7 @@
 801ddfd0 updateKartPadRecord__9GhostFileFRC13KartPadRecord
 801de664 changeNumberTexture__12Kart2DCommonFlPP10J2DPictureUcbb
 801de75c getAsciiTexture__12Kart2DCommonFc
+801de8f4 __ct__12Kart2DCommonFv
 801e7124 __ct__14MenuBackgroundFP10JKRArchive
 801e71a8 calc__14MenuBackgroundFv
 801e7210 __ct__13MenuTitleLineFP10JKRArchive
@@ -436,6 +437,7 @@
 803d5c58 s_instance__10NetGameMgr
 803d5c60 s_instance__11SequenceApp
 803d5ca8 s_instance__6BBAMgr
+803d5cb8 s_instance__12Kart2DCommon
 803d5cd0 s_instance__14MenuBackground
 803d5cd8 s_instance__13MenuTitleLine
 803d63c8 s_instance__8KartCtrl

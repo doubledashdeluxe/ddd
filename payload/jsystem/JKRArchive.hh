@@ -52,6 +52,8 @@ public:
     virtual void vf_48();
     virtual void vf_4c();
 
+    s32 getEntrynum() const;
+
     REPLACE static JKRArchive *Mount(const char *path, u32 mountMode, JKRHeap *heap,
             u32 mountDirection);
     REPLACE static JKRArchive *Mount(void *archive, JKRHeap *heap, u32 mountDirection);
@@ -60,11 +62,11 @@ public:
     static JKRArchive *Mount(s32 entrynum, u32 mountMode, JKRHeap *heap, u32 mountDirection,
             bool patchesAllowed);
     static JKRArchive *Mount(void *archive, u32 archiveSize, u32 mountMode, JKRHeap *heap,
-            u32 mountDirection, bool patchesAllowed);
+            u32 mountDirection, bool ownsMemory, bool patchesAllowed);
 
 protected:
     static JKRArchive *Mount(Archive archive, u32 archiveSize, u32 mountMode, JKRHeap *heap,
-            u32 mountDirection, bool patchesAllowed);
+            u32 mountDirection, bool ownsMemory, bool patchesAllowed);
     static JKRArchive *Mount(const char *bare, s32 entrynum, Archive archive, u32 archiveSize,
             u32 mountMode, JKRHeap *heap, u32 mountDirection, bool ownsMemory, bool patchesAllowed,
             u8 *archivePtr);
