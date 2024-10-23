@@ -73,6 +73,7 @@
 8004558c drawFullSet__12J2DPictureExFffffPA3_A4_f
 800483b4 getBlackWhite__10J2DPictureCFP7GXColorP7GXColor
 8004dbf4 drawInit__6J3DSysFv
+8007a494 Init__9JFWSystemFv
 800905cc CreateThread__6JASDvdFllUl
 8009162c sendCmdMsg__13JASTaskThreadFPFPv_vPvUl
 80094770 RejectCallback__9JASDriverFPFPv_lPv
@@ -382,6 +383,7 @@
 
 803d3248 s_videoMode__10KartLocale
 803d324c s_videoFrameMode__10KartLocale
+803d332c s_systemHeapSize__9JFWSystem
 803d3b08 s_scene__11SequenceApp
 803d3b0c s_nextScene__11SequenceApp
 
