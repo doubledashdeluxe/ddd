@@ -30,15 +30,8 @@ void ResMgr::Create(JKRHeap *parentHeap) {
     s_loaders[ArchiveID::System] = JKRArchive::Mount(DOLBinary::BinarySectionStart(), parentHeap,
             JKRArchive::MountDirection::Head);
 
-    s_keepHeap = JKRExpHeap::Create(0x7c0000, parentHeap, false);
-    SysDebug::GetManager()->createHeapInfo(s_keepHeap, "MRAM.arc");
-
     s_courseHeap = JKRSolidHeap::Create(0x280000, parentHeap, false);
     SysDebug::GetManager()->createHeapInfo(s_courseHeap, "Crs.arc");
-}
-
-const JKRHeap *ResMgr::GetKeepHeap() {
-    return s_keepHeap;
 }
 
 const JKRHeap *ResMgr::GetCourseHeap() {
@@ -50,7 +43,7 @@ void ResMgr::LoadKeepData(void * /* userData */) {
         s_loadingFlag |= 1 << ArchiveID::ARAM;
 
         s_loaders[ArchiveID::ARAM] = JKRArchive::Mount("/ARAM.arc", JKRArchive::MountMode::Aram,
-                s_keepHeap, JKRArchive::MountDirection::Head);
+                System::GetAppHeap(), JKRArchive::MountDirection::Head);
 
         s_loadingFlag &= ~(1 << ArchiveID::ARAM);
         s_loadFlag |= 1 << ArchiveID::ARAM;
@@ -60,7 +53,7 @@ void ResMgr::LoadKeepData(void * /* userData */) {
         s_loadingFlag |= 1 << ArchiveID::MRAM;
 
         s_loaders[ArchiveID::MRAM] = JKRArchive::Mount("/MRAM.arc", JKRArchive::MountMode::Mem,
-                s_keepHeap, JKRArchive::MountDirection::Head);
+                System::GetAppHeap(), JKRArchive::MountDirection::Head);
 
         s_loadingFlag &= ~(1 << ArchiveID::MRAM);
         s_loadFlag |= 1 << ArchiveID::MRAM;
@@ -78,7 +71,7 @@ void ResMgr::LoadKeepData(void * /* userData */) {
         Archive mramArchive(mramArchiveHeader.values());
         assert(mramArchive.isHeaderValid(mramArchiveSize));
 
-        Archive::Tree mramTree(new (s_keepHeap, 0x20) u8[mramArchive.getTreeSize()]);
+        Archive::Tree mramTree(new (System::GetAppHeap(), 0x20) u8[mramArchive.getTreeSize()]);
         assert(file.read(mramTree.get(), mramArchive.getTreeSize(), mramArchive.getTreeOffset()));
         assert(mramTree.isValid(mramArchive.getTreeSize(), mramArchive.getFilesSize()));
 
@@ -92,11 +85,11 @@ void ResMgr::LoadKeepData(void * /* userData */) {
         u32 race2DArchiveSize = node.getFileSize();
         delete[] mramTree.get();
 
-        u8 *race2DArchive = new (s_keepHeap, 0x20) u8[race2DArchiveSize];
+        u8 *race2DArchive = new (System::GetAppHeap(), 0x20) u8[race2DArchiveSize];
         assert(file.read(race2DArchive, race2DArchiveSize, race2DArchiveOffset));
         s_loaders[ArchiveID::Race2D] =
                 JKRArchive::Mount(race2DArchive, race2DArchiveSize, JKRArchive::MountMode::Mem,
-                        s_keepHeap, JKRArchive::MountDirection::Tail, true, true);
+                        System::GetAppHeap(), JKRArchive::MountDirection::Tail, true, true);
 
         s_loadingFlag &= ~(1 << ArchiveID::Race2D);
         s_loadFlag |= 1 << ArchiveID::Race2D;
@@ -109,9 +102,9 @@ void ResMgr::LoadKeepData(void * /* userData */) {
         snprintf(path.values(), path.count(), "/MRAM_Locale/%s/MRAMLoc.arc",
                 KartLocale::GetLanguageName());
         s_loaders[ArchiveID::MRAMLoc] = JKRArchive::Mount(path.values(), JKRArchive::MountMode::Mem,
-                s_keepHeap, JKRArchive::MountDirection::Head);
+                System::GetAppHeap(), JKRArchive::MountDirection::Head);
 
-        Kart2DCommon::Create(s_keepHeap);
+        Kart2DCommon::Create(System::GetAppHeap());
 
         s_loadingFlag &= ~(1 << ArchiveID::MRAMLoc);
         s_loadFlag |= 1 << ArchiveID::MRAMLoc;

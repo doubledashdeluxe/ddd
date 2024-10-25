@@ -46,7 +46,6 @@ public:
     };
 
     REPLACE static void Create(JKRHeap *parentHeap);
-    static const JKRHeap *GetKeepHeap();
     static const JKRHeap *GetCourseHeap();
     static void LoadKeepData();
     static void REPLACED(LoadCourseData)(u32 courseID, u32 courseOrder);
@@ -79,7 +78,6 @@ private:
 
     static JKRArchive *s_loaders[9];
     static AramResArg s_aramResArgs[0x40];
-    static JKRHeap *s_keepHeap;
     static JKRHeap *s_courseHeap;
     static u32 s_loadFlag;
     static u32 s_loadingFlag;
