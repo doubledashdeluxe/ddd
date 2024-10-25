@@ -14,7 +14,7 @@ extern "C" u32 ARInit(u32 *stack_index_addr, u32 num_entries) {
         return REPLACED(ARInit)(stack_index_addr, num_entries);
     }
 
-    s_stackPointer = 0x10004000;
+    s_stackPointer = 0x4000;
     s_freeBlocks = num_entries;
     s_blockLength = stack_index_addr;
     return s_stackPointer;
@@ -26,7 +26,7 @@ extern "C" u32 ARAlloc(u32 length) {
     }
 
     Lock<NoInterrupts> lock;
-    u32 block = s_stackPointer;
+    u32 block = 0x10000000 + s_stackPointer;
     s_stackPointer += length;
     *s_blockLength = length;
     s_freeBlocks--;
