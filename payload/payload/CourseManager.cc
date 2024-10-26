@@ -51,8 +51,9 @@ CourseManager::DefaultPack::~DefaultPack() {}
 const char *CourseManager::DefaultPack::name() const {
     Array<char, 32> path;
     snprintf(path.values(), path.count(), "/packnames/%s.txt", m_name.values());
-    char *name = reinterpret_cast<char *>(ResMgr::GetPtr(ResMgr::ArchiveID::MRAM, path.values()));
-    u32 size = ResMgr::GetResSize(ResMgr::ArchiveID::MRAM, name);
+    char *name =
+            reinterpret_cast<char *>(ResMgr::GetPtr(ResMgr::ArchiveID::MRAMLoc, path.values()));
+    u32 size = ResMgr::GetResSize(ResMgr::ArchiveID::MRAMLoc, name);
     name[size - 1] = '\0';
     return name;
 }
@@ -96,8 +97,9 @@ u32 CourseManager::DefaultCourse::musicID() const {
 const char *CourseManager::DefaultCourse::name() const {
     Array<char, 32> path;
     snprintf(path.values(), path.count(), "/coursenames/%02x.txt", m_courseID);
-    char *name = reinterpret_cast<char *>(ResMgr::GetPtr(ResMgr::ArchiveID::MRAM, path.values()));
-    u32 size = ResMgr::GetResSize(ResMgr::ArchiveID::MRAM, name);
+    char *name =
+            reinterpret_cast<char *>(ResMgr::GetPtr(ResMgr::ArchiveID::MRAMLoc, path.values()));
+    u32 size = ResMgr::GetResSize(ResMgr::ArchiveID::MRAMLoc, name);
     name[size - 1] = '\0';
     return name;
 }
