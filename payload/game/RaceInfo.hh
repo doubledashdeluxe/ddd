@@ -1,12 +1,14 @@
 #pragma once
 
-#include <common/Types.hh>
+#include "game/KartInfo.hh"
 
 class RaceInfo {
 public:
     u32 getRaceMode() const;
     u32 getRaceLevel() const;
+    s16 getKartCount() const;
     s16 getConsoleCount() const;
+    const KartInfo &getKartInfo(u32 index) const;
     s16 getAwardKartNo() const;
 
     bool isRace() const;
@@ -28,9 +30,13 @@ public:
     u16 m_vsLapNum;
 
 private:
-    u8 _01a[0x020 - 0x01a];
+    u8 _01a[0x01c - 0x01a];
+    s16 m_kartCount;
+    u8 _01e[0x020 - 0x01e];
     s16 m_consoleCount;
-    u8 _022[0x120 - 0x022];
+    u8 _022[0x030 - 0x022];
+    KartInfo m_karts[8];
+    u8 _0f0[0x120 - 0x0f0];
     s16 m_awardKartNo;
     u8 _122[0x298 - 0x122];
 

@@ -13,6 +13,8 @@ public:
 
     static JKRAramBlock *MainRamToAram(const u8 *src, u32 dst, u32 size, s32 r6, u32 r7,
             JKRHeap *heap, s32 r9, u32 *r10);
+    static JKRAramBlock *AramToMainRam(u32 src, u8 *dst, u32 size, s32 r6, u32 r7, JKRHeap *heap,
+            s32 r9, u32 *r10);
 
 private:
     JKRAram(u32 audioBufSize, u32 graphBufSize, s32 priority);

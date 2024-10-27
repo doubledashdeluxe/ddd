@@ -4,6 +4,7 @@
 #include "jsystem/JKRMemArchive.hh"
 
 #include <common/Bytes.hh>
+#include <common/Clock.hh>
 #include <common/Log.hh>
 #include <common/New.hh>
 #include <common/storage/Storage.hh>
@@ -73,24 +74,34 @@ JKRArchive *JKRArchive::Mount(s32 entrynum, u32 mountMode, JKRHeap *heap, u32 mo
     s32 length = snprintf(filePath.values(), filePath.count(), "dvd:%s", path.values());
     assert(length >= 0 && static_cast<size_t>(length) < filePath.count());
 
-    while (true) {
+    for (;; Clock::WaitMilliseconds(200)) {
         Storage::FileHandle file(filePath.values(), Storage::Mode::Read);
         u64 fileSize;
-        assert(file.size(fileSize) && fileSize <= UINT32_MAX);
-
-        Archive archive(new (heap, alignment) u8[fileSize]);
-        assert(archive.get());
-
-        assert(file.read(archive.get(), fileSize, 0));
-        assert(archive.isValid(fileSize));
-
-        JKRArchive *volume = Mount(bare, entrynum, archive, fileSize, mountMode, heap,
-                mountDirection, true, patchesAllowed, archivePtr);
-        if (volume) {
-            return volume;
+        if (!file.size(fileSize)) {
+            continue;
+        }
+        if (fileSize > UINT32_MAX) {
+            continue;
         }
 
-        delete[] archive.get();
+        UniquePtr<u8[]> archive(new (heap, alignment) u8[fileSize]);
+        if (!archive.get()) {
+            continue;
+        }
+
+        if (!file.read(archive.get(), fileSize, 0)) {
+            continue;
+        }
+        if (!Archive(archive.get()).isValid(fileSize)) {
+            continue;
+        }
+
+        JKRArchive *volume = Mount(bare, entrynum, archive.get(), fileSize, mountMode, heap,
+                mountDirection, true, patchesAllowed, archivePtr);
+        if (volume) {
+            archive.release();
+            return volume;
+        }
     }
 }
 
@@ -111,12 +122,16 @@ JKRArchive *JKRArchive::Mount(Archive archive, u32 archiveSize, u32 mountMode, J
         }
     }
 
-    assert(archive.isValid(archiveSize));
+    if (ownsMemory) {
+        assert(archive.isValid(archiveSize));
+    }
     Archive::Tree tree = archive.getTree();
     Archive::Dir dir = tree.getDir(0);
     Array<char, 256> bare;
     snprintf(bare.values(), bare.count(), "%s.arc", dir.getName(tree.getNames()));
-    INFO("Loading %s...", bare.values());
+    if (ownsMemory) {
+        INFO("Loading %s...", bare.values());
+    }
 
     if (!heap) {
         heap = JKRHeap::GetCurrentHeap();
@@ -138,7 +153,9 @@ JKRArchive *JKRArchive::Mount(const char *bare, s32 entrynum, Archive archive, u
         }
     }
 
-    INFO("Loaded %s.", bare);
+    if (ownsMemory) {
+        INFO("Loaded %s.", bare);
+    }
     switch (mountMode) {
     case MountMode::Aram:
         return new (archivePtr) JKRAramArchive(entrynum, archive, mountDirection);

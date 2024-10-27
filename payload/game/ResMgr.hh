@@ -2,6 +2,7 @@
 
 #include <jsystem/JKRArchive.hh>
 #include <jsystem/JKRHeap.hh>
+#include <payload/ArchiveSwapper.hh>
 #include <payload/CourseManager.hh>
 #include <payload/Replace.hh>
 
@@ -51,6 +52,8 @@ public:
     static void REPLACED(LoadCourseData)(u32 courseID, u32 courseOrder);
     REPLACE static void LoadCourseData(u32 courseID, u32 courseOrder);
     static void LoadExtendedCourseData(const CourseManager::Course *course, u32 courseOrder);
+    static void SwapForMenu(JKRHeap *heap);
+    static void SwapForRace(JKRHeap *heap);
     static const char *GetCrsArcName(u32 courseID);
     static bool IsFinishedLoadingArc(u32 archiveID);
     static void *REPLACED(GetPtr)(u32 courseDataID);
@@ -70,14 +73,30 @@ private:
     };
     size_assert(AramResArg, 0x18);
 
+    class SwapState {
+    public:
+        enum {
+            None,
+            Menu,
+            Race,
+        };
+
+    private:
+        SwapState();
+    };
+
     ResMgr();
 
     REPLACE static void LoadKeepData(void *userData);
     REPLACE static void LoadCourseData(void *userData);
     static void LoadExtendedCourseData(void *userData);
+    static void SetKartIsSwappable(u32 kartID, const char *kartName);
 
     static JKRArchive *s_loaders[9];
     static AramResArg s_aramResArgs[0x40];
+    static Archive *s_mramArchive;
+    static ArchiveSwapper *s_mramArchiveSwapper;
+    static u32 s_swapState;
     static JKRHeap *s_courseHeap;
     static u32 s_loadFlag;
     static u32 s_loadingFlag;

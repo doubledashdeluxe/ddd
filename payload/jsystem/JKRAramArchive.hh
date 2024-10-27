@@ -15,6 +15,6 @@ public:
 
 private:
     UniquePtr<JKRAramBlock> m_block;
-    UniquePtr<u8> m_archive; // Modified
+    UniquePtr<u8[]> m_archive; // Modified
 };
 size_assert(JKRAramArchive, 0x6c);

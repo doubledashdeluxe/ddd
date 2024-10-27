@@ -8,6 +8,7 @@
 
 8000a5d8 __ct__7JKRAramFUlUll
 8000a7d8 MainRamToAram__7JKRAramFPCUcUlUllUlP7JKRHeaplPUl
+8000aa8c AramToMainRam__7JKRAramFUlPUcUllUlP7JKRHeaplPUl
 8000b944 vf_40__14JKRAramArchiveFv
 8000ba5c vf_44__14JKRAramArchiveFv
 8000bd74 vf_3c__14JKRAramArchiveFv
@@ -282,6 +283,7 @@
 8019e54c resetCommon__12RaceDirectorFv
 801af940 Create__8MovieAppFv
 801b0314 DrawDone__11MoviePlayerFv
+801b48f4 Create__10DriverDataFv
 801c9760 __ct__14SceneTitleLineFP10JKRArchiveP7JKRHeapPCc
 801c98d0 __dt__14SceneTitleLineFv
 801c9934 init__14SceneTitleLineFl

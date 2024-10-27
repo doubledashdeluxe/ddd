@@ -1,5 +1,6 @@
 #include "SceneFactory.hh"
 
+#include "game/ResMgr.hh"
 #include "game/SceneHowManyPlayers.hh"
 #include "game/SceneMapSelect.hh"
 #include "game/SceneNameSelect.hh"
@@ -15,6 +16,8 @@ JKRArchive *SceneFactory::archive(u32 archiveType) {
 }
 
 void SceneFactory::loadData(s32 sceneType, JKRHeap *heap) {
+    ResMgr::SwapForMenu(heap);
+
     switch (sceneType) {
     case SceneType::Option:
         REPLACED(loadData)(SceneType::Option, heap);

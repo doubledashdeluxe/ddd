@@ -10,8 +10,16 @@ u32 RaceInfo::getRaceLevel() const {
     return m_raceLevel;
 }
 
+s16 RaceInfo::getKartCount() const {
+    return m_kartCount;
+}
+
 s16 RaceInfo::getConsoleCount() const {
     return m_consoleCount;
+}
+
+const KartInfo &RaceInfo::getKartInfo(u32 index) const {
+    return m_karts[index];
 }
 
 s16 RaceInfo::getAwardKartNo() const {
