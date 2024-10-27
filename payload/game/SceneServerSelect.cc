@@ -39,9 +39,9 @@ SceneServerSelect::SceneServerSelect(JKRArchive *archive, JKRHeap *heap) : Scene
         m_serverScreens[i].search("CCount")->m_isVisible = false;
     }
 
-    m_mainAnmTransform = J2DAnmLoaderDataBase::Load("GDIndexLayout.bck", m_archive);
+    m_mainAnmTransform = J2DAnmLoaderDataBase::Load("SelectServerLayout.bck", m_archive);
     m_mainScreen.setAnimation(m_mainAnmTransform);
-    m_arrowAnmTransform = J2DAnmLoaderDataBase::Load("GDIndexLayout.bck", m_archive);
+    m_arrowAnmTransform = J2DAnmLoaderDataBase::Load("SelectServerLayout.bck", m_archive);
     for (u32 i = 0; i < 2; i++) {
         m_mainScreen.search("MArrow%02u", i + 1)->setAnimation(m_arrowAnmTransform);
     }
