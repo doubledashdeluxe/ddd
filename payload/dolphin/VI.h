@@ -14,7 +14,8 @@ enum {
     VI_XFBMODE_DF = 1,
 };
 
-void VIInit(void);
+void REPLACED(VIInit)(void);
+REPLACE void VIInit(void);
 void VIWaitForRetrace(void);
 void VIFlush(void);
 void REPLACED(VISetNextFrameBuffer)(void *fb);

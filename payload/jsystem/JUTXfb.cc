@@ -26,4 +26,8 @@ void JUTXfb::initiate(u16 width, u16 height, JKRHeap *heap, s32 count) {
     for (u32 i = 0; i < 3; i++) {
         m_validities[i] = m_buffers[i];
     }
+    for (u32 i = 0; i < vi->getXFBSize() / 2; i++) {
+        reinterpret_cast<u8 *>(m_buffers[1])[i * 2 + 0] = 16;
+        reinterpret_cast<u8 *>(m_buffers[1])[i * 2 + 1] = 128;
+    }
 }
