@@ -45,6 +45,7 @@ ScenePackSelect::ScenePackSelect(JKRArchive *archive, JKRHeap *heap) : Scene(arc
     }
     m_mainScreen.search("NSaveGD")->m_isVisible = false;
     m_modeScreen.search("OK_wb11")->m_isVisible = false;
+    m_modeScreen.search("NRandom")->m_isVisible = false;
     for (u32 i = 0; i < m_packScreens.count(); i++) {
         m_packScreens[i].search("PIcon")->m_isVisible = false;
         m_packScreens[i].search("PCount")->m_isVisible = false;
