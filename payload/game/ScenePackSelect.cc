@@ -68,8 +68,14 @@ ScenePackSelect::ScenePackSelect(JKRArchive *archive, JKRHeap *heap) : Scene(arc
         m_packScreens[i].search("Desc")->setAnimation(m_descAnmTransforms[i]);
     }
 
+    m_mainAnmTransformFrame = 0;
     m_arrowAnmTransformFrame = 0;
+    m_modeAnmTransformFrame = 0;
     m_packAnmTransformFrames.fill(0);
+    m_descAnmTransformFrames.fill(0);
+    m_arrowAlphas.fill(0);
+    m_packAlphas.fill(0);
+    m_descAlphas.fill(0);
 }
 
 ScenePackSelect::~ScenePackSelect() {}
@@ -210,10 +216,6 @@ void ScenePackSelect::slideIn() {
     m_descOffset = 0;
 
     MenuTitleLine::Instance()->drop("SelectPack.bti");
-    m_mainAnmTransformFrame = 0;
-    m_modeAnmTransformFrame = 0;
-    m_descAnmTransformFrames.fill(0);
-    m_arrowAlphas.fill(0);
     for (u32 i = 0; i < m_packAlphas.count(); i++) {
         u32 packIndex = m_rowIndex + i;
         if (i < 5 && packIndex < m_packCount) {
@@ -222,7 +224,6 @@ void ScenePackSelect::slideIn() {
             m_packAlphas[i] = 0;
         }
     }
-    m_descAlphas.fill(0);
     m_state = &ScenePackSelect::stateSlideIn;
 }
 
