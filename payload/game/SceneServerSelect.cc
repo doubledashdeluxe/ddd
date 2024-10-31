@@ -54,9 +54,12 @@ SceneServerSelect::SceneServerSelect(JKRArchive *archive, JKRHeap *heap) : Scene
         m_serverScreens[i].search("Desc")->setAnimation(m_descAnmTransform);
     }
 
+    m_mainAnmTransformFrame = 0;
     m_arrowAnmTransformFrame = 0;
     m_serverAnmTransformFrames.fill(0);
     m_descAnmTransformFrame = 0;
+    m_arrowAlphas.fill(0);
+    m_serverAlphas.fill(0);
 }
 
 SceneServerSelect::~SceneServerSelect() {}
@@ -161,8 +164,6 @@ void SceneServerSelect::slideIn() {
     m_rowIndex = Min(m_rowIndex, m_serverIndex - Min<u32>(m_serverCount, 5));
 
     MenuTitleLine::Instance()->drop("SelectServer.bti");
-    m_mainAnmTransformFrame = 0;
-    m_arrowAlphas.fill(0);
     for (u32 i = 0; i < m_serverAlphas.count(); i++) {
         u32 serverIndex = m_rowIndex + i;
         if (i < 5 && serverIndex < m_serverCount) {
