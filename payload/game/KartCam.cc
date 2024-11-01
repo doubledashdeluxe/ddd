@@ -4,6 +4,10 @@ extern "C" {
 #include <math.h>
 }
 
+KartBody *KartCam::getBody() const {
+    return m_body;
+}
+
 void KartCam::init(bool isReset) {
     REPLACED(init)(isReset);
 

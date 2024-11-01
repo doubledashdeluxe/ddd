@@ -19,10 +19,15 @@ void KartGame::doStatus() {
         return;
     }
 
-    KartCam *kartCam = kartCtrl->getKartCam(index);
-    u32 masks[4] = {PAD_BUTTON_X, PAD_BUTTON_Y, PAD_TRIGGER_L, PAD_TRIGGER_R};
-    u32 mask = masks[(SystemRecord::Instance().m_rearViewButtons >> (2 * padPort)) % 4];
-    kartCam->m_isRearView = kartGamePad->button().level() & mask;
+    for (u32 i = 0; i < 8; i++) {
+        KartCam *kartCam = kartCtrl->getKartCam(i);
+        if (kartCam && kartCam->getBody() == m_body) {
+            u32 masks[4] = {PAD_BUTTON_X, PAD_BUTTON_Y, PAD_TRIGGER_L, PAD_TRIGGER_R};
+            u32 mask = masks[(SystemRecord::Instance().m_rearViewButtons >> (2 * padPort)) % 4];
+            kartCam->m_isRearView = kartGamePad->button().level() & mask;
+            break;
+        }
+    }
 }
 
 void KartGame::doChange() {

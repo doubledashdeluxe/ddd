@@ -1,10 +1,14 @@
 #pragma once
 
-#include <common/Types.hh>
+#include "game/KartBody.hh"
+
 #include <jsystem/TVec3.hh>
 #include <payload/Replace.hh>
 
 class KartCam {
+public:
+    KartBody *getBody() const;
+
 private:
     void REPLACED(init)(bool isReset);
     REPLACE void init(bool isReset);
@@ -21,7 +25,8 @@ private:
         Mode();
     };
 
-    u8 _000[0x080 - 0x000];
+    KartBody *m_body;
+    u8 _004[0x080 - 0x004];
     Mtx34 m_mtx;
     u8 _0b0[0x0e1 - 0x0b0];
     u8 m_mode;
