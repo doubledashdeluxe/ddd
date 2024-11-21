@@ -1,6 +1,7 @@
 #include "ServerManager.hh"
 
 #include "payload/INIFileReader.hh"
+#include "payload/UTF8.hh"
 
 #include <common/Arena.hh>
 #include <common/Log.hh>
@@ -134,7 +135,8 @@ void ServerManager::sortServersByName() {
 }
 
 bool ServerManager::CompareServersByName(const Server &a, const Server &b) {
-    return strcasecmp(a.name(), b.name()) <= 0;
+    const char *na = a.name(), *nb = b.name();
+    return UTF8::CaseCompare(na, nb) <= 0;
 }
 
 ServerManager *ServerManager::s_instance = nullptr;

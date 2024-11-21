@@ -6,6 +6,7 @@
 #include "payload/MinimapConfigReader.hh"
 #include "payload/SZSCourseHasher.hh"
 #include "payload/SZSCourseLoader.hh"
+#include "payload/UTF8.hh"
 #include "payload/ZIPFile.hh"
 
 #include <common/Arena.hh>
@@ -1049,15 +1050,18 @@ void CourseManager::SortCustomPacksByName(Ring<CustomPack, MaxCustomPackCount> &
 }
 
 bool CourseManager::ComparePacksByName(const Pack &a, const Pack &b) {
-    return strcasecmp(a.name(), b.name()) <= 0;
+    const char *na = a.name(), *nb = b.name();
+    return UTF8::CaseCompare(na, nb) <= 0;
 }
 
 bool CourseManager::CompareRaceCourseIndicesByName(const u32 &a, const u32 &b) {
-    return strcasecmp(s_instance->raceCourse(a).name(), s_instance->raceCourse(b).name()) <= 0;
+    const char *na = s_instance->raceCourse(a).name(), *nb = s_instance->raceCourse(b).name();
+    return UTF8::CaseCompare(na, nb) <= 0;
 }
 
 bool CourseManager::CompareBattleCourseIndicesByName(const u32 &a, const u32 &b) {
-    return strcasecmp(s_instance->battleCourse(a).name(), s_instance->battleCourse(b).name()) <= 0;
+    const char *na = s_instance->battleCourse(a).name(), *nb = s_instance->battleCourse(b).name();
+    return UTF8::CaseCompare(na, nb) <= 0;
 }
 
 CourseManager *CourseManager::s_instance = nullptr;

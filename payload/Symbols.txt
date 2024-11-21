@@ -205,6 +205,7 @@
 800ffe28 exit
 80102200 abs
 8010241c toupper
+80102458 tolower
 801024cc isspace
 801024e8 isdigit
 801028bc strncasecmp

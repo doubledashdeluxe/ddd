@@ -4,6 +4,7 @@
 
 #include <common/Array.hh>
 #include <jsystem/J2DScreen.hh>
+#include <payload/SlidingText.hh>
 
 class ScenePackSelect : public Scene {
 public:
@@ -14,6 +15,20 @@ public:
     void calc() override;
 
 private:
+    class DescText : public SlidingText {
+    public:
+        DescText(ScenePackSelect &scene, u32 descIndex);
+        ~DescText();
+
+    private:
+        const char *getPart(u32 i) override;
+        void setAnmTransformFrame(u8 anmTransformFrame) override;
+        void setAlpha(u8 alpha) override;
+
+        ScenePackSelect &m_scene;
+        u32 m_descIndex;
+    };
+
     typedef void (ScenePackSelect::*State)();
 
     void wait();

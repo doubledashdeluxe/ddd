@@ -14,6 +14,7 @@
 #include <common/Algorithm.hh>
 #include <jsystem/J2DAnmLoaderDataBase.hh>
 #include <payload/CourseManager.hh>
+#include <payload/UTF8.hh>
 
 extern "C" {
 #include <stdio.h>
@@ -196,6 +197,31 @@ void ScenePackSelect::calc() {
     }
 }
 
+ScenePackSelect::DescText::DescText(ScenePackSelect &scene, u32 descIndex)
+    : m_scene(scene), m_descIndex(descIndex) {}
+
+ScenePackSelect::DescText::~DescText() {}
+
+const char *ScenePackSelect::DescText::getPart(u32 i) {
+    CourseManager *courseManager = CourseManager::Instance();
+    u32 packIndex = m_scene.m_rowIndex + m_descIndex;
+    const CourseManager::Course *course;
+    if (RaceInfo::Instance().isRace()) {
+        course = &courseManager->raceCourse(packIndex, i);
+    } else {
+        course = &courseManager->battleCourse(packIndex, i);
+    }
+    return course->name();
+}
+
+void ScenePackSelect::DescText::setAnmTransformFrame(u8 anmTransformFrame) {
+    m_scene.m_descAnmTransformFrames[m_descIndex] = anmTransformFrame;
+}
+
+void ScenePackSelect::DescText::setAlpha(u8 alpha) {
+    m_scene.m_descAlphas[m_descIndex] = alpha;
+}
+
 void ScenePackSelect::wait() {
     m_state = &ScenePackSelect::stateWait;
 }
@@ -360,51 +386,10 @@ void ScenePackSelect::refreshPacks() {
             pack = &courseManager->battlePack(packIndex);
         }
         J2DScreen &screen = m_packScreens[i];
-        kart2DCommon->changeAsciiTexture(pack->name(), 26, screen, "Name");
-        u32 descLength = 0;
+        kart2DCommon->changeUnicodeTexture(pack->name(), 26, screen, "Name");
         u32 courseCount = pack->courseIndices().count();
-        const char *sep = " / ";
-        for (u32 j = 0; j < courseCount; j++) {
-            const CourseManager::Course *course;
-            if (RaceInfo::Instance().isRace()) {
-                course = &courseManager->raceCourse(packIndex, j);
-            } else {
-                course = &courseManager->battleCourse(packIndex, j);
-            }
-            descLength += strlen(course->name()) + strlen(sep);
-        }
-        u32 descOffset = 0;
-        if (descLength <= 41 + strlen(sep)) {
-            descLength -= strlen(sep);
-            m_descAnmTransformFrames[i] = 0;
-            m_descAlphas[i] = 0;
-        } else {
-            descOffset = m_descOffset / 60 % descLength;
-            m_descAnmTransformFrames[i] = m_descOffset / 5 % 12;
-            m_descAlphas[i] = m_descOffset / 4 % 15 * 17;
-        }
-        Array<char, 42 + 1> desc;
-        for (u32 j = 0, k = 0; j < courseCount; j++) {
-            const CourseManager::Course *course;
-            if (RaceInfo::Instance().isRace()) {
-                course = &courseManager->raceCourse(packIndex, j);
-            } else {
-                course = &courseManager->battleCourse(packIndex, j);
-            }
-            for (u32 l = 0; l < 2; l++) {
-                for (const char *p = l == 0 ? course->name() : sep; *p; p++, k++) {
-                    u32 m = k;
-                    if (descLength > 41) {
-                        m = (descLength + k - descOffset) % descLength;
-                    }
-                    if (m < 42) {
-                        desc[m] = *p;
-                    }
-                }
-            }
-        }
-        desc[descLength] = '\0';
-        kart2DCommon->changeAsciiTexture(desc.values(), 42, screen, "Desc");
+        DescText descText(*this, i);
+        descText.refresh(m_descOffset, courseCount, 42, screen, "Desc");
         kart2DCommon->changeNumberTexture(courseCount, 3, screen, "CCount");
     }
 }

@@ -300,12 +300,12 @@ void SceneServerSelect::refreshServers() {
         }
         const ServerManager::Server &server = serverManager->server(serverIndex);
         J2DScreen &screen = m_serverScreens[i];
-        kart2DCommon->changeAsciiTexture(server.name(), 26, screen, "Name");
+        kart2DCommon->changeUnicodeTexture(server.name(), 26, screen, "Name");
         const char *desc = "Server description";
         if (serverIndex == 3) {
             desc = "This server description is too long to be fully displayed";
         }
-        kart2DCommon->changeAsciiTexture(desc, 41, screen, "Desc");
+        kart2DCommon->changeUnicodeTexture(desc, 41, screen, "Desc");
         u16 playerCounts[] = {1, 23, 456};
         u16 playerCount = playerCounts[serverIndex % 3];
         kart2DCommon->changeNumberTexture(playerCount, 3, screen, "PCount");

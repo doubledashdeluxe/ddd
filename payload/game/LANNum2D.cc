@@ -45,7 +45,7 @@ void LANNum2D::start2() {
 void LANNum2D::setText(const char *prefix, const char *text) {
     Kart2DCommon *kart2DCommon = Kart2DCommon::Instance();
     f32 startX, endX;
-    kart2DCommon->changeAsciiTexture(text, 30, *m_screen, prefix, &startX, &endX);
+    kart2DCommon->changeUnicodeTexture(text, 30, *m_screen, prefix, &startX, &endX);
     J2DPane *pane = m_screen->search("%sO", prefix);
     pane->m_offset.x = -(startX + endX) / 2.0f;
     pane->calcMtx();
