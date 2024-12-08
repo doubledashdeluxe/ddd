@@ -4,6 +4,9 @@
 
 class J2DOrthoGraph : public J2DGraphContext {
 public:
+    J2DOrthoGraph(f32 x, f32 y, f32 w, f32 h, f32 far, f32 near);
+    ~J2DOrthoGraph() override;
+
     TBox<f32> m_orthoBox;
 
 private:

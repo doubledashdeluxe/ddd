@@ -6,6 +6,7 @@
 #include "game/KartGamePad.hh"
 #include "game/MenuTitleLine.hh"
 #include "game/OnlineBackground.hh"
+#include "game/OnlineInfo.hh"
 #include "game/SceneFactory.hh"
 #include "game/SequenceApp.hh"
 #include "game/SequenceInfo.hh"
@@ -75,10 +76,10 @@ void SceneNameSelect::init() {
         snprintf(name.values(), name.count(), "Player%u.bti", m_padCount);
         picture->changeTexture(name.values(), 0);
 
-        SequenceInfo &sequenceInfo = SequenceInfo::Instance();
-        if (!sequenceInfo.m_hasOnlineNames) {
+        OnlineInfo &onlineInfo = OnlineInfo::Instance();
+        if (!onlineInfo.m_hasNames) {
             readNames();
-            sequenceInfo.m_hasOnlineNames = true;
+            onlineInfo.m_hasNames = true;
         }
 
         for (u32 i = 0; i < m_nameEntryHelpers.count(); i++) {

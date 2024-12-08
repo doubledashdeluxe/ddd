@@ -2,12 +2,21 @@
 
 #include <jsystem/J2DPane.hh>
 #include <jsystem/JKRHeap.hh>
+#include <jsystem/TVec3.hh>
 #include <payload/Replace.hh>
 
 class CharacterSelect3D {
 public:
-    void REPLACED(draw)(s32 index, f32 aspect);
-    REPLACE void draw(s32 index, f32 aspect);
+    void init();
+    void REPLACED(draw)(s32 statusIndex, f32 aspect);
+    REPLACE void draw(s32 statusIndex, f32 aspect);
+    void calc();
+    void setCharacter(s32 statusIndex, s32 sideIndex, s32 characterID, Vec3f translation,
+            Vec3f rotation, f32 scale);
+    void setCharacterStatus(s32 statusIndex, s32 sideIndex, s32 status);
+    void setKart(s32 statusIndex, s32 kartID, Vec3f translation, Vec3f rotation, f32 scale);
+    bool isCancel(s32 statusIndex);
+    bool isNext(s32 statusIndex);
 
     static CharacterSelect3D *Create(JKRHeap *heap);
     static void Destroy();

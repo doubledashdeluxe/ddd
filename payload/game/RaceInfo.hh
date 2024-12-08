@@ -34,7 +34,12 @@ private:
     s16 m_kartCount;
     u8 _01e[0x020 - 0x01e];
     s16 m_consoleCount;
-    u8 _022[0x030 - 0x022];
+
+public:
+    s16 m_statusCount;
+
+private:
+    u8 _024[0x030 - 0x024];
     KartInfo m_karts[8];
     u8 _0f0[0x120 - 0x0f0];
     s16 m_awardKartNo;

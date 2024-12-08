@@ -24,6 +24,7 @@ public:
         Teresa = 0x12,
         Pakkun = 0x13,
         Extra = 0x14,
+        Count = 0x15,
     };
 
 private:

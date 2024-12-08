@@ -5,6 +5,7 @@
 #include "game/CardAgent.hh"
 #include "game/GameAudioMain.hh"
 #include "game/KartGamePad.hh"
+#include "game/OnlineInfo.hh"
 #include "game/RaceApp.hh"
 #include "game/RaceInfo.hh"
 #include "game/ResMgr.hh"
@@ -192,6 +193,7 @@ void SceneTitle::startLAN() {
 
 void SceneTitle::nextScene() {
     SequenceInfo::Instance().init();
+    OnlineInfo::Instance().reset();
     RaceInfo::Instance().reset();
     m_state = &SceneTitle::stateNextScene;
 }

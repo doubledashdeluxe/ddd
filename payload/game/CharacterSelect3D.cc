@@ -4,7 +4,7 @@ extern "C" {
 #include <dolphin/GXTransform.h>
 }
 
-void CharacterSelect3D::draw(s32 index, f32 aspect) {
+void CharacterSelect3D::draw(s32 statusIndex, f32 aspect) {
     u32 scissorX, scissorY, scissorWidth, scissorHeight;
     GXGetScissor(&scissorX, &scissorY, &scissorWidth, &scissorHeight);
     f32 x = scissorX, w = scissorWidth;
@@ -16,7 +16,7 @@ void CharacterSelect3D::draw(s32 index, f32 aspect) {
     x -= 0.5f * w;
     GXSetViewport(x, scissorY, w, scissorHeight, 0.0f, 1.0f);
 
-    REPLACED(draw)(index, aspect);
+    REPLACED(draw)(statusIndex, aspect);
 }
 
 CharacterSelect3D *CharacterSelect3D::Create(JKRHeap *heap) {
