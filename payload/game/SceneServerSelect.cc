@@ -6,6 +6,7 @@
 #include "game/KartGamePad.hh"
 #include "game/MenuTitleLine.hh"
 #include "game/OnlineBackground.hh"
+#include "game/OnlineInfo.hh"
 #include "game/SequenceApp.hh"
 #include "game/SequenceInfo.hh"
 
@@ -70,7 +71,7 @@ void SceneServerSelect::init() {
     }
 
     if (ServerManager::Instance()->lock()) {
-        idle();
+        slideIn();
     } else {
         wait();
     }
@@ -234,9 +235,12 @@ void SceneServerSelect::stateSlideOut() {
 void SceneServerSelect::stateIdle() {
     const JUTGamePad::CButton &button = KartGamePad::GamePad(0)->button();
     if (button.risingEdge() & PAD_BUTTON_A) {
+        m_nextScene = SceneType::CharacterSelect;
+        slideOut();
     } else if (button.risingEdge() & PAD_BUTTON_B) {
         u8 padCount = SequenceInfo::Instance().m_padCount;
         m_nextScene = padCount == 1 ? SceneType::NameSelect : SceneType::TandemSelect;
+        OnlineInfo::Instance().m_hasIDs = false;
         slideOut();
     } else if (button.repeat() & JUTGamePad::PAD_MSTICK_UP) {
         if (m_serverIndex >= 1) {

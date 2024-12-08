@@ -10,6 +10,7 @@ public:
     public:
         enum {
             HowManyPlayers = 0x0,
+            SelectCharacter = 0x1,
             SelectTandem = 0x3,
             SelectCourse = 0x4,
             SelectMap = 0x7,

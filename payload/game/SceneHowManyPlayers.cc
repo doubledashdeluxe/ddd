@@ -4,6 +4,7 @@
 #include "game/KartGamePad.hh"
 #include "game/MenuTitleLine.hh"
 #include "game/OnlineBackground.hh"
+#include "game/RaceInfo.hh"
 #include "game/SceneFactory.hh"
 #include "game/SequenceApp.hh"
 #include "game/SequenceInfo.hh"
@@ -159,10 +160,9 @@ void SceneHowManyPlayers::stateIdle() {
     if (button.risingEdge() & PAD_BUTTON_A) {
         m_nextScene = SceneType::NameSelect;
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE_LITTLE);
-        SequenceInfo &sequenceInfo = SequenceInfo::Instance();
-        sequenceInfo.m_padCount = m_padCount;
+        SequenceInfo::Instance().m_padCount = m_padCount;
         if (m_padCount == 1) {
-            sequenceInfo.m_statusCount = 1;
+            RaceInfo::Instance().m_statusCount = 1;
         }
         if (!Platform::IsGameCube()) {
             slideOut();

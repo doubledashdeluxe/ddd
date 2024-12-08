@@ -7,6 +7,10 @@ extern "C" {
 #include <string.h>
 }
 
+const TBox<f32> &J2DPane::getGlobalBox() const {
+    return m_globalBox;
+}
+
 J2DPane *J2DPane::search(const char *format, ...) {
     va_list vlist;
     va_start(vlist, format);

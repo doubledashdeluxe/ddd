@@ -8,8 +8,8 @@ class J2DGraphContext {
 public:
     J2DGraphContext();
     virtual ~J2DGraphContext();
-    virtual void vf_0c();
-    virtual void vf_10();
+    virtual void place(const TBox<f32> &box);
+    virtual void place(f32 x, f32 y, f32 w, f32 h);
     virtual void setViewport();
     // ...
 

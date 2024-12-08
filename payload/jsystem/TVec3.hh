@@ -6,6 +6,8 @@ extern "C" {
 
 template <typename T>
 struct TVec3 {
+    TVec3() {}
+
     TVec3(T x, T y, T z) {
         this->x = x;
         this->y = y;
@@ -19,6 +21,8 @@ struct TVec3 {
 
 template <>
 struct TVec3<f32> : Vec3 {
+    TVec3() {}
+
     TVec3(f32 x, f32 y, f32 z) {
         this->x = x;
         this->y = y;
@@ -53,4 +57,8 @@ inline TVec3<T> &operator-=(TVec3<T> &v, const TVec3<T> &v0) {
     return v;
 }
 
-struct Vec3f : TVec3<f32> {};
+struct Vec3f : TVec3<f32> {
+    Vec3f() {}
+
+    Vec3f(f32 x, f32 y, f32 z) : TVec3(x, y, z) {}
+};

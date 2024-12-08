@@ -14,13 +14,14 @@ public:
         LanEntry = 0x8,
         Secret = 0x9,
         None = 0xb,
-        MapSelect = 0xd,       // Moved
-        HowManyPlayers = 0xe,  // Added
-        NameSelect = 0xf,      // Added
-        TandemSelect = 0x10,   // Added
-        ServerSelect = 0x11,   // Added
-        RoomTypeSelect = 0x12, // Added
-        Count = 0x13,
+        MapSelect = 0xd,        // Moved
+        HowManyPlayers = 0xe,   // Added
+        NameSelect = 0xf,       // Added
+        TandemSelect = 0x10,    // Added
+        ServerSelect = 0x11,    // Added
+        RoomTypeSelect = 0x12,  // Added
+        CharacterSelect = 0x13, // Added
+        Count = 0x14,
     };
 
 private:

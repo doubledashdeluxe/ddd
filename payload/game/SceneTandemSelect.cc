@@ -6,6 +6,7 @@
 #include "game/KartGamePad.hh"
 #include "game/MenuTitleLine.hh"
 #include "game/OnlineBackground.hh"
+#include "game/RaceInfo.hh"
 #include "game/SequenceApp.hh"
 #include "game/SequenceInfo.hh"
 
@@ -274,7 +275,7 @@ void SceneTandemSelect::stateIdle() {
     if (button.risingEdge() & PAD_BUTTON_A) {
         m_nextScene = SceneType::ServerSelect;
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE_LITTLE);
-        SequenceInfo::Instance().m_statusCount = GetStatusCount(m_padCount, m_partitionIndex);
+        RaceInfo::Instance().m_statusCount = GetStatusCount(m_padCount, m_partitionIndex);
         slideOut();
     } else if (button.risingEdge() & PAD_BUTTON_B) {
         m_nextScene = SceneType::NameSelect;

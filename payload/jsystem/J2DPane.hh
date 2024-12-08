@@ -76,6 +76,8 @@ public:
         return reinterpret_cast<P *>(getTypeID() == P::GetTypeID() ? this : nullptr);
     }
 
+    const TBox<f32> &getBox() const;
+    const TBox<f32> &getGlobalBox() const;
     J2DPane *getFirstChildPane();
     J2DPane *getNextChildPane();
     J2DPane *search(const char *format, ...);
@@ -118,9 +120,10 @@ private:
 
 protected:
     TBox<f32> m_box;
+    TBox<f32> m_globalBox;
 
 private:
-    u8 _030[0x080 - 0x030];
+    u8 _040[0x080 - 0x040];
 
 protected:
     Mtx34 m_globalMtx;
