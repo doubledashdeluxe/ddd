@@ -27,7 +27,7 @@ void SceneMenu::reset() {
 void SceneMenu::setRaceData() {
     REPLACED(setRaceData)();
 
-    if (RaceInfo::Instance().getRaceMode() == RaceMode::VS) {
+    if (RaceInfo::Instance().m_raceMode == RaceMode::VS) {
         m_nextScene = SceneType::PackSelect;
     }
 }

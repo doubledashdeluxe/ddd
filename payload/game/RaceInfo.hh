@@ -4,7 +4,6 @@
 
 class RaceInfo {
 public:
-    u32 getRaceMode() const;
     u32 getRaceLevel() const;
     s16 getKartCount() const;
     s16 getConsoleCount() const;
@@ -21,7 +20,11 @@ public:
 
 private:
     u8 _000[0x008 - 0x000];
+
+public:
     u32 m_raceMode;
+
+private:
     u8 _00c[0x010 - 0x00c];
     u32 m_raceLevel;
     u8 _014[0x018 - 0x014];

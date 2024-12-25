@@ -5,6 +5,7 @@
 #include "game/KartGamePad.hh"
 #include "game/MenuTitleLine.hh"
 #include "game/OnlineBackground.hh"
+#include "game/RaceInfo.hh"
 #include "game/RaceMode.hh"
 #include "game/ResMgr.hh"
 #include "game/SequenceApp.hh"
@@ -40,17 +41,12 @@ SceneModeSelect::SceneModeSelect(JKRArchive *archive, JKRHeap *heap) : Scene(arc
     iconNames[1] = "Cup_Pict_Balloon.bti";
     iconNames[2] = "Cup_Pict_Shine.bti";
     iconNames[3] = "Cup_Pict_Bomb.bti";
-    Array<u32, 4> modes;
-    modes[0] = RaceMode::VS;
-    modes[1] = RaceMode::Balloon;
-    modes[2] = RaceMode::Escape;
-    modes[3] = RaceMode::Bomb;
     Kart2DCommon *kart2DCommon = Kart2DCommon::Instance();
     for (u32 i = 0; i < m_modeScreens.count(); i++) {
         J2DPicture *iconPicture = m_modeScreens[i].search("Icon")->downcast<J2DPicture>();
         iconPicture->changeTexture(iconNames[i], 0);
         Array<char, 32> path;
-        snprintf(path.values(), path.count(), "/modenames/%u.txt", modes[i]);
+        snprintf(path.values(), path.count(), "/modenames/%u.txt", Modes[i]);
         char *name =
                 reinterpret_cast<char *>(ResMgr::GetPtr(ResMgr::ArchiveID::MRAMLoc, path.values()));
         u32 size = ResMgr::GetResSize(ResMgr::ArchiveID::MRAMLoc, name);
@@ -61,11 +57,11 @@ SceneModeSelect::SceneModeSelect(JKRArchive *archive, JKRHeap *heap) : Scene(arc
     m_mainAnmTransform = J2DAnmLoaderDataBase::Load("SelectServerLayout.bck", m_archive);
     m_mainScreen.setAnimation(m_mainAnmTransform);
     for (u32 i = 0; i < m_modeAnmTransforms.count(); i++) {
-        m_modeAnmTransforms[i] = J2DAnmLoaderDataBase::Load("GDIndexLine.bck", m_archive);
+        m_modeAnmTransforms[i] = J2DAnmLoaderDataBase::Load("Line.bck", m_archive);
         m_modeScreens[i].setAnimation(m_modeAnmTransforms[i]);
     }
     for (u32 i = 0; i < m_descAnmTransforms.count(); i++) {
-        m_descAnmTransforms[i] = J2DAnmLoaderDataBase::Load("LineDesc.bck", m_archive);
+        m_descAnmTransforms[i] = J2DAnmLoaderDataBase::Load("Line.bck", m_archive);
         m_modeScreens[i].search("Desc")->setAnimation(m_descAnmTransforms[i]);
     }
 
@@ -147,7 +143,7 @@ void SceneModeSelect::DescText::setAlpha(u8 alpha) {
 }
 
 void SceneModeSelect::slideIn() {
-    if (SequenceApp::Instance()->prevScene() != SceneType::CharacterSelect) {
+    if (SequenceApp::Instance()->prevScene() != SceneType::PackSelect) {
         m_modeIndex = 0;
     }
     m_descOffset = 0;
@@ -190,8 +186,9 @@ void SceneModeSelect::stateSlideOut() {
 void SceneModeSelect::stateIdle() {
     const JUTGamePad::CButton &button = KartGamePad::GamePad(0)->button();
     if (button.risingEdge() & PAD_BUTTON_A) {
-        m_nextScene = SceneType::CharacterSelect;
+        m_nextScene = SceneType::PackSelect;
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE_LITTLE);
+        RaceInfo::Instance().m_raceMode = Modes[m_modeIndex];
         slideOut();
     } else if (button.risingEdge() & PAD_BUTTON_B) {
         m_nextScene = SceneType::ServerSelect;
@@ -227,3 +224,10 @@ void SceneModeSelect::refreshModes() {
         kart2DCommon->changeNumberTexture(567, 3, screen, "PCount");
     }
 }
+
+const Array<u32, SceneModeSelect::ModeCount> SceneModeSelect::Modes((u32[ModeCount]){
+        RaceMode::VS,
+        RaceMode::Balloon,
+        RaceMode::Escape,
+        RaceMode::Bomb,
+});

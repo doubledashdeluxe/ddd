@@ -68,6 +68,7 @@ SceneTitle::~SceneTitle() {}
 void SceneTitle::init() {
     Console::Instance()->m_isActive = false;
     SequenceInfo::Instance().m_fromPause = false;
+    SequenceInfo::Instance().m_isOnline = false;
 
     fadeIn();
 }
@@ -314,6 +315,7 @@ void SceneTitle::stateStart() {
             case Entry::Remote:
                 m_nextScene = SceneType::HowManyPlayers;
                 GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_TITLE_TO_SELECT);
+                SequenceInfo::Instance().m_isOnline = true;
                 break;
             }
             fadeOut();

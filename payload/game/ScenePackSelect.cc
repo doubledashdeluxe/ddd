@@ -5,6 +5,7 @@
 #include "game/KartGamePad.hh"
 #include "game/MenuBackground.hh"
 #include "game/MenuTitleLine.hh"
+#include "game/OnlineBackground.hh"
 #include "game/RaceInfo.hh"
 #include "game/RaceMode.hh"
 #include "game/SceneFactory.hh"
@@ -26,7 +27,9 @@ ScenePackSelect::ScenePackSelect(JKRArchive *archive, JKRHeap *heap) : Scene(arc
     JKRArchive *backgroundArchive = sceneFactory->archive(SceneFactory::ArchiveType::Background);
     JKRArchive *titleLineArchive = sceneFactory->archive(SceneFactory::ArchiveType::TitleLine);
 
-    MenuBackground::Create(backgroundArchive);
+    if (!SequenceInfo::Instance().m_isOnline) {
+        MenuBackground::Create(backgroundArchive);
+    }
     MenuTitleLine::Create(titleLineArchive, heap);
 
     m_mainScreen.set("GDIndexLayout.blo", 0x20000, m_archive);
@@ -47,10 +50,6 @@ ScenePackSelect::ScenePackSelect(JKRArchive *archive, JKRHeap *heap) : Scene(arc
     m_mainScreen.search("NSaveGD")->m_isVisible = false;
     m_modeScreen.search("OK_wb11")->m_isVisible = false;
     m_modeScreen.search("NRandom")->m_isVisible = false;
-    for (u32 i = 0; i < m_packScreens.count(); i++) {
-        m_packScreens[i].search("PIcon")->m_isVisible = false;
-        m_packScreens[i].search("PCount")->m_isVisible = false;
-    }
 
     m_mainAnmTransform = J2DAnmLoaderDataBase::Load("SelectPackLayout.bck", m_archive);
     m_mainScreen.setAnimation(m_mainAnmTransform);
@@ -60,12 +59,17 @@ ScenePackSelect::ScenePackSelect(JKRArchive *archive, JKRHeap *heap) : Scene(arc
     for (u32 i = 0; i < 2; i++) {
         m_mainScreen.search("MArrow%02u", i + 1)->setAnimation(m_arrowAnmTransform);
     }
+    m_onlineAnmTransform = J2DAnmLoaderDataBase::Load("Line.bck", m_archive);
+    for (u32 i = 0; i < 6; i++) {
+        m_packScreens[i].search("CIcon")->setAnimation(m_onlineAnmTransform);
+        m_packScreens[i].search("CCount")->setAnimation(m_onlineAnmTransform);
+    }
     for (u32 i = 0; i < m_packAnmTransforms.count(); i++) {
-        m_packAnmTransforms[i] = J2DAnmLoaderDataBase::Load("GDIndexLine.bck", m_archive);
+        m_packAnmTransforms[i] = J2DAnmLoaderDataBase::Load("Line.bck", m_archive);
         m_packScreens[i].setAnimation(m_packAnmTransforms[i]);
     }
     for (u32 i = 0; i < m_descAnmTransforms.count(); i++) {
-        m_descAnmTransforms[i] = J2DAnmLoaderDataBase::Load("LineDesc.bck", m_archive);
+        m_descAnmTransforms[i] = J2DAnmLoaderDataBase::Load("Line.bck", m_archive);
         m_packScreens[i].search("Desc")->setAnimation(m_descAnmTransforms[i]);
     }
 
@@ -81,10 +85,16 @@ ScenePackSelect::ScenePackSelect(JKRArchive *archive, JKRHeap *heap) : Scene(arc
 ScenePackSelect::~ScenePackSelect() {}
 
 void ScenePackSelect::init() {
+    SequenceInfo &sequenceInfo = SequenceInfo::Instance();
+    for (u32 i = 0; i < m_packScreens.count(); i++) {
+        m_packScreens[i].search("PIcon")->m_isVisible = sequenceInfo.m_isOnline;
+        m_packScreens[i].search("PCount")->m_isVisible = sequenceInfo.m_isOnline;
+    }
+
     J2DPicture *iconPicture = m_modeScreen.search("BtlPict")->downcast<J2DPicture>();
     J2DPicture *namePicture = m_modeScreen.search("SubM")->downcast<J2DPicture>();
     RaceInfo &raceInfo = RaceInfo::Instance();
-    switch (raceInfo.getRaceMode()) {
+    switch (raceInfo.m_raceMode) {
     case RaceMode::Balloon:
         iconPicture->changeTexture("Cup_Pict_Balloon.bti", 0);
         namePicture->changeTexture("Mozi_Battle1.bti", 0);
@@ -123,7 +133,11 @@ void ScenePackSelect::init() {
 void ScenePackSelect::draw() {
     m_graphContext->setViewport();
 
-    MenuBackground::Instance()->draw(m_graphContext);
+    if (SequenceInfo::Instance().m_isOnline) {
+        OnlineBackground::Instance()->draw(m_graphContext);
+    } else {
+        MenuBackground::Instance()->draw(m_graphContext);
+    }
     MenuTitleLine::Instance()->draw(m_graphContext);
 
     m_mainScreen.draw(0.0f, 0.0f, m_graphContext);
@@ -133,13 +147,19 @@ void ScenePackSelect::draw() {
 void ScenePackSelect::calc() {
     (this->*m_state)();
 
-    MenuBackground::Instance()->calc();
+    SequenceInfo &sequenceInfo = SequenceInfo::Instance();
+    if (sequenceInfo.m_isOnline) {
+        OnlineBackground::Instance()->calc();
+    } else {
+        MenuBackground::Instance()->calc();
+    }
     MenuTitleLine::Instance()->calc();
 
     m_descOffset += 5;
     refreshPacks();
 
     m_arrowAnmTransformFrame = (m_arrowAnmTransformFrame + 1) % 35;
+    m_onlineAnmTransformFrame = sequenceInfo.m_isOnline * 12;
     for (u32 i = 0; i < 6; i++) {
         u32 packIndex = m_rowIndex + i;
         if (packIndex == m_packIndex) {
@@ -156,6 +176,7 @@ void ScenePackSelect::calc() {
     m_mainAnmTransform->m_frame = m_mainAnmTransformFrame;
     m_modeAnmTransform->m_frame = m_modeAnmTransformFrame;
     m_arrowAnmTransform->m_frame = m_arrowAnmTransformFrame;
+    m_onlineAnmTransform->m_frame = m_onlineAnmTransformFrame;
     for (u32 i = 0; i < m_packAnmTransforms.count(); i++) {
         m_packAnmTransforms[i]->m_frame = m_packAnmTransformFrames[i];
     }
@@ -169,22 +190,31 @@ void ScenePackSelect::calc() {
     for (u32 i = 0; i < m_packAlphas.count(); i++) {
         m_packScreens[i].search("GDCurs")->setAlpha(m_packAlphas[i]);
         m_packScreens[i].search("GDCurs1")->setAlpha(m_packAlphas[i]);
-        for (u32 j = 0; j < 26; j++) {
-            m_packScreens[i].search("Name%u", j)->setAlpha(m_packAlphas[i]);
+        for (s32 j = 0; j < 26; j++) {
+            u8 alpha = m_packAlphas[i];
+            if (j > 25 - sequenceInfo.m_isOnline * 4) {
+                alpha = 0;
+            }
+            m_packScreens[i].search("Name%u", j)->setAlpha(alpha);
         }
-        for (u32 j = 0; j < 42; j++) {
+        for (s32 j = 0; j < 42; j++) {
             u8 alpha = m_packAlphas[i];
             if (j == 0) {
                 alpha = (alpha * (255 - m_descAlphas[i])) >> 8;
-            } else if (j == 41) {
+            } else if (j == 41 - sequenceInfo.m_isOnline * 6) {
                 alpha = (alpha * m_descAlphas[i]) >> 8;
+            } else if (j > 41 - sequenceInfo.m_isOnline * 6) {
+                alpha = 0;
             }
             m_packScreens[i].search("Desc%u", j)->setAlpha(alpha);
         }
-        m_packScreens[i].search("CIcon")->setAlpha(m_packAlphas[i]);
-        for (u32 j = 1; j <= 3; j++) {
-            for (u32 k = 0; k < j; k++) {
-                m_packScreens[i].search("CCount%u%u", j, k)->setAlpha(m_packAlphas[i]);
+        for (u32 j = 0; j < 2; j++) {
+            u8 alpha = m_packAlphas[i];
+            m_packScreens[i].search("%cIcon", "CP"[j])->setAlpha(alpha);
+            for (u32 k = 1; k <= 3; k++) {
+                for (u32 l = 0; l < k; l++) {
+                    m_packScreens[i].search("%cCount%u%u", "CP"[j], k, l)->setAlpha(alpha);
+                }
             }
         }
     }
@@ -232,9 +262,16 @@ void ScenePackSelect::slideIn() {
         m_packCount = CourseManager::Instance()->battlePackCount();
     }
     m_packIndex = 0;
-    if (SequenceApp::Instance()->prevScene() == SceneType::MapSelect) {
-        m_packIndex = SequenceInfo::Instance().m_packIndex;
-        SequenceApp::Instance()->ready(SceneType::Menu);
+    s32 prevScene = SequenceApp::Instance()->prevScene();
+    if (SequenceInfo::Instance().m_isOnline) {
+        if (prevScene == SceneType::CharacterSelect) {
+            m_packIndex = SequenceInfo::Instance().m_packIndex;
+        }
+    } else {
+        if (prevScene == SceneType::MapSelect) {
+            m_packIndex = SequenceInfo::Instance().m_packIndex;
+            SequenceApp::Instance()->ready(SceneType::Menu);
+        }
     }
     m_rowIndex = m_packIndex;
     m_rowIndex = Min(m_rowIndex, m_packCount - Min<u32>(m_packCount, 5));
@@ -311,14 +348,15 @@ void ScenePackSelect::stateSlideOut() {
 }
 
 void ScenePackSelect::stateIdle() {
+    SequenceInfo &sequenceInfo = SequenceInfo::Instance();
     const JUTGamePad::CButton &button = KartGamePad::GamePad(0)->button();
     if (button.risingEdge() & PAD_BUTTON_A) {
-        m_nextScene = SceneType::MapSelect;
+        m_nextScene = sequenceInfo.m_isOnline ? SceneType::CharacterSelect : SceneType::MapSelect;
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE_LITTLE);
-        SequenceInfo::Instance().m_packIndex = m_packIndex;
+        sequenceInfo.m_packIndex = m_packIndex;
         slideOut();
     } else if (button.risingEdge() & PAD_BUTTON_B) {
-        m_nextScene = SceneType::Menu;
+        m_nextScene = sequenceInfo.m_isOnline ? SceneType::ModeSelect : SceneType::Menu;
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CANCEL_LITTLE);
         slideOut();
     } else if (button.repeat() & JUTGamePad::PAD_MSTICK_UP) {
@@ -375,6 +413,7 @@ void ScenePackSelect::stateNextScene() {
 void ScenePackSelect::refreshPacks() {
     Kart2DCommon *kart2DCommon = Kart2DCommon::Instance();
     CourseManager *courseManager = CourseManager::Instance();
+    SequenceInfo &sequenceInfo = SequenceInfo::Instance();
     for (u32 i = 0; i < 6; i++) {
         u32 packIndex = m_rowIndex + i;
         if (packIndex >= m_packCount) {
@@ -387,11 +426,14 @@ void ScenePackSelect::refreshPacks() {
             pack = &courseManager->battlePack(packIndex);
         }
         J2DScreen &screen = m_packScreens[i];
-        kart2DCommon->changeUnicodeTexture(pack->name(), 26, screen, "Name");
+        u32 namePictureCount = 26 - sequenceInfo.m_isOnline * 4;
+        kart2DCommon->changeUnicodeTexture(pack->name(), namePictureCount, screen, "Name");
         u32 courseCount = pack->courseIndices().count();
         DescText descText(*this, i);
-        descText.refresh(m_descOffset, courseCount, 42, screen, "Desc");
+        u32 descPictureCount = 42 - sequenceInfo.m_isOnline * 6;
+        descText.refresh(m_descOffset, courseCount, descPictureCount, screen, "Desc");
         kart2DCommon->changeNumberTexture(courseCount, 3, screen, "CCount");
+        kart2DCommon->changeNumberTexture(packIndex * 12, 3, screen, "PCount");
     }
 }
 

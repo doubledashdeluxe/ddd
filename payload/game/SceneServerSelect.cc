@@ -47,10 +47,10 @@ SceneServerSelect::SceneServerSelect(JKRArchive *archive, JKRHeap *heap) : Scene
         m_mainScreen.search("MArrow%02u", i + 1)->setAnimation(m_arrowAnmTransform);
     }
     for (u32 i = 0; i < m_serverAnmTransforms.count(); i++) {
-        m_serverAnmTransforms[i] = J2DAnmLoaderDataBase::Load("GDIndexLine.bck", m_archive);
+        m_serverAnmTransforms[i] = J2DAnmLoaderDataBase::Load("Line.bck", m_archive);
         m_serverScreens[i].setAnimation(m_serverAnmTransforms[i]);
     }
-    m_descAnmTransform = J2DAnmLoaderDataBase::Load("LineDesc.bck", m_archive);
+    m_descAnmTransform = J2DAnmLoaderDataBase::Load("Line.bck", m_archive);
     for (u32 i = 0; i < m_serverScreens.count(); i++) {
         m_serverScreens[i].search("Desc")->setAnimation(m_descAnmTransform);
     }

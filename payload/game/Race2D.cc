@@ -43,7 +43,7 @@ void Race2D::init() {
             m_playerNumberPictures[i][j]->setHasARShift(false, false);
         }
     }
-    if (raceInfo.getRaceMode() == RaceMode::Escape) {
+    if (raceInfo.m_raceMode == RaceMode::Escape) {
         for (s16 i = 0; i < consoleCount; i++) {
             m_shineIndicationScreens[i]->setHasARTrans(false, true);
         }

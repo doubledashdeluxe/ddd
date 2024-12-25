@@ -42,7 +42,7 @@ u32 Course::getCourseBGM() const {
     case CourseID::Snow:
         return SoundID::JA_STRM_SNOW;
     case CourseID::Mini1:
-        if (RaceInfo::Instance().getRaceMode() == RaceMode::Escape) {
+        if (RaceInfo::Instance().m_raceMode == RaceMode::Escape) {
             return SoundID::JA_STRM_BATTLE2;
         } else {
             return SoundID::JA_STRM_KOOPA;
@@ -53,13 +53,13 @@ u32 Course::getCourseBGM() const {
     case 0x39:
     case CourseID::Mini7:
     case CourseID::Mini8:
-        if (RaceInfo::Instance().getRaceMode() == RaceMode::Escape) {
+        if (RaceInfo::Instance().m_raceMode == RaceMode::Escape) {
             return SoundID::JA_STRM_BATTLE2;
         } else {
             return SoundID::JA_STRM_BATTLE;
         }
     case CourseID::Mini5:
-        if (RaceInfo::Instance().getRaceMode() == RaceMode::Escape) {
+        if (RaceInfo::Instance().m_raceMode == RaceMode::Escape) {
             return SoundID::JA_STRM_BATTLE2;
         } else {
             return SoundID::JA_STRM_GURAGURA_MARIO;

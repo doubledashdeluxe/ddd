@@ -8,6 +8,10 @@
 
 class SceneModeSelect : public Scene {
 public:
+    enum {
+        ModeCount = 4,
+    };
+
     SceneModeSelect(JKRArchive *archive, JKRHeap *heap);
     ~SceneModeSelect() override;
     void init() override;
@@ -15,10 +19,6 @@ public:
     void calc() override;
 
 private:
-    enum {
-        ModeCount = 4,
-    };
-
     class DescText : public SlidingText {
     public:
         DescText(SceneModeSelect &scene, u32 descIndex);
@@ -60,4 +60,6 @@ private:
     Array<u8, ModeCount> m_modeAnmTransformFrames;
     Array<u8, ModeCount> m_descAnmTransformFrames;
     Array<u8, ModeCount> m_descAlphas;
+
+    static const Array<u32, ModeCount> Modes;
 };

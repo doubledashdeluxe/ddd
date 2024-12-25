@@ -15,9 +15,10 @@ private:
 
 public:
     bool m_fromPause;
-    u8 m_packIndex;    // Added (was padding)
-    u8 m_padCount : 3; // Added (was padding)
-    u8 : 5;
+    u8 m_packIndex;      // Added (was padding)
+    u8 m_padCount : 3;   // Added (was padding)
+    bool m_isOnline : 1; // Added (was padding)
+    u8 : 4;
 
 private:
     u8 _02b[0x038 - 0x02b];

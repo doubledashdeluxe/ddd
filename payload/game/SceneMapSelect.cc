@@ -109,7 +109,7 @@ void SceneMapSelect::init() {
     J2DPicture *iconPicture = m_mainScreen.search("BtlPict")->downcast<J2DPicture>();
     J2DPicture *namePicture = m_mainScreen.search("SubM")->downcast<J2DPicture>();
     RaceInfo &raceInfo = RaceInfo::Instance();
-    switch (raceInfo.getRaceMode()) {
+    switch (raceInfo.m_raceMode) {
     case RaceMode::Balloon:
         iconPicture->changeTexture("Cup_Pict_Balloon.bti", 0);
         namePicture->changeTexture("Mozi_Battle1.bti", 0);

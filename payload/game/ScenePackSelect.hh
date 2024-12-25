@@ -64,11 +64,13 @@ private:
     J2DAnmBase *m_mainAnmTransform;
     J2DAnmBase *m_arrowAnmTransform;
     J2DAnmBase *m_modeAnmTransform;
+    J2DAnmBase *m_onlineAnmTransform;
     Array<J2DAnmBase *, 6> m_packAnmTransforms;
     Array<J2DAnmBase *, 6> m_descAnmTransforms;
     u8 m_mainAnmTransformFrame;
     u8 m_arrowAnmTransformFrame;
     u8 m_modeAnmTransformFrame;
+    u8 m_onlineAnmTransformFrame;
     Array<u8, 6> m_packAnmTransformFrames;
     Array<u8, 6> m_descAnmTransformFrames;
     Array<u8, 2> m_arrowAlphas;
