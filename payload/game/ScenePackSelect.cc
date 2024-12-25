@@ -69,7 +69,6 @@ ScenePackSelect::ScenePackSelect(JKRArchive *archive, JKRHeap *heap) : Scene(arc
         m_packScreens[i].search("Desc")->setAnimation(m_descAnmTransforms[i]);
     }
 
-    m_mainAnmTransformFrame = 0;
     m_arrowAnmTransformFrame = 0;
     m_modeAnmTransformFrame = 0;
     m_packAnmTransformFrames.fill(0);
@@ -202,14 +201,14 @@ ScenePackSelect::DescText::DescText(ScenePackSelect &scene, u32 descIndex)
 
 ScenePackSelect::DescText::~DescText() {}
 
-const char *ScenePackSelect::DescText::getPart(u32 i) {
+const char *ScenePackSelect::DescText::getPart(u32 partIndex) {
     CourseManager *courseManager = CourseManager::Instance();
     u32 packIndex = m_scene.m_rowIndex + m_descIndex;
     const CourseManager::Course *course;
     if (RaceInfo::Instance().isRace()) {
-        course = &courseManager->raceCourse(packIndex, i);
+        course = &courseManager->raceCourse(packIndex, partIndex);
     } else {
-        course = &courseManager->battleCourse(packIndex, i);
+        course = &courseManager->battleCourse(packIndex, partIndex);
     }
     return course->name();
 }
@@ -242,6 +241,7 @@ void ScenePackSelect::slideIn() {
     m_descOffset = 0;
 
     MenuTitleLine::Instance()->drop("SelectPack.bti");
+    m_mainAnmTransformFrame = 0;
     for (u32 i = 0; i < m_packAlphas.count(); i++) {
         u32 packIndex = m_rowIndex + i;
         if (i < 5 && packIndex < m_packCount) {
@@ -255,6 +255,7 @@ void ScenePackSelect::slideIn() {
 
 void ScenePackSelect::slideOut() {
     MenuTitleLine::Instance()->lift();
+    m_mainAnmTransformFrame = 30;
     m_state = &ScenePackSelect::stateSlideOut;
 }
 

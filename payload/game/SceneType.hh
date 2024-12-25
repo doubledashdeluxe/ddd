@@ -19,7 +19,7 @@ public:
         NameSelect = 0xf,       // Added
         TandemSelect = 0x10,    // Added
         ServerSelect = 0x11,    // Added
-        RoomTypeSelect = 0x12,  // Added
+        ModeSelect = 0x12,      // Added
         CharacterSelect = 0x13, // Added
         Count = 0x14,
     };

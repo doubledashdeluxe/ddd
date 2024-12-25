@@ -4,6 +4,7 @@
 #include "game/SceneCharacterSelect.hh"
 #include "game/SceneHowManyPlayers.hh"
 #include "game/SceneMapSelect.hh"
+#include "game/SceneModeSelect.hh"
 #include "game/SceneNameSelect.hh"
 #include "game/SceneOption.hh"
 #include "game/ScenePackSelect.hh"
@@ -52,6 +53,9 @@ void SceneFactory::loadData(s32 sceneType, JKRHeap *heap) {
         REPLACED(loadData)(SceneType::GhostLoadSave, heap);
         REPLACED(loadData)(SceneType::LanEntry, heap);
         return;
+    case SceneType::ModeSelect:
+        REPLACED(loadData)(SceneType::GhostLoadSave, heap);
+        return;
     case SceneType::CharacterSelect:
         REPLACED(loadData)(SceneType::Menu, heap);
         return;
@@ -96,6 +100,10 @@ Scene *SceneFactory::createScene(s32 sceneType, JKRHeap *heap) {
     case SceneType::ServerSelect:
         sysDebug->setHeapGroup("ServerSelect", heap);
         scene = new (heap, 0x0) SceneServerSelect(m_archives[ArchiveType::GhostData], heap);
+        break;
+    case SceneType::ModeSelect:
+        sysDebug->setHeapGroup("ModeSelect", heap);
+        scene = new (heap, 0x0) SceneModeSelect(m_archives[ArchiveType::GhostData], heap);
         break;
     case SceneType::CharacterSelect:
         sysDebug->setHeapGroup("CharacterSelect", heap);

@@ -21,7 +21,7 @@ private:
         ~DescText();
 
     private:
-        const char *getPart(u32 i) override;
+        const char *getPart(u32 partIndex) override;
         void setAnmTransformFrame(u8 anmTransformFrame) override;
         void setAlpha(u8 alpha) override;
 

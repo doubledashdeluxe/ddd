@@ -55,7 +55,6 @@ SceneServerSelect::SceneServerSelect(JKRArchive *archive, JKRHeap *heap) : Scene
         m_serverScreens[i].search("Desc")->setAnimation(m_descAnmTransform);
     }
 
-    m_mainAnmTransformFrame = 0;
     m_arrowAnmTransformFrame = 0;
     m_serverAnmTransformFrames.fill(0);
     m_descAnmTransformFrame = 0;
@@ -66,7 +65,7 @@ SceneServerSelect::SceneServerSelect(JKRArchive *archive, JKRHeap *heap) : Scene
 SceneServerSelect::~SceneServerSelect() {}
 
 void SceneServerSelect::init() {
-    if (SequenceApp::Instance()->prevScene() != SceneType::RoomTypeSelect) {
+    if (SequenceApp::Instance()->prevScene() != SceneType::ModeSelect) {
         Client::Instance()->reset();
     }
 
@@ -158,13 +157,14 @@ void SceneServerSelect::wait() {
 
 void SceneServerSelect::slideIn() {
     m_serverCount = ServerManager::Instance()->serverCount();
-    if (SequenceApp::Instance()->prevScene() != SceneType::RoomTypeSelect) {
+    if (SequenceApp::Instance()->prevScene() != SceneType::ModeSelect) {
         m_serverIndex = 0;
     }
     m_rowIndex = m_serverIndex;
     m_rowIndex = Min(m_rowIndex, m_serverIndex - Min<u32>(m_serverCount, 5));
 
     MenuTitleLine::Instance()->drop("SelectServer.bti");
+    m_mainAnmTransformFrame = 0;
     for (u32 i = 0; i < m_serverAlphas.count(); i++) {
         u32 serverIndex = m_rowIndex + i;
         if (i < 5 && serverIndex < m_serverCount) {
@@ -179,6 +179,7 @@ void SceneServerSelect::slideIn() {
 
 void SceneServerSelect::slideOut() {
     MenuTitleLine::Instance()->lift();
+    m_mainAnmTransformFrame = 30;
     m_state = &SceneServerSelect::stateSlideOut;
 }
 
@@ -235,7 +236,7 @@ void SceneServerSelect::stateSlideOut() {
 void SceneServerSelect::stateIdle() {
     const JUTGamePad::CButton &button = KartGamePad::GamePad(0)->button();
     if (button.risingEdge() & PAD_BUTTON_A) {
-        m_nextScene = SceneType::CharacterSelect;
+        m_nextScene = SceneType::ModeSelect;
         slideOut();
     } else if (button.risingEdge() & PAD_BUTTON_B) {
         u8 padCount = SequenceInfo::Instance().m_padCount;
