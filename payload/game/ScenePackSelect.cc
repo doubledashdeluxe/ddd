@@ -74,7 +74,6 @@ ScenePackSelect::ScenePackSelect(JKRArchive *archive, JKRHeap *heap) : Scene(arc
     }
 
     m_arrowAnmTransformFrame = 0;
-    m_modeAnmTransformFrame = 0;
     m_packAnmTransformFrames.fill(0);
     m_descAnmTransformFrames.fill(0);
     m_arrowAlphas.fill(0);
@@ -264,7 +263,7 @@ void ScenePackSelect::slideIn() {
     m_packIndex = 0;
     s32 prevScene = SequenceApp::Instance()->prevScene();
     if (SequenceInfo::Instance().m_isOnline) {
-        if (prevScene == SceneType::CharacterSelect) {
+        if (prevScene == SceneType::FormatSelect) {
             m_packIndex = SequenceInfo::Instance().m_packIndex;
         }
     } else {
@@ -279,6 +278,7 @@ void ScenePackSelect::slideIn() {
 
     MenuTitleLine::Instance()->drop("SelectPack.bti");
     m_mainAnmTransformFrame = 0;
+    m_modeAnmTransformFrame = 0;
     for (u32 i = 0; i < m_packAlphas.count(); i++) {
         u32 packIndex = m_rowIndex + i;
         if (i < 5 && packIndex < m_packCount) {
@@ -351,7 +351,7 @@ void ScenePackSelect::stateIdle() {
     SequenceInfo &sequenceInfo = SequenceInfo::Instance();
     const JUTGamePad::CButton &button = KartGamePad::GamePad(0)->button();
     if (button.risingEdge() & PAD_BUTTON_A) {
-        m_nextScene = sequenceInfo.m_isOnline ? SceneType::CharacterSelect : SceneType::MapSelect;
+        m_nextScene = sequenceInfo.m_isOnline ? SceneType::FormatSelect : SceneType::MapSelect;
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE_LITTLE);
         sequenceInfo.m_packIndex = m_packIndex;
         slideOut();

@@ -81,6 +81,7 @@ void SceneNameSelect::init() {
             readNames();
             onlineInfo.m_hasNames = true;
         }
+        SequenceApp::Instance()->ready(SceneType::ServerSelect);
 
         for (u32 i = 0; i < m_nameEntryHelpers.count(); i++) {
             m_nameEntryHelpers[i]->init(m_unsavedNames[i].values());

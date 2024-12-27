@@ -587,7 +587,7 @@ void SceneCharacterSelect::stateIdle() {
                     selectedCharacterCount += pad == i && characterID != CharacterID::Count;
                 }
                 if (selectedCharacterCount == 0) {
-                    m_nextScene = SceneType::PackSelect;
+                    m_nextScene = SceneType::FormatSelect;
                     GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CANCEL_LITTLE);
                     slideOut();
                     break;

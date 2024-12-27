@@ -20,8 +20,9 @@ public:
         TandemSelect = 0x10,    // Added
         ServerSelect = 0x11,    // Added
         ModeSelect = 0x12,      // Added
-        CharacterSelect = 0x13, // Added
-        Count = 0x14,
+        FormatSelect = 0x13,    // Added
+        CharacterSelect = 0x14, // Added
+        Count = 0x15,
     };
 
 private:
