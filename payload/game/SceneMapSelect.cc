@@ -4,6 +4,7 @@
 #include "game/KartGamePad.hh"
 #include "game/MenuBackground.hh"
 #include "game/MenuTitleLine.hh"
+#include "game/OnlineBackground.hh"
 #include "game/RaceInfo.hh"
 #include "game/RaceMode.hh"
 #include "game/ResMgr.hh"
@@ -33,7 +34,9 @@ SceneMapSelect::SceneMapSelect(JKRArchive *archive, JKRHeap *heap)
     JKRArchive *titleLineArchive = sceneFactory->archive(SceneFactory::ArchiveType::TitleLine);
     JKRArchive *ghostDataArchive = sceneFactory->archive(SceneFactory::ArchiveType::GhostData);
 
-    MenuBackground::Create(backgroundArchive);
+    if (!SequenceInfo::Instance().m_isOnline) {
+        MenuBackground::Create(backgroundArchive);
+    }
     MenuTitleLine::Create(titleLineArchive, heap);
 
     m_mainScreen.set("SelectMapLayout.blo", 0x1040000, m_archive);
@@ -152,7 +155,11 @@ void SceneMapSelect::init() {
 void SceneMapSelect::draw() {
     m_graphContext->setViewport();
 
-    MenuBackground::Instance()->draw(m_graphContext);
+    if (SequenceInfo::Instance().m_isOnline) {
+        OnlineBackground::Instance()->draw(m_graphContext);
+    } else {
+        MenuBackground::Instance()->draw(m_graphContext);
+    }
     MenuTitleLine::Instance()->draw(m_graphContext);
 
     m_mainScreen.draw(0.0f, 0.0f, m_graphContext);
@@ -198,7 +205,11 @@ void SceneMapSelect::calc() {
         }
     }
 
-    MenuBackground::Instance()->calc();
+    if (SequenceInfo::Instance().m_isOnline) {
+        OnlineBackground::Instance()->calc();
+    } else {
+        MenuBackground::Instance()->calc();
+    }
     MenuTitleLine::Instance()->calc();
 
     m_okAnmTextureSRTKeyFrame = (m_okAnmTextureSRTKeyFrame + 1) % 120;
@@ -391,6 +402,13 @@ void SceneMapSelect::spin() {
 }
 
 void SceneMapSelect::nextScene() {
+    for (u32 i = 0; i < m_thumbnails.count(); i++) {
+        m_thumbnails[i].reset();
+    }
+    for (u32 i = 0; i < m_nameImages.count(); i++) {
+        m_nameImages[i].reset();
+    }
+    refreshMaps();
     m_state = &SceneMapSelect::stateNextScene;
 }
 
@@ -448,7 +466,8 @@ void SceneMapSelect::stateIdle() {
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE_LITTLE);
         selectIn();
     } else if (button.risingEdge() & PAD_BUTTON_B) {
-        m_nextScene = SceneType::PackSelect;
+        SequenceInfo &sequenceInfo = SequenceInfo::Instance();
+        m_nextScene = sequenceInfo.m_isOnline ? SceneType::CharacterSelect : SceneType::PackSelect;
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CANCEL_LITTLE);
         slideOut();
     } else if (button.repeat() & JUTGamePad::PAD_MSTICK_UP) {
@@ -559,18 +578,22 @@ void SceneMapSelect::stateSelect() {
     CourseManager *courseManager = CourseManager::Instance();
     const JUTGamePad::CButton &button = KartGamePad::GamePad(0)->button();
     if (button.risingEdge() & PAD_BUTTON_A) {
-        m_nextScene = SceneType::None;
-        GameAudio::Main::Instance()->fadeOutAll(15);
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE);
-        System::GetDisplay()->startFadeOut(15);
-        const CourseManager::Course *course;
-        if (RaceInfo::Instance().isRace()) {
-            course = &courseManager->raceCourse(sequenceInfo.m_packIndex, m_mapIndex);
+        if (sequenceInfo.m_isOnline) {
+            m_nextScene = SceneType::CoursePoll;
         } else {
-            course = &courseManager->battleCourse(sequenceInfo.m_packIndex, m_mapIndex);
+            m_nextScene = SceneType::None;
+            GameAudio::Main::Instance()->fadeOutAll(15);
+            System::GetDisplay()->startFadeOut(15);
+            const CourseManager::Course *course;
+            if (RaceInfo::Instance().isRace()) {
+                course = &courseManager->raceCourse(sequenceInfo.m_packIndex, m_mapIndex);
+            } else {
+                course = &courseManager->battleCourse(sequenceInfo.m_packIndex, m_mapIndex);
+            }
+            ResMgr::LoadExtendedCourseData(course, 2);
+            SequenceInfo::Instance().m_mapIndex = m_mapIndex;
         }
-        ResMgr::LoadExtendedCourseData(course, 2);
-        SequenceInfo::Instance().m_mapIndex = m_mapIndex;
         slideOut();
     } else if (button.risingEdge() & PAD_BUTTON_B) {
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CANCEL_LITTLE);

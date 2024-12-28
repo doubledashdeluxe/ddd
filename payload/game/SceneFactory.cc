@@ -2,6 +2,7 @@
 
 #include "game/ResMgr.hh"
 #include "game/SceneCharacterSelect.hh"
+#include "game/SceneCoursePoll.hh"
 #include "game/SceneFormatSelect.hh"
 #include "game/SceneHowManyPlayers.hh"
 #include "game/SceneMapSelect.hh"
@@ -24,18 +25,12 @@ void SceneFactory::loadData(s32 sceneType, JKRHeap *heap) {
     switch (sceneType) {
     case SceneType::Option:
         REPLACED(loadData)(SceneType::Option, heap);
-        REPLACED(loadData)(SceneType::GhostLoadSave, heap);
+        loadLocalizedArchive(ArchiveType::GhostData, "GhostData", heap);
         return;
     case SceneType::PackSelect:
         REPLACED(loadData)(SceneType::Menu, heap);
         REPLACED(loadData)(SceneType::PackSelect, heap);
-        REPLACED(loadData)(SceneType::GhostLoadSave, heap);
-        return;
-    case SceneType::MapSelect:
-        REPLACED(loadData)(SceneType::Menu, heap);
-        REPLACED(loadData)(SceneType::CourseSelect, heap);
-        REPLACED(loadData)(SceneType::PackSelect, heap);
-        REPLACED(loadData)(SceneType::GhostLoadSave, heap);
+        loadLocalizedArchive(ArchiveType::GhostData, "GhostData", heap);
         return;
     case SceneType::HowManyPlayers:
         REPLACED(loadData)(SceneType::Menu, heap);
@@ -51,17 +46,23 @@ void SceneFactory::loadData(s32 sceneType, JKRHeap *heap) {
         return;
     case SceneType::ServerSelect:
         REPLACED(loadData)(SceneType::Menu, heap);
-        REPLACED(loadData)(SceneType::GhostLoadSave, heap);
         REPLACED(loadData)(SceneType::LanEntry, heap);
+        loadLocalizedArchive(ArchiveType::GhostData, "GhostData", heap);
         return;
     case SceneType::ModeSelect:
-        REPLACED(loadData)(SceneType::GhostLoadSave, heap);
+        loadLocalizedArchive(ArchiveType::GhostData, "GhostData", heap);
         return;
     case SceneType::FormatSelect:
         REPLACED(loadData)(SceneType::Menu, heap);
         return;
     case SceneType::CharacterSelect:
         REPLACED(loadData)(SceneType::Menu, heap);
+        return;
+    case SceneType::MapSelect:
+        REPLACED(loadData)(SceneType::Menu, heap);
+        REPLACED(loadData)(SceneType::PackSelect, heap);
+        loadLocalizedArchive(ArchiveType::CourseSelect, "CourseSelect", heap);
+        loadLocalizedArchive(ArchiveType::GhostData, "GhostData", heap);
         return;
     }
 
@@ -83,11 +84,6 @@ Scene *SceneFactory::createScene(s32 sceneType, JKRHeap *heap) {
     case SceneType::PackSelect:
         sysDebug->setHeapGroup("PackSelect", heap);
         scene = new (heap, 0x0) ScenePackSelect(m_archives[ArchiveType::GhostData], heap);
-        break;
-    case SceneType::MapSelect:
-        sysDebug->setHeapGroup("MapSelect", heap);
-        m_battleName2D = BattleName2D::Create(m_archives[ArchiveType::BattleName]);
-        scene = new (heap, 0x0) SceneMapSelect(m_archives[ArchiveType::MapSelect], heap);
         break;
     case SceneType::HowManyPlayers:
         sysDebug->setHeapGroup("HowManyPlayers", heap);
@@ -117,6 +113,15 @@ Scene *SceneFactory::createScene(s32 sceneType, JKRHeap *heap) {
         sysDebug->setHeapGroup("CharacterSelect", heap);
         scene = new (heap, 0x0) SceneCharacterSelect(m_archives[ArchiveType::Menu], heap);
         break;
+    case SceneType::MapSelect:
+        sysDebug->setHeapGroup("MapSelect", heap);
+        m_battleName2D = BattleName2D::Create(m_archives[ArchiveType::BattleName]);
+        scene = new (heap, 0x0) SceneMapSelect(m_archives[ArchiveType::MapSelect], heap);
+        break;
+    case SceneType::CoursePoll:
+        sysDebug->setHeapGroup("CoursePoll", heap);
+        scene = new (heap, 0x0) SceneCoursePoll(m_archives[ArchiveType::MapSelect], heap);
+        break;
     default:
         return REPLACED(createScene)(sceneType, heap);
     }
@@ -136,4 +141,16 @@ void SceneFactory::Destroy() {
 
 SceneFactory *SceneFactory::Instance() {
     return s_instance;
+}
+
+void SceneFactory::loadLocalizedArchive(u32 type, const char *name, JKRHeap *heap) {
+    if (m_archives[type]) {
+        return;
+    }
+
+    const char *languageName = KartLocale::GetLanguageName();
+    Array<char, 64> path;
+    snprintf(path.values(), path.count(), "/SceneData/%s/%s.arc", languageName, name);
+    m_archives[type] = JKRArchive::Mount(path.values(), JKRArchive::MountMode::Mem, heap,
+            JKRArchive::MountDirection::Head);
 }

@@ -19,6 +19,7 @@ extern "C" {
 }
 #include <jsystem/J2DAnmLoaderDataBase.hh>
 #include <jsystem/J2DOrthoGraph.hh>
+#include <jsystem/JKRExpHeap.hh>
 
 extern "C" {
 #include <math.h>
@@ -26,9 +27,7 @@ extern "C" {
 }
 
 SceneCharacterSelect::SceneCharacterSelect(JKRArchive *archive, JKRHeap *heap)
-    : Scene(archive, heap) {
-    CharacterSelect3D::Create(heap);
-
+    : Scene(archive, heap), m_parentHeap(heap) {
     for (u32 i = 0; i < m_mainScreens.count(); i++) {
         Array<char, 32> file;
         snprintf(file.values(), file.count(), "select_character%u.blo", i + 1);
@@ -204,8 +203,6 @@ void SceneCharacterSelect::init() {
     }
     m_spinFrame = 0;
 
-    CharacterSelect3D::Instance()->init();
-
     slideIn();
 }
 
@@ -222,37 +219,41 @@ void SceneCharacterSelect::draw() {
         m_colScreens[i].draw(x, y, m_graphContext);
     }
 
-    f32 w, h = 348.0f;
-    switch (m_statusCount) {
-    case 1:
-        w = 608.0f;
-        break;
-    case 2:
-        w = 480.0f;
-        break;
-    case 3:
-        w = 320.0f;
-        break;
-    case 4:
-        w = 230.0f;
-        break;
-    }
-    for (u32 i = 0; i < m_statusCount; i++) {
-        J2DPane *pane = m_mainScreens[m_statusCount - 1].search("HC%u%uw", m_statusCount, i + 1);
-        const TBox<f32> &globalBox = pane->getGlobalBox();
-        f32 x = (globalBox.start.x + globalBox.end.x - w) * 0.5f;
-        if (x < 0.0f) {
-            s32 xOffset = AlignUp(-floor(x) * J2DPane::GetARScale(), 2);
-            GXSetScissorBoxOffset(xOffset, 0);
-            x += xOffset / J2DPane::GetARScale();
-        } else {
-            GXSetScissorBoxOffset(0, 0);
+    CharacterSelect3D *characterSelect3D = CharacterSelect3D::Instance();
+    if (characterSelect3D) {
+        f32 w, h = 348.0f;
+        switch (m_statusCount) {
+        case 1:
+            w = 608.0f;
+            break;
+        case 2:
+            w = 480.0f;
+            break;
+        case 3:
+            w = 320.0f;
+            break;
+        case 4:
+            w = 230.0f;
+            break;
         }
-        J2DPane *parentPane = m_mainScreens[m_statusCount - 1].search("N_HC%u", m_statusCount);
-        f32 y = 100.0f + parentPane->m_offset.y - 325.0f;
-        J2DOrthoGraph orthoGraph(x, y, w, h, -1.0f, 1.0f);
-        orthoGraph.setViewport();
-        CharacterSelect3D::Instance()->draw(i, w / h);
+        for (u32 i = 0; i < m_statusCount; i++) {
+            J2DScreen &mainScreen = m_mainScreens[m_statusCount - 1];
+            J2DPane *pane = mainScreen.search("HC%u%uw", m_statusCount, i + 1);
+            const TBox<f32> &globalBox = pane->getGlobalBox();
+            f32 x = (globalBox.start.x + globalBox.end.x - w) * 0.5f;
+            if (x < 0.0f) {
+                s32 xOffset = AlignUp(-floor(x) * J2DPane::GetARScale(), 2);
+                GXSetScissorBoxOffset(xOffset, 0);
+                x += xOffset / J2DPane::GetARScale();
+            } else {
+                GXSetScissorBoxOffset(0, 0);
+            }
+            J2DPane *parentPane = mainScreen.search("N_HC%u", m_statusCount);
+            f32 y = 100.0f + parentPane->m_offset.y - 325.0f;
+            J2DOrthoGraph orthoGraph(x, y, w, h, -1.0f, 1.0f);
+            orthoGraph.setViewport();
+            characterSelect3D->draw(i, w / h);
+        }
     }
 
     m_graphContext->setViewport();
@@ -318,28 +319,30 @@ void SceneCharacterSelect::calc() {
         break;
     }
     CharacterSelect3D *characterSelect3D = CharacterSelect3D::Instance();
-    for (u32 i = 0; i < m_statusCount; i++) {
-        u32 status = 1;
-        u32 kartID = m_kartIDs[i];
-        if (kartID == KartID::Count) {
-            u32 kartIndex = m_kartIndices[i];
-            if (kartIndex != KartID::Count) {
-                kartID = KartIDs[kartIndex];
-            }
-        } else {
-            status = 2;
-        }
-        if (kartID != KartID::Count) {
-            characterSelect3D->setKart(i, kartID, kartTranslation, kartRotation, kartScale);
-        }
-        for (u32 j = 0; j < 2; j++) {
-            u32 characterID = m_characterIDs[i][j];
-            if (characterID == CharacterID::Count || m_spinFrame != 0) {
-                characterSelect3D->setCharacterStatus(i, j, 0);
+    if (characterSelect3D) {
+        for (u32 i = 0; i < m_statusCount; i++) {
+            u32 status = 1;
+            u32 kartID = m_kartIDs[i];
+            if (kartID == KartID::Count) {
+                u32 kartIndex = m_kartIndices[i];
+                if (kartIndex != KartID::Count) {
+                    kartID = KartIDs[kartIndex];
+                }
             } else {
-                characterSelect3D->setCharacterStatus(i, j, status);
-                characterSelect3D->setCharacter(i, j, characterID + 1, characterTranslations[j],
-                        characterRotations[j], characterScales[j]);
+                status = 2;
+            }
+            if (kartID != KartID::Count) {
+                characterSelect3D->setKart(i, kartID, kartTranslation, kartRotation, kartScale);
+            }
+            for (u32 j = 0; j < 2; j++) {
+                u32 characterID = m_characterIDs[i][j];
+                if (characterID == CharacterID::Count || m_spinFrame != 0) {
+                    characterSelect3D->setCharacterStatus(i, j, 0);
+                } else {
+                    characterSelect3D->setCharacterStatus(i, j, status);
+                    characterSelect3D->setCharacter(i, j, characterID + 1, characterTranslations[j],
+                            characterRotations[j], characterScales[j]);
+                }
             }
         }
     }
@@ -394,7 +397,9 @@ void SceneCharacterSelect::calc() {
 
     OnlineBackground::Instance()->calc();
     MenuTitleLine::Instance()->calc();
-    characterSelect3D->calc();
+    if (characterSelect3D) {
+        characterSelect3D->calc();
+    }
 
     m_mainAnmTextureSRTKeyFrame = (m_mainAnmTextureSRTKeyFrame + 1) % 120;
     m_mainAnmColorFrame = (m_mainAnmColorFrame + 1) % 120;
@@ -500,6 +505,12 @@ void SceneCharacterSelect::calc() {
 }
 
 void SceneCharacterSelect::slideIn() {
+    m_heap = JKRExpHeap::Create(640 * 1024, m_parentHeap, false);
+    m_heap->becomeCurrentHeap();
+    CharacterSelect3D::Create(m_heap);
+    m_parentHeap->becomeCurrentHeap();
+    CharacterSelect3D::Instance()->init();
+
     MenuTitleLine::Instance()->drop(MenuTitleLine::Title::SelectCharacter);
     m_mainAnmTransformFrame = 0;
     if (m_statusCount == 2 || m_statusCount == 3) {
@@ -544,6 +555,8 @@ void SceneCharacterSelect::spin() {
 }
 
 void SceneCharacterSelect::nextScene() {
+    CharacterSelect3D::Destroy();
+    m_heap->destroy();
     m_state = &SceneCharacterSelect::stateNextScene;
 }
 
@@ -699,6 +712,20 @@ void SceneCharacterSelect::stateIdle() {
             pane->m_isVisible = m_kartIDs[i] != KartID::Count;
         }
     }
+
+    u32 selectedKartCount = countSelectedKarts();
+    if (selectedKartCount != m_statusCount) {
+        return;
+    }
+
+    for (u32 i = 0; i < m_statusCount; i++) {
+        if (!CharacterSelect3D::Instance()->isNext(i)) {
+            return;
+        }
+    }
+
+    m_nextScene = SceneType::MapSelect;
+    slideOut();
 }
 
 void SceneCharacterSelect::stateSpin() {

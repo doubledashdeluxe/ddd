@@ -4,10 +4,13 @@
 
 class JKRHeap {
 public:
+    void becomeCurrentHeap();
+    void destroy();
     void *alloc(u32 size, s32 align);
     void free(void *ptr);
     void freeAll();
     s32 resize(void *ptr, u32 size);
+    u32 getFreeSize();
 
     void *getStartAddr() const;
     void *getEndAddr() const;

@@ -14,15 +14,16 @@ public:
         LanEntry = 0x8,
         Secret = 0x9,
         None = 0xb,
-        MapSelect = 0xd,        // Moved
-        HowManyPlayers = 0xe,   // Added
-        NameSelect = 0xf,       // Added
-        TandemSelect = 0x10,    // Added
-        ServerSelect = 0x11,    // Added
-        ModeSelect = 0x12,      // Added
-        FormatSelect = 0x13,    // Added
-        CharacterSelect = 0x14, // Added
-        Count = 0x15,
+        HowManyPlayers = 0xd,   // Added
+        NameSelect = 0xe,       // Added
+        TandemSelect = 0xf,     // Added
+        ServerSelect = 0x10,    // Added
+        ModeSelect = 0x11,      // Added
+        FormatSelect = 0x12,    // Added
+        CharacterSelect = 0x13, // Added
+        MapSelect = 0x14,       // Moved
+        CoursePoll = 0x15,      // Added
+        Count = 0x16,
     };
 
 private:

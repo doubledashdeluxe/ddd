@@ -4,6 +4,8 @@
 
 class JKRSolidHeap : public JKRHeap {
 public:
+    s32 adjustSize();
+
     static JKRSolidHeap *Create(size_t size, JKRHeap *parent, bool errorFlag);
 
 private:

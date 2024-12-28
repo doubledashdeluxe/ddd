@@ -42,6 +42,8 @@ private:
 
     static u32 GetCharacterIndex(u32 characterID);
 
+    JKRHeap *m_parentHeap;
+    JKRHeap *m_heap;
     State m_state;
     u32 m_padCount;
     u32 m_statusCount;

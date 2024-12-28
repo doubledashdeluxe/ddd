@@ -14,6 +14,7 @@ public:
             Title = 0x0,
             Menu = 0x1,
             Option = 0x2,
+            CourseSelect = 0x3,
             MapSelect = 0x4,
             GhostData = 0x6,
             LanEntry = 0x7,
@@ -41,6 +42,8 @@ public:
     static SceneFactory *Instance();
 
 private:
+    void loadLocalizedArchive(u32 type, const char *name, JKRHeap *heap);
+
     JKRArchive *m_archives[0xf];
     u8 _3c[0x40 - 0x3c];
     BattleName2D *m_battleName2D;
