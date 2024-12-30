@@ -259,6 +259,7 @@
 801449d0 setY__11Race2DParamFf
 801449d8 setX__11Race2DParamFf
 80144c14 init__6Race2DFv
+8014d1e8 GetCornerColors__6Race2DFUl
 8014e640 getMapPos__6Race2DFlRC5Vec3fR5Vec2f
 8014efd8 getItemInfo__6Race2DFlllRfRfRf
 80150d18 getStartCharPos__6Race2DFllRf

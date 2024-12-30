@@ -15,6 +15,7 @@ public:
     void setMinimapConfig(const MinimapConfig &minimapConfig);
 
     static Race2D *Instance();
+    static J2DPicture::CornerColors GetCornerColors(u32 kartIndex);
 
 private:
     void REPLACED(getMapPos)(s32 r4, const Vec3f &pos, Vec2f &mapPos);

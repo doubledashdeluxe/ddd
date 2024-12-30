@@ -30,10 +30,10 @@ private:
     void moveDown();
     void scrollUp();
     void scrollDown();
+    void spin();
     void selectIn();
     void selectOut();
     void select();
-    void spin();
     void nextScene();
     void nextBattle();
 
@@ -44,10 +44,10 @@ private:
     void stateMoveDown();
     void stateScrollUp();
     void stateScrollDown();
+    void stateSpin();
     void stateSelect();
     void stateSelectIn();
     void stateSelectOut();
-    void stateSpin();
     void stateNextScene();
     void stateNextBattle();
 
@@ -112,6 +112,6 @@ private:
     Array<UniquePtr<ResTIMG>, 12> m_nameImages;
     OSMessageQueue m_queue;
     Array<OSMessage, 1> m_messages;
-    Array<u8, 64 * 1024> m_loadStack;
+    UniquePtr<u8[]> m_loadStack;
     OSThread m_loadThread;
 };

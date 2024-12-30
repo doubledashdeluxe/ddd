@@ -10,6 +10,11 @@ extern "C" {
 
 class J2DPicture : public J2DPane {
 public:
+    struct CornerColors {
+        u8 _00[0x10 - 0x00];
+    };
+    size_assert(CornerColors, 0x10);
+
     J2DPicture();
     ~J2DPicture() override;
     u32 getTypeID() const override;
@@ -69,6 +74,12 @@ public:
 private:
     u8 _100[0x112 - 0x100];
     TVec2<s16> m_texCoords[4];
-    u8 _122[0x168 - 0x122];
+    u8 _122[0x150 - 0x122];
+
+public:
+    CornerColors m_cornerColors;
+
+private:
+    u8 _160[0x168 - 0x160];
 };
 size_assert(J2DPicture, 0x168);

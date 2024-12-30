@@ -132,10 +132,11 @@ void SceneMapSelect::init() {
     }
 
     SequenceInfo &sequenceInfo = SequenceInfo::Instance();
-    if (RaceInfo::Instance().isRace()) {
-        m_mapCount = CourseManager::Instance()->raceCourseCount(sequenceInfo.m_packIndex);
+    CourseManager *courseManager = CourseManager::Instance();
+    if (raceInfo.isRace()) {
+        m_mapCount = courseManager->raceCourseCount(sequenceInfo.m_packIndex);
     } else {
-        m_mapCount = CourseManager::Instance()->battleCourseCount(sequenceInfo.m_packIndex);
+        m_mapCount = courseManager->battleCourseCount(sequenceInfo.m_packIndex);
     }
     m_mapIndex = 0;
     if (sequenceInfo.m_fromPause) {
@@ -278,7 +279,8 @@ void SceneMapSelect::calc() {
 }
 
 void SceneMapSelect::slideIn() {
-    if (RaceInfo::Instance().isRace()) {
+    RaceInfo &raceInfo = RaceInfo::Instance();
+    if (raceInfo.isRace()) {
         MenuTitleLine::Instance()->drop(MenuTitleLine::Title::SelectCourse);
     } else {
         MenuTitleLine::Instance()->drop(MenuTitleLine::Title::SelectMap);
@@ -291,7 +293,7 @@ void SceneMapSelect::slideIn() {
         m_gridAnmTransformFrame = 10;
     }
     m_thumbnailAnmTevRegKeyFrames.fill(1);
-    m_nameAnmTransformFrame = RaceInfo::Instance().isRace() ? 0 : 6;
+    m_nameAnmTransformFrame = raceInfo.isRace() ? 0 : 6;
     for (u32 i = 0; i < m_mapAlphas.count(); i++) {
         u32 mapIndex = m_rowIndex * 3 + i;
         if (i < 6 && mapIndex < m_mapCount) {
@@ -303,8 +305,9 @@ void SceneMapSelect::slideIn() {
     m_arrowAlphas.fill(0);
     m_currMapIndices.fill(UINT32_MAX);
     OSInitMessageQueue(&m_queue, m_messages.values(), m_messages.count());
-    OSCreateThread(&m_loadThread, Load, this, m_loadStack.values() + m_loadStack.count(),
-            m_loadStack.count(), 25, 0);
+    u32 stackSize = 64 * 1024;
+    m_loadStack.reset(new (m_heap, 0x8) u8[stackSize]);
+    OSCreateThread(&m_loadThread, Load, this, m_loadStack.get() + stackSize, stackSize, 25, 0);
     OSResumeThread(&m_loadThread);
     refreshMaps();
     m_state = &SceneMapSelect::stateSlideIn;
@@ -356,6 +359,15 @@ void SceneMapSelect::scrollDown() {
     m_state = &SceneMapSelect::stateScrollDown;
 }
 
+void SceneMapSelect::spin() {
+    m_spinFrame = 1;
+    refreshSpin();
+    if (m_gridAnmTransformFrame > 21) {
+        m_gridAnmTransformFrame--;
+    }
+    m_state = &SceneMapSelect::stateSpin;
+}
+
 void SceneMapSelect::selectIn() {
     m_selectAnmTransformFrame = 1;
     if (m_mapIndex / 3 == m_rowIndex) {
@@ -369,9 +381,7 @@ void SceneMapSelect::selectIn() {
     }
     for (u32 i = 0; i < m_thumbnailAnmTevRegKeyFrames.count(); i++) {
         u32 mapIndex = m_rowIndex * 3 + i;
-        if (mapIndex != m_mapIndex) {
-            m_thumbnailAnmTevRegKeyFrames[i] = 0;
-        }
+        m_thumbnailAnmTevRegKeyFrames[i] = mapIndex == m_mapIndex;
     }
     showMaps(0);
     m_state = &SceneMapSelect::stateSelectIn;
@@ -390,15 +400,6 @@ void SceneMapSelect::selectOut() {
 
 void SceneMapSelect::select() {
     m_state = &SceneMapSelect::stateSelect;
-}
-
-void SceneMapSelect::spin() {
-    m_spinFrame = 1;
-    refreshSpin();
-    if (m_gridAnmTransformFrame > 21) {
-        m_gridAnmTransformFrame--;
-    }
-    m_state = &SceneMapSelect::stateSpin;
 }
 
 void SceneMapSelect::nextScene() {
@@ -451,6 +452,7 @@ void SceneMapSelect::stateSlideOut() {
     } else {
         if (OSIsThreadTerminated(&m_loadThread)) {
             OSDetachThread(&m_loadThread);
+            m_loadStack.reset();
             if (m_nextScene == SceneType::None) {
                 nextBattle();
             } else {
@@ -547,6 +549,28 @@ void SceneMapSelect::stateScrollDown() {
     }
 }
 
+void SceneMapSelect::stateSpin() {
+    if (m_gridAnmTransformFrame > 21) {
+        m_gridAnmTransformFrame--;
+    }
+    hideArrows();
+    m_spinFrame++;
+    const JUTGamePad::CButton &button = KartGamePad::GamePad(0)->button();
+    if (((button.level() & PAD_TRIGGER_R) && (button.level() & PAD_TRIGGER_L)) ||
+            m_spinFrame < 30) {
+        if (m_spinFrame % 5 == 0) {
+            m_mapIndex = m_spinMapIndex;
+            m_rowIndex = m_spinRowIndex;
+            refreshSpin();
+            GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CURSOL);
+        }
+        showMaps(0);
+    } else {
+        GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_RANDOM_KETTEI);
+        selectIn();
+    }
+}
+
 void SceneMapSelect::stateSelectIn() {
     m_selectAnmTransformFrame++;
     if (m_mapIndex / 3 == m_rowIndex) {
@@ -598,28 +622,6 @@ void SceneMapSelect::stateSelect() {
     } else if (button.risingEdge() & PAD_BUTTON_B) {
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CANCEL_LITTLE);
         selectOut();
-    }
-}
-
-void SceneMapSelect::stateSpin() {
-    if (m_gridAnmTransformFrame > 21) {
-        m_gridAnmTransformFrame--;
-    }
-    hideArrows();
-    m_spinFrame++;
-    const JUTGamePad::CButton &button = KartGamePad::GamePad(0)->button();
-    if (((button.level() & PAD_TRIGGER_R) && (button.level() & PAD_TRIGGER_L)) ||
-            m_spinFrame < 30) {
-        if (m_spinFrame % 5 == 0) {
-            m_mapIndex = m_spinMapIndex;
-            m_rowIndex = m_spinRowIndex;
-            refreshSpin();
-            GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CURSOL);
-        }
-        showMaps(0);
-    } else {
-        GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_RANDOM_KETTEI);
-        selectIn();
     }
 }
 
