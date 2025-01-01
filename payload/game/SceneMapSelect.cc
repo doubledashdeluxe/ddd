@@ -5,6 +5,7 @@
 #include "game/MenuBackground.hh"
 #include "game/MenuTitleLine.hh"
 #include "game/OnlineBackground.hh"
+#include "game/OnlineTimer.hh"
 #include "game/RaceInfo.hh"
 #include "game/RaceMode.hh"
 #include "game/ResMgr.hh"
@@ -156,7 +157,8 @@ void SceneMapSelect::init() {
 void SceneMapSelect::draw() {
     m_graphContext->setViewport();
 
-    if (SequenceInfo::Instance().m_isOnline) {
+    SequenceInfo &sequenceInfo = SequenceInfo::Instance();
+    if (sequenceInfo.m_isOnline) {
         OnlineBackground::Instance()->draw(m_graphContext);
     } else {
         MenuBackground::Instance()->draw(m_graphContext);
@@ -166,6 +168,10 @@ void SceneMapSelect::draw() {
     m_mainScreen.draw(0.0f, 0.0f, m_graphContext);
     m_gridScreen.draw(0.0f, 0.0f, m_graphContext);
     m_arrowScreen.draw(0.0f, 0.0f, m_graphContext);
+
+    if (sequenceInfo.m_isOnline) {
+        OnlineTimer::Instance()->draw(m_graphContext);
+    }
 }
 
 void SceneMapSelect::calc() {
@@ -206,7 +212,8 @@ void SceneMapSelect::calc() {
         }
     }
 
-    if (SequenceInfo::Instance().m_isOnline) {
+    SequenceInfo &sequenceInfo = SequenceInfo::Instance();
+    if (sequenceInfo.m_isOnline) {
         OnlineBackground::Instance()->calc();
     } else {
         MenuBackground::Instance()->calc();
@@ -276,6 +283,10 @@ void SceneMapSelect::calc() {
         m_mapScreens[i].animationMaterials();
     }
     m_arrowScreen.animation();
+
+    if (sequenceInfo.m_isOnline) {
+        OnlineTimer::Instance()->calc();
+    }
 }
 
 void SceneMapSelect::slideIn() {
@@ -440,14 +451,19 @@ void SceneMapSelect::stateSlideOut() {
     OSSendMessage(&m_queue, reinterpret_cast<void *>(msg), OS_MESSAGE_NOBLOCK);
     if (m_mainAnmTransformFrame > 0) {
         m_mainAnmTransformFrame--;
-        if (m_mainAnmTransformFrame <= 10) {
+        if (m_mainAnmTransformFrame >= 10) {
+            hideArrows();
+        } else {
             if (m_mapIndex / 3 == m_rowIndex) {
                 m_gridAnmTransformFrame = 11 + m_mainAnmTransformFrame;
             } else {
                 m_gridAnmTransformFrame = 10 - m_mainAnmTransformFrame;
             }
-        } else {
-            hideArrows();
+        }
+        if (SequenceInfo::Instance().m_isOnline) {
+            if (m_nextScene != SceneType::CharacterSelect) {
+                OnlineTimer::Instance()->setAlpha(m_mainAnmTransformFrame * 17);
+            }
         }
     } else {
         if (OSIsThreadTerminated(&m_loadThread)) {
@@ -463,12 +479,13 @@ void SceneMapSelect::stateSlideOut() {
 }
 
 void SceneMapSelect::stateIdle() {
+    SequenceInfo &sequenceInfo = SequenceInfo::Instance();
     const JUTGamePad::CButton &button = KartGamePad::GamePad(0)->button();
-    if (button.risingEdge() & PAD_BUTTON_A) {
+    if (button.risingEdge() & PAD_BUTTON_A ||
+            (sequenceInfo.m_isOnline && OnlineTimer::Instance()->hasExpired())) {
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE_LITTLE);
         selectIn();
     } else if (button.risingEdge() & PAD_BUTTON_B) {
-        SequenceInfo &sequenceInfo = SequenceInfo::Instance();
         m_nextScene = sequenceInfo.m_isOnline ? SceneType::CharacterSelect : SceneType::PackSelect;
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CANCEL_LITTLE);
         slideOut();
@@ -555,9 +572,17 @@ void SceneMapSelect::stateSpin() {
     }
     hideArrows();
     m_spinFrame++;
-    const JUTGamePad::CButton &button = KartGamePad::GamePad(0)->button();
-    if (((button.level() & PAD_TRIGGER_R) && (button.level() & PAD_TRIGGER_L)) ||
-            m_spinFrame < 30) {
+    bool isSpinning = m_spinFrame < 30;
+    if (!isSpinning) {
+        const JUTGamePad::CButton &button = KartGamePad::GamePad(0)->button();
+        isSpinning = button.level() & PAD_TRIGGER_R && button.level() & PAD_TRIGGER_L;
+    }
+    if (SequenceInfo::Instance().m_isOnline) {
+        if (OnlineTimer::Instance()->hasExpired()) {
+            isSpinning = false;
+        }
+    }
+    if (isSpinning) {
         if (m_spinFrame % 5 == 0) {
             m_mapIndex = m_spinMapIndex;
             m_rowIndex = m_spinRowIndex;
@@ -601,7 +626,8 @@ void SceneMapSelect::stateSelect() {
     SequenceInfo &sequenceInfo = SequenceInfo::Instance();
     CourseManager *courseManager = CourseManager::Instance();
     const JUTGamePad::CButton &button = KartGamePad::GamePad(0)->button();
-    if (button.risingEdge() & PAD_BUTTON_A) {
+    if (button.risingEdge() & PAD_BUTTON_A ||
+            (sequenceInfo.m_isOnline && OnlineTimer::Instance()->hasExpired())) {
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE);
         if (sequenceInfo.m_isOnline) {
             m_nextScene = SceneType::CoursePoll;

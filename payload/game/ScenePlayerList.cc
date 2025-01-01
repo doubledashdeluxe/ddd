@@ -5,6 +5,7 @@
 #include "game/KartGamePad.hh"
 #include "game/MenuTitleLine.hh"
 #include "game/OnlineBackground.hh"
+#include "game/OnlineTimer.hh"
 #include "game/Race2D.hh"
 #include "game/SequenceApp.hh"
 
@@ -37,12 +38,20 @@ ScenePlayerList::ScenePlayerList(JKRArchive *archive, JKRHeap *heap) : Scene(arc
 
     m_mainAnmTransform = J2DAnmLoaderDataBase::Load("PlayerList.bck", m_archive);
     m_mainScreen.setAnimation(m_mainAnmTransform);
+
+    OnlineTimer::Create(m_archive);
 }
 
 ScenePlayerList::~ScenePlayerList() {}
 
 void ScenePlayerList::init() {
-    slideIn();
+    if (SequenceApp::Instance()->prevScene() == SceneType::CharacterSelect &&
+            OnlineTimer::Instance()->hasExpired()) {
+        m_nextScene = SceneType::CharacterSelect;
+        nextScene();
+    } else {
+        slideIn();
+    }
 }
 
 void ScenePlayerList::draw() {
@@ -52,6 +61,8 @@ void ScenePlayerList::draw() {
     MenuTitleLine::Instance()->draw(m_graphContext);
 
     m_mainScreen.draw(0.0f, 0.0f, m_graphContext);
+
+    OnlineTimer::Instance()->draw(m_graphContext);
 }
 
 void ScenePlayerList::calc() {
@@ -66,6 +77,8 @@ void ScenePlayerList::calc() {
     for (u32 i = 0; i < m_playerScreens.count(); i++) {
         m_playerScreens[i].animationMaterials();
     }
+
+    OnlineTimer::Instance()->calc();
 }
 
 void ScenePlayerList::slideIn() {
@@ -127,6 +140,15 @@ void ScenePlayerList::nextScene() {
 void ScenePlayerList::stateSlideIn() {
     if (m_mainAnmTransformFrame < 20) {
         m_mainAnmTransformFrame++;
+        if (SequenceApp::Instance()->prevScene() != SceneType::CharacterSelect) {
+            OnlineTimer *onlineTimer = OnlineTimer::Instance();
+            if (m_mainAnmTransformFrame == 1) {
+                onlineTimer->init(30 * 60);
+            }
+            if (m_mainAnmTransformFrame <= 15) {
+                onlineTimer->setAlpha(m_mainAnmTransformFrame * 17);
+            }
+        }
     } else {
         idle();
     }
@@ -135,6 +157,11 @@ void ScenePlayerList::stateSlideIn() {
 void ScenePlayerList::stateSlideOut() {
     if (m_mainAnmTransformFrame > 0) {
         m_mainAnmTransformFrame--;
+        if (m_nextScene != SceneType::CharacterSelect) {
+            if (m_mainAnmTransformFrame <= 15) {
+                OnlineTimer::Instance()->setAlpha(m_mainAnmTransformFrame * 17);
+            }
+        }
     } else {
         nextScene();
     }
@@ -142,7 +169,7 @@ void ScenePlayerList::stateSlideOut() {
 
 void ScenePlayerList::stateIdle() {
     const JUTGamePad::CButton &button = KartGamePad::GamePad(0)->button();
-    if (button.risingEdge() & PAD_BUTTON_A) {
+    if (button.risingEdge() & PAD_BUTTON_A || OnlineTimer::Instance()->hasExpired()) {
         m_nextScene = SceneType::CharacterSelect;
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE_LITTLE);
         slideOut();

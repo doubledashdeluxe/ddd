@@ -4,6 +4,7 @@
 #include "game/MenuBackground.hh"
 #include "game/MenuTitleLine.hh"
 #include "game/OnlineBackground.hh"
+#include "game/OnlineTimer.hh"
 #include "game/SceneFactory.hh"
 #include "game/System.hh"
 #include "game/SystemRecord.hh"
@@ -61,8 +62,9 @@ SequenceApp::~SequenceApp() {
         m_scenes[i] = nullptr;
     }
     SceneFactory::Destroy();
-    MenuBackground::Destroy();
+    OnlineTimer::Destroy();
     OnlineBackground::Destroy();
+    MenuBackground::Destroy();
     MenuTitleLine::Destroy();
     CharacterSelect3D::Destroy();
     s_nextScene = SceneType::None;
@@ -98,8 +100,9 @@ void SequenceApp::freeForMovieApp() {
     m_loadFlag = 0;
     m_scene = nullptr;
     SceneFactory::Destroy();
-    MenuBackground::Destroy();
+    OnlineTimer::Destroy();
     OnlineBackground::Destroy();
+    MenuBackground::Destroy();
     MenuTitleLine::Destroy();
     CharacterSelect3D::Destroy();
     m_heap->freeAll();

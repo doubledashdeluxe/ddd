@@ -7,6 +7,7 @@
 #include "game/MenuTitleLine.hh"
 #include "game/OnlineBackground.hh"
 #include "game/OnlineInfo.hh"
+#include "game/OnlineTimer.hh"
 #include "game/RaceInfo.hh"
 #include "game/SequenceApp.hh"
 #include "game/SequenceInfo.hh"
@@ -203,7 +204,13 @@ void SceneCharacterSelect::init() {
     }
     m_spinFrame = 0;
 
-    slideIn();
+    if (SequenceApp::Instance()->prevScene() == SceneType::MapSelect &&
+            OnlineTimer::Instance()->hasExpired()) {
+        m_nextScene = SceneType::MapSelect;
+        nextScene();
+    } else {
+        slideIn();
+    }
 }
 
 void SceneCharacterSelect::draw() {
@@ -261,6 +268,8 @@ void SceneCharacterSelect::draw() {
     if (m_statusCount == 1) {
         m_extraScreen.draw(0.0f, 0.0f, m_graphContext);
     }
+
+    OnlineTimer::Instance()->draw(m_graphContext);
 }
 
 void SceneCharacterSelect::calc() {
@@ -502,6 +511,8 @@ void SceneCharacterSelect::calc() {
     if (m_statusCount == 1) {
         m_extraScreen.animation();
     }
+
+    OnlineTimer::Instance()->calc();
 }
 
 void SceneCharacterSelect::slideIn() {
@@ -555,8 +566,6 @@ void SceneCharacterSelect::spin() {
 }
 
 void SceneCharacterSelect::nextScene() {
-    CharacterSelect3D::Destroy();
-    m_heap->destroy();
     m_state = &SceneCharacterSelect::stateNextScene;
 }
 
@@ -575,6 +584,8 @@ void SceneCharacterSelect::stateSlideOut() {
         m_mainAnmTransformFrame--;
         m_colAnmTransformFrames.fill(Min<u32>(m_mainAnmTransformFrame, 18));
     } else {
+        CharacterSelect3D::Destroy();
+        m_heap->destroy();
         nextScene();
     }
 }
@@ -588,7 +599,7 @@ void SceneCharacterSelect::stateIdle() {
 
         u32 statusIndex = m_statuses[i];
         const JUTGamePad::CButton &button = KartGamePad::GamePad(i)->button();
-        if (button.risingEdge() & PAD_BUTTON_A) {
+        if (button.risingEdge() & PAD_BUTTON_A || OnlineTimer::Instance()->hasExpired()) {
             selectCharacter(i);
             selectKart(statusIndex);
         } else if (button.risingEdge() & PAD_BUTTON_B) {
@@ -739,6 +750,9 @@ void SceneCharacterSelect::stateSpin() {
                 break;
             }
         }
+    }
+    if (OnlineTimer::Instance()->hasExpired()) {
+        isSpinning = false;
     }
 
     if (!isSpinning) {
