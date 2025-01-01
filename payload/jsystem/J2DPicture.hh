@@ -57,7 +57,7 @@ public:
     virtual void vf_120();
     virtual void vf_124();
     virtual void vf_128();
-    virtual void vf_12c();
+    virtual bool setWhite(GXColor white);
     virtual bool setBlackWhite(GXColor black, GXColor white);
     virtual void vf_134();
     virtual void vf_138();

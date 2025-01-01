@@ -20,10 +20,11 @@ public:
         ServerSelect = 0x10,    // Added
         ModeSelect = 0x11,      // Added
         FormatSelect = 0x12,    // Added
-        CharacterSelect = 0x13, // Added
-        MapSelect = 0x14,       // Moved
-        CoursePoll = 0x15,      // Added
-        Count = 0x16,
+        PlayerList = 0x13,      // Added
+        CharacterSelect = 0x14, // Added
+        MapSelect = 0x15,       // Moved
+        CoursePoll = 0x16,      // Added
+        Count = 0x17,
     };
 
 private:

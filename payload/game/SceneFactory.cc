@@ -10,6 +10,7 @@
 #include "game/SceneNameSelect.hh"
 #include "game/SceneOption.hh"
 #include "game/ScenePackSelect.hh"
+#include "game/ScenePlayerList.hh"
 #include "game/SceneServerSelect.hh"
 #include "game/SceneTandemSelect.hh"
 #include "game/SceneTitle.hh"
@@ -55,6 +56,9 @@ void SceneFactory::loadData(s32 sceneType, JKRHeap *heap) {
     case SceneType::FormatSelect:
         REPLACED(loadData)(SceneType::Menu, heap);
         return;
+    case SceneType::PlayerList:
+        REPLACED(loadData)(SceneType::LanEntry, heap);
+        return;
     case SceneType::CharacterSelect:
         REPLACED(loadData)(SceneType::Menu, heap);
         return;
@@ -63,6 +67,10 @@ void SceneFactory::loadData(s32 sceneType, JKRHeap *heap) {
         REPLACED(loadData)(SceneType::PackSelect, heap);
         loadLocalizedArchive(ArchiveType::CourseSelect, "CourseSelect", heap);
         loadLocalizedArchive(ArchiveType::GhostData, "GhostData", heap);
+        return;
+    case SceneType::CoursePoll:
+        REPLACED(loadData)(SceneType::LanEntry, heap);
+        loadLocalizedArchive(ArchiveType::CourseSelect, "CourseSelect", heap);
         return;
     }
 
@@ -108,6 +116,10 @@ Scene *SceneFactory::createScene(s32 sceneType, JKRHeap *heap) {
     case SceneType::FormatSelect:
         sysDebug->setHeapGroup("FormatSelect", heap);
         scene = new (heap, 0x0) SceneFormatSelect(m_archives[ArchiveType::Menu], heap);
+        break;
+    case SceneType::PlayerList:
+        sysDebug->setHeapGroup("PlayerList", heap);
+        scene = new (heap, 0x0) ScenePlayerList(m_archives[ArchiveType::LanEntry], heap);
         break;
     case SceneType::CharacterSelect:
         sysDebug->setHeapGroup("CharacterSelect", heap);

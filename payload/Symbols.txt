@@ -406,6 +406,7 @@
 803b6db0 s_instance__6J3DSys
 
 803bad54 s_instance__12SequenceInfo
+803bb1a0 s_playerNumberColors__6Race2D
 803bb27c s_instance__8RaceInfo
 803bd5c8 s_loaders__6ResMgr
 803bdc2c s_aramResArgs__6ResMgr

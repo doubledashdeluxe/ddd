@@ -188,7 +188,7 @@ void SceneFormatSelect::calc() {
 }
 
 void SceneFormatSelect::slideIn() {
-    if (SequenceApp::Instance()->prevScene() != SceneType::CharacterSelect) {
+    if (SequenceApp::Instance()->prevScene() != SceneType::PlayerList) {
         m_formatIndex = 0;
     }
 
@@ -211,7 +211,7 @@ void SceneFormatSelect::nextScene() {
 }
 
 void SceneFormatSelect::stateSlideIn() {
-    if (m_mainAnmTransformFrame < 15) {
+    if (m_mainAnmTransformFrame < 10) {
         m_mainAnmTransformFrame++;
         m_modeAnmTransformFrame = m_mainAnmTransformFrame;
     } else {
@@ -231,7 +231,7 @@ void SceneFormatSelect::stateSlideOut() {
 void SceneFormatSelect::stateIdle() {
     const JUTGamePad::CButton &button = KartGamePad::GamePad(0)->button();
     if (button.risingEdge() & PAD_BUTTON_A) {
-        m_nextScene = SceneType::CharacterSelect;
+        m_nextScene = SceneType::PlayerList;
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE_LITTLE);
         slideOut();
     } else if (button.risingEdge() & PAD_BUTTON_B) {

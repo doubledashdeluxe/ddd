@@ -15,7 +15,8 @@ public:
     void setMinimapConfig(const MinimapConfig &minimapConfig);
 
     static Race2D *Instance();
-    static J2DPicture::CornerColors GetCornerColors(u32 kartIndex);
+    static GXColor GetPlayerNumberColor(u32 index);
+    static J2DPicture::CornerColors GetCornerColors(u32 index);
 
 private:
     void REPLACED(getMapPos)(s32 r4, const Vec3f &pos, Vec2f &mapPos);
@@ -40,5 +41,6 @@ private:
     u8 _1124[0x4ec4 - 0x1124];
 
     static Race2D *s_instance;
+    static GXColor s_playerNumberColors[16];
 };
 size_assert(Race2D, 0x4ec4);

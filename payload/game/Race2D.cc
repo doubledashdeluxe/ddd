@@ -66,6 +66,10 @@ Race2D *Race2D::Instance() {
     return s_instance;
 }
 
+GXColor Race2D::GetPlayerNumberColor(u32 index) {
+    return s_playerNumberColors[index];
+}
+
 void Race2D::getMapPos(s32 r4, const Vec3f &pos, Vec2f &mapPos) {
     REPLACED(getMapPos)(r4, pos, mapPos);
 

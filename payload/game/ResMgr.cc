@@ -96,6 +96,10 @@ void ResMgr::SwapForRace(JKRHeap *heap) {
     s_swapState = SwapState::Race;
 }
 
+JKRArchive *ResMgr::GetArchive(u32 archiveID) {
+    return s_loaders[archiveID];
+}
+
 void *ResMgr::GetPtr(u32 courseDataID) {
     if (courseDataID == CourseDataID::MapBti && s_course && s_course->minimapConfig()) {
         // Hack: this should be done in the Race2D constructor, but it's just way too long

@@ -331,10 +331,10 @@ void SceneCoursePoll::nextScene() {
 }
 
 void SceneCoursePoll::stateSlideIn() {
-    if (m_mainAnmTransformFrame < 15) {
+    if (m_mainAnmTransformFrame < 10) {
         m_mainAnmTransformFrame++;
-        m_gridAnmTransformFrame = Min<u32>(m_mainAnmTransformFrame, 10);
-        m_playerCountAlpha = (Max<u32>(m_mainAnmTransformFrame, 10) - 10) * 51;
+        m_gridAnmTransformFrame = m_mainAnmTransformFrame;
+        m_playerCountAlpha = (Max<u32>(m_mainAnmTransformFrame, 5) - 5) * 51;
     } else {
         idle();
     }
@@ -345,8 +345,8 @@ void SceneCoursePoll::stateSlideOut() {
     OSSendMessage(&m_queue, reinterpret_cast<void *>(msg), OS_MESSAGE_NOBLOCK);
     if (m_mainAnmTransformFrame > 0) {
         m_mainAnmTransformFrame--;
-        m_gridAnmTransformFrame = Min<u32>(m_mainAnmTransformFrame, 10);
-        m_playerCountAlpha = (Max<u32>(m_mainAnmTransformFrame, 10) - 10) * 51;
+        m_gridAnmTransformFrame = m_mainAnmTransformFrame;
+        m_playerCountAlpha = (Max<u32>(m_mainAnmTransformFrame, 5) - 5) * 51;
     } else {
         if (OSIsThreadTerminated(&m_loadThread)) {
             OSDetachThread(&m_loadThread);
