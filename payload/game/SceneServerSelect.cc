@@ -237,10 +237,12 @@ void SceneServerSelect::stateIdle() {
     const JUTGamePad::CButton &button = KartGamePad::GamePad(0)->button();
     if (button.risingEdge() & PAD_BUTTON_A) {
         m_nextScene = SceneType::ModeSelect;
+        GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE_LITTLE);
         slideOut();
     } else if (button.risingEdge() & PAD_BUTTON_B) {
         u8 padCount = SequenceInfo::Instance().m_padCount;
         m_nextScene = padCount == 1 ? SceneType::NameSelect : SceneType::TandemSelect;
+        GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CANCEL_LITTLE);
         OnlineInfo::Instance().m_hasIDs = false;
         slideOut();
     } else if (button.repeat() & JUTGamePad::PAD_MSTICK_UP) {
