@@ -131,6 +131,7 @@ target_ccflags = {
     ],
 }
 common_ncflags = [
+    '-fno-sanitize-recover=all',
     '-fsanitize=undefined',
     '-isystem', '.',
     '-isystem', 'vendor',
@@ -145,6 +146,7 @@ common_ncflags = [
 common_nccflags = [
     '-D', 'lest_FEATURE_AUTO_REGISTER',
     '-fcheck-new',
+    '-fno-sanitize-recover=all',
     '-fsanitize=undefined',
     '-isystem', '.',
     '-isystem', 'vendor',
