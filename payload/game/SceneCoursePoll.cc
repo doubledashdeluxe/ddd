@@ -80,7 +80,11 @@ SceneCoursePoll::SceneCoursePoll(JKRArchive *archive, JKRHeap *heap)
     m_courseNameAnmTevRegKeyFrames.fill(0);
 }
 
-SceneCoursePoll::~SceneCoursePoll() {}
+SceneCoursePoll::~SceneCoursePoll() {
+    uintptr_t msg = false;
+    OSSendMessage(&m_queue, reinterpret_cast<void *>(msg), OS_MESSAGE_NOBLOCK);
+    OSJoinThread(&m_loadThread, nullptr);
+}
 
 void SceneCoursePoll::init() {
     J2DPicture *iconPicture = m_mainScreen.search("BtlPict")->downcast<J2DPicture>();

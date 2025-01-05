@@ -107,7 +107,11 @@ SceneMapSelect::SceneMapSelect(JKRArchive *archive, JKRHeap *heap)
     m_arrowAnmTransformFrame = 0;
 }
 
-SceneMapSelect::~SceneMapSelect() {}
+SceneMapSelect::~SceneMapSelect() {
+    uintptr_t msg = false;
+    OSSendMessage(&m_queue, reinterpret_cast<void *>(msg), OS_MESSAGE_NOBLOCK);
+    OSJoinThread(&m_loadThread, nullptr);
+}
 
 void SceneMapSelect::init() {
     J2DPicture *iconPicture = m_mainScreen.search("BtlPict")->downcast<J2DPicture>();
