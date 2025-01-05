@@ -100,6 +100,7 @@
 800abcd4 DVDReadPrio
 800ad9fc DVDReadAbsAsyncPrio
 800ade98 DVDGetDriveStatus
+800ae2f8 DVDCheckDisk
 800af1d8 VIInit
 800af688 VIWaitForRetrace
 800b0378 VIFlush

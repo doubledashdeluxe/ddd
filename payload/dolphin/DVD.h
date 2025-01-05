@@ -1,6 +1,7 @@
 #pragma once
 
 #include <common/Types.h>
+#include <payload/Replace.h>
 
 typedef struct DVDCommandBlock DVDCommandBlock;
 
@@ -56,3 +57,5 @@ s32 DVDConvertPathToEntrynum(const char *path);
 BOOL DVDConvertEntrynumToPath(s32 entrynum, char *path, u32 maxlen);
 
 s32 DVDGetDriveStatus(void);
+BOOL REPLACED(DVDCheckDisk)(void);
+REPLACE BOOL DVDCheckDisk(void);
