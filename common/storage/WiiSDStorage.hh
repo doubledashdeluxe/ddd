@@ -7,17 +7,17 @@ extern "C" {
 struct OSMessageQueue;
 }
 
-class SDStorage
+class WiiSDStorage
     : private IOS::Resource
     , private FATStorage {
 public:
-    SDStorage();
-    ~SDStorage();
+    WiiSDStorage();
+    ~WiiSDStorage();
 
     static void Init();
 
 private:
-    typedef void (SDStorage::*PollCallback)();
+    typedef void (WiiSDStorage::*PollCallback)();
 
     class Ioctl {
     public:
@@ -143,7 +143,7 @@ private:
 
     class CardHandle {
     public:
-        CardHandle(SDStorage *storage);
+        CardHandle(WiiSDStorage *storage);
         ~CardHandle();
         bool ok() const;
 
@@ -151,7 +151,7 @@ private:
         CardHandle(const CardHandle &);
         CardHandle &operator=(const CardHandle &);
 
-        SDStorage *m_storage;
+        WiiSDStorage *m_storage;
     };
 
     void poll() override;
@@ -191,7 +191,7 @@ private:
     static const u32 SectorSize;
 
     static Array<u8, 0x4000> *s_buffer;
-    static SDStorage *s_instance;
+    static WiiSDStorage *s_instance;
     static Mutex *s_mutex;
     static OSMessageQueue s_queue;
 };

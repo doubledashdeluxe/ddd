@@ -13,6 +13,6 @@ private:
 
     static void RunApploader(Context *context);
     static bool RunApploaderFromVirtualDI();
-    static bool RunApploaderFromVirtualDI(bool enableUSB, bool enableSD);
+    static bool RunApploaderFromVirtualDI(bool enableUSB, bool enableWiiSD);
     static void GetLocalizedArchive(const u8 *&archive, size_t &archiveSize);
 };

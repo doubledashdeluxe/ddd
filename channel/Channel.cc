@@ -16,9 +16,9 @@
 #include <common/VI.hh>
 #include <common/VirtualDI.hh>
 #include <common/ios/Resource.hh>
-#include <common/storage/SDStorage.hh>
 #include <common/storage/Storage.hh>
 #include <common/storage/USBStorage.hh>
+#include <common/storage/WiiSDStorage.hh>
 
 extern "C" {
 #include <string.h>
@@ -101,7 +101,7 @@ Channel::PayloadEntryFunc Channel::Run(Context *context) {
     if (!Platform::IsGameCube()) {
         USBStorage::Init();
         USB::Init();
-        SDStorage::Init();
+        WiiSDStorage::Init();
     }
     VirtualDI::Init();
 
@@ -211,19 +211,19 @@ void Channel::RunApploader(Context *context) {
 
 bool Channel::RunApploaderFromVirtualDI() {
     bool enableUSB = !Platform::IsGameCube() && !Platform::IsDolphin();
-    bool enableSD = !Platform::IsGameCube();
-    return RunApploaderFromVirtualDI(enableUSB, enableSD);
+    bool enableWiiSD = !Platform::IsGameCube();
+    return RunApploaderFromVirtualDI(enableUSB, enableWiiSD);
 }
 
-bool Channel::RunApploaderFromVirtualDI(bool enableUSB, bool enableSD) {
+bool Channel::RunApploaderFromVirtualDI(bool enableUSB, bool enableWiiSD) {
     if (enableUSB) {
         USB::Handle usbHandle;
 
-        return RunApploaderFromVirtualDI(false, enableSD);
+        return RunApploaderFromVirtualDI(false, enableWiiSD);
     }
 
-    if (enableSD) {
-        SDStorage sdStorage;
+    if (enableWiiSD) {
+        WiiSDStorage wiiSDStorage;
 
         return RunApploaderFromVirtualDI(enableUSB, false);
     }

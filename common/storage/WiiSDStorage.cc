@@ -1,4 +1,4 @@
-#include "SDStorage.hh"
+#include "WiiSDStorage.hh"
 
 #include "common/Algorithm.hh"
 #include "common/Log.hh"
@@ -9,54 +9,54 @@ extern "C" {
 #include <string.h>
 }
 
-SDStorage::CardHandle::CardHandle(SDStorage *storage) : m_storage(storage) {
+WiiSDStorage::CardHandle::CardHandle(WiiSDStorage *storage) : m_storage(storage) {
     if (!m_storage->sendCommand(Command::Select, 3, ResponseType::R1B, m_storage->m_rca << 16, 0, 0,
                 nullptr, nullptr)) {
         m_storage = nullptr;
     }
 }
 
-SDStorage::CardHandle::~CardHandle() {
+WiiSDStorage::CardHandle::~CardHandle() {
     if (m_storage) {
         m_storage->sendCommand(Command::Select, 3, ResponseType::R1B, 0, 0, 0, nullptr, nullptr);
     }
 }
 
-bool SDStorage::CardHandle::ok() const {
+bool WiiSDStorage::CardHandle::ok() const {
     return m_storage;
 }
 
-u32 SDStorage::priority() {
+u32 WiiSDStorage::priority() {
     return 1;
 }
 
-const char *SDStorage::prefix() {
-    return "sd:";
+const char *WiiSDStorage::prefix() {
+    return "wiisd:";
 }
 
-u32 SDStorage::sectorSize() {
+u32 WiiSDStorage::sectorSize() {
     return SectorSize;
 }
 
-bool SDStorage::read(u32 firstSector, u32 sectorCount, void *buffer) {
+bool WiiSDStorage::read(u32 firstSector, u32 sectorCount, void *buffer) {
     return transfer(false, firstSector, sectorCount, buffer);
 }
 
-bool SDStorage::write(u32 firstSector, u32 sectorCount, const void *buffer) {
+bool WiiSDStorage::write(u32 firstSector, u32 sectorCount, const void *buffer) {
     return transfer(true, firstSector, sectorCount, const_cast<void *>(buffer));
 }
 
-bool SDStorage::erase(u32 /* firstSector */, u32 /* sectorCount */) {
+bool WiiSDStorage::erase(u32 /* firstSector */, u32 /* sectorCount */) {
     // TODO implement?
     return true;
 }
 
-bool SDStorage::sync() {
+bool WiiSDStorage::sync() {
     // TODO implement?
     return true;
 }
 
-bool SDStorage::transfer(bool isWrite, u32 firstSector, u32 sectorCount, void *buffer) {
+bool WiiSDStorage::transfer(bool isWrite, u32 firstSector, u32 sectorCount, void *buffer) {
     assert(buffer);
 
     CardHandle cardHandle(this);
@@ -91,7 +91,7 @@ bool SDStorage::transfer(bool isWrite, u32 firstSector, u32 sectorCount, void *b
     }
 }
 
-void SDStorage::pollAdd() {
+void WiiSDStorage::pollAdd() {
     if (!resetCard()) {
         DEBUG("Failed to reset card");
         return;
@@ -143,11 +143,11 @@ void SDStorage::pollAdd() {
     add();
 }
 
-void SDStorage::pollRemove() {
+void WiiSDStorage::pollRemove() {
     remove();
 }
 
-bool SDStorage::enable4BitBus() {
+bool WiiSDStorage::enable4BitBus() {
     HostControl1 hostControl1;
     if (!readHCR(HCR::HostControl1, sizeof(hostControl1), &hostControl1)) {
         return false;
@@ -158,12 +158,12 @@ bool SDStorage::enable4BitBus() {
     return writeHCR(HCR::HostControl1, sizeof(hostControl1), &hostControl1);
 }
 
-bool SDStorage::setCardBlockLength(u32 blockLength) {
+bool WiiSDStorage::setCardBlockLength(u32 blockLength) {
     return sendCommand(Command::SetBlocklen, 3, ResponseType::R1, blockLength, 0, 0, nullptr,
             nullptr);
 }
 
-bool SDStorage::enableCard4BitBus() {
+bool WiiSDStorage::enableCard4BitBus() {
     if (!sendCommand(Command::AppCmd, 3, ResponseType::R1, m_rca << 16, 0, 0, nullptr, nullptr)) {
         return false;
     }
@@ -171,7 +171,7 @@ bool SDStorage::enableCard4BitBus() {
     return sendCommand(AppCommand::SetBusWidth, 3, ResponseType::R1, 0x2, 0, 0, nullptr, nullptr);
 }
 
-bool SDStorage::writeHCR(u8 reg, u8 size, const void *val) {
+bool WiiSDStorage::writeHCR(u8 reg, u8 size, const void *val) {
     assert(size <= 0x4);
     assert(val);
 
@@ -189,7 +189,7 @@ bool SDStorage::writeHCR(u8 reg, u8 size, const void *val) {
     return true;
 }
 
-bool SDStorage::readHCR(u8 reg, u8 size, void *val) {
+bool WiiSDStorage::readHCR(u8 reg, u8 size, void *val) {
     assert(size <= 0x4);
     assert(val);
 
@@ -208,7 +208,7 @@ bool SDStorage::readHCR(u8 reg, u8 size, void *val) {
     return true;
 }
 
-bool SDStorage::resetCard() {
+bool WiiSDStorage::resetCard() {
     alignas(0x20) u32 out;
 
     if (ioctl(Ioctl::ResetCard, nullptr, 0, &out, sizeof(out)) < 0) {
@@ -221,7 +221,7 @@ bool SDStorage::resetCard() {
     return true;
 }
 
-bool SDStorage::setClock(u32 clock) {
+bool WiiSDStorage::setClock(u32 clock) {
     alignas(0x20) u32 in = clock;
 
     if (ioctl(Ioctl::SetClock, &in, sizeof(in), nullptr, 0) < 0) {
@@ -232,8 +232,8 @@ bool SDStorage::setClock(u32 clock) {
     return true;
 }
 
-bool SDStorage::sendCommand(u32 command, u32 commandType, u32 responseType, u32 arg, u32 blockCount,
-        u32 blockSize, void *buffer, u32 *response) {
+bool WiiSDStorage::sendCommand(u32 command, u32 commandType, u32 responseType, u32 arg,
+        u32 blockCount, u32 blockSize, void *buffer, u32 *response) {
     alignas(0x20) Request request;
     memset(&request, 0, sizeof(request));
     request.command = command;
@@ -276,7 +276,7 @@ bool SDStorage::sendCommand(u32 command, u32 commandType, u32 responseType, u32 
     return true;
 }
 
-bool SDStorage::getStatus(Status &status) {
+bool WiiSDStorage::getStatus(Status &status) {
     alignas(0x20) u32 out;
 
     if (ioctl(Ioctl::GetStatus, nullptr, 0, &out, sizeof(out)) < 0) {
@@ -289,8 +289,8 @@ bool SDStorage::getStatus(Status &status) {
     return true;
 }
 
-const u32 SDStorage::SectorSize = 512;
+const u32 WiiSDStorage::SectorSize = 512;
 
-Array<u8, 0x4000> *SDStorage::s_buffer = nullptr;
-SDStorage *SDStorage::s_instance = nullptr;
-Mutex *SDStorage::s_mutex = nullptr;
+Array<u8, 0x4000> *WiiSDStorage::s_buffer = nullptr;
+WiiSDStorage *WiiSDStorage::s_instance = nullptr;
+Mutex *WiiSDStorage::s_mutex = nullptr;

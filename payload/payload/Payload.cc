@@ -20,9 +20,9 @@
 #include <common/USB.hh>
 #include <common/VirtualDI.hh>
 #include <common/ios/Resource.hh>
-#include <common/storage/SDStorage.hh>
 #include <common/storage/Storage.hh>
 #include <common/storage/USBStorage.hh>
+#include <common/storage/WiiSDStorage.hh>
 
 void Payload::Run(Context *context) {
     INFO("Started payload.");
@@ -84,9 +84,9 @@ void Payload::Run(Context *context) {
         USB::Init();
         INFO("Initialized USB.");
 
-        INFO("Initializing SD storage...");
-        SDStorage::Init();
-        INFO("Initialized SD storage.");
+        INFO("Initializing Wii SD storage...");
+        WiiSDStorage::Init();
+        INFO("Initialized Wii SD storage.");
     }
 
     INFO("Initializing log file...");

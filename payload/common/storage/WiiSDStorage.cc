@@ -1,4 +1,4 @@
-#include <common/storage/SDStorage.hh>
+#include <common/storage/WiiSDStorage.hh>
 
 #include <common/Arena.hh>
 #include <common/Log.hh>
@@ -12,16 +12,17 @@ extern "C" {
 #include <string.h>
 }
 
-void SDStorage::Init() {
+void WiiSDStorage::Init() {
     s_buffer = new (MEM2Arena::Instance(), 0x20) Array<u8, 0x4000>;
     s_mutex = new (MEM2Arena::Instance(), 0x4) Mutex;
-    s_instance = new (MEM2Arena::Instance(), 0x4) SDStorage;
+    s_instance = new (MEM2Arena::Instance(), 0x4) WiiSDStorage;
 }
 
-SDStorage::SDStorage() : IOS::Resource("/dev/sdio/slot0", IOS::Mode::None), FATStorage(s_mutex) {
+WiiSDStorage::WiiSDStorage()
+    : IOS::Resource("/dev/sdio/slot0", IOS::Mode::None), FATStorage(s_mutex) {
     Array<OSMessage, 1> *messages = new (MEM2Arena::Instance(), 0x4) Array<OSMessage, 1>;
     OSInitMessageQueue(&s_queue, messages->values(), messages->count());
-    m_pollCallback = &SDStorage::pollAdd;
+    m_pollCallback = &WiiSDStorage::pollAdd;
     notify();
     OSReceiveMessage(&s_queue, nullptr, OS_MESSAGE_BLOCK);
     void *param = this;
@@ -31,37 +32,37 @@ SDStorage::SDStorage() : IOS::Resource("/dev/sdio/slot0", IOS::Mode::None), FATS
     OSResumeThread(thread);
 }
 
-void SDStorage::poll() {
+void WiiSDStorage::poll() {
     (this->*m_pollCallback)();
     OSSendMessage(&s_queue, nullptr, OS_MESSAGE_NOBLOCK);
 }
 
-void *SDStorage::run() {
+void *WiiSDStorage::run() {
     while (true) {
         Status status;
         memset(&status, 0, sizeof(status));
         if (isContained()) {
             status.wasRemoved = true;
             waitFor(status);
-            m_pollCallback = &SDStorage::pollRemove;
+            m_pollCallback = &WiiSDStorage::pollRemove;
         } else {
             status.wasAdded = true;
             waitFor(status);
-            m_pollCallback = &SDStorage::pollAdd;
+            m_pollCallback = &WiiSDStorage::pollAdd;
         }
         notify();
         OSReceiveMessage(&s_queue, nullptr, OS_MESSAGE_BLOCK);
     }
 }
 
-bool SDStorage::waitFor(Status status) {
+bool WiiSDStorage::waitFor(Status status) {
     u32 arg;
     memcpy(&arg, &status, sizeof(arg));
     return sendCommand(VirtualCommand::Wait, 0, 0, arg, 0, 0, nullptr, nullptr);
 }
 
-void *SDStorage::Run(void *param) {
-    return reinterpret_cast<SDStorage *>(param)->run();
+void *WiiSDStorage::Run(void *param) {
+    return reinterpret_cast<WiiSDStorage *>(param)->run();
 }
 
-OSMessageQueue SDStorage::s_queue;
+OSMessageQueue WiiSDStorage::s_queue;
