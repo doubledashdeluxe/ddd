@@ -92,19 +92,19 @@ VI::VI() {
         }
     }
     flushXFB();
-    vtr = m_xfbHeight << (3 + m_isProgressive) | (vtr & 0xf);
+    vtr = (m_xfbHeight << 3 | (5 + isNtsc) << 0) << m_isProgressive;
     if (m_isProgressive) {
         vto = 0x26 << 16 | 0x50;
         vte = 0x26 << 16 | 0x50;
     } else if (isNtsc) {
-        vto = 0x23 << 16 | 0x38;
-        vte = 0x22 << 16 | 0x39;
+        vto = 0x13 << 16 | 0x28;
+        vte = 0x12 << 16 | 0x29;
     } else {
         vto = 0x13 << 16 | 0x35;
         vte = 0x12 << 16 | 0x36;
     }
     hsw = m_xfbWidth << 4 | m_xfbWidth >> (3 + m_isProgressive);
-    hsr = isNtsc ? 0x10f5 : 0x10e9;
+    hsr = isNtsc ? 0x10ea : 0x10e9;
     tfbl = 1 << 28 | Memory::VirtualToPhysical(m_xfb) >> 5;
     bfbl = 1 << 28 | Memory::VirtualToPhysical(m_xfb + (m_xfbWidth / 2) * !m_isProgressive) >> 5;
     videoMode = !isNtsc;
