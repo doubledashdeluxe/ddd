@@ -3,11 +3,6 @@
 #include "common/Array.hh"
 #include "common/ios/Resource.hh"
 
-class Mutex;
-extern "C" {
-struct OSMessageQueue;
-}
-
 class USB {
 public:
     class Device;
@@ -374,7 +369,7 @@ private:
         Resource::Buffer buffer;
         Resource *resource;
         Array<Device, 0x20> devices;
-        OSMessageQueue *initQueue;
+        struct OSMessageQueue *initQueue;
     };
 
 public:
@@ -410,6 +405,6 @@ private:
     static Device *s_removalDevice;
     static Device *s_additionDevice;
     static Array<Backend *, 2> s_backends;
-    static OSMessageQueue s_queue;
-    static Mutex *s_mutex;
+    static struct OSMessageQueue s_queue;
+    static class Mutex *s_mutex;
 };

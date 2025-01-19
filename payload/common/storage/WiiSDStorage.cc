@@ -1,7 +1,6 @@
 #include <common/storage/WiiSDStorage.hh>
 
 #include <common/Arena.hh>
-#include <common/Log.hh>
 extern "C" {
 #include <dolphin/OSMessage.h>
 #include <dolphin/OSThread.h>
@@ -14,15 +13,14 @@ extern "C" {
 
 void WiiSDStorage::Init() {
     s_buffer = new (MEM2Arena::Instance(), 0x20) Array<u8, 0x4000>;
-    s_mutex = new (MEM2Arena::Instance(), 0x4) Mutex;
-    s_instance = new (MEM2Arena::Instance(), 0x4) WiiSDStorage;
+    new (MEM2Arena::Instance(), 0x4) WiiSDStorage;
 }
 
 WiiSDStorage::WiiSDStorage()
-    : IOS::Resource("/dev/sdio/slot0", IOS::Mode::None), FATStorage(s_mutex) {
+    : IOS::Resource("/dev/sdio/slot0", IOS::Mode::None),
+      SDStorage(new(MEM2Arena::Instance(), 0x4) Mutex) {
     Array<OSMessage, 1> *messages = new (MEM2Arena::Instance(), 0x4) Array<OSMessage, 1>;
     OSInitMessageQueue(&s_queue, messages->values(), messages->count());
-    m_pollCallback = &WiiSDStorage::pollAdd;
     notify();
     OSReceiveMessage(&s_queue, nullptr, OS_MESSAGE_BLOCK);
     void *param = this;
@@ -33,7 +31,11 @@ WiiSDStorage::WiiSDStorage()
 }
 
 void WiiSDStorage::poll() {
-    (this->*m_pollCallback)();
+    if (isContained()) {
+        pollRemove();
+    } else {
+        pollAdd();
+    }
     OSSendMessage(&s_queue, nullptr, OS_MESSAGE_NOBLOCK);
 }
 
@@ -44,11 +46,9 @@ void *WiiSDStorage::run() {
         if (isContained()) {
             status.wasRemoved = true;
             waitFor(status);
-            m_pollCallback = &WiiSDStorage::pollRemove;
         } else {
             status.wasAdded = true;
             waitFor(status);
-            m_pollCallback = &WiiSDStorage::pollAdd;
         }
         notify();
         OSReceiveMessage(&s_queue, nullptr, OS_MESSAGE_BLOCK);

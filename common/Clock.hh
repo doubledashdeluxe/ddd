@@ -2,11 +2,6 @@
 
 #include "common/Types.hh"
 
-extern "C" {
-struct OSAlarm;
-struct OSContext;
-}
-
 class Clock {
 public:
     static void Init();
@@ -30,5 +25,5 @@ private:
 
     static bool ReadRTC(u32 &rtc);
 
-    static void HandleAlarm(OSAlarm *alarm, OSContext *context);
+    static void HandleAlarm(struct OSAlarm *alarm, struct OSContext *context);
 };

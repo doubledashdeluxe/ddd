@@ -45,7 +45,7 @@ protected:
         friend class FATStorage;
     };
 
-    FATStorage(Mutex *mutex);
+    FATStorage(class Mutex *mutex);
     ~FATStorage();
 
     void remove();

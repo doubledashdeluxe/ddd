@@ -2,9 +2,7 @@
 
 #include "common/Types.hh"
 
-extern "C" {
 struct OSContext;
-}
 
 namespace IOS {
 

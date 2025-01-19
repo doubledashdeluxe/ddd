@@ -3,14 +3,12 @@
 #include <common/Arena.hh>
 
 WiiSDStorage::WiiSDStorage()
-    : IOS::Resource("/dev/sdio/slot0", IOS::Mode::None), FATStorage(s_mutex) {
-    m_pollCallback = &WiiSDStorage::pollAdd;
+    : IOS::Resource("/dev/sdio/slot0", IOS::Mode::None), SDStorage(nullptr) {
     notify();
 }
 
 WiiSDStorage::~WiiSDStorage() {
     if (isContained()) {
-        m_pollCallback = &WiiSDStorage::pollRemove;
         notify();
     }
 }
@@ -20,5 +18,9 @@ void WiiSDStorage::Init() {
 }
 
 void WiiSDStorage::poll() {
-    (this->*m_pollCallback)();
+    if (isContained()) {
+        pollRemove();
+    } else {
+        pollAdd();
+    }
 }

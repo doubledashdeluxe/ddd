@@ -10,15 +10,14 @@ extern "C" {
 }
 
 WiiSDStorage::CardHandle::CardHandle(WiiSDStorage *storage) : m_storage(storage) {
-    if (!m_storage->sendCommand(Command::Select, 3, ResponseType::R1B, m_storage->m_rca << 16, 0, 0,
-                nullptr, nullptr)) {
+    if (!m_storage->select()) {
         m_storage = nullptr;
     }
 }
 
 WiiSDStorage::CardHandle::~CardHandle() {
     if (m_storage) {
-        m_storage->sendCommand(Command::Select, 3, ResponseType::R1B, 0, 0, 0, nullptr, nullptr);
+        m_storage->deselect();
     }
 }
 
@@ -52,7 +51,6 @@ bool WiiSDStorage::erase(u32 /* firstSector */, u32 /* sectorCount */) {
 }
 
 bool WiiSDStorage::sync() {
-    // TODO implement?
     return true;
 }
 
@@ -145,6 +143,14 @@ void WiiSDStorage::pollAdd() {
 
 void WiiSDStorage::pollRemove() {
     remove();
+}
+
+bool WiiSDStorage::select() {
+    return sendCommand(Command::Select, 3, ResponseType::R1B, m_rca << 16, 0, 0, nullptr, nullptr);
+}
+
+bool WiiSDStorage::deselect() {
+    return sendCommand(Command::Select, 3, ResponseType::R1B, 0, 0, 0, nullptr, nullptr);
 }
 
 bool WiiSDStorage::enable4BitBus() {
@@ -289,8 +295,4 @@ bool WiiSDStorage::getStatus(Status &status) {
     return true;
 }
 
-const u32 WiiSDStorage::SectorSize = 512;
-
 Array<u8, 0x4000> *WiiSDStorage::s_buffer = nullptr;
-WiiSDStorage *WiiSDStorage::s_instance = nullptr;
-Mutex *WiiSDStorage::s_mutex = nullptr;

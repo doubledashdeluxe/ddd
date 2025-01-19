@@ -140,11 +140,15 @@
 800c3970 EXIImm
 800c3bcc EXIImmEx
 800c3d58 EXISync
+800c3fa4 EXIClearInterrupts
 800c4068 __EXIProbe
+800c4310 EXIAttach
+800c441c EXIDetach
 800c44d8 EXISelect
 800c4604 EXIDeselect
 800c4c98 EXILock
 800c4d8c EXIUnlock
+800c4ea8 EXIGetID
 800e5b50 OSInit
 800e63e0 OSCreateAlarm
 800e6640 OSSetAlarm

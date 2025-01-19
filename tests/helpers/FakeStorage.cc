@@ -3,12 +3,10 @@
 #include <cstring>
 
 FakeStorage::FakeStorage() : Storage(nullptr) {
-    m_pollCallback = &FakeStorage::add;
     notify();
 }
 
 FakeStorage::~FakeStorage() {
-    m_pollCallback = &FakeStorage::remove;
     notify();
 }
 
@@ -100,16 +98,16 @@ Storage *FakeStorage::Dir::storage() {
     return m_storage;
 }
 
-void FakeStorage::remove() {
-    Storage::remove();
-}
-
 void FakeStorage::poll() {
-    (this->*m_pollCallback)();
+    if (isContained()) {
+        Storage::remove();
+    } else {
+        add();
+    }
 }
 
 u32 FakeStorage::priority() {
-    return 3;
+    return 6;
 }
 
 const char *FakeStorage::prefix() {

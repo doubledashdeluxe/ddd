@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common/Types.hh"
+#include "common/Array.hh"
 
 class EXI {
 public:
@@ -17,6 +17,12 @@ public:
         bool m_ok;
     };
 
+    static bool GetID(u32 channel, u32 device, u32 &id);
+
 private:
     EXI();
+
+    static void HandleUnlock(s32 channel, struct OSContext *context);
+
+    static Array<struct OSThreadQueue, 3> s_queues;
 };

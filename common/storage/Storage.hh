@@ -2,11 +2,6 @@
 
 #include "common/Array.hh"
 
-class Mutex;
-extern "C" {
-struct OSMessageQueue;
-}
-
 class Storage {
 public:
     class File;
@@ -150,7 +145,7 @@ public:
     static bool Remove(const char *path, u32 mode);
 
 protected:
-    Storage(Mutex *mutex);
+    Storage(class Mutex *mutex);
     ~Storage();
 
     bool isContained() const;
@@ -207,9 +202,9 @@ private:
 
     Storage *m_next;
     bool m_isContained;
-    Mutex *m_mutex;
+    class Mutex *m_mutex;
 
     static Storage *s_head;
     static Observer *s_headObserver;
-    static OSMessageQueue s_queue;
+    static struct OSMessageQueue s_queue;
 };

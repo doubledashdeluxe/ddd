@@ -20,6 +20,7 @@
 #include <common/USB.hh>
 #include <common/VirtualDI.hh>
 #include <common/ios/Resource.hh>
+#include <common/storage/EXISDStorage.hh>
 #include <common/storage/Storage.hh>
 #include <common/storage/USBStorage.hh>
 #include <common/storage/WiiSDStorage.hh>
@@ -74,6 +75,10 @@ void Payload::Run(Context *context) {
     INFO("Initializing localized archive storage...");
     ArchiveStorage::Init("larc:", context->localizedArchive, context->localizedArchiveSize);
     INFO("Initialized localized archive storage.");
+
+    INFO("Initializing EXI SD storage...");
+    EXISDStorage::Init();
+    INFO("Initialized EXI SD storage.");
 
     if (!Platform::IsGameCube()) {
         INFO("Initializing USB storage...");

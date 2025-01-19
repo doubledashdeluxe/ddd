@@ -1,15 +1,11 @@
 #pragma once
 
 #include "common/ios/Resource.hh"
-#include "common/storage/FATStorage.hh"
-
-extern "C" {
-struct OSMessageQueue;
-}
+#include "common/storage/SDStorage.hh"
 
 class WiiSDStorage
     : private IOS::Resource
-    , private FATStorage {
+    , private SDStorage {
 public:
     WiiSDStorage();
     ~WiiSDStorage();
@@ -17,8 +13,6 @@ public:
     static void Init();
 
 private:
-    typedef void (WiiSDStorage::*PollCallback)();
-
     class Ioctl {
     public:
         enum {
@@ -71,29 +65,7 @@ private:
     };
     size_assert(HostControl1, 0x1);
 
-    class Command {
-    public:
-        enum {
-            Select = 7,
-            SetBlocklen = 16,
-            ReadMultipleBlock = 18,
-            WriteMultipleBlock = 25,
-            AppCmd = 55,
-        };
-
-    private:
-        Command();
-    };
-
-    class AppCommand {
-    public:
-        enum {
-            SetBusWidth = 6,
-        };
-
-    private:
-        AppCommand();
-    };
+    typedef SDStorage::Command Command;
 
     class VirtualCommand {
     public:
@@ -170,6 +142,8 @@ private:
     void pollAdd();
     void pollRemove();
 
+    bool select();
+    bool deselect();
     bool enable4BitBus();
     bool setCardBlockLength(u32 blockLength);
     bool enableCard4BitBus();
@@ -184,14 +158,9 @@ private:
 
     static void *Run(void *param);
 
-    PollCallback m_pollCallback;
     u16 m_rca;
     bool m_isSDHC;
 
-    static const u32 SectorSize;
-
     static Array<u8, 0x4000> *s_buffer;
-    static WiiSDStorage *s_instance;
-    static Mutex *s_mutex;
-    static OSMessageQueue s_queue;
+    static struct OSMessageQueue s_queue;
 };

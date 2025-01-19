@@ -14,8 +14,6 @@ public:
     ~FakeStorage();
 
 private:
-    typedef void (FakeStorage::*PollCallback)();
-
     class File : public Storage::File {
     public:
         File(FakeStorage *storage, std::string path);
@@ -49,8 +47,6 @@ private:
         size_t m_index = 0;
     };
 
-    void remove();
-
     void poll() override;
     u32 priority() override;
     const char *prefix() override;
@@ -67,7 +63,6 @@ private:
     bool hasDir(const std::string &path);
     bool hasParentDir(const std::string &path);
 
-    PollCallback m_pollCallback;
     std::unordered_map<std::string, std::vector<u8>> m_files;
     std::unordered_set<std::string> m_dirs;
     std::unordered_map<std::string, std::unique_ptr<File>> m_openFiles;

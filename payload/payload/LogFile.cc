@@ -14,7 +14,7 @@ extern "C" {
 }
 
 void LogFile::Init() {
-    OSCreateThread(&s_thread, Run, nullptr, s_stack.values() + s_stack.count(), s_stack.count(), 31,
+    OSCreateThread(&s_thread, Run, nullptr, s_stack.values() + s_stack.count(), s_stack.count(), 30,
             0);
     OSResumeThread(&s_thread);
 }

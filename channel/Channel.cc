@@ -16,6 +16,7 @@
 #include <common/VI.hh>
 #include <common/VirtualDI.hh>
 #include <common/ios/Resource.hh>
+#include <common/storage/EXISDStorage.hh>
 #include <common/storage/Storage.hh>
 #include <common/storage/USBStorage.hh>
 #include <common/storage/WiiSDStorage.hh>
@@ -166,6 +167,10 @@ Channel::PayloadEntryFunc Channel::Run(Context *context) {
 
 void Channel::RunApploader(Context *context) {
     while (true) {
+        if (RunApploaderFromVirtualDI()) {
+            context->hasVirtualDI = true;
+            return;
+        }
         if (DI::ReadDiscID()) {
             const char *gameID = DiscID::Get().gameID;
             if (DiscID::IsValid()) {
@@ -210,22 +215,31 @@ void Channel::RunApploader(Context *context) {
 }
 
 bool Channel::RunApploaderFromVirtualDI() {
+    bool enableEXISD = true;
     bool enableUSB = !Platform::IsGameCube() && !Platform::IsDolphin();
     bool enableWiiSD = !Platform::IsGameCube();
-    return RunApploaderFromVirtualDI(enableUSB, enableWiiSD);
+    return RunApploaderFromVirtualDI(enableEXISD, enableUSB, enableWiiSD);
 }
 
-bool Channel::RunApploaderFromVirtualDI(bool enableUSB, bool enableWiiSD) {
+bool Channel::RunApploaderFromVirtualDI(bool enableEXISD, bool enableUSB, bool enableWiiSD) {
+    if (enableEXISD) {
+        EXISDStorage exiSDStorage0(0);
+        EXISDStorage exiSDStorage1(1);
+        EXISDStorage exiSDStorage2(2);
+
+        return RunApploaderFromVirtualDI(false, enableUSB, enableWiiSD);
+    }
+
     if (enableUSB) {
         USB::Handle usbHandle;
 
-        return RunApploaderFromVirtualDI(false, enableWiiSD);
+        return RunApploaderFromVirtualDI(enableEXISD, false, enableWiiSD);
     }
 
     if (enableWiiSD) {
         WiiSDStorage wiiSDStorage;
 
-        return RunApploaderFromVirtualDI(enableUSB, false);
+        return RunApploaderFromVirtualDI(enableEXISD, enableUSB, false);
     }
 
     if (!VirtualDI::Mount()) {
