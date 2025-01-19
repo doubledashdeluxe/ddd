@@ -14,13 +14,6 @@ extern "C" void VIInit() {
     VISetBlack(false);
 }
 
-extern "C" void VISetNextFrameBuffer(void *fb) {
-    if (Console::Instance()->m_isActive) {
-        fb = VI::Instance()->getXFB();
-    }
-    REPLACED(VISetNextFrameBuffer)(fb);
-}
-
 extern "C" void VISetBlack(BOOL black) {
     if (Console::Instance()->m_isActive) {
         black = false;

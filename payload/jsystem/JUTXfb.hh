@@ -5,13 +5,6 @@
 #include <payload/Replace.hh>
 
 class JUTXfb {
-public:
-    void *getDrawingXfb() const;
-
-    void swapBuffers();
-
-    static JUTXfb *GetManager();
-
 private:
     REPLACE void initiate(u16 width, u16 height, JKRHeap *heap, s32 count);
 

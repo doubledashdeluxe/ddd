@@ -89,13 +89,12 @@ void System::Run() {
         netGameMgr->framework();
         AppMgr::Draw();
 
-        s_display->endRender();
-
         if (!isNetGameActive) {
             PadMgr::Framework();
         }
         AppMgr::Calc();
 
+        s_display->endRender();
         s_display->endFrame();
 
         if (MoviePlayer::Instance()) {
