@@ -5,6 +5,7 @@
 #include "game/MenuTitleLine.hh"
 #include "game/OnlineBackground.hh"
 #include "game/OnlineTimer.hh"
+#include "game/ResMgr.hh"
 #include "game/SceneFactory.hh"
 #include "game/System.hh"
 #include "game/SystemRecord.hh"
@@ -36,7 +37,7 @@ void SequenceApp::Call(s32 sceneType) {
 }
 
 SequenceApp *SequenceApp::Create() {
-    if (!s_instance) {
+    if (ResMgr::IsFinishedLoadingArc(ResMgr::ArchiveID::MRAMLoc) && !s_instance) {
         s_instance = new (System::GetAppHeap(), 0x4) SequenceApp;
     }
     return s_instance;

@@ -17,42 +17,33 @@ void LogoApp::draw() {}
 void LogoApp::calc() {
     switch (m_state) {
     case 0:
-        CardAgent::Ask(CardAgent::Command::CheckSystemFile, 0);
-        INFO("Loading bgm_0.aw...");
+        ResMgr::LoadKeepData();
         break;
     case 1:
+        if (!ResMgr::IsFinishedLoadingArc(ResMgr::ArchiveID::MRAMLoc)) {
+            return;
+        }
+        CardAgent::Ask(CardAgent::Command::CheckSystemFile, 0);
+        System::StartAudio();
+        INFO("Loading bgm_0.aw...");
+        break;
+    case 2:
         if (!GameAudio::Main::Instance()->isWaveLoaded(5)) {
             return;
         }
         INFO("Loaded bgm_0.aw.");
         INFO("Loading se00_0.aw...");
         break;
-    case 2:
+    case 3:
         if (!GameAudio::Main::Instance()->isWaveLoaded(1)) {
             return;
         }
         INFO("Loaded se00_0.aw.");
-        break;
-    case 3:
-        ResMgr::LoadKeepData();
-        break;
-    case 4:
-        if (!ResMgr::IsFinishedLoadingArc(ResMgr::ArchiveID::MRAMLoc)) {
-            return;
-        }
-        break;
-    case 5:
         CourseManager::Instance()->start();
-        break;
-    case 6:
         ServerManager::Instance()->start();
-        break;
-    case 7:
         if (!Platform::IsGameCube()) {
             Client::Init();
         }
-        break;
-    case 8:
         SequenceApp::Call(SceneType::Title);
         return;
     }

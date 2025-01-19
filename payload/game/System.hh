@@ -21,6 +21,7 @@ public:
     static void REPLACED(Init)();
     REPLACE static void Init();
     REPLACE static void Run();
+    static void StartAudio();
 
     static JFWDisplay *GetDisplay();
     static JKRHeap *GetAppHeap();

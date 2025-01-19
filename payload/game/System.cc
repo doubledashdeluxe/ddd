@@ -9,6 +9,7 @@
 #include "game/NetGameMgr.hh"
 #include "game/PadMgr.hh"
 #include "game/ResMgr.hh"
+#include "game/SequenceApp.hh"
 
 #include <common/Log.hh>
 #include <common/Platform.hh>
@@ -25,7 +26,6 @@ extern "C" {
 
 void System::Init() {
     REPLACED(Init)();
-    s_loadTask->request(REPLACED(StartAudio), nullptr, nullptr);
 
     if (!Platform::IsGameCube()) {
         SC sc;
@@ -102,6 +102,11 @@ void System::Run() {
             MoviePlayer::DrawDone();
         }
     }
+}
+
+void System::StartAudio() {
+    SequenceApp::Create();
+    s_loadTask->request(REPLACED(StartAudio), nullptr, nullptr);
 }
 
 JFWDisplay *System::GetDisplay() {
