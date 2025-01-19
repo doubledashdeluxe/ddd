@@ -45,7 +45,15 @@ extern "C" REPLACE BOOL DVDReadAbsAsyncPrio(DVDCommandBlock *block, void *addr, 
     return true;
 }
 
-extern "C" BOOL DVDCheckDisk(void) {
+s32 DVDGetDriveStatus() {
+    if (!VirtualDI::IsInit()) {
+        return REPLACED(DVDGetDriveStatus)();
+    }
+
+    return DVD_STATE_END;
+}
+
+BOOL DVDCheckDisk() {
     if (!VirtualDI::IsInit()) {
         return REPLACED(DVDCheckDisk)();
     }

@@ -55,19 +55,19 @@ void System::Run() {
         CardMgr::Probe();
         s_dvdState = DVDGetDriveStatus();
         switch (s_dvdState) {
-        case 4:
+        case DVD_STATE_NO_DISK:
             ErrorViewApp::Call(2);
             break;
-        case 5:
+        case DVD_STATE_COVER_OPEN:
             ErrorViewApp::Call(1);
             break;
-        case 6:
+        case DVD_STATE_WRONG_DISK:
             ErrorViewApp::Call(3);
             break;
-        case 11:
+        case DVD_STATE_RETRY:
             ErrorViewApp::Call(4);
             break;
-        case -1:
+        case DVD_STATE_FATAL_ERROR:
             ErrorViewApp::Call(5);
             break;
         }

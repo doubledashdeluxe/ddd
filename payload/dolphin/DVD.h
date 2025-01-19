@@ -44,6 +44,15 @@ typedef struct DVDDirEntry {
 } DVDDirEntry;
 size_assert(DVDDirEntry, 0xc);
 
+enum {
+    DVD_STATE_FATAL_ERROR = -1,
+    DVD_STATE_END = 0,
+    DVD_STATE_NO_DISK = 4,
+    DVD_STATE_COVER_OPEN = 5,
+    DVD_STATE_WRONG_DISK = 6,
+    DVD_STATE_RETRY = 11,
+};
+
 BOOL DVDOpen(const char *fileName, DVDFileInfo *fileInfo);
 s32 DVDReadPrio(DVDFileInfo *fileInfo, void *addr, s32 length, s32 offset, s32 prio);
 BOOL DVDClose(DVDFileInfo *fileInfo);
@@ -56,6 +65,7 @@ BOOL DVDCloseDir(DVDDir *dir);
 s32 DVDConvertPathToEntrynum(const char *path);
 BOOL DVDConvertEntrynumToPath(s32 entrynum, char *path, u32 maxlen);
 
-s32 DVDGetDriveStatus(void);
+s32 REPLACED(DVDGetDriveStatus)(void);
+REPLACE s32 DVDGetDriveStatus(void);
 BOOL REPLACED(DVDCheckDisk)(void);
 REPLACE BOOL DVDCheckDisk(void);
