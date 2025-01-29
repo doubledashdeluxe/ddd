@@ -97,14 +97,6 @@ void Payload::Run(Context *context) {
     LogFile::Init();
     INFO("Initialized log file.");
 
-    INFO("Initializing random number generator...");
-    Random::Init();
-    INFO("Initialized random number generator.");
-
-    INFO("Initializing client key...");
-    ClientK::Init();
-    INFO("Initialized client key.");
-
     if (context->hasVirtualDI) {
         INFO("Initializing virtual disc...");
         VirtualDI::Init();
@@ -113,6 +105,14 @@ void Payload::Run(Context *context) {
         }
         INFO("Initialized virtual disc.");
     }
+
+    INFO("Initializing random number generator...");
+    Random::Init();
+    INFO("Initialized random number generator.");
+
+    INFO("Initializing client key...");
+    ClientK::Init();
+    INFO("Initialized client key.");
 
     INFO("Initializing DNS...");
     DNS::Init();
