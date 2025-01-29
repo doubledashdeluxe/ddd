@@ -4,20 +4,25 @@
 
 #include <common/Log.hh>
 
-ClientStateServer::ClientStateServer(JKRHeap *heap, UDPSocket *socket, Array<u8, 512> *buffer)
-    : ClientState(heap), m_socket(socket), m_buffer(buffer), m_index(0) {
+ClientStateServer::ClientStateServer(JKRHeap *heap, UDPSocket *socket)
+    : ClientState(heap), m_socket(socket), m_index(0) {
     if (!m_socket.get()) {
-        m_socket.reset(new (m_heap, 0x20) UDPSocket);
-    }
-    if (!m_buffer.get()) {
-        m_buffer.reset(new (m_heap, 0x20) Array<u8, 512>);
+        m_socket.reset(new (m_heap, 0x4) UDPSocket);
     }
 }
 
 ClientStateServer::~ClientStateServer() {}
 
+bool ClientStateServer::needsSockets() {
+    return true;
+}
+
 ClientState &ClientStateServer::read(ClientReadHandler &handler) {
     if (!ServerManager::Instance()->isLocked()) {
+        return *this;
+    }
+
+    if (!Socket::IsRunning()) {
         return *this;
     }
 
@@ -26,14 +31,16 @@ ClientState &ClientStateServer::read(ClientReadHandler &handler) {
 
     if (!m_connections.empty()) {
         for (u32 i = 0; i < 16; i++) {
-            Socket::Address address;
-            s32 result = m_socket->recvFrom(m_buffer->values(), m_buffer->count(), address);
+            Array<u8, 512> buffer;
+            SOSockAddr address;
+            address.len = sizeof(address);
+            s32 result = m_socket->recvFrom(buffer.values(), buffer.count(), address);
             if (result < 0) {
                 break;
             }
             for (u32 j = 0; j < m_connections.count(); j++) {
                 m_index = (m_index + 1) % m_connections.count();
-                if (m_connections[m_index]->read(*this, m_buffer->values(), result, address)) {
+                if (m_connections[m_index]->read(*this, buffer.values(), result, address)) {
                     break;
                 }
             }
@@ -52,14 +59,19 @@ ClientState &ClientStateServer::writeStateServer() {
         return *this;
     }
 
+    if (!Socket::IsRunning()) {
+        return *this;
+    }
+
     checkConnections();
     checkSocket();
 
     if (!m_connections.empty()) {
-        u32 size = m_buffer->count();
-        Socket::Address address;
-        if (m_connections[m_index]->write(*this, m_buffer->values(), size, address)) {
-            m_socket->sendTo(m_buffer->values(), size, address);
+        Array<u8, 512> buffer;
+        u32 size = buffer.count();
+        SOSockAddr address;
+        if (m_connections[m_index]->write(*this, buffer.values(), size, address)) {
+            m_socket->sendTo(buffer.values(), size, address);
         }
         m_index = (m_index + 1) % m_connections.count();
     }
@@ -174,6 +186,6 @@ void ClientStateServer::checkSocket() {
         for (u32 i = 0; i < m_connections.count(); i++) {
             m_connections[i]->reset();
         }
-        m_socket->open(Socket::Domain::IPv4);
+        m_socket->open();
     }
 }

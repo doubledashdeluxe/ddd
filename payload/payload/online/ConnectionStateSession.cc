@@ -1,5 +1,6 @@
 #include "ConnectionStateSession.hh"
 
+#include "payload/network/Socket.hh"
 #include "payload/online/ConnectionStateKX.hh"
 
 extern "C" {
@@ -7,7 +8,7 @@ extern "C" {
 }
 
 ConnectionStateSession::ConnectionStateSession(JKRHeap *heap, Array<u8, 32> serverPK,
-        Socket::Address address, Session session)
+        SOSockAddr address, Session session)
     : ConnectionState(heap, serverPK), m_address(address), m_session(session) {}
 
 ConnectionStateSession::~ConnectionStateSession() {}
@@ -17,7 +18,7 @@ ConnectionState &ConnectionStateSession::reset() {
 }
 
 ConnectionState &ConnectionStateSession::read(ServerStateReader &reader, u8 *buffer, u32 size,
-        const Socket::Address &address, bool &ok) {
+        const SOSockAddr &address, bool &ok) {
     ok = address == m_address;
 
     if (!ok) {
@@ -46,7 +47,7 @@ ConnectionState &ConnectionStateSession::read(ServerStateReader &reader, u8 *buf
 }
 
 ConnectionState &ConnectionStateSession::write(ClientStateWriter &writer, u8 *buffer, u32 &size,
-        Socket::Address &address, bool &ok) {
+        SOSockAddr &address, bool &ok) {
     assert(size >= Session::MACSize + Session::NonceSize);
 
     ok = true;

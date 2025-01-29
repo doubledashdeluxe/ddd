@@ -1,8 +1,9 @@
 #pragma once
 
-#include "payload/network/Socket.hh"
-
 #include <common/Array.hh>
+extern "C" {
+#include <dolphin/IPSocket.h>
+}
 #include <formats/ClientState.hh>
 #include <formats/ServerState.hh>
 #include <jsystem/JKRHeap.hh>
@@ -13,9 +14,9 @@ public:
     virtual ~ConnectionState();
     virtual ConnectionState &reset() = 0;
     virtual ConnectionState &read(ServerStateReader &reader, u8 *buffer, u32 size,
-            const Socket::Address &address, bool &ok) = 0;
+            const SOSockAddr &address, bool &ok) = 0;
     virtual ConnectionState &write(ClientStateWriter &writer, u8 *buffer, u32 &size,
-            Socket::Address &address, bool &ok) = 0;
+            SOSockAddr &address, bool &ok) = 0;
 
 protected:
     JKRHeap *m_heap;

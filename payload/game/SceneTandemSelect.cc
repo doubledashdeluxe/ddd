@@ -11,6 +11,7 @@
 #include "game/SequenceInfo.hh"
 
 #include <jsystem/J2DAnmLoaderDataBase.hh>
+#include <payload/online/Client.hh>
 #include <payload/online/ServerManager.hh>
 
 extern "C" {
@@ -229,6 +230,7 @@ void SceneTandemSelect::calc() {
 
 void SceneTandemSelect::slideIn() {
     ServerManager::Instance()->unlock();
+    Client::Instance()->reset();
     MenuTitleLine::Instance()->drop(MenuTitleLine::Title::SelectTandem);
     m_mainAnmTransformFrame = 0;
     m_padCountAnmTransformFrame = 0;

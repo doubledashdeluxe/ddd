@@ -1,7 +1,6 @@
 #include "SceneTitle.hh"
 
 #include "game/AppMgr.hh"
-#include "game/BBAMgr.hh"
 #include "game/CardAgent.hh"
 #include "game/GameAudioMain.hh"
 #include "game/KartGamePad.hh"
@@ -21,6 +20,7 @@ extern "C" {
 #include <jsystem/J2DAnmLoaderDataBase.hh>
 #include <jsystem/J2DPicture.hh>
 #include <payload/CourseManager.hh>
+#include <payload/online/Client.hh>
 #include <payload/online/ServerManager.hh>
 
 SceneTitle::SceneTitle(JKRArchive *archive, JKRHeap *heap)
@@ -124,7 +124,7 @@ void SceneTitle::calc() {
     }
 
     J2DPicture *picture = m_screen.search("TtlM4")->downcast<J2DPicture>();
-    if (m_bbaIsEnabled) {
+    if (m_lanIsEnabled) {
         picture->changeTexture("TTL_Mozi_LANPlay.bti", 0);
     } else {
         picture->changeTexture("TTL_Mozi_OnlinePlay.bti", 0);
@@ -136,8 +136,9 @@ void SceneTitle::calc() {
 void SceneTitle::fadeIn() {
     CourseManager::Instance()->unlock();
     ServerManager::Instance()->unlock();
+    Client::Instance()->reset();
     m_entryIndex = Entry::Count;
-    m_bbaIsEnabled = false;
+    m_lanIsEnabled = false;
     m_printMemoryCard.reset();
     m_printMemoryCard.init(0x28);
     m_screen.search("TM2")->m_isVisible = true;
@@ -287,15 +288,9 @@ void SceneTitle::stateSetupCard() {
 }
 
 void SceneTitle::stateStart() {
-    u32 bbaState = BBAMgr::Instance()->getState();
-    bool bbaIsAvailable = bbaState == 1 || bbaState == 2;
-    if (!bbaIsAvailable) {
-        m_bbaIsEnabled = false;
-    }
-
     const JUTGamePad::CButton &button = KartGamePad::GamePad(0)->button();
     if (button.risingEdge() & (PAD_BUTTON_START | PAD_BUTTON_A)) {
-        if (m_entryIndex == Entry::Remote && m_bbaIsEnabled) {
+        if (m_entryIndex == Entry::Remote && m_lanIsEnabled) {
             startLAN();
         } else {
             GameAudio::Main::Instance()->fadeOutAll(15);
@@ -327,9 +322,9 @@ void SceneTitle::stateStart() {
         m_entryIndex = (m_entryIndex + 1) % Entry::Count;
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CURSOL);
     } else if (button.risingEdge() & PAD_TRIGGER_Z) {
-        if (m_entryIndex == Entry::Remote && bbaIsAvailable) {
+        if (m_entryIndex == Entry::Remote) {
             GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_ATTENTION);
-            m_bbaIsEnabled = !m_bbaIsEnabled;
+            m_lanIsEnabled = !m_lanIsEnabled;
         }
     }
 }

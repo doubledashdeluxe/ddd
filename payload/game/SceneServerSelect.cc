@@ -143,6 +143,10 @@ void SceneServerSelect::calc() {
     client->writeStateServer();
 }
 
+bool SceneServerSelect::clientStateIdle() {
+    return true;
+}
+
 bool SceneServerSelect::clientStateServer() {
     return true;
 }

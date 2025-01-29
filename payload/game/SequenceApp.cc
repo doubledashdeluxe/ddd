@@ -27,15 +27,6 @@ void SequenceApp::setNextScene(s32 sceneType) {
     m_state = 0;
 }
 
-void SequenceApp::Call(s32 sceneType) {
-    if (sceneType == SceneType::Title) {
-        // Alternate title screen
-        SystemRecord::Instance().setGameFlag(SystemRecord::GameFlag::All);
-    }
-
-    REPLACED(Call)(sceneType);
-}
-
 SequenceApp *SequenceApp::Create() {
     if (ResMgr::IsFinishedLoadingArc(ResMgr::ArchiveID::MRAMLoc) && !s_instance) {
         s_instance = new (System::GetAppHeap(), 0x4) SequenceApp;
@@ -77,6 +68,8 @@ void SequenceApp::calc() {
     if (m_state == 0 && s_nextScene == SceneType::Title) {
         if (checkFinishAllLoading()) {
             freeForMovieApp();
+            // Alternate title screen
+            SystemRecord::Instance().setGameFlag(SystemRecord::GameFlag::All);
             m_state = 3;
         } else {
             return;

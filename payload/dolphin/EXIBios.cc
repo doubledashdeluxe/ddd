@@ -4,6 +4,7 @@ extern "C" {
 #include "dolphin/OSInterrupt.h"
 }
 
+#include <common/Platform.hh>
 #include <payload/Lock.hh>
 
 extern "C" {
@@ -74,4 +75,13 @@ BOOL EXIImm(s32 chan, void *buf, s32 len, u32 type, EXICallback callback) {
     Ecb[chan].len = type == EXI_WRITE ? 0 : len;
     exi[chan].cr = (len - 1) << 4 | type << 2 | 1 << 0;
     return true;
+}
+
+s32 EXIGetType(s32 chan, u32 dev, u32 *type) {
+    if (chan == 0 && dev == 2) {
+        *type = 0x04020200;
+        return true;
+    }
+
+    return REPLACED(EXIGetType)(chan, dev, type);
 }

@@ -10,6 +10,7 @@ class ClientStateRoom : public ClientState {
 public:
     ClientStateRoom(JKRHeap *heap);
     ~ClientStateRoom() override;
+    bool needsSockets() override;
     ClientState &read(ClientReadHandler &handler) override;
 
 private:

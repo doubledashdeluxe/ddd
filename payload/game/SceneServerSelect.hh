@@ -19,6 +19,7 @@ public:
 private:
     typedef void (SceneServerSelect::*State)();
 
+    bool clientStateIdle() override;
     bool clientStateServer() override;
     void clientStateError() override;
 

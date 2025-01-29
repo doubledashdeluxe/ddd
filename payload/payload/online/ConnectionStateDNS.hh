@@ -8,9 +8,9 @@ public:
     ~ConnectionStateDNS() override;
     ConnectionState &reset() override;
     ConnectionState &read(ServerStateReader &reader, u8 *buffer, u32 size,
-            const Socket::Address &address, bool &ok) override;
-    ConnectionState &write(ClientStateWriter &writer, u8 *buffer, u32 &size,
-            Socket::Address &address, bool &ok) override;
+            const SOSockAddr &address, bool &ok) override;
+    ConnectionState &write(ClientStateWriter &writer, u8 *buffer, u32 &size, SOSockAddr &address,
+            bool &ok) override;
 
 private:
     Array<char, 256> m_name;

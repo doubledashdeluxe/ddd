@@ -1,5 +1,6 @@
 #include "LogoApp.hh"
 
+#include "game/BBAMgr.hh"
 #include "game/CardAgent.hh"
 #include "game/GameAudioMain.hh"
 #include "game/ResMgr.hh"
@@ -7,7 +8,6 @@
 #include "game/System.hh"
 
 #include <common/Log.hh>
-#include <common/Platform.hh>
 #include <payload/CourseManager.hh>
 #include <payload/online/Client.hh>
 #include <payload/online/ServerManager.hh>
@@ -41,9 +41,7 @@ void LogoApp::calc() {
         INFO("Loaded se00_0.aw.");
         CourseManager::Instance()->start();
         ServerManager::Instance()->start();
-        if (!Platform::IsGameCube()) {
-            Client::Init();
-        }
+        Client::Init(BBAMgr::Config());
         SequenceApp::Call(SceneType::Title);
         return;
     }

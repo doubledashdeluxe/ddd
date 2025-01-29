@@ -9,6 +9,10 @@ extern "C" {
 }
 #include <payload/Lock.hh>
 
+struct Alarm : OSAlarm {
+    OSThread *thread;
+};
+
 void Clock::Init() {
     u32 prevRTC, currRTC;
     do {
@@ -28,9 +32,9 @@ s64 Clock::GetMonotonicTicks() {
 }
 
 void Clock::WaitTicks(s64 ticks) {
-    OSAlarm alarm;
+    Alarm alarm;
     OSCreateAlarm(&alarm);
-    alarm.userData = OSGetCurrentThread();
+    alarm.thread = OSGetCurrentThread();
     Lock<NoInterrupts> lock;
     OSSetAlarm(&alarm, ticks, HandleAlarm);
     OSSuspendThread(OSGetCurrentThread());
@@ -52,5 +56,5 @@ bool Clock::ReadRTC(u32 &rtc) {
 }
 
 void Clock::HandleAlarm(OSAlarm *alarm, OSContext * /* context */) {
-    OSResumeThread(reinterpret_cast<OSThread *>(alarm->userData));
+    OSResumeThread(reinterpret_cast<Alarm *>(alarm)->thread);
 }

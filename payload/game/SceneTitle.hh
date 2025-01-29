@@ -54,7 +54,7 @@ private:
     State m_state;
     u32 m_timeBeforeDemo;
     u32 m_entryIndex;
-    bool m_bbaIsEnabled;
+    bool m_lanIsEnabled;
     u32 m_nextScene;
     PrintMemoryCard m_printMemoryCard;
     J2DScreen m_screen;

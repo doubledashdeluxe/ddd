@@ -149,9 +149,45 @@
 800c4c98 EXILock
 800c4d8c EXIUnlock
 800c4ea8 EXIGetID
+800c5258 EXIGetType
+800c943c IPGetMacAddr
+800c94ac IPGetNetmask
+800c951c IPGetAddr
+800c958c IPGetAlias
+800c9654 IPGetLinkState
+800cae94 IPGetConfigError
+800caf14 IPClearConfigError
+800cd6c4 LinkCheckHandler
+800cd764 IFInit
+800cd974 IFMute
+800d79e8 SOInit
+800d7a68 SOStartup
+800d7f64 SOCleanup
+800d82ac SOSocket
+800d8ddc SOClose
+800d91f4 SOListen
+800d9320 SOAccept
+800d95e0 SOBind
+800d9704 SOShutdown
+800d9830 SORecvFrom
+800d9a90 SOSendTo
+800da3c8 SOSetSockOpt
+800da3fc SOFcntl
+800da5b4 SOPoll
+800e09cc IGMPInit
+800e27f0 ETHInit
+800e3058 ETHSendAsync
+800e31ec ETHGetMACAddr
+800e3214 ETHSetRecvCallback
+800e3278 ETHGetLinkStateAsync
+800e32fc ETHSetProtoType
+800e34b4 ETHAddMulticastAddress
+800e3664 ETHClearMulticastAddresses
 800e5b50 OSInit
 800e63e0 OSCreateAlarm
 800e6640 OSSetAlarm
+800e66a8 OSSetPeriodicAlarm
+800e6724 OSCancelAlarm
 800e6d74 OSGetArenaHi
 800e6d7c OSGetArenaLo
 800e6d84 OSSetArenaHi
@@ -201,6 +237,8 @@
 800edc60 PADControlMotor
 800eff6c SIProbe
 800f0744 DBInit
+800fcf80 SSDPStop
+800fd10c SSDPGetState
 
 800ff0e0 __register_global_object
 800ff1a4 __destroy_arr
@@ -214,6 +252,7 @@
 800ff9e8 __mod2i
 800ffaf4 __shl2i
 800ffb18 __shr2u
+800ffb3c __shr2i
 
 800ffe28 exit
 80102200 abs
@@ -366,6 +405,9 @@
 801d9928 checkFinishAllLoading__11SequenceAppFv
 801d9990 createScene__11SequenceAppFl
 801dc140 Framework__6PadMgrFv
+801dd1b4 processDHCP__6BBAMgrFv
+801dd3c4 processAutoIP__6BBAMgrFv
+801dd628 disconnecting__6BBAMgrFb
 801dd7cc getState__6BBAMgrFv
 801ddfd0 updateKartPadRecord__9GhostFileFRC13KartPadRecord
 801de664 changeNumberTexture__12Kart2DCommonFlPP10J2DPictureUcbb
@@ -404,8 +446,11 @@
 80355478 CharacterNames__20SceneCharacterSelect
 8035c638 s_gamePads__11KartGamePad
 8035c648 s_kartPads__11KartGamePad
+8035cbc8 s_config__6BBAMgr
 
 80371e08 Ecb
+80379a60 LinkAlarm
+80379ae0 IFDefault
 
 803ae998 s_volumeList__13JKRFileLoader
 803b6db0 s_instance__6J3DSys
@@ -415,6 +460,7 @@
 803bb27c s_instance__8RaceInfo
 803bd5c8 s_loaders__6ResMgr
 803bdc2c s_aramResArgs__6ResMgr
+803c5fe0 s_instance__12SystemRecord
 
 803d3248 s_videoMode__10KartLocale
 803d324c s_videoFrameMode__10KartLocale
@@ -440,8 +486,8 @@
 803d51c4 OSLastInterruptSrr0
 803d51c8 OSLastInterrupt
 803d51d0 OSLastInterruptTime
+803d540c UPnPHttpState
 
-803c5fe0 s_instance__12SystemRecord
 803d5498 s_instance__Q29GameAudio4Main
 803d5578 s_instance__12SceneFactory
 803d5580 s_instance__6Race2D
@@ -449,6 +495,7 @@
 803d5600 s_instance__12BattleName2D
 803d5630 s_manager__8SysDebug
 803d5ab0 s_instance__11MoviePlayer
+803d5b30 s_time__9GameClock
 803d5b68 s_keepHeap__6ResMgr
 803d5b6c s_courseHeap__6ResMgr
 803d5b78 s_loadFlag__6ResMgr

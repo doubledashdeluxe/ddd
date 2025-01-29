@@ -7,7 +7,7 @@
 
 class DNS {
 public:
-    bool resolve(const char *name, Array<u8, 4> &address);
+    bool resolve(const char *name, u32 &address);
 
     static void Init();
     static DNS *Instance();
@@ -22,7 +22,7 @@ private:
     struct Response {
         s64 expirationTime;
         Array<char, 256> name;
-        Array<u8, 4> address;
+        u32 address;
     };
 
     DNS();
@@ -30,9 +30,8 @@ private:
     bool readResponse(Response &response);
     bool writeQuery(const Query &query);
 
-    alignas(0x20) UDPSocket m_socket;
-    alignas(0x20) Array<u8, 512> m_buffer;
-    Array<Socket::Address, 2> m_resolvers;
+    UDPSocket m_socket;
+    Array<SOSockAddr, 2> m_resolvers;
     u16 m_id;
     Ring<Query, 32> m_queries;
     Ring<Response, 256> m_responses;

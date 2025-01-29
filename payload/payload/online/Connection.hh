@@ -1,9 +1,11 @@
 #pragma once
 
-#include "payload/network/Socket.hh"
 #include "payload/online/ConnectionState.hh"
 
 #include <common/UniquePtr.hh>
+extern "C" {
+#include <dolphin/IPSocket.h>
+}
 #include <jsystem/JKRHeap.hh>
 
 class Connection {
@@ -11,8 +13,8 @@ public:
     Connection(JKRHeap *heap, Array<u8, 32> serverPK, const char *name);
     ~Connection();
     void reset();
-    bool read(ServerStateReader &reader, u8 *buffer, u32 size, const Socket::Address &address);
-    bool write(ClientStateWriter &writer, u8 *buffer, u32 &size, Socket::Address &address);
+    bool read(ServerStateReader &reader, u8 *buffer, u32 size, const SOSockAddr &address);
+    bool write(ClientStateWriter &writer, u8 *buffer, u32 &size, SOSockAddr &address);
 
 private:
     bool updateState(ConnectionState &nextState);

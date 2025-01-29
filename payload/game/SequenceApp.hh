@@ -15,8 +15,7 @@ public:
     s32 prevScene() const;
     void setNextScene(s32 sceneType);
 
-    static void REPLACED(Call)(s32 sceneType);
-    REPLACE static void Call(s32 sceneType);
+    static void Call(s32 sceneType);
     REPLACE static SequenceApp *Create();
     static SequenceApp *Instance();
 

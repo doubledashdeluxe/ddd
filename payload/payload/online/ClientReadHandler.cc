@@ -1,5 +1,9 @@
 #include "ClientReadHandler.hh"
 
+bool ClientReadHandler::clientStateIdle() {
+    return false;
+}
+
 bool ClientReadHandler::clientStateServer() {
     return false;
 }

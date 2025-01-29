@@ -13,6 +13,7 @@
 #include "game/SystemRecord.hh"
 
 #include <jsystem/J2DAnmLoaderDataBase.hh>
+#include <payload/online/Client.hh>
 #include <payload/online/ServerManager.hh>
 
 extern "C" {
@@ -131,6 +132,7 @@ void SceneNameSelect::calc() {
 
 void SceneNameSelect::slideIn() {
     ServerManager::Instance()->unlock();
+    Client::Instance()->reset();
     MenuTitleLine::Instance()->drop("SelectName.bti");
     m_mainAnmTransformFrame = 0;
     m_padCountAnmTransformFrame = 0;

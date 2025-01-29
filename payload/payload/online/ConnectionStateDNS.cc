@@ -25,18 +25,20 @@ ConnectionState &ConnectionStateDNS::reset() {
 }
 
 ConnectionState &ConnectionStateDNS::read(ServerStateReader & /* reader */, u8 * /* buffer */,
-        u32 /* size */, const Socket::Address & /* address */, bool &ok) {
+        u32 /* size */, const SOSockAddr & /* address */, bool &ok) {
     ok = false;
 
     return *this;
 }
 
 ConnectionState &ConnectionStateDNS::write(ClientStateWriter & /* writer */, u8 * /* buffer */,
-        u32 & /* size */, Socket::Address & /* address */, bool &ok) {
+        u32 & /* size */, SOSockAddr & /* address */, bool &ok) {
     ok = false;
 
-    Socket::Address address;
-    if (!DNS::Instance()->resolve(m_name.values(), address.address)) {
+    SOSockAddr address;
+    address.len = sizeof(address);
+    address.family = AF_INET;
+    if (!DNS::Instance()->resolve(m_name.values(), address.addr)) {
         return *this;
     }
 

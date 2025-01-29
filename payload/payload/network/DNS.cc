@@ -11,20 +11,22 @@ extern "C" {
 #include <string.h>
 }
 
-bool DNS::resolve(const char *name, Array<u8, 4> &address) {
+bool DNS::resolve(const char *name, u32 &address) {
     if (!strcmp(name, "localhost")) {
-        address = (u8[4]){127, 0, 0, 1};
+        address = 127 << 24 | 0 << 16 | 0 << 8 | 1 << 0;
         return true;
     }
 
     const char *pattern = "%hhu.%hhu.%hhu.%hhu";
-    if (sscanf(name, pattern, &address[0], &address[1], &address[2], &address[3]) == 4) {
+    Array<u8, 4> parts;
+    if (sscanf(name, pattern, &parts[0], &parts[1], &parts[2], &parts[3]) == 4) {
+        address = parts[0] << 24 | parts[1] << 16 | parts[2] << 8 | parts[3] << 0;
         return true;
     }
 
     if (!m_socket.ok()) {
         m_queries.reset();
-        m_socket.open(Socket::Domain::IPv4);
+        m_socket.open();
     }
 
     Response response;
@@ -76,7 +78,7 @@ bool DNS::resolve(const char *name, Array<u8, 4> &address) {
 }
 
 void DNS::Init() {
-    s_instance = new (MEM2Arena::Instance(), 0x20) DNS;
+    s_instance = new (MEM1Arena::Instance(), 0x20) DNS;
     assert(s_instance);
 }
 
@@ -85,11 +87,13 @@ DNS *DNS::Instance() {
 }
 
 DNS::DNS() : m_id(0) {
-    m_resolvers[0].address = (u8[4]){8, 8, 8, 8}; // Google
-    m_resolvers[1].address = (u8[4]){1, 1, 1, 1}; // Cloudflare
     for (u32 i = 0; i < m_resolvers.count(); i++) {
+        m_resolvers[i].len = sizeof(m_resolvers[i]);
+        m_resolvers[i].family = AF_INET;
         m_resolvers[i].port = 53;
     }
+    m_resolvers[0].addr = 8 << 24 | 8 << 16 | 8 << 8 | 8 << 0; // Google
+    m_resolvers[1].addr = 1 << 24 | 1 << 16 | 1 << 8 | 1 << 0; // Cloudflare
 }
 
 bool DNS::readResponse(Response &response) {
@@ -97,8 +101,10 @@ bool DNS::readResponse(Response &response) {
         return false;
     }
 
-    Socket::Address resolver;
-    s32 result = m_socket.recvFrom(m_buffer.values(), m_buffer.count(), resolver);
+    Array<u8, 512> buffer;
+    SOSockAddr resolver;
+    resolver.len = sizeof(resolver);
+    s32 result = m_socket.recvFrom(buffer.values(), buffer.count(), resolver);
     if (result < 0x00c) {
         return false;
     }
@@ -116,7 +122,7 @@ bool DNS::readResponse(Response &response) {
 
     bool hasValidID = false;
     u32 queryIndex;
-    u16 id = Bytes::ReadBE<u16>(m_buffer.values(), 0x000);
+    u16 id = Bytes::ReadBE<u16>(buffer.values(), 0x000);
     for (queryIndex = 0; queryIndex < m_queries.count(); queryIndex++) {
         if (m_queries[queryIndex].id == id) {
             hasValidID = true;
@@ -131,14 +137,14 @@ bool DNS::readResponse(Response &response) {
     flags |= 1 << 15; // QR
     flags |= 1 << 8;  // RD
     flags |= 1 << 7;  // RA
-    if (Bytes::ReadBE<u16>(m_buffer.values(), 0x002) != flags) {
+    if (Bytes::ReadBE<u16>(buffer.values(), 0x002) != flags) {
         return false;
     }
 
-    u16 qdcount = Bytes::ReadBE<u16>(m_buffer.values(), 0x004);
-    u16 ancount = Bytes::ReadBE<u16>(m_buffer.values(), 0x006);
-    u16 nscount = Bytes::ReadBE<u16>(m_buffer.values(), 0x008);
-    u16 arcount = Bytes::ReadBE<u16>(m_buffer.values(), 0x00a);
+    u16 qdcount = Bytes::ReadBE<u16>(buffer.values(), 0x004);
+    u16 ancount = Bytes::ReadBE<u16>(buffer.values(), 0x006);
+    u16 nscount = Bytes::ReadBE<u16>(buffer.values(), 0x008);
+    u16 arcount = Bytes::ReadBE<u16>(buffer.values(), 0x00a);
     if (qdcount != 1 || ancount == 0 || nscount != 0 || arcount != 0) {
         return false;
     }
@@ -146,17 +152,15 @@ bool DNS::readResponse(Response &response) {
         return false;
     }
 
-    u32 ttl = Max<u32>(Bytes::ReadBE<u32>(m_buffer.values(), result - 0x00a), 5);
-    u16 rdlength = Bytes::ReadBE<u16>(m_buffer.values(), result - 0x006);
+    u32 ttl = Max<u32>(Bytes::ReadBE<u32>(buffer.values(), result - 0x00a), 5);
+    u16 rdlength = Bytes::ReadBE<u16>(buffer.values(), result - 0x006);
     if (rdlength != 4) {
         return false;
     }
 
     response.expirationTime = Clock::GetMonotonicTicks() + Clock::SecondsToTicks(ttl);
     response.name = m_queries[queryIndex].name;
-    for (u32 i = 0; i < response.address.count(); i++) {
-        response.address[i] = m_buffer[result - 0x004 + i];
-    }
+    response.address = Bytes::ReadBE<u32>(buffer.values(), result - 0x004);
 
     m_queries.swapRemoveFront(queryIndex);
 
@@ -170,14 +174,15 @@ bool DNS::readResponse(Response &response) {
 }
 
 bool DNS::writeQuery(const Query &query) {
+    Array<u8, 512> buffer;
     u16 flags = 0;
     flags |= 1 << 8; // RD
-    Bytes::WriteBE<u16>(m_buffer.values(), 0x000, m_id);
-    Bytes::WriteBE<u16>(m_buffer.values(), 0x002, flags);
-    Bytes::WriteBE<u16>(m_buffer.values(), 0x004, 1); // QDCOUNT
-    Bytes::WriteBE<u16>(m_buffer.values(), 0x006, 0); // ANCOUNT
-    Bytes::WriteBE<u16>(m_buffer.values(), 0x008, 0); // NSCOUNT
-    Bytes::WriteBE<u16>(m_buffer.values(), 0x00a, 0); // ARCOUNT
+    Bytes::WriteBE<u16>(buffer.values(), 0x000, m_id);
+    Bytes::WriteBE<u16>(buffer.values(), 0x002, flags);
+    Bytes::WriteBE<u16>(buffer.values(), 0x004, 1); // QDCOUNT
+    Bytes::WriteBE<u16>(buffer.values(), 0x006, 0); // ANCOUNT
+    Bytes::WriteBE<u16>(buffer.values(), 0x008, 0); // NSCOUNT
+    Bytes::WriteBE<u16>(buffer.values(), 0x00a, 0); // ARCOUNT
 
     u32 nameLength, partOffset;
     for (nameLength = 0, partOffset = 0; query.name[nameLength]; nameLength++) {
@@ -185,20 +190,20 @@ bool DNS::writeQuery(const Query &query) {
             if (nameLength == partOffset || nameLength - partOffset >= 64) {
                 return false;
             }
-            m_buffer[0x00c + partOffset] = nameLength - partOffset;
+            buffer[0x00c + partOffset] = nameLength - partOffset;
             partOffset = nameLength + 1;
         } else {
-            m_buffer[0x00c + 0x001 + nameLength] = query.name[nameLength];
+            buffer[0x00c + 0x001 + nameLength] = query.name[nameLength];
         }
     }
-    m_buffer[0x00c + partOffset] = nameLength - partOffset;
-    m_buffer[0x00c + nameLength + 0x001] = 0;
+    buffer[0x00c + partOffset] = nameLength - partOffset;
+    buffer[0x00c + nameLength + 0x001] = 0;
 
-    Bytes::WriteBE<u16>(m_buffer.values(), 0x00c + nameLength + 0x002, 1); // QTYPE
-    Bytes::WriteBE<u16>(m_buffer.values(), 0x00c + nameLength + 0x004, 1); // QCLASS
+    Bytes::WriteBE<u16>(buffer.values(), 0x00c + nameLength + 0x002, 1); // QTYPE
+    Bytes::WriteBE<u16>(buffer.values(), 0x00c + nameLength + 0x004, 1); // QCLASS
 
     for (u32 i = 0; i < m_resolvers.count(); i++) {
-        m_socket.sendTo(m_buffer.values(), 0x00c + nameLength + 0x006, m_resolvers[i]);
+        m_socket.sendTo(buffer.values(), 0x00c + nameLength + 0x006, m_resolvers[i]);
     }
 
     if (m_queries.full()) {

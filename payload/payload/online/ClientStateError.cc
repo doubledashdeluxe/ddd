@@ -1,11 +1,21 @@
 #include "ClientStateError.hh"
 
+#include "payload/online/ClientStateIdle.hh"
+
 ClientStateError::ClientStateError(JKRHeap *heap) : ClientState(heap) {}
 
 ClientStateError::~ClientStateError() {}
 
+bool ClientStateError::needsSockets() {
+    return false;
+}
+
 ClientState &ClientStateError::read(ClientReadHandler &handler) {
     handler.clientStateError();
+    return *this;
+}
+
+ClientState &ClientStateError::writeStateIdle() {
     return *this;
 }
 

@@ -4,14 +4,14 @@ UDPSocket::UDPSocket() {}
 
 UDPSocket::~UDPSocket() {}
 
-s32 UDPSocket::open(s32 domain) {
-    return Socket::open(domain, Type::UDP);
+s32 UDPSocket::open() {
+    return Socket::open(SO_SOCK_DGRAM);
 }
 
-s32 UDPSocket::recvFrom(void *buffer, u32 size, Address &address) {
+s32 UDPSocket::recvFrom(void *buffer, u32 size, SOSockAddr &address) {
     return Socket::recvFrom(buffer, size, &address);
 }
 
-s32 UDPSocket::sendTo(const void *buffer, u32 size, const Address &address) {
+s32 UDPSocket::sendTo(const void *buffer, u32 size, const SOSockAddr &address) {
     return Socket::sendTo(buffer, size, &address);
 }
