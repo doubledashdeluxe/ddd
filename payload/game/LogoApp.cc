@@ -41,7 +41,7 @@ void LogoApp::calc() {
         INFO("Loaded se00_0.aw.");
         CourseManager::Instance()->start();
         ServerManager::Instance()->start();
-        Client::Init(BBAMgr::Config());
+        Client::Init(System::GetAppHeap(), BBAMgr::Config());
         SequenceApp::Call(SceneType::Title);
         return;
     }

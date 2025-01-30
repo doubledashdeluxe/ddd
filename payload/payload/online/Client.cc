@@ -3,7 +3,6 @@
 #include "payload/network/Socket.hh"
 #include "payload/online/ClientStateIdle.hh"
 
-#include <common/Arena.hh>
 #include <jsystem/JKRExpHeap.hh>
 
 void Client::reset() {
@@ -30,10 +29,8 @@ void Client::writeStateError() {
     while (updateState(m_state->writeStateError())) {}
 }
 
-void Client::Init(SOConfig &config) {
-    size_t heapSize = 16 * 1024;
-    void *heapPtr = MEM1Arena::Instance()->alloc(heapSize, 0x4);
-    JKRHeap *heap = JKRExpHeap::Create(heapPtr, heapSize, JKRHeap::GetRootHeap(), false);
+void Client::Init(JKRHeap *parentHeap, SOConfig &config) {
+    JKRHeap *heap = JKRExpHeap::Create(16 * 1024, parentHeap, false);
     s_instance = new (heap, 0x4) Client(config, heap);
 }
 

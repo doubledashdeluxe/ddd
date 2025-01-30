@@ -17,7 +17,7 @@ public:
     void writeStateRoom();
     void writeStateError();
 
-    static void Init(SOConfig &config);
+    static void Init(JKRHeap *parentHeap, SOConfig &config);
     static Client *Instance();
 
 private:
