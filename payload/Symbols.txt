@@ -405,6 +405,7 @@
 801d9928 checkFinishAllLoading__11SequenceAppFv
 801d9990 createScene__11SequenceAppFl
 801dc140 Framework__6PadMgrFv
+801dc290 GetPadData__6PadMgrFUcbPQ26PadMgr11KartPadData
 801dd1b4 processDHCP__6BBAMgrFv
 801dd3c4 processAutoIP__6BBAMgrFv
 801dd628 disconnecting__6BBAMgrFb

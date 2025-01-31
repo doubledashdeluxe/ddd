@@ -11,7 +11,7 @@ void KartPad::updateForRearView(u32 index) {
     }
 
     u32 masks[4] = {PAD_BUTTON_X, PAD_BUTTON_Y, PAD_TRIGGER_L, PAD_TRIGGER_R};
-    u32 mask = masks[(SystemRecord::Instance().m_rearViewButtons >> (2 * padPort)) % 4];
+    u32 mask = masks[(SystemRecord::Instance().m_rearViewButtons >> (padPort * 2)) % 4];
     m_itemMask = (PAD_BUTTON_Y | PAD_BUTTON_X) & ~mask;
     m_lMask = PAD_TRIGGER_L & ~mask;
     m_rMask = PAD_TRIGGER_R & ~mask;
