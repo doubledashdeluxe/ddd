@@ -9,6 +9,7 @@ public:
     static OnlineInfo &Instance();
 
     bool m_hasNames;
+    u32 m_roomType;
     bool m_hasIDs;
     Array<Array<u32, 2>, 4> m_characterIDs;
     Array<u32, 4> m_kartIDs;

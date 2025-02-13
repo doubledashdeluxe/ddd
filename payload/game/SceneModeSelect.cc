@@ -191,7 +191,7 @@ void SceneModeSelect::stateIdle() {
         RaceInfo::Instance().m_raceMode = Modes[m_modeIndex];
         slideOut();
     } else if (button.risingEdge() & PAD_BUTTON_B) {
-        m_nextScene = SceneType::ServerSelect;
+        m_nextScene = SceneType::RoomTypeSelect;
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CANCEL_LITTLE);
         slideOut();
     } else if (button.repeat() & JUTGamePad::PAD_MSTICK_UP) {

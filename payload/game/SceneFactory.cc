@@ -11,6 +11,8 @@
 #include "game/SceneOption.hh"
 #include "game/ScenePackSelect.hh"
 #include "game/ScenePlayerList.hh"
+#include "game/SceneRoomCodeEnter.hh"
+#include "game/SceneRoomTypeSelect.hh"
 #include "game/SceneServerSelect.hh"
 #include "game/SceneTandemSelect.hh"
 #include "game/SceneTitle.hh"
@@ -49,6 +51,12 @@ void SceneFactory::loadData(s32 sceneType, JKRHeap *heap) {
         REPLACED(loadData)(SceneType::Menu, heap);
         REPLACED(loadData)(SceneType::LanEntry, heap);
         loadLocalizedArchive(ArchiveType::GhostData, "GhostData", heap);
+        return;
+    case SceneType::RoomTypeSelect:
+        REPLACED(loadData)(SceneType::Menu, heap);
+        return;
+    case SceneType::RoomCodeEnter:
+        REPLACED(loadData)(SceneType::Menu, heap);
         return;
     case SceneType::ModeSelect:
         loadLocalizedArchive(ArchiveType::GhostData, "GhostData", heap);
@@ -108,6 +116,14 @@ Scene *SceneFactory::createScene(s32 sceneType, JKRHeap *heap) {
     case SceneType::ServerSelect:
         sysDebug->setHeapGroup("ServerSelect", heap);
         scene = new (heap, 0x0) SceneServerSelect(m_archives[ArchiveType::GhostData], heap);
+        break;
+    case SceneType::RoomTypeSelect:
+        sysDebug->setHeapGroup("RoomTypeSelect", heap);
+        scene = new (heap, 0x0) SceneRoomTypeSelect(m_archives[ArchiveType::Menu], heap);
+        break;
+    case SceneType::RoomCodeEnter:
+        sysDebug->setHeapGroup("RoomCodeEnter", heap);
+        scene = new (heap, 0x0) SceneRoomCodeEnter(m_archives[ArchiveType::Menu], heap);
         break;
     case SceneType::ModeSelect:
         sysDebug->setHeapGroup("ModeSelect", heap);

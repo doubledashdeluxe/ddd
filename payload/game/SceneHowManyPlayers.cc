@@ -93,7 +93,7 @@ void SceneHowManyPlayers::calc() {
                 m_countAnmTransformFrames[i]++;
             }
             m_countAnmTevRegKeyFrames[i] = 1;
-            m_circleAnmTransformFrames[i] = 14 + (m_circleAnmTransformFrames[i] - 13) % 61;
+            m_circleAnmTransformFrames[i] = 14 + (m_circleAnmTransformFrames[i] - 13) % 60;
         } else {
             if (m_countAnmTransformFrames[i] > 14) {
                 m_countAnmTransformFrames[i]--;

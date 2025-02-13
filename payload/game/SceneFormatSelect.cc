@@ -163,7 +163,6 @@ void SceneFormatSelect::calc() {
     m_mainAnmTransform->m_frame = m_mainAnmTransformFrame;
     m_mainAnmTextureSRTKey->m_frame = m_mainAnmTextureSRTKeyFrame;
     m_mainAnmColor->m_frame = m_mainAnmColorFrame;
-    m_modeAnmTransform->m_frame = m_modeAnmTransformFrame;
     for (u32 i = 0; i < m_formatAnmTevRegKeys.count(); i++) {
         m_formatAnmTevRegKeys[i]->m_frame = m_formatAnmTevRegKeyFrames[i];
     }
@@ -176,6 +175,7 @@ void SceneFormatSelect::calc() {
     for (u32 i = 0; i < m_circleAnmTransforms.count(); i++) {
         m_circleAnmTransforms[i]->m_frame = m_circleAnmTransformFrames[i];
     }
+    m_modeAnmTransform->m_frame = m_modeAnmTransformFrame;
     for (u32 i = 0; i < m_playerCountAnmTevRegKeys.count(); i++) {
         m_playerCountAnmTevRegKeys[i]->m_frame = m_playerCountAnmTevRegKeyFrames[i];
     }

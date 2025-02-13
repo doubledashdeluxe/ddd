@@ -113,8 +113,8 @@ void SceneNameSelect::calc() {
     MenuTitleLine::Instance()->calc();
 
     m_nameAnmTransformFrame = m_padCount;
-    m_nameCircleAnmTransformFrame = 14 + (m_nameCircleAnmTransformFrame - 13) % 61;
-    m_padCountCircleAnmTransformFrame = 14 + (m_padCountCircleAnmTransformFrame - 13) % 61;
+    m_nameCircleAnmTransformFrame = 14 + (m_nameCircleAnmTransformFrame - 13) % 60;
+    m_padCountCircleAnmTransformFrame = 14 + (m_padCountCircleAnmTransformFrame - 13) % 60;
 
     m_mainAnmTransform->m_frame = m_mainAnmTransformFrame;
     m_nameAnmTransform->m_frame = m_nameAnmTransformFrame;

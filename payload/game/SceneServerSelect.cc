@@ -65,7 +65,7 @@ SceneServerSelect::SceneServerSelect(JKRArchive *archive, JKRHeap *heap) : Scene
 SceneServerSelect::~SceneServerSelect() {}
 
 void SceneServerSelect::init() {
-    if (SequenceApp::Instance()->prevScene() != SceneType::ModeSelect) {
+    if (SequenceApp::Instance()->prevScene() != SceneType::RoomTypeSelect) {
         Client::Instance()->reset();
     }
 
@@ -161,7 +161,7 @@ void SceneServerSelect::wait() {
 
 void SceneServerSelect::slideIn() {
     m_serverCount = ServerManager::Instance()->serverCount();
-    if (SequenceApp::Instance()->prevScene() != SceneType::ModeSelect) {
+    if (SequenceApp::Instance()->prevScene() != SceneType::RoomTypeSelect) {
         m_serverIndex = 0;
     }
     m_rowIndex = m_serverIndex;
@@ -240,7 +240,7 @@ void SceneServerSelect::stateSlideOut() {
 void SceneServerSelect::stateIdle() {
     const JUTGamePad::CButton &button = KartGamePad::GamePad(0)->button();
     if (button.risingEdge() & PAD_BUTTON_A) {
-        m_nextScene = SceneType::ModeSelect;
+        m_nextScene = SceneType::RoomTypeSelect;
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE_LITTLE);
         slideOut();
     } else if (button.risingEdge() & PAD_BUTTON_B) {

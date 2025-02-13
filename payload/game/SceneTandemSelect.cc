@@ -188,7 +188,7 @@ void SceneTandemSelect::calc() {
             m_partitionAnmTextureSRTKeyFrames[i] = (m_partitionAnmTextureSRTKeyFrames[i] + 1) % 180;
             m_partitionAnmTevRegKeyFrames[i] = 1;
             m_partitionCircleAnmTransformFrames[i] =
-                    14 + (m_partitionCircleAnmTransformFrames[i] - 13) % 61;
+                    14 + (m_partitionCircleAnmTransformFrames[i] - 13) % 60;
             m_partitionWindowAnmTransformFrames[i] =
                     10 + (m_partitionWindowAnmTransformFrames[i] - 9) % 49;
         } else {
@@ -201,7 +201,7 @@ void SceneTandemSelect::calc() {
             m_partitionWindowAnmTransformFrames[i] = 0;
         }
     }
-    m_padCountCircleAnmTransformFrame = 14 + (m_padCountCircleAnmTransformFrame - 13) % 61;
+    m_padCountCircleAnmTransformFrame = 14 + (m_padCountCircleAnmTransformFrame - 13) % 60;
 
     m_mainAnmTransform->m_frame = m_mainAnmTransformFrame;
     m_mainAnmTextureSRTKey->m_frame = m_mainAnmTextureSRTKeyFrame;

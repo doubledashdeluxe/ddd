@@ -6,8 +6,10 @@
 #include "game/MenuBackground.hh"
 #include "game/MenuTitleLine.hh"
 #include "game/OnlineBackground.hh"
+#include "game/OnlineInfo.hh"
 #include "game/RaceInfo.hh"
 #include "game/RaceMode.hh"
+#include "game/RoomType.hh"
 #include "game/SceneFactory.hh"
 #include "game/SequenceApp.hh"
 #include "game/SequenceInfo.hh"
@@ -349,14 +351,31 @@ void ScenePackSelect::stateSlideOut() {
 
 void ScenePackSelect::stateIdle() {
     SequenceInfo &sequenceInfo = SequenceInfo::Instance();
+    OnlineInfo &onlineInfo = OnlineInfo::Instance();
     const JUTGamePad::CButton &button = KartGamePad::GamePad(0)->button();
     if (button.risingEdge() & PAD_BUTTON_A) {
-        m_nextScene = sequenceInfo.m_isOnline ? SceneType::FormatSelect : SceneType::MapSelect;
+        if (sequenceInfo.m_isOnline) {
+            if (onlineInfo.m_roomType == RoomType::Worldwide) {
+                m_nextScene = SceneType::FormatSelect;
+            } else {
+                m_nextScene = SceneType::PlayerList;
+            }
+        } else {
+            m_nextScene = SceneType::MapSelect;
+        }
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE_LITTLE);
         sequenceInfo.m_packIndex = m_packIndex;
         slideOut();
     } else if (button.risingEdge() & PAD_BUTTON_B) {
-        m_nextScene = sequenceInfo.m_isOnline ? SceneType::ModeSelect : SceneType::Menu;
+        if (sequenceInfo.m_isOnline) {
+            if (onlineInfo.m_roomType == RoomType::Worldwide) {
+                m_nextScene = SceneType::ModeSelect;
+            } else {
+                m_nextScene = SceneType::RoomTypeSelect;
+            }
+        } else {
+            m_nextScene = SceneType::Menu;
+        }
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CANCEL_LITTLE);
         slideOut();
     } else if (button.repeat() & JUTGamePad::PAD_MSTICK_UP) {
