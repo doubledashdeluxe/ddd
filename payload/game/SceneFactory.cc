@@ -54,9 +54,12 @@ void SceneFactory::loadData(s32 sceneType, JKRHeap *heap) {
         return;
     case SceneType::RoomTypeSelect:
         REPLACED(loadData)(SceneType::Menu, heap);
+        REPLACED(loadData)(SceneType::LanEntry, heap);
         return;
     case SceneType::RoomCodeEnter:
         REPLACED(loadData)(SceneType::Menu, heap);
+        REPLACED(loadData)(SceneType::PackSelect, heap);
+        REPLACED(loadData)(SceneType::LanEntry, heap);
         return;
     case SceneType::ModeSelect:
         loadLocalizedArchive(ArchiveType::GhostData, "GhostData", heap);
@@ -123,7 +126,7 @@ Scene *SceneFactory::createScene(s32 sceneType, JKRHeap *heap) {
         break;
     case SceneType::RoomCodeEnter:
         sysDebug->setHeapGroup("RoomCodeEnter", heap);
-        scene = new (heap, 0x0) SceneRoomCodeEnter(m_archives[ArchiveType::Menu], heap);
+        scene = new (heap, 0x0) SceneRoomCodeEnter(m_archives[ArchiveType::LanEntry], heap);
         break;
     case SceneType::ModeSelect:
         sysDebug->setHeapGroup("ModeSelect", heap);

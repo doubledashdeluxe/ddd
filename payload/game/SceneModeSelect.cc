@@ -5,9 +5,11 @@
 #include "game/KartGamePad.hh"
 #include "game/MenuTitleLine.hh"
 #include "game/OnlineBackground.hh"
+#include "game/OnlineInfo.hh"
 #include "game/RaceInfo.hh"
 #include "game/RaceMode.hh"
 #include "game/ResMgr.hh"
+#include "game/RoomType.hh"
 #include "game/SequenceApp.hh"
 
 #include <jsystem/J2DAnmLoaderDataBase.hh>
@@ -191,7 +193,11 @@ void SceneModeSelect::stateIdle() {
         RaceInfo::Instance().m_raceMode = Modes[m_modeIndex];
         slideOut();
     } else if (button.risingEdge() & PAD_BUTTON_B) {
-        m_nextScene = SceneType::RoomTypeSelect;
+        if (OnlineInfo::Instance().m_roomType == RoomType::Worldwide) {
+            m_nextScene = SceneType::RoomTypeSelect;
+        } else {
+            m_nextScene = SceneType::RoomCodeEnter;
+        }
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CANCEL_LITTLE);
         slideOut();
     } else if (button.repeat() & JUTGamePad::PAD_MSTICK_UP) {
