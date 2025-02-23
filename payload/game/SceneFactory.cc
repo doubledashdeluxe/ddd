@@ -10,6 +10,7 @@
 #include "game/SceneNameSelect.hh"
 #include "game/SceneOption.hh"
 #include "game/ScenePackSelect.hh"
+#include "game/ScenePersonalRoom.hh"
 #include "game/ScenePlayerList.hh"
 #include "game/SceneRoomCodeEnter.hh"
 #include "game/SceneRoomTypeSelect.hh"
@@ -66,6 +67,9 @@ void SceneFactory::loadData(s32 sceneType, JKRHeap *heap) {
         return;
     case SceneType::FormatSelect:
         REPLACED(loadData)(SceneType::Menu, heap);
+        return;
+    case SceneType::PersonalRoom:
+        REPLACED(loadData)(SceneType::LanEntry, heap);
         return;
     case SceneType::PlayerList:
         REPLACED(loadData)(SceneType::LanEntry, heap);
@@ -135,6 +139,10 @@ Scene *SceneFactory::createScene(s32 sceneType, JKRHeap *heap) {
     case SceneType::FormatSelect:
         sysDebug->setHeapGroup("FormatSelect", heap);
         scene = new (heap, 0x0) SceneFormatSelect(m_archives[ArchiveType::Menu], heap);
+        break;
+    case SceneType::PersonalRoom:
+        sysDebug->setHeapGroup("PersonalRoom", heap);
+        scene = new (heap, 0x0) ScenePersonalRoom(m_archives[ArchiveType::LanEntry], heap);
         break;
     case SceneType::PlayerList:
         sysDebug->setHeapGroup("PlayerList", heap);

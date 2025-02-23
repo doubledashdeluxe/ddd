@@ -265,7 +265,7 @@ void ScenePackSelect::slideIn() {
     m_packIndex = 0;
     s32 prevScene = SequenceApp::Instance()->prevScene();
     if (SequenceInfo::Instance().m_isOnline) {
-        if (prevScene == SceneType::FormatSelect) {
+        if (prevScene != SceneType::RoomTypeSelect && prevScene != SceneType::ModeSelect) {
             m_packIndex = SequenceInfo::Instance().m_packIndex;
         }
     } else {
@@ -355,10 +355,16 @@ void ScenePackSelect::stateIdle() {
     const JUTGamePad::CButton &button = KartGamePad::GamePad(0)->button();
     if (button.risingEdge() & PAD_BUTTON_A) {
         if (sequenceInfo.m_isOnline) {
-            if (onlineInfo.m_roomType == RoomType::Worldwide) {
+            switch (onlineInfo.m_roomType) {
+            case RoomType::Worldwide:
                 m_nextScene = SceneType::FormatSelect;
-            } else {
+                break;
+            case RoomType::Duel:
                 m_nextScene = SceneType::PlayerList;
+                break;
+            default:
+                m_nextScene = SceneType::PersonalRoom;
+                break;
             }
         } else {
             m_nextScene = SceneType::MapSelect;
@@ -368,10 +374,10 @@ void ScenePackSelect::stateIdle() {
         slideOut();
     } else if (button.risingEdge() & PAD_BUTTON_B) {
         if (sequenceInfo.m_isOnline) {
-            if (onlineInfo.m_roomType == RoomType::Worldwide) {
-                m_nextScene = SceneType::ModeSelect;
-            } else {
+            if (onlineInfo.m_roomType == RoomType::Duel) {
                 m_nextScene = SceneType::RoomTypeSelect;
+            } else {
+                m_nextScene = SceneType::ModeSelect;
             }
         } else {
             m_nextScene = SceneType::Menu;

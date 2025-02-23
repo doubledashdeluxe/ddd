@@ -5,6 +5,7 @@
 #include "game/MenuTitleLine.hh"
 #include "game/OnlineBackground.hh"
 #include "game/RaceInfo.hh"
+#include "game/RaceMode.hh"
 #include "game/SceneFactory.hh"
 #include "game/SequenceApp.hh"
 #include "game/SequenceInfo.hh"
@@ -272,8 +273,10 @@ void SceneRoomCodeEnter::stateSelectOut() {
 void SceneRoomCodeEnter::stateSelect() {
     const JUTGamePad::CButton &button = KartGamePad::GamePad(0)->button();
     if (button.risingEdge() & PAD_BUTTON_A) {
-        m_nextScene = SceneType::PlayerList;
+        m_nextScene = SceneType::PersonalRoom;
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE_LITTLE);
+        RaceInfo::Instance().m_raceMode = RaceMode::VS;
+        SequenceInfo::Instance().m_packIndex = 0;
         slideOut();
     } else if (button.risingEdge() & PAD_BUTTON_B) {
         m_charCount--;

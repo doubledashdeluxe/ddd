@@ -5,8 +5,10 @@
 #include "game/KartGamePad.hh"
 #include "game/MenuTitleLine.hh"
 #include "game/OnlineBackground.hh"
+#include "game/OnlineInfo.hh"
 #include "game/OnlineTimer.hh"
 #include "game/Race2D.hh"
+#include "game/RoomType.hh"
 #include "game/SequenceApp.hh"
 
 extern "C" {
@@ -174,7 +176,17 @@ void ScenePlayerList::stateIdle() {
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE_LITTLE);
         slideOut();
     } else if (button.risingEdge() & PAD_BUTTON_B) {
-        m_nextScene = SceneType::FormatSelect;
+        switch (OnlineInfo::Instance().m_roomType) {
+        case RoomType::Worldwide:
+            m_nextScene = SceneType::FormatSelect;
+            break;
+        case RoomType::Duel:
+            m_nextScene = SceneType::PackSelect;
+            break;
+        default:
+            m_nextScene = SceneType::PersonalRoom;
+            break;
+        }
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CANCEL_LITTLE);
         slideOut();
     }
