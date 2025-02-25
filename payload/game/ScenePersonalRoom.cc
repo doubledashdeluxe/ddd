@@ -52,7 +52,11 @@ ScenePersonalRoom::ScenePersonalRoom(JKRArchive *archive, JKRHeap *heap) : Scene
 
     Kart2DCommon *kart2DCommon = Kart2DCommon::Instance();
     J2DScreen &okScreen = m_entryScreens[MaxEntryCount - 1];
-    kart2DCommon->changeUnicodeTexture("Ok!", 20, m_entryScreens[MaxEntryCount - 1], "Name");
+    const char *path = "/ok.txt";
+    char *ok = reinterpret_cast<char *>(ResMgr::GetPtr(ResMgr::ArchiveID::MRAMLoc, path));
+    u32 size = ResMgr::GetResSize(ResMgr::ArchiveID::MRAMLoc, ok);
+    ok[size - 1] = '\0';
+    kart2DCommon->changeUnicodeTexture(ok, 20, okScreen, "Name");
     okScreen.search("L0")->m_isVisible = false;
     okScreen.search("R0")->m_isVisible = false;
     okScreen.search("Value")->m_isVisible = false;
@@ -422,7 +426,7 @@ void ScenePersonalRoom::stateIdle() {
     const JUTGamePad::CButton &button = KartGamePad::GamePad(0)->button();
     if (button.risingEdge() & PAD_BUTTON_A) {
         if (m_entryIndex + 1 == MaxEntryCount) {
-            m_nextScene = SceneType::PlayerList;
+            m_nextScene = SceneType::TeamSelect;
             GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE_LITTLE);
             slideOut();
         }

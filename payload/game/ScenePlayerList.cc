@@ -184,7 +184,7 @@ void ScenePlayerList::stateIdle() {
             m_nextScene = SceneType::PackSelect;
             break;
         default:
-            m_nextScene = SceneType::PersonalRoom;
+            m_nextScene = SceneType::TeamSelect;
             break;
         }
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CANCEL_LITTLE);

@@ -12,6 +12,7 @@ class Random {
 public:
     static void Init();
     static void Get(void *data, size_t size);
+    static u32 Get(u32 range);
 
 private:
     Random();

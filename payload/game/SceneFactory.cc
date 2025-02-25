@@ -16,6 +16,7 @@
 #include "game/SceneRoomTypeSelect.hh"
 #include "game/SceneServerSelect.hh"
 #include "game/SceneTandemSelect.hh"
+#include "game/SceneTeamSelect.hh"
 #include "game/SceneTitle.hh"
 #include "game/SysDebug.hh"
 
@@ -69,6 +70,9 @@ void SceneFactory::loadData(s32 sceneType, JKRHeap *heap) {
         REPLACED(loadData)(SceneType::Menu, heap);
         return;
     case SceneType::PersonalRoom:
+        REPLACED(loadData)(SceneType::LanEntry, heap);
+        return;
+    case SceneType::TeamSelect:
         REPLACED(loadData)(SceneType::LanEntry, heap);
         return;
     case SceneType::PlayerList:
@@ -143,6 +147,10 @@ Scene *SceneFactory::createScene(s32 sceneType, JKRHeap *heap) {
     case SceneType::PersonalRoom:
         sysDebug->setHeapGroup("PersonalRoom", heap);
         scene = new (heap, 0x0) ScenePersonalRoom(m_archives[ArchiveType::LanEntry], heap);
+        break;
+    case SceneType::TeamSelect:
+        sysDebug->setHeapGroup("TeamSelect", heap);
+        scene = new (heap, 0x0) SceneTeamSelect(m_archives[ArchiveType::LanEntry], heap);
         break;
     case SceneType::PlayerList:
         sysDebug->setHeapGroup("PlayerList", heap);

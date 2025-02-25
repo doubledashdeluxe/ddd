@@ -23,11 +23,12 @@ public:
         ModeSelect = 0x13,      // Added
         FormatSelect = 0x14,    // Added
         PersonalRoom = 0x15,    // Added
-        PlayerList = 0x16,      // Added
-        CharacterSelect = 0x17, // Added
-        MapSelect = 0x18,       // Moved
-        CoursePoll = 0x19,      // Added
-        Count = 0x1a,
+        TeamSelect = 0x16,      // Added
+        PlayerList = 0x17,      // Added
+        CharacterSelect = 0x18, // Added
+        MapSelect = 0x19,       // Moved
+        CoursePoll = 0x1a,      // Added
+        Count = 0x1b,
     };
 
 private:
