@@ -12,6 +12,7 @@
 #include "game/ResMgr.hh"
 #include "game/SceneFactory.hh"
 #include "game/SequenceApp.hh"
+#include "game/System.hh"
 
 #include <common/Algorithm.hh>
 #include <jsystem/J2DAnmLoaderDataBase.hh>
@@ -363,6 +364,7 @@ void SceneTeamSelect::stateIdle() {
         if (m_entryIndex + 1 == MaxEntryCount) {
             m_nextScene = SceneType::PlayerList;
             GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE_LITTLE);
+            System::GetDisplay()->startFadeOut(15);
             slideOut();
         }
     } else if (button.risingEdge() & PAD_BUTTON_B) {

@@ -9,6 +9,7 @@
 #include "game/RaceMode.hh"
 #include "game/SceneFactory.hh"
 #include "game/SequenceApp.hh"
+#include "game/System.hh"
 
 #include <jsystem/J2DAnmLoaderDataBase.hh>
 #include <jsystem/J2DPicture.hh>
@@ -188,9 +189,7 @@ void SceneFormatSelect::calc() {
 }
 
 void SceneFormatSelect::slideIn() {
-    if (SequenceApp::Instance()->prevScene() != SceneType::PlayerList) {
-        m_formatIndex = 0;
-    }
+    m_formatIndex = 0;
 
     MenuTitleLine::Instance()->drop("SelectFormat.bti");
     m_mainAnmTransformFrame = 0;
@@ -233,6 +232,7 @@ void SceneFormatSelect::stateIdle() {
     if (button.risingEdge() & PAD_BUTTON_A) {
         m_nextScene = SceneType::PlayerList;
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE_LITTLE);
+        System::GetDisplay()->startFadeOut(15);
         slideOut();
     } else if (button.risingEdge() & PAD_BUTTON_B) {
         m_nextScene = SceneType::PackSelect;

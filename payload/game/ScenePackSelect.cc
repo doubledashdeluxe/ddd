@@ -13,6 +13,7 @@
 #include "game/SceneFactory.hh"
 #include "game/SequenceApp.hh"
 #include "game/SequenceInfo.hh"
+#include "game/System.hh"
 
 #include <common/Algorithm.hh>
 #include <jsystem/J2DAnmLoaderDataBase.hh>
@@ -361,6 +362,7 @@ void ScenePackSelect::stateIdle() {
                 break;
             case RoomType::Duel:
                 m_nextScene = SceneType::PlayerList;
+                System::GetDisplay()->startFadeOut(15);
                 break;
             default:
                 m_nextScene = SceneType::PersonalRoom;

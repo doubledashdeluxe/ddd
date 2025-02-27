@@ -65,18 +65,23 @@ SequenceApp::~SequenceApp() {
 }
 
 void SequenceApp::calc() {
-    if (m_state == 0 && s_nextScene == SceneType::Title) {
-        if (checkFinishAllLoading()) {
-            freeForMovieApp();
-            // Alternate title screen
-            SystemRecord::Instance().setGameFlag(SystemRecord::GameFlag::All);
-            m_state = 3;
-        } else {
-            return;
+    if (m_state == 0) {
+        if (s_nextScene == SceneType::Title ||
+                (s_nextScene == SceneType::PlayerList && s_scene != SceneType::CharacterSelect)) {
+            if (checkFinishAllLoading()) {
+                freeForMovieApp();
+                if (s_nextScene == SceneType::Title) {
+                    // Alternate title screen
+                    SystemRecord::Instance().setGameFlag(SystemRecord::GameFlag::All);
+                }
+                m_state = 3;
+            } else {
+                return;
+            }
         }
     }
     if (m_state == 3) {
-        if (REPLACED(ready)(SceneType::Title)) {
+        if (REPLACED(ready)(s_nextScene)) {
             m_state = 1;
         } else {
             return;

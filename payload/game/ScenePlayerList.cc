@@ -5,11 +5,11 @@
 #include "game/KartGamePad.hh"
 #include "game/MenuTitleLine.hh"
 #include "game/OnlineBackground.hh"
-#include "game/OnlineInfo.hh"
 #include "game/OnlineTimer.hh"
 #include "game/Race2D.hh"
-#include "game/RoomType.hh"
+#include "game/SceneFactory.hh"
 #include "game/SequenceApp.hh"
+#include "game/System.hh"
 
 extern "C" {
 #include <dolphin/OSTime.h>
@@ -21,6 +21,12 @@ extern "C" {
 }
 
 ScenePlayerList::ScenePlayerList(JKRArchive *archive, JKRHeap *heap) : Scene(archive, heap) {
+    SceneFactory *sceneFactory = SceneFactory::Instance();
+    JKRArchive *titleLineArchive = sceneFactory->archive(SceneFactory::ArchiveType::TitleLine);
+
+    OnlineBackground::Create(m_archive);
+    MenuTitleLine::Create(titleLineArchive, heap);
+
     m_mainScreen.set("PlayerList.blo", 0x0, m_archive);
     for (u32 i = 0; i < m_playerScreens.count(); i++) {
         m_playerScreens[i].set("PlayerListPlayer.blo", 0x0, m_archive);
@@ -47,6 +53,10 @@ ScenePlayerList::ScenePlayerList(JKRArchive *archive, JKRHeap *heap) : Scene(arc
 ScenePlayerList::~ScenePlayerList() {}
 
 void ScenePlayerList::init() {
+    if (SequenceApp::Instance()->prevScene() != SceneType::CharacterSelect) {
+        System::GetDisplay()->startFadeIn(15);
+    }
+
     if (SequenceApp::Instance()->prevScene() == SceneType::CharacterSelect &&
             OnlineTimer::Instance()->hasExpired()) {
         m_nextScene = SceneType::CharacterSelect;
@@ -176,18 +186,10 @@ void ScenePlayerList::stateIdle() {
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE_LITTLE);
         slideOut();
     } else if (button.risingEdge() & PAD_BUTTON_B) {
-        switch (OnlineInfo::Instance().m_roomType) {
-        case RoomType::Worldwide:
-            m_nextScene = SceneType::FormatSelect;
-            break;
-        case RoomType::Duel:
-            m_nextScene = SceneType::PackSelect;
-            break;
-        default:
-            m_nextScene = SceneType::TeamSelect;
-            break;
-        }
-        GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CANCEL_LITTLE);
+        m_nextScene = SceneType::Title;
+        GameAudio::Main::Instance()->fadeOutAll(15);
+        GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CANCEL);
+        System::GetDisplay()->startFadeOut(15);
         slideOut();
     }
 }

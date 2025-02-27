@@ -76,6 +76,7 @@ void SceneFactory::loadData(s32 sceneType, JKRHeap *heap) {
         REPLACED(loadData)(SceneType::LanEntry, heap);
         return;
     case SceneType::PlayerList:
+        REPLACED(loadData)(SceneType::Menu, heap);
         REPLACED(loadData)(SceneType::LanEntry, heap);
         return;
     case SceneType::CharacterSelect:
