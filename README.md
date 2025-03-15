@@ -12,7 +12,7 @@ Only RVL-001 consoles are currently supported.
 
 You need:
 
-- Python 3.10 or later
+- Python 3.11 or later
 - pyelftools
 - Ninja
 - cargo
