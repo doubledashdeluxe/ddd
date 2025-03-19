@@ -88,16 +88,38 @@ InitCPU:
     // Set DPM, NHR, ICFI, DCFI, DCFA, BTIC, BHT
     lis r3, 0x0011
     ori r3, r3, 0x0c64
-    mtspr HID0, r3
+    mthid0 r3
 
     // Set FP
     li r7, 0x2000
     mtmsr r7
 
     // Set ICE, DCE
-    ori r3, r3, 0xc000
-    mtspr HID0, r3
     isync
+    sync
+    ori r3, r3, 0xc000
+    mthid0 r3
+
+    // Clear L2E
+    sync
+    mfl2cr r3
+    clrlwi r3, r3, 1
+    mtl2cr r3
+    sync
+
+    // Set L2I
+    oris r4, r3, 0x0020
+    mtl2cr r4
+
+WhileL2IP:
+    mfl2cr r4
+    andi. r4, r4, 0x0001
+    bne WhileL2IP
+
+    // Clear L2I and set L2E
+    rlwinm r3, r3, 0, 11, 9
+    oris r3, r3, 0x8000
+    mtl2cr r3
 
     li r3, 0x0
     mtspr DBAT0U, r3
@@ -118,7 +140,6 @@ InitCPU:
     mtspr IBAT7U, r3
     isync
 
-    lis r3, 0x8000
     mtsr 0, r3
     mtsr 1, r3
     mtsr 2, r3

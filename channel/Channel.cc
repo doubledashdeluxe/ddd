@@ -4,6 +4,7 @@
 #include "channel/DI.hh"
 #include "channel/SRAM.hh"
 
+#include <common/Align.hh>
 #include <common/Arena.hh>
 #include <common/Clock.hh>
 #include <common/Console.hh>
@@ -25,12 +26,19 @@ extern "C" {
 #include <string.h>
 }
 
-extern "C" const u8 payloadP[];
-extern "C" const size_t payloadP_size;
-extern "C" const u8 payloadE[];
-extern "C" const size_t payloadE_size;
-extern "C" const u8 payloadJ[];
-extern "C" const size_t payloadJ_size;
+extern "C" const u8 payloadPI[];
+extern "C" const size_t payloadPI_size;
+extern "C" const u8 payloadEI[];
+extern "C" const size_t payloadEI_size;
+extern "C" const u8 payloadJI[];
+extern "C" const size_t payloadJI_size;
+
+extern "C" const u8 payloadPD[];
+extern "C" const size_t payloadPD_size;
+extern "C" const u8 payloadED[];
+extern "C" const size_t payloadED_size;
+extern "C" const u8 payloadJD[];
+extern "C" const size_t payloadJD_size;
 
 extern "C" const u8 commonArchive[];
 extern "C" const size_t commonArchive_size;
@@ -108,35 +116,49 @@ Channel::PayloadEntryFunc Channel::Run(Context *context) {
 
     RunApploader(context);
 
-    void *payloadDst;
-    const void *payloadSrc;
-    size_t payloadSize;
+    void *payloadIDst;
+    const void *payloadISrc;
+    size_t payloadISize;
+    const void *payloadDSrc;
+    size_t payloadDSize;
     switch (DiscID::Get().gameID[3]) {
     case 'P':
-        payloadDst = reinterpret_cast<void *>(0x803ec140);
-        payloadSrc = &payloadP;
-        payloadSize = payloadP_size;
+        payloadIDst = reinterpret_cast<void *>(0x802d84a0);
+        payloadISrc = &payloadPI;
+        payloadISize = payloadPI_size;
+        payloadDSrc = &payloadPD;
+        payloadDSize = payloadPD_size;
         break;
     case 'E':
-        payloadDst = reinterpret_cast<void *>(0x803e2300);
-        payloadSrc = &payloadE;
-        payloadSize = payloadE_size;
+        payloadIDst = reinterpret_cast<void *>(0x802d8520);
+        payloadISrc = &payloadEI;
+        payloadISize = payloadEI_size;
+        payloadDSrc = &payloadED;
+        payloadDSize = payloadED_size;
         break;
     case 'J':
-        payloadDst = reinterpret_cast<void *>(0x803fc920);
-        payloadSrc = &payloadJ;
-        payloadSize = payloadJ_size;
+        payloadIDst = reinterpret_cast<void *>(0x802d8540);
+        payloadISrc = &payloadJI;
+        payloadISize = payloadJI_size;
+        payloadDSrc = &payloadJD;
+        payloadDSize = payloadJD_size;
         break;
     default:
         ERROR("Region detection failed!");
         return nullptr;
     }
 
-    INFO("Copying payload...");
-    memcpy(payloadDst, payloadSrc, payloadSize);
-    DCache::Flush(payloadDst, payloadSize);
-    ICache::Invalidate(payloadDst, payloadSize);
-    INFO("Copied payload.");
+    INFO("Copying payload instructions...");
+    memcpy(payloadIDst, payloadISrc, payloadISize);
+    DCache::Flush(payloadIDst, payloadISize);
+    ICache::Invalidate(payloadIDst, payloadISize);
+    INFO("Copied payload instructions.");
+
+    INFO("Copying payload data...");
+    uintptr_t payloadDDstAddress = 0x80800000;
+    void *payloadDDst = reinterpret_cast<void *>(payloadDDstAddress);
+    memcpy(payloadDDst, payloadDSrc, payloadDSize);
+    INFO("Copied payload data.");
 
     INFO("Copying common archive...");
     context->commonArchive = MEM1Arena::Instance()->alloc(commonArchive_size, -0x20);
@@ -157,11 +179,19 @@ Channel::PayloadEntryFunc Channel::Run(Context *context) {
         // Enable OSReport over EXI
         consoleType |= 0x10000000;
     }
-    arenaLo = reinterpret_cast<uintptr_t>(payloadDst) + payloadSize;
+    arenaLo = payloadDDstAddress + payloadDSize;
     arenaHi = reinterpret_cast<uintptr_t>(MEM1Arena::Instance()->alloc(0x0, -0x4));
 
+    INFO("Copying low memory...");
+    uintptr_t lowMemoryDstAddress = 0x80400000;
+    void *lowMemoryDst = reinterpret_cast<void *>(lowMemoryDstAddress);
+    void *lowMemorySrc = reinterpret_cast<void *>(0x80000000);
+    size_t lowMemorySize = 0x56c0;
+    memmove(lowMemoryDst, lowMemorySrc, lowMemorySize);
+    INFO("Copied low memory.");
+
     INFO("Starting payload...");
-    PayloadEntryFunc payloadEntry = reinterpret_cast<PayloadEntryFunc>(payloadDst);
+    PayloadEntryFunc payloadEntry = reinterpret_cast<PayloadEntryFunc>(payloadIDst);
     return payloadEntry;
 }
 

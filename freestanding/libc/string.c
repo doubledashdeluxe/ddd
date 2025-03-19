@@ -20,11 +20,22 @@ int memcmp(const void *s1, const void *s2, size_t n) {
 void *memcpy(void *dest, const void *src, size_t n) {
     u8 *d = dest;
     const u8 *s = src;
-
     while (n-- > 0) {
         *d++ = *s++;
     }
+    return dest;
+}
 
+void *memmove(void *dest, const void *src, size_t n) {
+    if (dest <= src) {
+        return memcpy(dest, src, n);
+    }
+
+    u8 *d = dest;
+    const u8 *s = src;
+    while (n-- > 0) {
+        d[n] = s[n];
+    }
     return dest;
 }
 

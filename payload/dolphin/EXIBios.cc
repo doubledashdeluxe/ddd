@@ -4,6 +4,7 @@ extern "C" {
 #include "dolphin/OSInterrupt.h"
 }
 
+#include <common/Memory.hh>
 #include <common/Platform.hh>
 #include <payload/Lock.hh>
 
@@ -47,6 +48,11 @@ void EXIProbeReset(void) {
     Ecb[1]._20 = 0;
     __EXIProbe(0);
     __EXIProbe(1);
+}
+
+BOOL EXIDma(s32 chan, void *buf, s32 len, u32 type, EXICallback callback) {
+    buf = reinterpret_cast<void *>(Memory::CachedToPhysical(buf));
+    return REPLACED(EXIDma)(chan, buf, len, type, callback);
 }
 
 BOOL EXIImm(s32 chan, void *buf, s32 len, u32 type, EXICallback callback) {

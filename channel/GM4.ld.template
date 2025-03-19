@@ -9,7 +9,7 @@ PHDRS {
 SECTIONS {
     . = 0x80003400;
     .first : ALIGN(32) { *(first) } :first
-    . = 0x80800000 + 0x100 + SIZEOF(.first);
+    . = 0x80900000 + 0x100 + SIZEOF(.first);
     .text : ALIGN(32) { *(.init*) *(.text*) } :text
     .ctors : ALIGN(32) { *(.ctors*) } :rodata
     .dtors : ALIGN(32) { *(.dtors*) } :rodata

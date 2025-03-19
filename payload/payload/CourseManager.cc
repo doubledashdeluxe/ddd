@@ -9,7 +9,6 @@
 #include "payload/UTF8.hh"
 #include "payload/ZIPFile.hh"
 
-#include <common/Arena.hh>
 #include <common/DCache.hh>
 #include <common/Log.hh>
 #include <game/CourseID.hh>
@@ -305,7 +304,7 @@ const CourseManager::Course &CourseManager::battleCourse(u32 packIndex, u32 inde
 }
 
 void CourseManager::Init() {
-    s_instance = new (MEM1Arena::Instance(), 0x4) CourseManager;
+    s_instance = new (reinterpret_cast<void *>(0x802856c0)) CourseManager;
 }
 
 CourseManager *CourseManager::Instance() {

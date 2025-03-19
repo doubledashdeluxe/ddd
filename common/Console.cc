@@ -34,7 +34,6 @@ void Console::vprintf(Color bg, Color fg, const char *format, va_list vlist) {
     m_bg = bg;
     m_fg = fg;
     npf_vpprintf(Putchar, this, format, vlist);
-    m_vi->flushXFB();
 }
 
 void Console::Init(VI *vi) {

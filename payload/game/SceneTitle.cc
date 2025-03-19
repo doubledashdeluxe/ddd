@@ -20,6 +20,7 @@ extern "C" {
 #include <jsystem/J2DAnmLoaderDataBase.hh>
 #include <jsystem/J2DPicture.hh>
 #include <payload/CourseManager.hh>
+#include <payload/MemoryProtection.hh>
 #include <payload/online/Client.hh>
 #include <payload/online/ServerManager.hh>
 
@@ -67,6 +68,7 @@ SceneTitle::~SceneTitle() {}
 
 void SceneTitle::init() {
     Console::Instance()->m_isActive = false;
+    MemoryProtection::Finalize();
     SequenceInfo::Instance().m_fromPause = false;
     SequenceInfo::Instance().m_isOnline = false;
 

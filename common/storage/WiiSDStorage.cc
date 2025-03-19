@@ -248,7 +248,7 @@ bool WiiSDStorage::sendCommand(u32 command, u32 commandType, u32 responseType, u
     request.arg = arg;
     request.blockCount = blockCount;
     request.blockSize = blockSize;
-    request.buffer = buffer;
+    request.buffer = Memory::CachedToPhysical(buffer) | 0x80000000;
     request.isDma = !!buffer;
     alignas(0x20) u32 out[4];
 

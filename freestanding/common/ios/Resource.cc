@@ -30,7 +30,7 @@ void Resource::Init() {
 void Resource::Sync(Request &request) {
     DCache::Flush(&request, offsetof(Request, user));
 
-    ppcmsg = Memory::VirtualToPhysical(&request);
+    ppcmsg = Memory::CachedToPhysical(&request);
     ppcctrl = X1;
 
     while ((ppcctrl & Y2) != Y2) {
@@ -53,7 +53,7 @@ void Resource::Sync(Request &request) {
         ppcctrl = Y1;
 
         ppcctrl = X2;
-    } while (reply != Memory::VirtualToPhysical(&request));
+    } while (reply != Memory::CachedToPhysical(&request));
 
     DCache::Invalidate(&request, offsetof(Request, user));
 }
@@ -61,14 +61,14 @@ void Resource::Sync(Request &request) {
 bool Resource::SyncReboot(Request &request) {
     DCache::Flush(&request, offsetof(Request, user));
 
-    ppcmsg = Memory::VirtualToPhysical(&request);
+    ppcmsg = Memory::CachedToPhysical(&request);
     ppcctrl = X1;
 
     while ((ppcctrl & Y2) != Y2) {
         if ((ppcctrl & Y1) == Y1) {
             u32 reply = armmsg;
             ppcctrl = Y1;
-            if (reply == Memory::VirtualToPhysical(&request)) {
+            if (reply == Memory::CachedToPhysical(&request)) {
                 return false;
             }
         }
@@ -79,7 +79,7 @@ bool Resource::SyncReboot(Request &request) {
         if ((ppcctrl & Y1) == Y1) {
             u32 reply = armmsg;
             ppcctrl = Y1;
-            if (reply == Memory::VirtualToPhysical(&request)) {
+            if (reply == Memory::CachedToPhysical(&request)) {
                 return false;
             }
         }

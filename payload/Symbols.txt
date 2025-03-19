@@ -81,6 +81,10 @@
 8004558c drawFullSet__12J2DPictureExFffffPA3_A4_f
 800483b4 getBlackWhite__10J2DPictureCFP7GXColorP7GXColor
 8004dbf4 drawInit__6J3DSysFv
+8004ecfc setArray__15J3DVertexBufferFv
+80066554 J3DGDSetTexImgPtr__FUlPv
+800665e8 J3DGDSetTexImgPtrRaw__FUlUl
+80074d08 syncJ3DSysPointers__12J3DModelDataFv
 8007a494 Init__9JFWSystemFv
 800905cc CreateThread__6JASDvdFllUl
 8009162c sendCmdMsg__13JASTaskThreadFPFPv_vPvUl
@@ -92,8 +96,15 @@
 80099c18 Finish__13JASAramStreamFPv
 80099e9c load__13JASAramStreamFv
 8009a164 ChannelProc__13JASAramStreamFPv
+800a1ae0 DsetupTable__FUlUlUlUlUl
+800a1ba0 DsyncFrame__FUlUlUl
 
+800a1f20 DSPAddTask
+800a1f80 DSPAddPriorTask
 800a9d6c C_MTXLookAt
+800aaacc Read
+800aafb4 DVDLowReadDiskID
+800ab170 DVDLowInquiry
 800ab56c DVDConvertPathToEntrynum
 800ab8d4 DVDOpen
 800ab99c DVDClose
@@ -112,6 +123,7 @@
 800b15a8 ARGetSize
 800b2fec ARQInit
 800b305c ARQPostRequest
+800b31f0 DSPSendMailToDSP
 800b4834 CARDFreeBlocks
 800b74c8 CARDCheck
 800b75e8 CARDProbeEx
@@ -130,15 +142,18 @@
 800b9fac CARDGetStatus
 800ba234 CARDSetStatus
 800ba478 CARDRename
+800bd280 GXSetArray
 800bea44 GXCopyDisp
 800bf31c GXInitTexObj
 800bf904 GXInitTlutObj
+800c1efc GXCallDisplayList
 800c22b4 GXSetViewport
 800c22fc GXSetScissor
 800c2374 GXGetScissor
 800c23bc GXSetScissorBoxOffset
 800c3970 EXIImm
 800c3bcc EXIImmEx
+800c3c6c EXIDma
 800c3d58 EXISync
 800c3fa4 EXIClearInterrupts
 800c4068 __EXIProbe
@@ -150,6 +165,8 @@
 800c4d8c EXIUnlock
 800c4ea8 EXIGetID
 800c5258 EXIGetType
+800c60ac GDSetArray
+800c62b8 GDSetArrayRaw
 800c943c IPGetMacAddr
 800c94ac IPGetNetmask
 800c951c IPGetAddr
@@ -184,6 +201,10 @@
 800e34b4 ETHAddMulticastAddress
 800e3664 ETHClearMulticastAddresses
 800e5b50 OSInit
+800e5f28 OSExceptionInit
+800e61d0 OSSetExceptionHandler
+800e6200 OSExceptionVector
+800e629c OSDefaultExceptionHandler
 800e63e0 OSCreateAlarm
 800e6640 OSSetAlarm
 800e66a8 OSSetPeriodicAlarm
@@ -196,6 +217,7 @@
 800e7068 DCFlushRange
 800e7098 DCStoreRange
 800e714c ICInvalidateRange
+800e78f4 OSSetCurrentContext
 800e79dc OSLoadContext
 800e803c OSReport
 800e80bc OSPanic
@@ -211,11 +233,16 @@
 800e8fc4 OSInitMessageQueue
 800e9024 OSSendMessage
 800e90ec OSReceiveMessage
+800e9414 Config24MB
+800e9494 Config48MB
+800e9514 RealMode
 800e9644 OSInitMutex
 800e967c OSLockMutex
 800e9758 OSUnlockMutex
 800ea670 __OSLockSram
 800eaa64 __OSUnlockSram
+800eafb8 SystemCallVector
+800eafd8 OSInitSystemCall
 800eb03c DefaultSwitchThreadCallback
 800eb198 OSInitThreadQueue
 800eb1a8 OSGetCurrentThread
@@ -444,6 +471,7 @@
 80346c20 LanguageNames__10KartLocale
 80347af8 __vt__7JKRAram
 80347e70 __vt__13JKRMemArchive
+8035192c OSExceptionLocations
 80355478 CharacterNames__20SceneCharacterSelect
 8035c638 s_gamePads__11KartGamePad
 8035c648 s_kartPads__11KartGamePad
@@ -484,6 +512,7 @@
 803d4e0c FstStart
 803d4e10 FstStringStart
 803d4e14 MaxEntryNum
+803d5184 OSExceptionTable
 803d51c4 OSLastInterruptSrr0
 803d51c8 OSLastInterrupt
 803d51d0 OSLastInterruptTime

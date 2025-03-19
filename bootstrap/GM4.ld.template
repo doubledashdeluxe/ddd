@@ -6,7 +6,7 @@ PHDRS {
 }
 
 SECTIONS {
-    . = 0x80800000;
+    . = 0x80900000;
     .first : ALIGN(32) { *channel.o (.rodata) } :rodata
     .ctors : ALIGN(32) { *(.ctors*) } :rodata
     .dtors : ALIGN(32) { *(.dtors*) } :rodata

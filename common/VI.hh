@@ -21,7 +21,6 @@ public:
     u32 *getXFB() const;
     Color readFromXFB(u16 x, u16 y);
     void writeToXFB(u16 x, u16 y, Color color);
-    void flushXFB();
 
     static void Init();
     static void Init(VI *instance);

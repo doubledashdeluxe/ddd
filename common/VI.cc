@@ -63,10 +63,6 @@ void VI::writeToXFB(u16 x, u16 y, Color color) {
     m_xfb[y * (m_xfbWidth / 2) + x / 2] = val;
 }
 
-void VI::flushXFB() {
-    DCache::Store(m_xfb, m_xfbSize);
-}
-
 void VI::Init() {
     s_instance = new (MEM1Arena::Instance(), -0x4) VI;
 }
@@ -85,13 +81,12 @@ VI::VI() {
     m_xfbWidth = 608;
     m_xfbHeight = isNtsc ? 448 : 538;
     m_xfbSize = m_xfbHeight * AlignUp(m_xfbWidth, 16) * sizeof(u16);
-    m_xfb = reinterpret_cast<u32 *>(MEM1Arena::Instance()->alloc(m_xfbSize, -0x20));
+    m_xfb = reinterpret_cast<u32 *>(0xc0360000);
     for (u16 y = 0; y < m_xfbHeight; y++) {
         for (u16 x = 0; x < m_xfbWidth; x++) {
             writeToXFB(x, y, Color::Black);
         }
     }
-    flushXFB();
     vtr = (m_xfbHeight << 3 | (5 + isNtsc) << 0) << m_isProgressive;
     if (m_isProgressive) {
         vto = 0x26 << 16 | 0x50;
@@ -105,8 +100,8 @@ VI::VI() {
     }
     hsw = m_xfbWidth << 4 | m_xfbWidth >> (3 + m_isProgressive);
     hsr = isNtsc ? 0x10ea : 0x10e9;
-    tfbl = 1 << 28 | Memory::VirtualToPhysical(m_xfb) >> 5;
-    bfbl = 1 << 28 | Memory::VirtualToPhysical(m_xfb + (m_xfbWidth / 2) * !m_isProgressive) >> 5;
+    tfbl = 1 << 28 | Memory::UncachedToPhysical(m_xfb) >> 5;
+    bfbl = 1 << 28 | Memory::UncachedToPhysical(m_xfb + (m_xfbWidth / 2) * !m_isProgressive) >> 5;
     videoMode = !isNtsc;
 }
 

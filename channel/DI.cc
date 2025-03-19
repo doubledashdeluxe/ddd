@@ -27,10 +27,10 @@ bool DI::ReadDiscID() {
     dimar = 0x80000000 & 0x1fffffff;
     dilength = 0x20;
     dicr = 0x3;
-    DCache::Invalidate(reinterpret_cast<void *>(0x80000000), 0x20);
 
     while (dicr & 0x1) {}
 
+    DCache::Invalidate(reinterpret_cast<void *>(0x80000000), 0x20);
     return !(disr & 0x4);
 }
 
@@ -42,10 +42,10 @@ bool DI::Read(void *dst, u32 size, u32 offset) {
     dimar = reinterpret_cast<uintptr_t>(dst) & 0x1fffffff;
     dilength = size;
     dicr = 0x3;
-    DCache::Invalidate(dst, size);
 
     while (dicr & 0x1) {}
 
+    DCache::Invalidate(dst, size);
     return !(disr & 0x4);
 }
 

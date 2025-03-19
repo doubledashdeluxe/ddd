@@ -3,6 +3,7 @@ extern "C" {
 }
 
 #include <common/Clock.hh>
+#include <common/Memory.hh>
 #include <common/VirtualDI.hh>
 #include <payload/Lock.hh>
 #include <payload/Mutex.hh>
@@ -11,6 +12,24 @@ extern "C" {
 #ifdef __CWCC__
 static Mutex s_mutex;
 #endif
+
+extern "C" void REPLACED(Read)(void *addr, s32 length, s32 offset, DVDCBCallback callback);
+extern "C" REPLACE void Read(void *addr, s32 length, s32 offset, DVDCBCallback callback) {
+    addr = reinterpret_cast<void *>(Memory::CachedToPhysical(addr));
+    REPLACED(Read)(addr, length, offset, callback);
+}
+
+extern "C" BOOL REPLACED(DVDLowReadDiskID)(void *addr, DVDCBCallback callback);
+extern "C" REPLACE BOOL DVDLowReadDiskID(void *addr, DVDCBCallback callback) {
+    addr = reinterpret_cast<void *>(Memory::CachedToPhysical(addr));
+    return REPLACED(DVDLowReadDiskID)(addr, callback);
+}
+
+extern "C" BOOL REPLACED(DVDLowInquiry)(void *addr, DVDCBCallback callback);
+extern "C" REPLACE BOOL DVDLowInquiry(void *addr, DVDCBCallback callback) {
+    addr = reinterpret_cast<void *>(Memory::CachedToPhysical(addr));
+    return REPLACED(DVDLowInquiry)(addr, callback);
+}
 
 extern "C" BOOL REPLACED(DVDReadAbsAsyncPrio)(DVDCommandBlock *block, void *addr, s32 length,
         s32 offset, DVDCBCallback callback, s32 prio);

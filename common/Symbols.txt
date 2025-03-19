@@ -2,9 +2,12 @@
 8000002c consoleType
 80000030 arenaLo
 80000034 arenaHi
+800000c0 currentContextAddress
 800000c4 userInterruptMask
 800000c8 osInterruptMask
 800000cc videoMode
+800000d4 currentContext
+800000d8 currentFPUContext
 800000dc threadQueue
 800000f8 busClock
 
@@ -25,6 +28,8 @@ cc003000 intsr
 cc003004 intmr
 cc003024 pirc
 
+cc004000 mimarr
+cc004010 mimarrcontrol
 cc00401e miirqflag
 
 cc00500a dspcsr

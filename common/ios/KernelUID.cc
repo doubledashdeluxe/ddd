@@ -38,7 +38,7 @@ bool KernelUID::Acquire(bool again) {
 
     SafeFlush(ArmCode, sizeof(ArmCode));
 
-    u32 *mem1 = Memory::PhysicalToVirtual<u32>(0x00000000);
+    u32 *mem1 = Memory::PhysicalToCached<u32>(0x00000000);
     if (again) {
         // Enter Thumb state
         *mem1++ = 0xfaffffff; // blx 0x4
@@ -49,16 +49,16 @@ bool KernelUID::Acquire(bool again) {
     *mem1++ = 0x49036209; // ldr r1, =0xffff0014; str r1, [r1, #0x20];
     *mem1++ = 0x47080000; // bx r1
     *mem1++ = 0x10100000; // Temporary stack
-    *mem1++ = Memory::VirtualToPhysical(ArmCode);
+    *mem1++ = Memory::CachedToPhysical(ArmCode);
     *mem1++ = 0xffff0014; // Reserved handler
 
     alignas(0x20) Resource::IoctlvPair pairs[4];
     pairs[0].data = nullptr;
     pairs[0].size = 0;
-    pairs[1].data = Memory::PhysicalToVirtual<void>(0x7ffe0028);
+    pairs[1].data = Memory::PhysicalToCached<void>(0x7ffe0028);
     pairs[1].size = 0;
     // Unused vector utilized for cache safety
-    pairs[2].data = Memory::PhysicalToVirtual<void>(0x00000000);
+    pairs[2].data = Memory::PhysicalToCached<void>(0x00000000);
     pairs[2].size = 0x40;
 
     // This should never return an error if the exploit succeeded
@@ -92,14 +92,14 @@ void KernelUID::SafeFlush(const void *start, size_t size) {
 
 #ifdef __CWCC__
 u32 KernelUID::ReadMessage(u32 index) {
-    u32 address = Memory::VirtualToPhysical(&ArmCode[index]);
+    u32 address = Memory::CachedToPhysical(&ArmCode[index]);
     u32 message;
     asm volatile("lwz %0, 0x0 (%1); sync" : "=r"(message) : "b"(0xc0000000 | address));
     return message;
 }
 
 void KernelUID::WriteMessage(u32 index, u32 message) {
-    u32 address = Memory::VirtualToPhysical(&ArmCode[index]);
+    u32 address = Memory::CachedToPhysical(&ArmCode[index]);
     asm volatile("stw %0, 0x0 (%1); eieio" : : "r"(message), "b"(0xc0000000 | address));
 }
 #endif

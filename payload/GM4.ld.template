@@ -7,6 +7,8 @@ PHDRS {
 
 SECTIONS {
     .text : { *(first) *(.init*) *(.text*) *(replacements*) *(thunks*) } :text
+    ASSERT(. <= 0x80360000, "Payload text section overflowed!")
+    . = 0x80800000;
     .ctors : { *(.ctors*) } :rodata
     .dtors : { *(.dtors*) } :rodata
     .rodata : { *(.rodata*) } :rodata

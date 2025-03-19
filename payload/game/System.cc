@@ -35,18 +35,20 @@ void System::Init() {
         }
     }
 
-    DEBUG("%p %p main.dol", DOLBinary::Start(), DOLBinary::End());
-    DEBUG("%p %p payload.bin", PayloadBinary::Start(), PayloadBinary::End());
+    DEBUG("%p %p mainI.dol", DOLBinary::Start(), DOLBinary::TextSectionEnd());
+    DEBUG("%p %p payloadI.bin", PayloadBinary::Start(), PayloadBinary::TextSectionEnd());
+    const JKRHeap *courseHeap = ResMgr::GetCourseHeap();
+    DEBUG("%p %p CourseHeap", courseHeap->getStartAddr(), courseHeap->getEndAddr());
     const u8 *courseManagerStart = reinterpret_cast<u8 *>(CourseManager::Instance());
     const u8 *courseManagerEnd = courseManagerStart + sizeof(CourseManager);
     DEBUG("%p %p CourseManager", courseManagerStart, courseManagerEnd);
+    DEBUG("%p %p mainD.dol", DOLBinary::CtorsSectionStart(), DOLBinary::End());
+    DEBUG("%p %p payloadD.bin", PayloadBinary::CtorsSectionStart(), PayloadBinary::End());
     const u8 *serverManagerStart = reinterpret_cast<u8 *>(ServerManager::Instance());
     const u8 *serverManagerEnd = serverManagerStart + sizeof(ServerManager);
     DEBUG("%p %p ServerManager", serverManagerStart, serverManagerEnd);
     const JKRHeap *systemHeap = JKRHeap::GetSystemHeap();
     DEBUG("%p %p SystemHeap", systemHeap->getStartAddr(), systemHeap->getEndAddr());
-    const JKRHeap *courseHeap = ResMgr::GetCourseHeap();
-    DEBUG("%p %p CourseHeap", courseHeap->getStartAddr(), courseHeap->getEndAddr());
     DEBUG("%p %p AppHeap", s_appHeap->getStartAddr(), s_appHeap->getEndAddr());
 }
 

@@ -41,7 +41,7 @@ void Resource::Sync(Request &request) {
         for (prev = s_request; prev->user.next; prev = prev->user.next) {}
         prev->user.next = &request;
     } else {
-        ppcmsg = Memory::VirtualToPhysical(&request);
+        ppcmsg = Memory::CachedToPhysical(&request);
         ppcctrl = IY2 | IY1 | X1;
         s_request = &request;
     }
@@ -57,7 +57,7 @@ bool Resource::SyncReboot(Request & /* request */) {
 
 void Resource::HandleInterrupt(s16 /* interrupt */, OSContext * /* context */) {
     if (ppcctrl & Y1) {
-        Request *reply = Memory::PhysicalToVirtual<Request>(armmsg);
+        Request *reply = Memory::PhysicalToCached<Request>(armmsg);
 
         ppcctrl = IY2 | IY1 | Y1;
         ppcirqflag = 1 << 30;
@@ -76,7 +76,7 @@ void Resource::HandleInterrupt(s16 /* interrupt */, OSContext * /* context */) {
         if (s_request) {
             s_request = s_request->user.next;
             if (s_request) {
-                ppcmsg = Memory::VirtualToPhysical(s_request);
+                ppcmsg = Memory::CachedToPhysical(s_request);
                 ppcctrl = IY2 | IY1 | X1;
             }
         }

@@ -96,7 +96,7 @@ private:
         u32 arg;
         u32 blockCount;
         u32 blockSize;
-        void *buffer;
+        u32 buffer;
         u32 isDma;
         u32 _20;
     };

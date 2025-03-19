@@ -17,6 +17,8 @@ BOOL EXIDeselect(s32 chan);
 void EXIProbeReset(void);
 BOOL EXIAttach(s32 chan, EXICallback extCallback);
 BOOL EXIDetach(s32 chan);
+BOOL REPLACED(EXIDma)(s32 chan, void *buf, s32 len, u32 type, EXICallback callback);
+REPLACE BOOL EXIDma(s32 chan, void *buf, s32 len, u32 type, EXICallback callback);
 REPLACE BOOL EXIImm(s32 chan, void *buf, s32 len, u32 type, EXICallback callback);
 BOOL EXIImmEx(s32 chan, void *buf, s32 len, u32 type);
 BOOL EXISync(s32 chan);

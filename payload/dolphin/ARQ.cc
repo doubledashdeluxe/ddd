@@ -32,9 +32,9 @@ extern "C" void ARQPostRequest(ARQRequest *task, u32 owner, u32 type, u32 priori
     task->length = 0;
     task->callback = callback;
 
-    DCache::Invalidate(Memory::PhysicalToVirtual<void>(source), length);
-    memcpy(Memory::PhysicalToVirtual<void>(dest), Memory::PhysicalToVirtual<void>(source), length);
-    DCache::Flush(Memory::PhysicalToVirtual<void>(dest), length);
+    DCache::Invalidate(Memory::PhysicalToCached<void>(source), length);
+    memcpy(Memory::PhysicalToCached<void>(dest), Memory::PhysicalToCached<void>(source), length);
+    DCache::Flush(Memory::PhysicalToCached<void>(dest), length);
     if (callback) {
         callback(task);
     }

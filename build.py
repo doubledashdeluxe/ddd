@@ -308,7 +308,7 @@ n.newline()
 
 n.rule(
     'elf2bin',
-    command = f'{sys.executable} $elf2bin $in $out',
+    command = f'{sys.executable} $elf2bin $kind $in $out',
     description = 'ELF2BIN $out',
 )
 n.newline()
@@ -618,9 +618,9 @@ for region in ['P', 'E', 'J']:
 
 for region in ['P', 'E', 'J']:
     image_base = {
-        'P': '0x803ec140',
-        'E': '0x803e2300',
-        'J': '0x803fc920',
+        'P': '0x802d84a0',
+        'E': '0x802d8520',
+        'J': '0x802d8540',
     }[region]
     n.build(
         os.path.join('$builddir', 'payload', f'payload{region}.elf'),
@@ -646,39 +646,47 @@ for region in ['P', 'E', 'J']:
     n.newline()
 
 for region in ['P', 'E', 'J']:
-    n.build(
-        os.path.join('$builddir', 'payload', f'payload{region}.bin'),
-        'elf2bin',
-        os.path.join('$builddir', 'payload', f'payload{region}.elf'),
-        implicit = '$elf2bin',
-    )
-    n.newline()
+    for kind in ['I', 'D']:
+        n.build(
+            os.path.join('$builddir', 'payload', f'payload{region}{kind}.bin'),
+            'elf2bin',
+            os.path.join('$builddir', 'payload', f'payload{region}.elf'),
+            variables = {
+                'kind': kind,
+            },
+            implicit = '$elf2bin',
+        )
+        n.newline()
 
 for region in ['P', 'E', 'J']:
-    n.build(
-        os.path.join('$builddir', 'payload', f'payload{region}.c'),
-        'bin2c',
-        os.path.join('$builddir', 'payload', f'payload{region}.bin'),
-        variables = {
-            'name': f'payload{region}',
-        },
-        implicit = '$bin2c',
-    )
-    n.newline()
+    for kind in ['I', 'D']:
+        n.build(
+            os.path.join('$builddir', 'payload', f'payload{region}{kind}.c'),
+            'bin2c',
+            os.path.join('$builddir', 'payload', f'payload{region}{kind}.bin'),
+            variables = {
+                'name': f'payload{region}{kind}',
+            },
+            implicit = '$bin2c',
+        )
+        n.newline()
 
 for region in ['P', 'E', 'J']:
-    n.build(
-        os.path.join('$builddir', 'payload', f'payload{region}.o'),
-        'c',
-        os.path.join('$builddir', 'payload', f'payload{region}.c'),
-        variables = {
-            'cflags': ' '.join([
-                *common_ccflags,
-                *target_ccflags['channel'],
-            ]),
-        },
-    )
-    n.newline()
+    for kind in ['I', 'D']:
+        out_file = os.path.join('$builddir', 'payload', f'payload{region}{kind}.o')
+        code_out_files['channel'] += [out_file]
+        n.build(
+            out_file,
+            'c',
+            os.path.join('$builddir', 'payload', f'payload{region}{kind}.c'),
+            variables = {
+                'cflags': ' '.join([
+                    *common_ccflags,
+                    *target_ccflags['channel'],
+                ]),
+            },
+        )
+        n.newline()
 
 n.build(
     os.path.join('$builddir', 'channel', 'GM4.ld'),
@@ -702,7 +710,6 @@ n.build(
         *code_out_files['freestanding'],
         *code_out_files['channel'],
         *asset_o_files,
-        *[os.path.join('$builddir', 'payload', f'payload{region}.o') for region in ['P', 'E', 'J']],
     ],
     variables = {
         'ldflags' : ' '.join([

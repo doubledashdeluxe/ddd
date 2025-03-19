@@ -53,9 +53,18 @@ Apploader::GameEntryFunc Apploader::Run(ReadFunc read) {
     u32 size;
     u32 offset;
     while (main(&dst, &size, &offset)) {
+        uintptr_t dstAddress = reinterpret_cast<uintptr_t>(dst);
+        if (dstAddress >= 0x80200000 && dstAddress < 0x80400000) {
+            dstAddress += 0x400000;
+            dst = reinterpret_cast<void *>(dstAddress);
+        }
         if (!Read(read, dst, size, offset, hashes)) {
             ERROR("Failed to read dol section.");
             return nullptr;
+        }
+        if (dstAddress >= 0x81200000 && size == 0x100) {
+            u32 *bssSize = reinterpret_cast<u32 *>(dstAddress + 0xdc);
+            *bssSize = 0x0;
         }
         ICache::Invalidate(dst, size);
     }

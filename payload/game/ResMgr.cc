@@ -14,7 +14,6 @@
 #include <common/Log.hh>
 #include <jsystem/JKRExpHeap.hh>
 #include <jsystem/JKRMemArchive.hh>
-#include <jsystem/JKRSolidHeap.hh>
 #include <payload/Archive.hh>
 #include <payload/ArchivePatcher.hh>
 #include <payload/DOLBinary.hh>
@@ -35,7 +34,8 @@ void ResMgr::Create(JKRHeap *parentHeap) {
     s_loaders[ArchiveID::System] = JKRArchive::Mount(DOLBinary::BinarySectionStart(), parentHeap,
             JKRArchive::MountDirection::Head);
 
-    s_courseHeap = JKRSolidHeap::Create(0x280000, parentHeap, false);
+    void *courseHeapPtr = reinterpret_cast<void *>(0x800056c0);
+    s_courseHeap = JKRExpHeap::Create(courseHeapPtr, 2560 * 1024, parentHeap, false);
     SysDebug::GetManager()->createHeapInfo(s_courseHeap, "Crs.arc");
 }
 

@@ -30,7 +30,7 @@ extern "C" u8 dol_sbss2_start[];
 extern "C" u8 dol_sbss2_end[];
 
 void *DOLBinary::Start() {
-    return dol_text_start;
+    return dol_init_start;
 }
 
 void *DOLBinary::End() {

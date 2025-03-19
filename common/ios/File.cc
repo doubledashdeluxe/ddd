@@ -26,7 +26,7 @@ s32 File::read(void *output, u32 outputSize) {
     memset(&request, 0, sizeof(request));
     request.command = Command::Read;
     request.fd = m_fd;
-    request.read.output = Memory::VirtualToPhysical(output);
+    request.read.output = Memory::CachedToPhysical(output);
     request.read.outputSize = outputSize;
 
     Sync(request);
@@ -42,7 +42,7 @@ s32 File::write(const void *input, u32 inputSize) {
     memset(&request, 0, sizeof(request));
     request.command = Command::Write;
     request.fd = m_fd;
-    request.write.input = Memory::VirtualToPhysical(input);
+    request.write.input = Memory::CachedToPhysical(input);
     request.write.inputSize = inputSize;
 
     Sync(request);
