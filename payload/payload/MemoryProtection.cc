@@ -74,7 +74,9 @@ ExitRealMode:
 #endif
 
 void MemoryProtection::FinalizeMI() {
-    MI::Protect(0, 0x00000000, 0x00360000, MI::R);
+    // We would like to also protect the first page, but the IOS58 network module writes a few
+    // statistics to it, blowing up exception handlers at the same time.
+    MI::Protect(0, 0x00001000, 0x00360000, MI::R);
     MI::Protect(1, DOLBinary::RodataSectionStart(), DOLBinary::RodataSectionEnd(), MI::R);
     MI::Protect(2, DOLBinary::Sdata2SectionStart(), DOLBinary::Sbss2SectionEnd(), MI::R);
     MI::Protect(3, PayloadBinary::CtorsSectionStart(), PayloadBinary::RodataSectionEnd(), MI::R);
