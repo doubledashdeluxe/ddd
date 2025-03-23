@@ -87,7 +87,7 @@ BINARIES = {
             Section('BINARY'    , 0x802d8b40, 0x8033d3c0),
             Section('rodata'    , 0x8033d3c0, 0x80357400),
             Section('data'      , 0x80357400, 0x8037e5c0),
-            Section('bss'       , 0x8037e5c0, 0x80353a40),
+            Section('bss'       , 0x8037e5c0, 0x803e3a40),
             Section('sdata'     , 0x803e3a40, 0x803e5160),
             Section('sbss'      , 0x803e5160, 0x803e6bc0),
             Section('sdata2'    , 0x803e6bc0, 0x803ec8a0),
