@@ -23,4 +23,5 @@ private:
     static void LaunchChannel();
 
     static bool IsFileInstalled(const char *path, const void *data, u32 size);
+    static void CreateDir(FS &fs, const char *path, u16 mode);
 };

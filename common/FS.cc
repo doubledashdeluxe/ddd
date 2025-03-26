@@ -28,7 +28,11 @@ bool FS::writeFile(const char *path, const void *src, u32 size, u16 mode, u8 att
 }
 
 bool FS::createDir(const char *path, u16 mode, u8 attributes) {
-    return create(Ioctl::CreateDir, path, mode, attributes);
+    return ioctl(Ioctl::CreateDir, path, mode, attributes);
+}
+
+bool FS::setAttr(const char *path, u16 mode, u8 attributes) {
+    return ioctl(Ioctl::SetAttr, path, mode, attributes);
 }
 
 bool FS::remove(const char *path) {
@@ -38,7 +42,7 @@ bool FS::remove(const char *path) {
         return false;
     }
 
-    return ioctl(Ioctl::Remove, in.values(), in.count(), nullptr, 0) == 0;
+    return Resource::ioctl(Ioctl::Remove, in.values(), in.count(), nullptr, 0) == 0;
 }
 
 bool FS::rename(const char *srcPath, const char *dstPath) {
@@ -51,23 +55,23 @@ bool FS::rename(const char *srcPath, const char *dstPath) {
         return false;
     }
 
-    return ioctl(Ioctl::Rename, in.values(), in.count(), nullptr, 0) == 0;
+    return Resource::ioctl(Ioctl::Rename, in.values(), in.count(), nullptr, 0) == 0;
 }
 
 bool FS::createFile(const char *path, u16 mode, u8 attributes) {
-    return create(Ioctl::CreateFile, path, mode, attributes);
+    return ioctl(Ioctl::CreateFile, path, mode, attributes);
 }
 
-bool FS::create(u32 ioctl, const char *path, u16 mode, u8 attributes) {
+bool FS::ioctl(u32 ioctl, const char *path, u16 mode, u8 attributes) {
     alignas(0x20) Array<u8, 0x4c> in(0x00);
 
     if (snprintf(reinterpret_cast<char *>(in.values() + 0x6), 0x40, "%s", path) >= 0x40) {
         return false;
     }
     for (u32 i = 0; i < 3; i++) {
-        in[0x46 + i] = mode >> (2 - i) * 3 & 3;
+        in[0x46 + i] = mode >> ((2 - i) * 3 + 1) & 3;
     }
     in[0x49] = attributes;
 
-    return FS::ioctl(ioctl, in.values(), in.count(), nullptr, 0) == 0;
+    return Resource::ioctl(ioctl, in.values(), in.count(), nullptr, 0) == 0;
 }

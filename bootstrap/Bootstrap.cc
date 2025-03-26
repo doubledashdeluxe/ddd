@@ -78,7 +78,7 @@ bool Bootstrap::InstallChannelTicket(FS &fs) {
     }
 
     INFO("Installing the channel ticket...");
-    fs.createDir("/ticket/00010008", 0660);
+    CreateDir(fs, "/ticket/00010008", 0660);
     if (!fs.writeFile("/tmp/44444443.tik", ticket.values(), ticket.count(), 0660)) {
         return false;
     }
@@ -128,10 +128,10 @@ bool Bootstrap::InstallChannelContent(FS &fs) {
     }
 
     INFO("Installing the channel content...");
-    fs.createDir("/title/00010008", 0664);
-    fs.createDir("/title/00010008/44444443", 0664);
-    fs.createDir("/title/00010008/44444443/data", 0600);
-    fs.createDir("/tmp/content", 0660);
+    CreateDir(fs, "/title/00010008", 0664);
+    CreateDir(fs, "/title/00010008/44444443", 0664);
+    CreateDir(fs, "/title/00010008/44444443/data", 0660);
+    CreateDir(fs, "/tmp/content", 0660);
     if (!fs.writeFile("/tmp/content/title.tmd", tmd.values(), tmd.count(), 0660)) {
         return false;
     }
@@ -190,4 +190,10 @@ bool Bootstrap::IsFileInstalled(const char *path, const void *data, u32 size) {
     }
 
     return true;
+}
+
+void Bootstrap::CreateDir(FS &fs, const char *path, u16 mode) {
+    fs.createDir(path, mode);
+    // Old DDD versions would create them with broken permissions
+    fs.setAttr(path, mode);
 }
