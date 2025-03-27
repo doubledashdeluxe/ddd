@@ -144,7 +144,6 @@ common_ncflags = [
     '-Wextra',
 ]
 common_nccflags = [
-    '-D', 'lest_FEATURE_AUTO_REGISTER',
     '-fcheck-new',
     '-fno-sanitize-recover=all',
     '-fsanitize=undefined',

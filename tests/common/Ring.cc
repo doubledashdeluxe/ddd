@@ -1,59 +1,56 @@
 #include <common/Ring.hh>
-#include <lest.hpp>
+#define SNITCH_IMPLEMENTATION
+#include <snitch/snitch_all.hpp>
 
-static lest::tests specification;
-
-#define CASE(name) lest_CASE(specification, name)
-
-CASE("Ring") {
-    SETUP("Empty") {
+TEST_CASE("Ring") {
+    SECTION("Empty") {
         Ring<u32, 8> ring;
 
         SECTION("empty") {
-            EXPECT(ring.empty());
+            CHECK(ring.empty());
         }
 
         SECTION("full") {
-            EXPECT(!ring.full());
+            CHECK_FALSE(ring.full());
         }
 
         SECTION("count") {
-            EXPECT(ring.count() == 0);
+            CHECK(ring.count() == 0);
         }
 
         SECTION("front") {
-            EXPECT(ring.front() == nullptr);
+            CHECK(ring.front() == nullptr);
         }
 
         SECTION("back") {
-            EXPECT(ring.back() == nullptr);
+            CHECK(ring.back() == nullptr);
         }
 
         SECTION("pushFront") {
-            EXPECT(ring.pushFront(96));
-            EXPECT(*ring.front() == 96);
+            CHECK(ring.pushFront(96));
+            CHECK(*ring.front() == 96);
         }
 
         SECTION("pushBack") {
-            EXPECT(ring.pushBack(168));
-            EXPECT(*ring.back() == 168);
+            CHECK(ring.pushBack(168));
+            CHECK(*ring.back() == 168);
         }
 
         SECTION("popFront") {
-            EXPECT(!ring.popFront());
+            CHECK_FALSE(ring.popFront());
         }
 
         SECTION("popBack") {
-            EXPECT(!ring.popBack());
+            CHECK_FALSE(ring.popBack());
         }
 
         SECTION("reset") {
             ring.reset();
-            EXPECT(ring.empty());
+            CHECK(ring.empty());
         }
     }
 
-    SETUP("Full") {
+    SECTION("Full") {
         Ring<u32, 8> ring;
         ring.pushBack(231);
         ring.pushBack(67);
@@ -65,66 +62,66 @@ CASE("Ring") {
         ring.pushBack(220);
 
         SECTION("empty") {
-            EXPECT(!ring.empty());
+            CHECK_FALSE(ring.empty());
         }
 
         SECTION("full") {
-            EXPECT(ring.full());
+            CHECK(ring.full());
         }
 
         SECTION("count") {
-            EXPECT(ring.count() == 8);
+            CHECK(ring.count() == 8);
         }
 
         SECTION("front") {
-            EXPECT(*ring.front() == 231);
+            CHECK(*ring.front() == 231);
         }
 
         SECTION("back") {
-            EXPECT(*ring.back() == 220);
+            CHECK(*ring.back() == 220);
         }
 
         SECTION("operator[]") {
-            EXPECT(ring[6] == 84);
+            CHECK(ring[6] == 84);
         }
 
         SECTION("pushFront") {
-            EXPECT(!ring.pushFront(100));
+            CHECK_FALSE(ring.pushFront(100));
         }
 
         SECTION("pushBack") {
-            EXPECT(!ring.pushBack(106));
+            CHECK_FALSE(ring.pushBack(106));
         }
 
         SECTION("popFront") {
-            EXPECT(ring.popFront());
-            EXPECT(*ring.front() == 67);
+            CHECK(ring.popFront());
+            CHECK(*ring.front() == 67);
         }
 
         SECTION("popBack") {
-            EXPECT(ring.popBack());
-            EXPECT(*ring.back() == 84);
+            CHECK(ring.popBack());
+            CHECK(*ring.back() == 84);
         }
 
         SECTION("swapRemoveFront") {
             ring.swapRemoveFront(5);
-            EXPECT(*ring.front() == 67);
-            EXPECT(ring[4] == 231);
+            CHECK(*ring.front() == 67);
+            CHECK(ring[4] == 231);
         }
 
         SECTION("swapRemoveBack") {
             ring.swapRemoveBack(5);
-            EXPECT(*ring.back() == 84);
-            EXPECT(ring[5] == 220);
+            CHECK(*ring.back() == 84);
+            CHECK(ring[5] == 220);
         }
 
         SECTION("reset") {
             ring.reset();
-            EXPECT(ring.empty());
+            CHECK(ring.empty());
         }
     }
 
-    SETUP("Wrapped around") {
+    SECTION("Wrapped around") {
         Ring<u32, 8> ring;
         for (size_t i = 0; i < 6; i++) {
             ring.pushBack(115);
@@ -135,66 +132,62 @@ CASE("Ring") {
         ring.pushBack(123);
 
         SECTION("empty") {
-            EXPECT(!ring.empty());
+            CHECK_FALSE(ring.empty());
         }
 
         SECTION("full") {
-            EXPECT(!ring.full());
+            CHECK_FALSE(ring.full());
         }
 
         SECTION("count") {
-            EXPECT(ring.count() == 3);
+            CHECK(ring.count() == 3);
         }
 
         SECTION("front") {
-            EXPECT(*ring.front() == 70);
+            CHECK(*ring.front() == 70);
         }
 
         SECTION("back") {
-            EXPECT(*ring.back() == 123);
+            CHECK(*ring.back() == 123);
         }
 
         SECTION("operator[]") {
-            EXPECT(ring[1] == 32);
+            CHECK(ring[1] == 32);
         }
 
         SECTION("pushFront") {
-            EXPECT(ring.pushFront(111));
-            EXPECT(*ring.front() == 111);
+            CHECK(ring.pushFront(111));
+            CHECK(*ring.front() == 111);
         }
 
         SECTION("pushBack") {
-            EXPECT(ring.pushBack(104));
-            EXPECT(*ring.back() == 104);
+            CHECK(ring.pushBack(104));
+            CHECK(*ring.back() == 104);
         }
 
         SECTION("popFront") {
-            EXPECT(ring.popFront());
-            EXPECT(*ring.front() == 32);
+            CHECK(ring.popFront());
+            CHECK(*ring.front() == 32);
         }
 
         SECTION("popBack") {
-            EXPECT(ring.popBack());
-            EXPECT(*ring.back() == 32);
+            CHECK(ring.popBack());
+            CHECK(*ring.back() == 32);
         }
 
         SECTION("swapRemoveFront") {
             ring.swapRemoveFront(1);
-            EXPECT(*ring.front() == 70);
+            CHECK(*ring.front() == 70);
         }
 
         SECTION("swapRemoveBack") {
             ring.swapRemoveBack(1);
-            EXPECT(*ring.back() == 123);
+            CHECK(*ring.back() == 123);
         }
 
         SECTION("reset") {
             ring.reset();
-            EXPECT(ring.empty());
+            CHECK(ring.empty());
         }
     }
-}
-
-int main(int argc, char *argv[]) {
-    return lest::run(specification, argc, argv, std::cerr);
 }

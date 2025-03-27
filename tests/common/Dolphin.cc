@@ -1,7 +1,9 @@
 #include <common/Dolphin.hh>
-#include <lest.hpp>
+#define SNITCH_IMPLEMENTATION
+#include <snitch/snitch_all.hpp>
 
 #include <array>
+#include <cstdio>
 #include <cstring>
 
 static bool exists;
@@ -31,62 +33,50 @@ s32 Resource::open(const char *path, u32 /* mode */) {
 
 } // namespace IOS
 
-static lest::tests specification;
+TEST_CASE("Dolphin::ok") {
+    SECTION("Doesn't exist") {
+        exists = false;
 
-#define CASE(name) lest_CASE(specification, name)
+        Dolphin dolphin;
 
-CASE("ok") {
-    SETUP("Placeholder") {
-        SECTION("Doesn't exist") {
-            exists = false;
-
-            Dolphin dolphin;
-
-            EXPECT(!dolphin.ok());
-        }
-
-        SECTION("Exists") {
-            exists = true;
-
-            Dolphin dolphin;
-
-            EXPECT(dolphin.ok());
-        }
+        CHECK_FALSE(dolphin.ok());
     }
-}
 
-CASE("getVersion") {
-    SETUP("Exists") {
+    SECTION("Exists") {
         exists = true;
 
-        SECTION("Invalid") {
-            memset(versionString.data(), '1', versionString.size());
+        Dolphin dolphin;
 
-            Dolphin dolphin;
-            EXPECT(dolphin.ok());
-            Dolphin::Version actualVersion;
-            bool result = dolphin.getVersion(actualVersion);
-
-            EXPECT(!result);
-        }
-
-        SECTION("Valid") {
-            Dolphin::Version expectedVersion{5, 0, 20288};
-            memset(versionString.data(), '\0', versionString.size());
-            snprintf(versionString.data(), versionString.size(), "%u.%u-%u", expectedVersion.major,
-                    expectedVersion.minor, expectedVersion.patch);
-
-            Dolphin dolphin;
-            EXPECT(dolphin.ok());
-            Dolphin::Version actualVersion;
-            bool result = dolphin.getVersion(actualVersion);
-
-            EXPECT(result);
-            EXPECT(actualVersion == expectedVersion);
-        }
+        CHECK(dolphin.ok());
     }
 }
 
-int main(int argc, char *argv[]) {
-    return lest::run(specification, argc, argv, std::cerr);
+TEST_CASE("Dolphin::getVersion") {
+    exists = true;
+
+    SECTION("Invalid") {
+        memset(versionString.data(), '1', versionString.size());
+
+        Dolphin dolphin;
+        CHECK(dolphin.ok());
+        Dolphin::Version actualVersion;
+        bool result = dolphin.getVersion(actualVersion);
+
+        CHECK_FALSE(result);
+    }
+
+    SECTION("Valid") {
+        Dolphin::Version expectedVersion{5, 0, 20288};
+        memset(versionString.data(), '\0', versionString.size());
+        snprintf(versionString.data(), versionString.size(), "%u.%u-%u", expectedVersion.major,
+                expectedVersion.minor, expectedVersion.patch);
+
+        Dolphin dolphin;
+        CHECK(dolphin.ok());
+        Dolphin::Version actualVersion;
+        bool result = dolphin.getVersion(actualVersion);
+
+        CHECK(result);
+        CHECK(actualVersion == expectedVersion);
+    }
 }

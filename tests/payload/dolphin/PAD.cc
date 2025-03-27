@@ -1,8 +1,9 @@
 extern "C" {
 #include <dolphin/PAD.h>
 }
-#include <lest.hpp>
 #include <payload/WUP028.hh>
+#define SNITCH_IMPLEMENTATION
+#include <snitch/snitch_all.hpp>
 
 #include <cstring>
 
@@ -39,11 +40,7 @@ static void Setup(PADStatus (&status)[4], size_t offset) {
     }
 }
 
-static lest::tests specification;
-
-#define CASE(name) lest_CASE(specification, name)
-
-CASE("PADRead") {
+TEST_CASE("PADRead") {
     Setup(siStatus, 0);
     Setup(wup028Status, 4);
     siStatus[0].err = PAD_ERR_NONE;
@@ -60,16 +57,12 @@ CASE("PADRead") {
     PADStatus status[4];
     u32 rumbleSupported = PADRead(status);
 
-    EXPECT(status[0].err == PAD_ERR_NONE);
-    EXPECT(status[1].err == PAD_ERR_NONE);
-    EXPECT(status[2].err == PAD_ERR_NONE);
-    EXPECT(status[3].err == PAD_ERR_NO_CONTROLLER);
-    EXPECT(!memcmp(&status[0], &wup028Status[0], sizeof(PADStatus)));
-    EXPECT(!memcmp(&status[1], &siStatus[1], sizeof(PADStatus)));
-    EXPECT(!memcmp(&status[2], &wup028Status[2], sizeof(PADStatus)));
-    EXPECT(rumbleSupported == (1 << (31 - 0) | 1 << (31 - 1)));
-}
-
-int main(int argc, char *argv[]) {
-    return lest::run(specification, argc, argv, std::cerr);
+    CHECK(status[0].err == PAD_ERR_NONE);
+    CHECK(status[1].err == PAD_ERR_NONE);
+    CHECK(status[2].err == PAD_ERR_NONE);
+    CHECK(status[3].err == PAD_ERR_NO_CONTROLLER);
+    CHECK_FALSE(memcmp(&status[0], &wup028Status[0], sizeof(PADStatus)));
+    CHECK_FALSE(memcmp(&status[1], &siStatus[1], sizeof(PADStatus)));
+    CHECK_FALSE(memcmp(&status[2], &wup028Status[2], sizeof(PADStatus)));
+    CHECK(rumbleSupported == (1 << (31 - 0) | 1 << (31 - 1)));
 }

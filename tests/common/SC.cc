@@ -1,7 +1,8 @@
 #include <common/SC.hh>
 #include <common/ios/File.hh>
 #include <common/ios/Resource.hh>
-#include <lest.hpp>
+#define SNITCH_IMPLEMENTATION
+#include <snitch/snitch_all.hpp>
 
 #include <cstring>
 #include <optional>
@@ -36,60 +37,56 @@ s32 File::read(void *output, u32 outputSize) {
 
 } // namespace IOS
 
-static lest::tests specification;
-
-#define CASE(name) lest_CASE(specification, name)
-
-CASE("SC") {
-    SETUP("No file") {
+TEST_CASE("SC") {
+    SECTION("No file") {
         file.reset();
 
         SC sc;
 
         SECTION("ok") {
-            EXPECT(!sc.ok());
+            CHECK_FALSE(sc.ok());
         }
 
         SECTION("get") {
             u32 value;
-            EXPECT(!sc.get("My value", value));
+            CHECK_FALSE(sc.get("My value", value));
         }
     }
 
-    SETUP("Invalid file header") {
+    SECTION("Invalid file header") {
         file.emplace(0x4000);
 
         SC sc;
 
         SECTION("ok") {
-            EXPECT(!sc.ok());
+            CHECK_FALSE(sc.ok());
         }
 
         SECTION("get") {
             u32 value;
-            EXPECT(!sc.get("My value", value));
-            EXPECT(!sc.get("My other value", value));
+            CHECK_FALSE(sc.get("My value", value));
+            CHECK_FALSE(sc.get("My other value", value));
         }
     }
 
-    SETUP("Invalid file contents") {
+    SECTION("Invalid file contents") {
         file.emplace(0x4000);
         memcpy(file->data() + 0x0, "SCv0", strlen("SCv0"));
 
         SC sc;
 
         SECTION("ok") {
-            EXPECT(sc.ok());
+            CHECK(sc.ok());
         }
 
         SECTION("get") {
             u32 value;
-            EXPECT(!sc.get("My value", value));
-            EXPECT(!sc.get("My other value", value));
+            CHECK_FALSE(sc.get("My value", value));
+            CHECK_FALSE(sc.get("My other value", value));
         }
     }
 
-    SETUP("Valid file") {
+    SECTION("Valid file") {
         file.emplace(0x4000);
         memcpy(file->data() + 0x0, "SCv0", strlen("SCv0"));
         Bytes::WriteBE<u16>(file->data(), 0x4, 0x1);
@@ -101,18 +98,14 @@ CASE("SC") {
         SC sc;
 
         SECTION("ok") {
-            EXPECT(sc.ok());
+            CHECK(sc.ok());
         }
 
         SECTION("get") {
             u32 value;
-            EXPECT(sc.get("My value", value));
-            EXPECT(value == 42);
-            EXPECT(!sc.get("My other value", value));
+            CHECK(sc.get("My value", value));
+            CHECK(value == 42);
+            CHECK_FALSE(sc.get("My other value", value));
         }
     }
-}
-
-int main(int argc, char *argv[]) {
-    return lest::run(specification, argc, argv, std::cerr);
 }

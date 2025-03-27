@@ -20,8 +20,12 @@ typedef float f32;
 typedef double f64;
 
 enum {
+#ifndef FALSE
     FALSE = 0,
+#endif
+#ifndef TRUE
     TRUE = 1,
+#endif
 };
 
 #ifdef __CWCC__

@@ -1,12 +1,9 @@
-#include <lest.hpp>
 #include <payload/crypto/Random.hh>
 #include <payload/crypto/Session.hh>
+#define SNITCH_IMPLEMENTATION
+#include <snitch/snitch_all.hpp>
 
-static lest::tests specification;
-
-#define CASE(name) lest_CASE(specification, name)
-
-CASE("Session") {
+TEST_CASE("Session") {
     Session clientSession;
     Random::Get(clientSession.m_readK.values(), clientSession.m_readK.count());
     Random::Get(clientSession.m_writeK.values(), clientSession.m_writeK.count());
@@ -21,33 +18,29 @@ CASE("Session") {
         Random::Get(buffer, sizeof(buffer));
         clientSession.write(buffer, sizeof(buffer), mac, nonce);
         Random::Get(buffer, sizeof(buffer));
-        EXPECT_NOT(serverSession.read(buffer, sizeof(buffer), mac, nonce));
+        CHECK_FALSE(serverSession.read(buffer, sizeof(buffer), mac, nonce));
 
         Random::Get(buffer, sizeof(buffer));
         clientSession.write(buffer, sizeof(buffer), mac, nonce);
         Random::Get(mac, sizeof(mac));
-        EXPECT_NOT(serverSession.read(buffer, sizeof(buffer), mac, nonce));
+        CHECK_FALSE(serverSession.read(buffer, sizeof(buffer), mac, nonce));
 
         Random::Get(buffer, sizeof(buffer));
         clientSession.write(buffer, sizeof(buffer), mac, nonce);
-        EXPECT(serverSession.read(buffer, sizeof(buffer), mac, nonce));
+        CHECK(serverSession.read(buffer, sizeof(buffer), mac, nonce));
 
         Random::Get(buffer, sizeof(buffer));
         serverSession.write(buffer, sizeof(buffer), mac, nonce);
         Random::Get(buffer, sizeof(buffer));
-        EXPECT_NOT(clientSession.read(buffer, sizeof(buffer), mac, nonce));
+        CHECK_FALSE(clientSession.read(buffer, sizeof(buffer), mac, nonce));
 
         Random::Get(buffer, sizeof(buffer));
         serverSession.write(buffer, sizeof(buffer), mac, nonce);
         Random::Get(mac, sizeof(mac));
-        EXPECT_NOT(clientSession.read(buffer, sizeof(buffer), mac, nonce));
+        CHECK_FALSE(clientSession.read(buffer, sizeof(buffer), mac, nonce));
 
         Random::Get(buffer, sizeof(buffer));
         serverSession.write(buffer, sizeof(buffer), mac, nonce);
-        EXPECT(clientSession.read(buffer, sizeof(buffer), mac, nonce));
+        CHECK(clientSession.read(buffer, sizeof(buffer), mac, nonce));
     }
-}
-
-int main(int argc, char *argv[]) {
-    return lest::run(specification, argc, argv, std::cerr);
 }
