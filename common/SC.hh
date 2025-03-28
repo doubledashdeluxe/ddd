@@ -6,6 +6,7 @@
 class SC {
 public:
     SC();
+    SC(Array<u8, 0x4000> buffer);
     ~SC();
     bool ok() const;
     bool get(const char *name, u8 &value);

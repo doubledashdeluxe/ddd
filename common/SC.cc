@@ -13,6 +13,8 @@ SC::SC() : m_buffer(0) {
     }
 }
 
+SC::SC(Array<u8, 0x4000> buffer) : m_buffer(buffer) {}
+
 SC::~SC() {}
 
 bool SC::ok() const {

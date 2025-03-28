@@ -34,6 +34,6 @@ void *operator new[](size_t size, JKRHeap *heap, s32 alignment) {
 }
 #else
 void *operator new[](size_t size, JKRHeap * /* heap */, s32 /* alignment */) {
-    return new u8[size];
+    return operator new[](size);
 }
 #endif

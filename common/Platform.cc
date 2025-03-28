@@ -1,5 +1,8 @@
 #include "Platform.hh"
 
+#include "common/Dolphin.hh"
+#include "common/ios/Resource.hh"
+
 extern "C" u32 consoleType;
 
 bool Platform::IsGameCube() {
@@ -18,7 +21,7 @@ bool Platform::IsDolphin() {
     return s_isDolphin;
 }
 
-bool Platform::GetDolphinVersion(Dolphin::Version &dolphinVersion) {
+bool Platform::GetDolphinVersion(DolphinVersion &dolphinVersion) {
     if (!s_dolphinDetectionIsDone) {
         DetectDolphin();
     }
@@ -62,4 +65,4 @@ bool Platform::s_dolphinDetectionIsDone = false;
 bool Platform::s_isGameCube = false;
 bool Platform::s_isDolphin = false;
 bool Platform::s_hasDolphinVersion = false;
-Dolphin::Version Platform::s_dolphinVersion;
+DolphinVersion Platform::s_dolphinVersion;

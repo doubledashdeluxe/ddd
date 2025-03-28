@@ -238,36 +238,6 @@ bool Storage::isContained() const {
     return m_isContained;
 }
 
-#ifndef __CWCC__
-void Storage::notify() {
-    poll();
-}
-
-void Storage::remove() {
-    removeWithoutLocking();
-}
-
-void Storage::add() {
-    addWithoutLocking();
-}
-
-Storage::StorageHandle::StorageHandle(const char *path) : m_storage(nullptr), m_prefix(nullptr) {
-    acquireWithoutLocking(path);
-}
-
-Storage::StorageHandle::StorageHandle(const FileHandle &file)
-    : m_storage(nullptr), m_prefix(nullptr) {
-    acquireWithoutLocking(file);
-}
-
-Storage::StorageHandle::StorageHandle(const DirHandle &dir)
-    : m_storage(nullptr), m_prefix(nullptr) {
-    acquireWithoutLocking(dir);
-}
-
-Storage::StorageHandle::~StorageHandle() {}
-#endif
-
 const char *Storage::StorageHandle::prefix() {
     return m_prefix ? m_prefix : "";
 }

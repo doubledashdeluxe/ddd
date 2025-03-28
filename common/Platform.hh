@@ -1,12 +1,12 @@
 #pragma once
 
-#include "common/Dolphin.hh"
+#include "common/DolphinVersion.hh"
 
 class Platform {
 public:
     static bool IsGameCube();
     static bool IsDolphin();
-    static bool GetDolphinVersion(Dolphin::Version &dolphinVersion);
+    static bool GetDolphinVersion(DolphinVersion &dolphinVersion);
 
 private:
     Platform();
@@ -19,5 +19,5 @@ private:
     static bool s_isGameCube;
     static bool s_isDolphin;
     static bool s_hasDolphinVersion;
-    static Dolphin::Version s_dolphinVersion;
+    static DolphinVersion s_dolphinVersion;
 };

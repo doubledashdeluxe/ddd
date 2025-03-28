@@ -17,12 +17,6 @@ extern "C" s64 OSGetTime() {
 
 extern "C" void CARDUpdateIconOffsets(void * /* block */, CARDStat * /* stat */) {}
 
-void VirtualCard::Init() {
-    for (u32 chan = 0; chan < s_instances.count(); chan++) {
-        s_instances[chan].reset(new VirtualCard(chan));
-    }
-}
-
 TEST_CASE("VirtualCard") {
     memcpy(discID.gameID, "GM4P", strlen("GM4P"));
     memcpy(discID.makerID, "01", strlen("01"));

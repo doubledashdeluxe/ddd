@@ -864,7 +864,6 @@ for out_file in native_code_out_files['tests']:
         test_binary,
         'nld',
         [
-            out_file,
             *native_code_out_files['vendor'],
             *native_code_out_files['common'],
             *(native_code_out_files['freestanding'] if target != 'payload' else []),
@@ -872,12 +871,10 @@ for out_file in native_code_out_files['tests']:
             *(native_code_out_files['channel'] if target == 'channel' else []),
             *(native_code_out_files['payload'] if target == 'payload' else []),
             *native_code_out_files['helpers'],
+            out_file,
         ],
         variables = {
-            'ldflags': ' '.join([
-                *common_nldflags,
-                '-Wl,--allow-multiple-definition',
-            ]),
+            'ldflags': ' '.join(common_nldflags),
         },
     )
     n.newline()
