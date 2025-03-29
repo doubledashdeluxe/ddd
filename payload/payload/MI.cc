@@ -8,12 +8,12 @@ extern "C" {
 #include <dolphin/OSInterrupt.h>
 }
 
-struct Channel {
+struct MIChannel {
     u16 start;
     u16 end;
 };
 
-extern "C" volatile Channel mimarr[4];
+extern "C" volatile MIChannel mimarr[4];
 extern "C" volatile u16 mimarrcontrol;
 
 void MI::Protect(u32 channel, u32 start, u32 end, u32 flags) {

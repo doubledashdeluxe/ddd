@@ -25,19 +25,19 @@ struct EXIControl {
 };
 size_assert(EXIControl, 0x40);
 
-struct Channel {
+struct EXIChannel {
     u32 cpr;
     u32 mar;
     u32 length;
     u32 cr;
     u32 data;
 };
-size_assert(Channel, 0x14);
+size_assert(EXIChannel, 0x14);
 
 extern "C" u32 exiProbeStartTimes[2];
 extern "C" EXIControl Ecb[];
 
-extern "C" volatile Channel exi[3];
+extern "C" volatile EXIChannel exi[3];
 
 extern "C" BOOL __EXIProbe(s32 chan);
 
