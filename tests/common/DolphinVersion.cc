@@ -1,5 +1,4 @@
 #include <common/DolphinVersion.hh>
-#define SNITCH_IMPLEMENTATION
 #include <snitch/snitch_all.hpp>
 
 #include <cstdio>

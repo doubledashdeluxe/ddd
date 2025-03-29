@@ -24,7 +24,7 @@ You can then simply run `build.py` to build the project. The `out` directory wil
 
 ## Running tests
 
-You can launch `test.py` to build and run all tests.
+You can launch `out/tests` to run all tests.
 
 ## Contributing
 

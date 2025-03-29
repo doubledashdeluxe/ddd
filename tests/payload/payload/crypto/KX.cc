@@ -3,7 +3,6 @@ extern "C" {
 }
 #include <payload/crypto/KX.hh>
 #include <payload/crypto/Random.hh>
-#define SNITCH_IMPLEMENTATION
 #include <snitch/snitch_all.hpp>
 
 #include <array>

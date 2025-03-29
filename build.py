@@ -238,10 +238,16 @@ if args.ci:
     common_ccflags += [
         '-w', 'error',
     ]
+    common_ldflags += [
+        '--fatal-warnings',
+    ]
     common_ncflags += [
         '-Werror',
     ]
     common_nccflags += [
+        '-Werror',
+    ]
+    common_nldflags += [
         '-Werror',
     ]
 if args.dolphin_force_gamecube:
@@ -815,6 +821,9 @@ n.newline()
 
 native_code_in_files = {
     **code_in_files,
+    'helpers': [
+        *sorted(glob.glob(os.path.join('tests', 'helpers', '**', '*.cc'), recursive=True)),
+    ],
     'tests': [
         *sorted(glob.glob(os.path.join('tests', 'libc', '**', '*.cc'), recursive=True)),
         *sorted(glob.glob(os.path.join('tests', 'common', '**', '*.cc'), recursive=True)),
@@ -822,9 +831,7 @@ native_code_in_files = {
         *sorted(glob.glob(os.path.join('tests', 'bootstrap', '**', '*.cc'), recursive=True)),
         *sorted(glob.glob(os.path.join('tests', 'channel', '**', '*.cc'), recursive=True)),
         *sorted(glob.glob(os.path.join('tests', 'payload', '**', '*.cc'), recursive=True)),
-    ],
-    'helpers': [
-        *sorted(glob.glob(os.path.join('tests', 'helpers', '**', '*.cc'), recursive=True)),
+        *sorted(glob.glob(os.path.join('tests', 'tests', '**', '*.cc'), recursive=True)),
     ],
 }
 native_code_out_files = {target: [] for target in native_code_in_files}
@@ -853,36 +860,29 @@ for target in native_code_in_files:
         )
         n.newline()
 
-test_binaries = []
-for out_file in native_code_out_files['tests']:
-    base, _ = os.path.splitext(out_file)
-    base, _ = os.path.splitext(base)
-    target = out_file.split(os.path.sep)[3]
-    test_binary = os.path.join('$outdir', os.path.join(*base.split(os.path.sep)[2:]))
-    test_binaries += [test_binary]
-    n.build(
-        test_binary,
-        'nld',
-        [
-            *native_code_out_files['vendor'],
-            *native_code_out_files['common'],
-            *(native_code_out_files['freestanding'] if target != 'payload' else []),
-            *(native_code_out_files['bootstrap'] if target == 'bootstrap' else []),
-            *(native_code_out_files['channel'] if target == 'channel' else []),
-            *(native_code_out_files['payload'] if target == 'payload' else []),
-            *native_code_out_files['helpers'],
-            out_file,
-        ],
-        variables = {
-            'ldflags': ' '.join(common_nldflags),
-        },
-    )
-    n.newline()
+test_binary = os.path.join('$outdir', 'tests')
+if 'win' in sys.platform or 'msys' in sys.platform:
+    test_binary += '.exe'
+n.build(
+    test_binary,
+    'nld',
+    [
+        *native_code_out_files['vendor'],
+        *native_code_out_files['common'],
+        *native_code_out_files['payload'],
+        *native_code_out_files['helpers'],
+        *native_code_out_files['tests'],
+    ],
+    variables = {
+        'ldflags': ' '.join(common_nldflags),
+    },
+)
+n.newline()
 
 n.build(
     'tests',
     'phony',
-    test_binaries,
+    test_binary,
 )
 n.newline()
 

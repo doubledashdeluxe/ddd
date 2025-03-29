@@ -1,5 +1,4 @@
 #include <payload/SZSReader.hh>
-#define SNITCH_IMPLEMENTATION
 #include <snitch/snitch_all.hpp>
 
 #include <vector>

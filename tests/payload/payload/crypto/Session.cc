@@ -1,6 +1,5 @@
 #include <payload/crypto/Random.hh>
 #include <payload/crypto/Session.hh>
-#define SNITCH_IMPLEMENTATION
 #include <snitch/snitch_all.hpp>
 
 TEST_CASE("Session") {

@@ -1,6 +1,5 @@
 #include <helpers/FakeStorage.hh>
 #include <payload/ZIPFile.hh>
-#define SNITCH_IMPLEMENTATION
 #include <snitch/snitch_all.hpp>
 
 #include <array>

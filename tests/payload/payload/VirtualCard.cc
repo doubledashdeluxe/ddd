@@ -1,7 +1,6 @@
 #include <common/DiscID.hh>
 #include <helpers/FakeStorage.hh>
 #include <payload/VirtualCard.hh>
-#define SNITCH_IMPLEMENTATION
 #include <snitch/snitch_all.hpp>
 
 #include <cstring>

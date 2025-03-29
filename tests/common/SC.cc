@@ -1,5 +1,4 @@
 #include <common/SC.hh>
-#define SNITCH_IMPLEMENTATION
 #include <snitch/snitch_all.hpp>
 
 #include <cstring>
