@@ -74,12 +74,12 @@ def get_flags(tool, platform, target, format_code_dirs, args):
             flags += [
                 '--fatal-warnings',
             ]
-    if tool == 'nc' or tool == 'ncc' or tool == 'nld':
+    if tool == 'mc' or tool == 'mcc' or tool == 'mld':
         if args.ci:
             flags += [
                 '-Werror',
             ]
-    if tool == 'nc' or tool == 'ncc':
+    if tool == 'mc' or tool == 'mcc':
         flags += [
             '-fno-sanitize-recover=all',
             '-fsanitize=undefined',
@@ -112,13 +112,13 @@ def get_flags(tool, platform, target, format_code_dirs, args):
                 '-iquote', 'payload',
                 '-isystem', 'payload',
             ]
-    if tool == 'nc':
+    if tool == 'mc':
         flags += [
             '-std=c2x',
             '-Werror=implicit-function-declaration',
             '-Werror=incompatible-pointer-types',
         ]
-    if tool == 'ncc':
+    if tool == 'mcc':
         flags += [
             '-fcheck-new',
             '-std=c++20',
@@ -143,7 +143,7 @@ def get_flags(tool, platform, target, format_code_dirs, args):
                 '-iquote', 'tests',
                 '-isystem', 'tests',
             ]
-    if tool == 'nld':
+    if tool == 'mld':
         flags += [
             '-fsanitize=undefined',
         ]
@@ -284,12 +284,12 @@ n.rule(
 n.newline()
 
 if 'win' in sys.platform or 'msys' in sys.platform:
-    nc_command = 'gcc.exe -MD -MT $out -MF $out.d $flags -c $in -o $out'
+    mc_command = 'gcc.exe -MD -MT $out -MF $out.d $flags -c $in -o $out'
 else:
-    nc_command = 'clang -MD -MT $out -MF $out.d $flags -c $in -o $out'
+    mc_command = 'clang -MD -MT $out -MF $out.d $flags -c $in -o $out'
 n.rule(
-    'nc',
-    command = nc_command,
+    'mc',
+    command = mc_command,
     depfile = '$out.d',
     deps = 'gcc',
     description = 'NC $out',
@@ -297,12 +297,12 @@ n.rule(
 n.newline()
 
 if 'win' in sys.platform or 'msys' in sys.platform:
-    ncc_command = 'g++.exe -MD -MT $out -MF $out.d $flags -c $in -o $out'
+    mcc_command = 'g++.exe -MD -MT $out -MF $out.d $flags -c $in -o $out'
 else:
-    ncc_command = 'clang++ -MD -MT $out -MF $out.d $flags -c $in -o $out'
+    mcc_command = 'clang++ -MD -MT $out -MF $out.d $flags -c $in -o $out'
 n.rule(
-    'ncc',
-    command = ncc_command,
+    'mcc',
+    command = mcc_command,
     depfile = '$out.d',
     deps = 'gcc',
     description = 'NCC $out',
@@ -310,12 +310,12 @@ n.rule(
 n.newline()
 
 if 'win' in sys.platform or 'msys' in sys.platform:
-    nld_command = 'g++.exe $flags $in -o $out'
+    mld_command = 'g++.exe $flags $in -o $out'
 else:
-    nld_command = 'clang++ $flags $in -o $out'
+    mld_command = 'clang++ $flags $in -o $out'
 n.rule(
-    'nld',
-    command = nld_command,
+    'mld',
+    command = mld_command,
     description = 'NLD $out',
 )
 n.newline()
@@ -748,7 +748,7 @@ for target in native_code_in_files:
         _, ext = os.path.splitext(in_file)
         out_file = os.path.join('$builddir', 'native', in_file + '.o')
         native_code_out_files[target] += [out_file]
-        tool = f'n{ext[1:]}'
+        tool = f'm{ext[1:]}'
         n.build(
             out_file,
             tool,
@@ -765,7 +765,7 @@ if 'win' in sys.platform or 'msys' in sys.platform:
     test_binary += '.exe'
 n.build(
     test_binary,
-    'nld',
+    'mld',
     [
         *native_code_out_files['vendor'],
         *native_code_out_files['common'],
@@ -774,7 +774,7 @@ n.build(
         *native_code_out_files['tests'],
     ],
     variables = {
-        'flags': get_flags('nld', 'cube', target, format_code_dirs, args),
+        'flags': get_flags('mld', 'cube', target, format_code_dirs, args),
     },
 )
 n.newline()
@@ -793,7 +793,7 @@ for target in check_code_in_files:
         _, ext = os.path.splitext(in_file)
         out_file = os.path.join('$builddir', 'checks', in_file + '.o')
         check_code_out_files[target] += [out_file]
-        tool = f'n{ext[1:]}'
+        tool = f'm{ext[1:]}'
         n.build(
             out_file,
             tool,
@@ -811,7 +811,7 @@ for target in ['bootstrap', 'channel', 'payload']:
     check_libraries += [check_library]
     n.build(
         check_library,
-        'nld',
+        'mld',
         [
             *check_code_out_files['vendor'],
             *check_code_out_files['common'],
@@ -820,7 +820,7 @@ for target in ['bootstrap', 'channel', 'payload']:
         ],
         variables = {
             'flags': [
-                *get_flags('nld', 'cube', target, format_code_dirs, args),
+                *get_flags('mld', 'cube', target, format_code_dirs, args),
                 '-r',
             ],
         },
