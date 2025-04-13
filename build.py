@@ -12,6 +12,156 @@ import tempfile
 from vendor.ninja_syntax import Writer
 
 
+def get_flags(tool, platform, target, format_code_dirs, args):
+    flags = []
+    if tool == 'c' or tool == 'cc':
+        flags += [
+            '-Cpp_exceptions', 'off',
+            '-enum', 'int',
+            '-fp', 'hard',
+            '-gccdep',
+            '-gccinc',
+            '-I.',
+            '-Ilibc',
+            '-Ivendor',
+            '-ipa', 'file',
+            '-opt size,level=4,schedule,peephole',
+            '-pragma', '"cpp1x on"',
+            '-pragma', '"no_register_save_helpers on"',
+            '-proc', '604e',
+            '-rostr',
+            '-RTTI', 'off',
+            '-sdata', '0',
+            '-sdata2', '0',
+            '-w', 'most',
+            '-w', 'noextracomma',
+        ]
+        if target == 'payload':
+            flags += [
+                '-Ipayload',
+            ]
+        if args.ci:
+            flags += [
+                '-w', 'error',
+            ]
+        if target == 'bootstrap':
+            if args.dolphin_force_gamecube:
+                flags += [
+                    '-d', 'DOLPHIN_FORCE_GAMECUBE',
+                ]
+    if tool == 'c':
+        flags += [
+            '-lang', 'c99',
+        ]
+    if tool == 'cc':
+        flags += [
+            '-d', 'override=',
+        ]
+        for code_dir in format_code_dirs:
+            flags += [
+                f'-I{code_dir}'
+            ]
+        if target == 'formats':
+            flags += [
+                '-w', 'nounusedarg',
+            ]
+    if tool == 'ld':
+        flags += [
+            '--entry=Start',
+            '-n',
+        ]
+        if args.ci:
+            flags += [
+                '--fatal-warnings',
+            ]
+    if tool == 'nc' or tool == 'ncc' or tool == 'nld':
+        if args.ci:
+            flags += [
+                '-Werror',
+            ]
+    if tool == 'nc' or tool == 'ncc':
+        flags += [
+            '-fno-sanitize-recover=all',
+            '-fsanitize=undefined',
+            '-isystem', '.',
+            '-isystem', 'vendor',
+            '-O2',
+            '-Wall',
+            '-Werror=vla',
+            '-Wextra',
+        ]
+        if 'win' in sys.platform or 'msys' in sys.platform:
+            flags += [
+                '-flto=auto',
+                '-fsanitize-undefined-trap-on-error',
+            ]
+        else:
+            flags += [
+                '-fdata-sections',
+                '-ffunction-sections',
+                '-fsanitize=address',
+            ]
+        if platform == 'cube':
+            if target == 'bootstrap':
+                if args.dolphin_force_gamecube:
+                    flags += [
+                        '-D', 'DOLPHIN_FORCE_GAMECUBE',
+                    ]
+        if target == 'payload' or target == 'tests':
+            flags += [
+                '-iquote', 'payload',
+                '-isystem', 'payload',
+            ]
+    if tool == 'nc':
+        flags += [
+            '-std=c2x',
+            '-Werror=implicit-function-declaration',
+            '-Werror=incompatible-pointer-types',
+        ]
+    if tool == 'ncc':
+        flags += [
+            '-fcheck-new',
+            '-std=c++20',
+            '-Wsuggest-override',
+        ]
+        for code_dir in format_code_dirs:
+            flags += ['-isystem', code_dir]
+        if 'win' in sys.platform or 'msys' in sys.platform:
+            flags += [
+                '-fno-sanitize=vptr',
+            ]
+        else:
+            flags += [
+                '-Wno-unused-private-field',
+            ]
+        if target == 'formats':
+            flags += [
+                '-Wno-unused-parameter',
+            ]
+        if target == 'tests':
+            flags += [
+                '-iquote', 'tests',
+                '-isystem', 'tests',
+            ]
+    if tool == 'nld':
+        flags += [
+            '-fsanitize=undefined',
+        ]
+        if 'win' in sys.platform or 'msys' in sys.platform:
+            flags += [
+                '-flto=auto',
+                '-fno-sanitize=vptr',
+                '-fsanitize-undefined-trap-on-error',
+            ]
+        else:
+            flags += [
+                '-fsanitize=address',
+                '-fuse-ld=lld',
+                '-Wl,--gc-sections',
+            ]
+    return flags
+
+
 our_argv = []
 ninja_argv = []
 found_seperator = False
@@ -54,216 +204,6 @@ n.variable('port', os.path.join('tools', 'port.py'))
 n.variable('script', os.path.join('tools', 'script.py'))
 n.newline()
 
-common_cflags = [
-    '-Cpp_exceptions', 'off',
-    '-enum', 'int',
-    '-fp', 'hard',
-    '-gccdep',
-    '-gccinc',
-    '-I.',
-    '-Ilibc',
-    '-Ivendor',
-    '-ipa', 'file',
-    '-lang', 'c99',
-    '-opt size,level=4,schedule,peephole',
-    '-pragma', '"cpp1x on"',
-    '-pragma', '"no_register_save_helpers on"',
-    '-proc', '604e',
-    '-rostr',
-    '-RTTI', 'off',
-    '-sdata', '0',
-    '-sdata2', '0',
-    '-w', 'most',
-    '-w', 'noextracomma',
-]
-common_ccflags = [
-    '-Cpp_exceptions', 'off',
-    '-d', 'override=',
-    '-enum', 'int',
-    '-fp', 'hard',
-    '-gccdep',
-    '-gccinc',
-    '-I.',
-    '-Ilibc',
-    '-Ivendor',
-    '-ipa', 'file',
-    '-opt size,level=4,schedule,peephole',
-    '-pragma', '"cpp1x on"',
-    '-pragma', '"no_register_save_helpers on"',
-    '-proc', '604e',
-    '-rostr',
-    '-RTTI', 'off',
-    '-sdata', '0',
-    '-sdata2', '0',
-    '-w', 'most',
-    '-w', 'noextracomma',
-]
-common_ldflags = [
-    '--entry=Start',
-    '-n',
-]
-target_cflags = {
-    'formats': [
-        '-w', 'nounusedarg',
-    ],
-    'vendor': [],
-    'libc': [],
-    'common': [],
-    'freestanding': [],
-    'bootstrap': [],
-    'channel': [],
-    'payload': [
-        '-Ipayload',
-    ],
-}
-target_ccflags = {
-    'formats': [
-        '-w', 'nounusedarg',
-    ],
-    'vendor': [],
-    'libc': [],
-    'common': [],
-    'freestanding': [],
-    'bootstrap': [],
-    'channel': [],
-    'payload': [
-        '-Ipayload',
-    ],
-}
-common_ncflags = [
-    '-fno-sanitize-recover=all',
-    '-fsanitize=undefined',
-    '-isystem', '.',
-    '-isystem', 'vendor',
-    '-O2',
-    '-std=c2x',
-    '-Wall',
-    '-Werror=implicit-function-declaration',
-    '-Werror=incompatible-pointer-types',
-    '-Werror=vla',
-    '-Wextra',
-]
-common_nccflags = [
-    '-fcheck-new',
-    '-fno-sanitize-recover=all',
-    '-fsanitize=undefined',
-    '-isystem', '.',
-    '-isystem', 'vendor',
-    '-O2',
-    '-std=c++20',
-    '-Wall',
-    '-Werror=vla',
-    '-Wextra',
-    '-Wsuggest-override',
-]
-common_nldflags = [
-    '-fsanitize=undefined',
-]
-target_ncflags = {
-    'formats': [
-        '-Wno-unused-parameter',
-    ],
-    'vendor': [],
-    'libc': [],
-    'common': [],
-    'freestanding': [],
-    'bootstrap': [],
-    'channel': [],
-    'payload': [
-        '-iquote', 'payload',
-        '-isystem', 'payload',
-    ],
-    'tests': [
-        '-iquote', 'tests',
-        '-isystem', 'tests',
-    ],
-    'helpers': [],
-}
-target_nccflags = {
-    'formats': [
-        '-Wno-unused-parameter',
-    ],
-    'vendor': [],
-    'libc': [],
-    'common': [],
-    'freestanding': [],
-    'bootstrap': [],
-    'channel': [],
-    'payload': [
-        '-iquote', 'payload',
-        '-isystem', 'payload',
-    ],
-    'tests': [
-        '-iquote', 'tests',
-        '-isystem', 'tests',
-    ],
-    'helpers': [],
-}
-if 'win' in sys.platform or 'msys' in sys.platform:
-    common_ncflags += [
-        '-flto=auto',
-        '-fsanitize-undefined-trap-on-error',
-    ]
-    common_nccflags += [
-        '-flto=auto',
-        '-fno-sanitize=vptr',
-        '-fsanitize-undefined-trap-on-error',
-    ]
-    common_nldflags += [
-        '-flto=auto',
-        '-fno-sanitize=vptr',
-        '-fsanitize-undefined-trap-on-error',
-    ]
-else:
-    common_ncflags += [
-        '-fdata-sections',
-        '-ffunction-sections',
-        '-fsanitize=address',
-    ]
-    common_nccflags += [
-        '-fdata-sections',
-        '-ffunction-sections',
-        '-fsanitize=address',
-        '-Wno-unused-private-field',
-    ]
-    common_nldflags += [
-        '-fsanitize=address',
-        '-fuse-ld=lld',
-        '-Wl,--gc-sections',
-    ]
-if args.ci:
-    common_cflags += [
-        '-w', 'error',
-    ]
-    common_ccflags += [
-        '-w', 'error',
-    ]
-    common_ldflags += [
-        '--fatal-warnings',
-    ]
-    common_ncflags += [
-        '-Werror',
-    ]
-    common_nccflags += [
-        '-Werror',
-    ]
-    common_nldflags += [
-        '-Werror',
-    ]
-if args.dolphin_force_gamecube:
-    target_cflags['bootstrap'] += [
-        '-d', 'DOLPHIN_FORCE_GAMECUBE',
-    ]
-    target_ccflags['bootstrap'] += [
-        '-d', 'DOLPHIN_FORCE_GAMECUBE',
-    ]
-    target_ncflags['bootstrap'] += [
-        '-D', 'DOLPHIN_FORCE_GAMECUBE',
-    ]
-    target_nccflags['bootstrap'] += [
-        '-D', 'DOLPHIN_FORCE_GAMECUBE',
-    ]
-
 n.rule(
     'bin2c',
     command = f'{sys.executable} $bin2c $name $in $out',
@@ -272,9 +212,9 @@ n.rule(
 n.newline()
 
 if 'win' in sys.platform or 'msys' in sys.platform:
-    c_command = '$mwcc -MDfile $out.d $cflags -c $in -o $out'
+    c_command = '$mwcc -MDfile $out.d $flags -c $in -o $out'
 else:
-    c_command = f'{sys.executable} $mwcc -MDfile $out.d $cflags -c $in -o $out'
+    c_command = f'{sys.executable} $mwcc -MDfile $out.d $flags -c $in -o $out'
 n.rule(
     'c',
     command = c_command,
@@ -285,9 +225,9 @@ n.rule(
 n.newline()
 
 if 'win' in sys.platform or 'msys' in sys.platform:
-    cc_command = '$mwcc -MDfile $out.d $ccflags -c $in -o $out'
+    cc_command = '$mwcc -MDfile $out.d $flags -c $in -o $out'
 else:
-    cc_command = f'{sys.executable} $mwcc -MDfile $out.d $ccflags -c $in -o $out'
+    cc_command = f'{sys.executable} $mwcc -MDfile $out.d $flags -c $in -o $out'
 n.rule(
     'cc',
     command = cc_command,
@@ -333,9 +273,9 @@ n.rule(
 n.newline()
 
 if 'win' in sys.platform or 'msys' in sys.platform:
-    ld_command = 'ld.lld.exe $ldflags $in -o $out'
+    ld_command = 'ld.lld.exe $flags $in -o $out'
 else:
-    ld_command = 'ld.lld $ldflags $in -o $out'
+    ld_command = 'ld.lld $flags $in -o $out'
 n.rule(
     'ld',
     command = ld_command,
@@ -344,9 +284,9 @@ n.rule(
 n.newline()
 
 if 'win' in sys.platform or 'msys' in sys.platform:
-    nc_command = 'gcc.exe -MD -MT $out -MF $out.d $cflags -c $in -o $out'
+    nc_command = 'gcc.exe -MD -MT $out -MF $out.d $flags -c $in -o $out'
 else:
-    nc_command = 'clang -MD -MT $out -MF $out.d $cflags -c $in -o $out'
+    nc_command = 'clang -MD -MT $out -MF $out.d $flags -c $in -o $out'
 n.rule(
     'nc',
     command = nc_command,
@@ -357,9 +297,9 @@ n.rule(
 n.newline()
 
 if 'win' in sys.platform or 'msys' in sys.platform:
-    ncc_command = 'g++.exe -MD -MT $out -MF $out.d $ccflags -c $in -o $out'
+    ncc_command = 'g++.exe -MD -MT $out -MF $out.d $flags -c $in -o $out'
 else:
-    ncc_command = 'clang++ -MD -MT $out -MF $out.d $ccflags -c $in -o $out'
+    ncc_command = 'clang++ -MD -MT $out -MF $out.d $flags -c $in -o $out'
 n.rule(
     'ncc',
     command = ncc_command,
@@ -370,9 +310,9 @@ n.rule(
 n.newline()
 
 if 'win' in sys.platform or 'msys' in sys.platform:
-    nld_command = 'g++.exe $ldflags $in -o $out'
+    nld_command = 'g++.exe $flags $in -o $out'
 else:
-    nld_command = 'clang++ $ldflags $in -o $out'
+    nld_command = 'clang++ $flags $in -o $out'
 n.rule(
     'nld',
     command = nld_command,
@@ -457,23 +397,20 @@ for c_file in asset_c_files:
         'c',
         c_file,
         variables = {
-            'cflags': ' '.join([
-                *common_ccflags,
-                *target_ccflags['channel'],
-            ]),
+            'flags': get_flags('c', 'cube', 'channel', [], args),
         },
     )
     n.newline()
 
 format_kc_names = ['client-state', 'server-state']
 format_implicit = sorted(glob.glob(os.path.join('formats', '**'), recursive=True))
+format_code_dirs = []
 format_hh_files = []
 format_cc_files = []
 for format_kc_name in format_kc_names:
     format_sc_name = format_kc_name.replace('-', '_')
     code_dir = os.path.join('$builddir', 'formats', format_sc_name)
-    common_ccflags += [f'-I{code_dir}']
-    common_nccflags += ['-isystem', code_dir]
+    format_code_dirs += [code_dir]
     format_pc_name = format_kc_name.replace('-', ' ').title().replace(' ', '')
     hh_file = os.path.join(code_dir, 'formats', f'{format_pc_name}.hh')
     format_hh_files += [hh_file]
@@ -494,35 +431,21 @@ for format_kc_name in format_kc_names:
 
 code_in_files = {
     'formats': format_cc_files,
-    'vendor': [
-        *sorted(glob.glob(os.path.join('vendor', '**', '*.c'), recursive=True)),
-        *sorted(glob.glob(os.path.join('vendor', '**', '*.cc'), recursive=True)),
-    ],
-    'libc': [
-        *sorted(glob.glob(os.path.join('libc', '**', '*.c'), recursive=True)),
-        *sorted(glob.glob(os.path.join('libc', '**', '*.cc'), recursive=True)),
-    ],
-    'common': [
-        *sorted(glob.glob(os.path.join('common', '**', '*.c'), recursive=True)),
-        *sorted(glob.glob(os.path.join('common', '**', '*.cc'), recursive=True)),
-    ],
-    'freestanding': [
-        *sorted(glob.glob(os.path.join('freestanding', '**', '*.c'), recursive=True)),
-        *sorted(glob.glob(os.path.join('freestanding', '**', '*.cc'), recursive=True)),
-    ],
-    'bootstrap': [
-        *sorted(glob.glob(os.path.join('bootstrap', '**', '*.c'), recursive=True)),
-        *sorted(glob.glob(os.path.join('bootstrap', '**', '*.cc'), recursive=True)),
-    ],
-    'channel': [
-        *sorted(glob.glob(os.path.join('channel', '**', '*.c'), recursive=True)),
-        *sorted(glob.glob(os.path.join('channel', '**', '*.cc'), recursive=True)),
-    ],
-    'payload': [
-        *sorted(glob.glob(os.path.join('payload', '**', '*.c'), recursive=True)),
-        *sorted(glob.glob(os.path.join('payload', '**', '*.cc'), recursive=True)),
-    ],
+    'vendor': None,
+    'libc': None,
+    'common': None,
+    'freestanding': None,
+    'bootstrap': None,
+    'channel': None,
+    'payload': None,
 }
+for target in code_in_files:
+    in_files = code_in_files[target]
+    if in_files is None:
+        code_in_files[target] = [
+            *sorted(glob.glob(os.path.join(target, '**', '*.c'), recursive=True)),
+            *sorted(glob.glob(os.path.join(target, '**', '*.cc'), recursive=True)),
+        ]
 code_out_files = {target: [] for target in code_in_files}
 for target in code_in_files:
     for in_file in code_in_files[target]:
@@ -532,19 +455,13 @@ for target in code_in_files:
         else:
             out_file = os.path.join('$builddir', in_file + '.o')
         code_out_files[target] += [out_file]
+        tool = ext[1:]
         n.build(
             out_file,
-            ext[1:],
+            tool,
             in_file,
             variables = {
-                'cflags': ' '.join([
-                    *common_cflags,
-                    *target_cflags[target],
-                ]),
-                'ccflags': ' '.join([
-                    *common_ccflags,
-                    *target_ccflags[target],
-                ]),
+                'flags': get_flags(tool, 'cube', target, format_code_dirs, args),
             },
             order_only = format_hh_files,
             implicit=os.path.join('tools', 'cw', 'modified_mwcceppc.exe'),
@@ -561,8 +478,8 @@ n.build(
         *code_out_files['payload'],
     ],
     variables = {
-        'ldflags': ' '.join([
-            *common_ldflags,
+        'flags': ' '.join([
+            *get_flags('ld', 'cube', 'payload', format_code_dirs, args),
             '-r',
         ]),
     },
@@ -588,10 +505,7 @@ n.build(
     'cc',
     os.path.join('$builddir', 'payload', f'Patches.cc'),
     variables = {
-        'ccflags': ' '.join([
-            *common_ccflags,
-            *target_ccflags['payload'],
-        ]),
+        'flags': get_flags('cc', 'cube', 'payload', format_code_dirs, args),
     },
 )
 n.newline()
@@ -639,8 +553,8 @@ for region in ['P', 'E', 'J']:
             os.path.join('$builddir', 'payload', f'Patches.cc.o'),
         ],
         variables = {
-            'ldflags': ' '.join([
-                *common_ldflags,
+            'flags': ' '.join([
+                *get_flags('ld', 'cube', 'payload', format_code_dirs, args),
                 '--gc-sections',
                 f'--image-base={image_base}',
                 '-T', os.path.join('$builddir', 'payload', f'GM4{region}.ld'),
@@ -685,10 +599,7 @@ for region in ['P', 'E', 'J']:
             'c',
             os.path.join('$builddir', 'payload', f'payload{region}{kind}.c'),
             variables = {
-                'cflags': ' '.join([
-                    *common_ccflags,
-                    *target_ccflags['channel'],
-                ]),
+                'flags': get_flags('c', 'cube', 'channel', format_code_dirs, args),
             },
         )
         n.newline()
@@ -717,8 +628,8 @@ n.build(
         *asset_o_files,
     ],
     variables = {
-        'ldflags' : ' '.join([
-            *common_ldflags,
+        'flags' : ' '.join([
+            *get_flags('ld', 'cube', 'channel', format_code_dirs, args),
             '--gc-sections',
             '-T', os.path.join('$builddir', 'channel', 'GM4.ld'),
         ]),
@@ -751,10 +662,7 @@ n.build(
     'c',
     os.path.join('$builddir', 'channel', 'channel.c'),
     variables = {
-        'cflags': ' '.join([
-            *common_ccflags,
-            *target_ccflags['bootstrap'],
-        ]),
+        'flags': get_flags('c', 'cube', 'bootstrap', format_code_dirs, args),
     },
 )
 n.newline()
@@ -783,8 +691,8 @@ n.build(
         os.path.join('$builddir', 'channel', 'channel.o'),
     ],
     variables = {
-        'ldflags' : ' '.join([
-            *common_ldflags,
+        'flags' : ' '.join([
+            *get_flags('ld', 'cube', 'bootstrap', format_code_dirs, args),
             '--gc-sections',
             '-T', os.path.join('$builddir', 'bootstrap', 'GM4.ld'),
         ]),
@@ -840,21 +748,13 @@ for target in native_code_in_files:
         _, ext = os.path.splitext(in_file)
         out_file = os.path.join('$builddir', 'native', in_file + '.o')
         native_code_out_files[target] += [out_file]
+        tool = f'n{ext[1:]}'
         n.build(
             out_file,
-            f'n{ext[1:]}',
+            tool,
             in_file,
             variables = {
-                'cflags': ' '.join([
-                    *common_ncflags,
-                    *target_ncflags[target],
-                    *(target_ncflags[in_file.split(os.path.sep)[1]] if target == 'tests' else []),
-                ]),
-                'ccflags': ' '.join([
-                    *common_nccflags,
-                    *target_nccflags[target],
-                    *(target_nccflags[in_file.split(os.path.sep)[1]] if target == 'tests' else []),
-                ]),
+                'flags': get_flags(tool, 'native', target, format_code_dirs, args),
             },
             order_only = format_hh_files,
         )
@@ -874,7 +774,7 @@ n.build(
         *native_code_out_files['tests'],
     ],
     variables = {
-        'ldflags': ' '.join(common_nldflags),
+        'flags': get_flags('nld', 'cube', target, format_code_dirs, args),
     },
 )
 n.newline()
@@ -885,6 +785,52 @@ n.build(
     test_binary,
 )
 n.newline()
+
+check_code_in_files = code_in_files
+check_code_out_files = {target: [] for target in check_code_in_files}
+for target in check_code_in_files:
+    for in_file in check_code_in_files[target]:
+        _, ext = os.path.splitext(in_file)
+        out_file = os.path.join('$builddir', 'checks', in_file + '.o')
+        check_code_out_files[target] += [out_file]
+        tool = f'n{ext[1:]}'
+        n.build(
+            out_file,
+            tool,
+            in_file,
+            variables = {
+                'flags': get_flags(tool, 'cube', target, format_code_dirs, args),
+            },
+            order_only = format_hh_files,
+        )
+        n.newline()
+
+check_libraries = []
+for target in ['bootstrap', 'channel', 'payload']:
+    check_library = os.path.join('$builddir', 'checks', target, f'{target}.o')
+    check_libraries += [check_library]
+    n.build(
+        check_library,
+        'nld',
+        [
+            *check_code_out_files['vendor'],
+            *check_code_out_files['common'],
+            *(check_code_out_files['freestanding'] if target != 'payload' else []),
+            *check_code_out_files[target],
+        ],
+        variables = {
+            'flags': [
+                *get_flags('nld', 'cube', target, format_code_dirs, args),
+                '-r',
+            ],
+        },
+    )
+
+n.build(
+    'checks',
+    'phony',
+    check_libraries,
+)
 
 if args.dry:
     with open('build.ninja', 'w') as out_file:
