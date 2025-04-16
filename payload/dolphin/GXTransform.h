@@ -1,6 +1,6 @@
 #pragma once
 
-#include <common/Types.h>
+#include <portable/Types.h>
 
 void GXSetViewport(f32 xOrig, f32 yOrig, f32 wd, f32 ht, f32 nearZ, f32 farZ);
 

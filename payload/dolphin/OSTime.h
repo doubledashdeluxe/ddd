@@ -1,6 +1,6 @@
 #pragma once
 
-#include <common/Types.h>
+#include <portable/Types.h>
 
 s64 OSGetTime(void);
 void OSSetTime(s64 time);

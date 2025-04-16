@@ -1,7 +1,7 @@
 #pragma once
 
-#include <common/Types.h>
 #include <payload/Replace.h>
+#include <portable/Types.h>
 
 enum {
     CARD_FILENAME_MAX = 32,

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <common/Types.hh>
+#include <portable/Types.hh>
 
 struct ResTIMG {
     u8 _00[0x20 - 0x00];

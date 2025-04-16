@@ -2,8 +2,8 @@
 
 #include "jsystem/JKRHeap.hh"
 
-#include <common/Types.hh>
 #include <payload/Replace.hh>
+#include <portable/Types.hh>
 
 class JKRTask {
 public:

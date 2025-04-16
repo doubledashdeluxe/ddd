@@ -1,7 +1,7 @@
 #include "OS.h"
 
-#include <common/Types.h>
 #include <payload/Replace.h>
+#include <portable/Types.h>
 
 extern OSExceptionHandler *OSExceptionTable;
 extern u32 OSExceptionLocations[];

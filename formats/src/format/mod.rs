@@ -26,7 +26,7 @@ impl<L: TypeList> Format<L> {
 
     pub fn hh(&self) -> String {
         format!(
-            concat!("#pragma once\n", "\n", "#include <common/Types.hh>\n", "{}"),
+            concat!("#pragma once\n", "\n", "#include <portable/Types.hh>\n", "{}"),
             self.list.hh(),
         )
     }

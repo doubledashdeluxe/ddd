@@ -1,6 +1,6 @@
 #include <string.h>
 
-#include <common/Types.h>
+#include <portable/Types.h>
 
 int memcmp(const void *s1, const void *s2, size_t n) {
     const u8 *p1 = s1, *p2 = s2;

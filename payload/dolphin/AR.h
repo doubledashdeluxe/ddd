@@ -1,7 +1,7 @@
 #pragma once
 
-#include <common/Types.h>
 #include <payload/Replace.h>
+#include <portable/Types.h>
 
 u32 REPLACED(ARInit)(u32 *stack_index_addr, u32 num_entries);
 REPLACE u32 ARInit(u32 *stack_index_addr, u32 num_entries);

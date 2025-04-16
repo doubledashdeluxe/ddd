@@ -1,9 +1,9 @@
 #pragma once
 
-#include <common/Types.hh>
 #include <jsystem/J2DGraphContext.hh>
 #include <jsystem/JKRArchive.hh>
 #include <jsystem/JKRHeap.hh>
+#include <portable/Types.hh>
 
 class Scene {
 protected:

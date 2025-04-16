@@ -12,7 +12,7 @@ parser.add_argument('out_path')
 args = parser.parse_args()
 
 with open(args.in_path, 'rb') as bin_file, open(args.out_path, 'w') as c_file:
-    c_file.write('#include <common/Types.h>\n')
+    c_file.write('#include <portable/Types.h>\n')
     c_file.write('\n')
     c_file.write(f'const u8 {args.in_name}[] = {{\n')
     eof = False

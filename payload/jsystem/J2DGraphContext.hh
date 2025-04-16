@@ -2,7 +2,7 @@
 
 #include "jsystem/TBox.hh"
 
-#include <common/Types.hh>
+#include <portable/Types.hh>
 
 class J2DGraphContext {
 public:

@@ -1,7 +1,7 @@
 #pragma once
 
-#include <common/Types.h>
 #include <payload/Replace.h>
+#include <portable/Types.h>
 
 enum {
     PAD_BUTTON_LEFT = 1 << 0,

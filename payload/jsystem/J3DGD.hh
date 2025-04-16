@@ -1,7 +1,7 @@
 #pragma once
 
-#include <common/Types.hh>
 #include <payload/Replace.hh>
+#include <portable/Types.hh>
 
 void REPLACED(J3DGDSetTexImgPtr)(u32 texMapID, void *ptr);
 REPLACE void J3DGDSetTexImgPtr(u32 texMapID, void *ptr);

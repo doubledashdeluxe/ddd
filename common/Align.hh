@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common/Types.hh"
+#include <portable/Types.hh>
 
 template <typename T>
 bool IsAligned(T val, size_t alignment) {

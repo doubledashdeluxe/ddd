@@ -1,6 +1,6 @@
 #pragma once
 
-#include <common/Types.hh>
+#include <portable/Types.hh>
 
 struct KartPadRecord {
     u8 _0000[0x000c - 0x0000];

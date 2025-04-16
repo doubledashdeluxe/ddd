@@ -1,7 +1,7 @@
 #pragma once
 
 #ifdef __CWCC__
-#include <common/Types.hh>
+#include <portable/Types.hh>
 
 void *operator new(size_t size, void *ptr);
 #else

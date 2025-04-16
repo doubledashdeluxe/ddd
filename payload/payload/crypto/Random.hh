@@ -5,7 +5,7 @@
 
 #include <common/Array.hh>
 #else
-#include <common/Types.hh>
+#include <portable/Types.hh>
 #endif
 
 class Random {

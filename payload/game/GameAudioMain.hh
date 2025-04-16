@@ -2,7 +2,7 @@
 
 #include "game/SoundID.hh"
 
-#include <common/Types.hh>
+#include <portable/Types.hh>
 
 namespace GameAudio {
 

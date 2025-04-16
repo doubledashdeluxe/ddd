@@ -1,7 +1,7 @@
 #pragma once
 
-#include <common/Types.hh>
 #include <jsystem/TBox.hh>
+#include <portable/Types.hh>
 
 struct MinimapConfig {
     TBox<f32> box;
