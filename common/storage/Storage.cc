@@ -1,7 +1,8 @@
 #include "Storage.hh"
 
-#include "common/Algorithm.hh"
 #include "common/Log.hh"
+
+#include <portable/Algorithm.hh>
 
 extern "C" {
 #include <assert.h>

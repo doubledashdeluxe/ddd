@@ -734,6 +734,7 @@ native_code_in_files = {
     ],
     'tests': [
         *sorted(glob.glob(os.path.join('tests', 'libc', '**', '*.cc'), recursive=True)),
+        *sorted(glob.glob(os.path.join('tests', 'portable', '**', '*.cc'), recursive=True)),
         *sorted(glob.glob(os.path.join('tests', 'common', '**', '*.cc'), recursive=True)),
         *sorted(glob.glob(os.path.join('tests', 'freestanding', '**', '*.cc'), recursive=True)),
         *sorted(glob.glob(os.path.join('tests', 'bootstrap', '**', '*.cc'), recursive=True)),

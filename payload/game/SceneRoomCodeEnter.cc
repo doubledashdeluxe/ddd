@@ -10,8 +10,8 @@
 #include "game/SequenceApp.hh"
 #include "game/SequenceInfo.hh"
 
-#include <common/Algorithm.hh>
 #include <jsystem/J2DAnmLoaderDataBase.hh>
+#include <portable/Algorithm.hh>
 
 SceneRoomCodeEnter::SceneRoomCodeEnter(JKRArchive *archive, JKRHeap *heap) : Scene(archive, heap) {
     SceneFactory *sceneFactory = SceneFactory::Instance();

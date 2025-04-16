@@ -15,10 +15,10 @@
 #include "game/SequenceInfo.hh"
 #include "game/System.hh"
 
-#include <common/Algorithm.hh>
 #include <jsystem/J2DAnmLoaderDataBase.hh>
 #include <payload/CourseManager.hh>
 #include <payload/UTF8.hh>
+#include <portable/Algorithm.hh>
 
 extern "C" {
 #include <stdio.h>

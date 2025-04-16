@@ -1,4 +1,4 @@
-#include <common/Algorithm.hh>
+#include <portable/Algorithm.hh>
 #include <snitch/snitch_all.hpp>
 
 #include <array>

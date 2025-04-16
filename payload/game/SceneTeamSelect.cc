@@ -14,9 +14,9 @@
 #include "game/SequenceApp.hh"
 #include "game/System.hh"
 
-#include <common/Algorithm.hh>
 #include <jsystem/J2DAnmLoaderDataBase.hh>
 #include <payload/crypto/Random.hh>
+#include <portable/Algorithm.hh>
 
 extern "C" {
 #include <stdio.h>

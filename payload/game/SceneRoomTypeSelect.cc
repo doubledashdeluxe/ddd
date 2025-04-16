@@ -12,8 +12,8 @@
 #include "game/SequenceApp.hh"
 #include "game/SequenceInfo.hh"
 
-#include <common/Algorithm.hh>
 #include <jsystem/J2DAnmLoaderDataBase.hh>
+#include <portable/Algorithm.hh>
 
 SceneRoomTypeSelect::SceneRoomTypeSelect(JKRArchive *archive, JKRHeap *heap)
     : Scene(archive, heap) {

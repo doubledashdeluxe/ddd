@@ -1,6 +1,6 @@
 #include <common/EXI.hh>
 
-#include <common/Algorithm.hh>
+#include <portable/Algorithm.hh>
 
 extern "C" {
 #include <string.h>

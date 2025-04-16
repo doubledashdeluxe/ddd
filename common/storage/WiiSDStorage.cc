@@ -1,8 +1,9 @@
 #include "WiiSDStorage.hh"
 
-#include "common/Algorithm.hh"
 #include "common/Log.hh"
 #include "common/Memory.hh"
+
+#include <portable/Algorithm.hh>
 
 extern "C" {
 #include <assert.h>

@@ -15,7 +15,6 @@
 #include "game/System.hh"
 #include "game/SystemRecord.hh"
 
-#include <common/Algorithm.hh>
 extern "C" {
 #include <dolphin/OSTime.h>
 }
@@ -23,6 +22,7 @@ extern "C" {
 #include <jsystem/J2DPicture.hh>
 #include <payload/CourseManager.hh>
 #include <payload/Lock.hh>
+#include <portable/Algorithm.hh>
 
 extern "C" {
 #include <stdio.h>

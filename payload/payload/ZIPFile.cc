@@ -2,8 +2,8 @@
 
 #include "payload/DOSTime.hh"
 
-#include <common/Algorithm.hh>
 #include <common/Bytes.hh>
+#include <portable/Algorithm.hh>
 
 extern "C" {
 #include <string.h>

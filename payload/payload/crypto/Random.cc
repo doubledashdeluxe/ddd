@@ -3,7 +3,6 @@
 #ifdef __CWCC__
 #include "payload/Lock.hh"
 
-#include <common/Algorithm.hh>
 #include <common/Arena.hh>
 #include <common/Clock.hh>
 #include <common/ES.hh>
@@ -11,7 +10,10 @@
 #include <common/storage/Storage.hh>
 extern "C" {
 #include <monocypher/monocypher.h>
+}
+#include <portable/Algorithm.hh>
 
+extern "C" {
 #include <assert.h>
 #include <string.h>
 }
