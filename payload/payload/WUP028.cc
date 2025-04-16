@@ -3,8 +3,8 @@
 #include "payload/Lock.hh"
 
 #include <common/Arena.hh>
-#include <common/Bytes.hh>
 #include <common/Log.hh>
+#include <portable/Bytes.hh>
 
 extern "C" {
 #include <assert.h>

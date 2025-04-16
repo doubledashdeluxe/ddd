@@ -1,8 +1,7 @@
 #pragma once
 
-#include "common/Bytes.hh"
-
 #include <portable/Array.hh>
+#include <portable/Bytes.hh>
 
 class SC {
 public:

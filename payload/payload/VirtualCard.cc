@@ -1,13 +1,15 @@
 #include "VirtualCard.hh"
 
 #include <common/Arena.hh>
-#include <common/Bytes.hh>
 #include <common/Clock.hh>
 #include <common/DiscID.hh>
 #include <common/String.hh>
 extern "C" {
 #include <dolphin/OSTime.h>
+}
+#include <portable/Bytes.hh>
 
+extern "C" {
 #include <stdio.h>
 #include <string.h>
 }

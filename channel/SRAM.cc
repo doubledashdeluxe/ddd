@@ -1,7 +1,7 @@
 #include "SRAM.hh"
 
-#include <common/Bytes.hh>
 #include <common/EXI.hh>
+#include <portable/Bytes.hh>
 
 SRAM::SRAM() : m_ok(false) {
     EXI::Device device(0, 1, 3);

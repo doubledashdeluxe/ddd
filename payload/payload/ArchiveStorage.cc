@@ -1,10 +1,12 @@
 #include "ArchiveStorage.hh"
 
 #include <common/Arena.hh>
-#include <common/Bytes.hh>
 extern "C" {
 #include <miniz/miniz.h>
+}
+#include <portable/Bytes.hh>
 
+extern "C" {
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>

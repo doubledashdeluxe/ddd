@@ -3,7 +3,6 @@
 #include "jsystem/JKRAramArchive.hh"
 #include "jsystem/JKRMemArchive.hh"
 
-#include <common/Bytes.hh>
 #include <common/Clock.hh>
 #include <common/Log.hh>
 #include <common/storage/Storage.hh>
@@ -11,6 +10,7 @@ extern "C" {
 #include <dolphin/DVD.h>
 }
 #include <payload/ArchivePatcher.hh>
+#include <portable/Bytes.hh>
 #include <portable/New.hh>
 
 extern "C" {

@@ -8,7 +8,6 @@ extern "C" {
 }
 
 #include <common/Arena.hh>
-#include <common/Bytes.hh>
 #include <common/Clock.hh>
 #include <common/Platform.hh>
 #include <common/UniquePtr.hh>
@@ -18,6 +17,7 @@ extern "C" {
 #include <payload/Lock.hh>
 #include <portable/Align.hh>
 #include <portable/Array.hh>
+#include <portable/Bytes.hh>
 
 extern "C" {
 #include <assert.h>

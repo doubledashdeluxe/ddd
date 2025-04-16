@@ -2,7 +2,7 @@ extern "C" {
 #include "OSRtc.h"
 }
 
-#include <common/Bytes.hh>
+#include <portable/Bytes.hh>
 
 extern "C" u8 *__OSLockSram();
 extern "C" void __OSUnlockSram(BOOL write);

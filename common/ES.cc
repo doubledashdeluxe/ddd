@@ -1,6 +1,6 @@
 #include "ES.hh"
 
-#include "common/Bytes.hh"
+#include <portable/Bytes.hh>
 
 ES::ES() : IOS::Resource("/dev/es", IOS::Mode::None) {}
 

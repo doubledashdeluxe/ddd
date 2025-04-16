@@ -1,6 +1,6 @@
 #include "OneField.hh"
 
-#include <common/Bytes.hh>
+#include <portable/Bytes.hh>
 
 bool OneFieldReader::isValid(const u8 *buffer, u32 size, u32 &offset) {
     if (offset + 4 > size) {

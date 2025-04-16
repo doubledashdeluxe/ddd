@@ -1,9 +1,9 @@
 #include "Session.hh"
 
-#include <common/Bytes.hh>
 extern "C" {
 #include <monocypher/monocypher.h>
 }
+#include <portable/Bytes.hh>
 
 Session::Session() {
     reset();

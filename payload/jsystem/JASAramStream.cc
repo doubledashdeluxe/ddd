@@ -3,12 +3,12 @@
 #include "jsystem/JASDriver.hh"
 #include "jsystem/JKRAram.hh"
 
-#include <common/Bytes.hh>
 extern "C" {
 #include <dolphin/DVD.h>
 #include <dolphin/OSTime.h>
 }
 #include <payload/Lock.hh>
+#include <portable/Bytes.hh>
 extern "C" {
 #include <stdio.h>
 #include <string.h>

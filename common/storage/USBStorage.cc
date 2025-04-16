@@ -1,11 +1,11 @@
 #include "USBStorage.hh"
 
-#include "common/Bytes.hh"
 #include "common/Clock.hh"
 #include "common/Log.hh"
 #include "common/Memory.hh"
 
 #include <portable/Algorithm.hh>
+#include <portable/Bytes.hh>
 
 extern "C" {
 #include <assert.h>

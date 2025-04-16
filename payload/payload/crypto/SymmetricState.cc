@@ -8,10 +8,12 @@
 
 #include "payload/crypto/HKDFState.hh"
 
-#include <common/Bytes.hh>
 extern "C" {
 #include <monocypher/monocypher.h>
+}
+#include <portable/Bytes.hh>
 
+extern "C" {
 #include <stdio.h>
 #include <string.h>
 }

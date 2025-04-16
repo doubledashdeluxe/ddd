@@ -1,10 +1,10 @@
 #include "ArchivePatcher.hh"
 
-#include <common/Bytes.hh>
 #include <common/DCache.hh>
 #include <common/Log.hh>
 #include <portable/Algorithm.hh>
 #include <portable/Align.hh>
+#include <portable/Bytes.hh>
 
 extern "C" {
 #include <assert.h>

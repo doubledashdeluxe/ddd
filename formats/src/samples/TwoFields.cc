@@ -1,6 +1,6 @@
 #include "TwoFields.hh"
 
-#include <common/Bytes.hh>
+#include <portable/Bytes.hh>
 
 bool TwoFieldsReader::isValid(const u8 *buffer, u32 size, u32 &offset) {
     if (offset + 1 > size) {

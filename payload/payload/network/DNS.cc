@@ -1,9 +1,9 @@
 #include "DNS.hh"
 
 #include <common/Arena.hh>
-#include <common/Bytes.hh>
 #include <common/Clock.hh>
 #include <portable/Algorithm.hh>
+#include <portable/Bytes.hh>
 
 extern "C" {
 #include <assert.h>

@@ -33,7 +33,7 @@ impl<L: TypeList> Format<L> {
 
     pub fn cc(&self) -> String {
         format!(
-            concat!("#include \"{}.hh\"\n", "\n", "#include <common/Bytes.hh>\n", "{}"),
+            concat!("#include \"{}.hh\"\n", "\n", "#include <portable/Bytes.hh>\n", "{}"),
             self.name,
             self.list.cc(),
         )

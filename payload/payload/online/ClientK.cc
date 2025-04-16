@@ -3,7 +3,6 @@
 #include "payload/crypto/Random.hh"
 
 #include <common/Arena.hh>
-#include <common/Bytes.hh>
 #include <common/ECID.hh>
 #include <common/FS.hh>
 #include <common/Platform.hh>
@@ -14,6 +13,7 @@ extern "C" {
 #include <monocypher/monocypher.h>
 }
 #include <portable/Align.hh>
+#include <portable/Bytes.hh>
 
 extern "C" {
 #include <assert.h>
