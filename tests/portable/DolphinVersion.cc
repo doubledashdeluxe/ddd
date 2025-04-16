@@ -1,4 +1,4 @@
-#include <common/DolphinVersion.hh>
+#include <portable/DolphinVersion.hh>
 #include <snitch/snitch_all.hpp>
 
 #include <cstdio>

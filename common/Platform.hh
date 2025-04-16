@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common/DolphinVersion.hh"
+#include <portable/DolphinVersion.hh>
 
 class Platform {
 public:

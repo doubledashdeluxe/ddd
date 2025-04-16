@@ -1,7 +1,8 @@
 #pragma once
 
-#include "common/DolphinVersion.hh"
 #include "common/ios/Resource.hh"
+
+#include <portable/DolphinVersion.hh>
 
 class Dolphin : private IOS::Resource {
 public:

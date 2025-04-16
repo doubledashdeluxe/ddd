@@ -433,6 +433,7 @@ code_in_files = {
     'formats': format_cc_files,
     'vendor': None,
     'libc': None,
+    'portable': None,
     'common': None,
     'freestanding': None,
     'bootstrap': None,
@@ -474,6 +475,7 @@ n.build(
     [
         *code_out_files['vendor'],
         *code_out_files['libc'],
+        *code_out_files['portable'],
         *code_out_files['common'],
         *code_out_files['payload'],
     ],
@@ -548,6 +550,7 @@ for region in ['P', 'E', 'J']:
             *code_out_files['formats'],
             *code_out_files['vendor'],
             *code_out_files['libc'],
+            *code_out_files['portable'],
             *code_out_files['common'],
             *code_out_files['payload'],
             os.path.join('$builddir', 'payload', f'Patches.cc.o'),
@@ -622,6 +625,7 @@ n.build(
     [
         *code_out_files['vendor'],
         *code_out_files['libc'],
+        *code_out_files['portable'],
         *code_out_files['common'],
         *code_out_files['freestanding'],
         *code_out_files['channel'],
@@ -685,6 +689,7 @@ n.build(
     [
         *code_out_files['vendor'],
         *code_out_files['libc'],
+        *code_out_files['portable'],
         *code_out_files['common'],
         *code_out_files['freestanding'],
         *code_out_files['bootstrap'],
@@ -769,6 +774,7 @@ n.build(
     'mld',
     [
         *native_code_out_files['vendor'],
+        *native_code_out_files['portable'],
         *native_code_out_files['common'],
         *native_code_out_files['payload'],
         *native_code_out_files['helpers'],
@@ -815,6 +821,7 @@ for target in ['bootstrap', 'channel', 'payload']:
         'mld',
         [
             *check_code_out_files['vendor'],
+            *check_code_out_files['portable'],
             *check_code_out_files['common'],
             *(check_code_out_files['freestanding'] if target != 'payload' else []),
             *check_code_out_files[target],

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <portable/Array.hh>
+#include "portable/Array.hh"
 
 struct DolphinVersion {
     static bool Read(const Array<char, 64> &versionString, DolphinVersion &version);
