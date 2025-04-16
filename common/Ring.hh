@@ -1,7 +1,7 @@
 #pragma once
 
-#include <common/New.hh>
 #include <portable/Algorithm.hh>
+#include <portable/New.hh>
 
 template <typename T, size_t N>
 class Ring {

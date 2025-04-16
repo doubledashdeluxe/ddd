@@ -6,12 +6,12 @@
 #include <common/Bytes.hh>
 #include <common/Clock.hh>
 #include <common/Log.hh>
-#include <common/New.hh>
 #include <common/storage/Storage.hh>
 extern "C" {
 #include <dolphin/DVD.h>
 }
 #include <payload/ArchivePatcher.hh>
+#include <portable/New.hh>
 
 extern "C" {
 #include <assert.h>
