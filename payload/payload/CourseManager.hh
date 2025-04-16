@@ -4,11 +4,11 @@
 #include "payload/ZIPFile.hh"
 
 #include <common/Optional.hh>
-#include <common/Ring.hh>
 #include <common/storage/Storage.hh>
 #include <game/MinimapConfig.hh>
 #include <jsystem/JKRHeap.hh>
 #include <portable/Array.hh>
+#include <portable/Ring.hh>
 
 class CourseManager : public StorageScanner {
 public:

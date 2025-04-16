@@ -2,8 +2,8 @@
 
 #include "payload/StorageScanner.hh"
 
-#include <common/Ring.hh>
 #include <common/storage/Storage.hh>
+#include <portable/Ring.hh>
 
 class ServerManager : public StorageScanner {
 public:

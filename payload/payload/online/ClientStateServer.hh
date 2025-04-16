@@ -5,8 +5,8 @@
 #include "payload/online/Connection.hh"
 #include "payload/online/ServerManager.hh"
 
-#include <common/Ring.hh>
 #include <common/UniquePtr.hh>
+#include <portable/Ring.hh>
 
 class ClientStateServer
     : public ClientState

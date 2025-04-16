@@ -1,4 +1,4 @@
-#include <common/Ring.hh>
+#include <portable/Ring.hh>
 #include <snitch/snitch_all.hpp>
 
 TEST_CASE("Ring") {
