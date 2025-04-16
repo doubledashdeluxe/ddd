@@ -1,6 +1,6 @@
 #pragma once
 
-#include <common/Array.hh>
+#include <portable/Array.hh>
 #include <portable/Types.hh>
 
 class SRAM {

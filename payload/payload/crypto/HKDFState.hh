@@ -2,7 +2,7 @@
 
 #include "payload/crypto/HMACState.hh"
 
-#include <common/Array.hh>
+#include <portable/Array.hh>
 
 class HKDFState {
 public:

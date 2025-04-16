@@ -2,8 +2,8 @@
 
 #include "payload/network/UDPSocket.hh"
 
-#include <common/Array.hh>
 #include <common/Ring.hh>
+#include <portable/Array.hh>
 
 class DNS {
 public:

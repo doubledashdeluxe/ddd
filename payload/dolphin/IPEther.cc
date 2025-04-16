@@ -8,8 +8,8 @@ extern "C" {
 #include "dolphin/OSTime.h"
 }
 
-#include <common/Array.hh>
 #include <common/Clock.hh>
+#include <portable/Array.hh>
 
 extern "C" IPInterface IFDefault;
 extern "C" OSAlarm LinkAlarm;

@@ -3,7 +3,7 @@
 #ifdef __CWCC__
 #include "payload/Mutex.hh"
 
-#include <common/Array.hh>
+#include <portable/Array.hh>
 #else
 #include <portable/Types.hh>
 #endif

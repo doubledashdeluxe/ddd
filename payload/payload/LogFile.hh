@@ -1,10 +1,12 @@
 #pragma once
 
-#include <common/Array.hh>
 #include <common/storage/Storage.hh>
 extern "C" {
 #include <dolphin/OSThread.h>
+}
+#include <portable/Array.hh>
 
+extern "C" {
 #include <stdarg.h>
 }
 

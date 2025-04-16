@@ -1,7 +1,8 @@
 #include "FS.hh"
 
-#include "common/Array.hh"
 #include "common/ios/File.hh"
+
+#include <portable/Array.hh>
 
 extern "C" {
 #include <stdio.h>

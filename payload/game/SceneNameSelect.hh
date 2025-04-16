@@ -3,9 +3,9 @@
 #include "game/NameEntryHelper.hh"
 #include "game/Scene.hh"
 
-#include <common/Array.hh>
 #include <common/UniquePtr.hh>
 #include <jsystem/J2DScreen.hh>
+#include <portable/Array.hh>
 
 class SceneNameSelect : public Scene {
 public:

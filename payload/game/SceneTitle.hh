@@ -3,8 +3,8 @@
 #include "game/PrintMemoryCard.hh"
 #include "game/Scene.hh"
 
-#include <common/Array.hh>
 #include <jsystem/J2DScreen.hh>
+#include <portable/Array.hh>
 
 class SceneTitle : public Scene {
 public:

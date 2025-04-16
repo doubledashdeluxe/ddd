@@ -1,7 +1,7 @@
 #pragma once
 
-#include <common/Array.hh>
 #include <game/KartLocale.hh>
+#include <portable/Array.hh>
 
 class INIReader {
 public:

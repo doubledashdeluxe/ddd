@@ -2,10 +2,10 @@
 
 #include "game/Kart2DCommon.hh"
 
-#include <common/Array.hh>
 extern "C" {
 #include <dolphin/OSTime.h>
 }
+#include <portable/Array.hh>
 
 void OnlineTimer::init(u32 duration) {
     m_duration = duration;

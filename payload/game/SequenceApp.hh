@@ -4,8 +4,8 @@
 #include "game/Scene.hh"
 #include "game/SceneType.hh"
 
-#include <common/Array.hh>
 #include <payload/Replace.hh>
+#include <portable/Array.hh>
 
 class SequenceApp : public GameApp {
 public:

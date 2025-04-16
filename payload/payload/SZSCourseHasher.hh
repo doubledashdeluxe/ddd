@@ -3,7 +3,7 @@
 #include "payload/SZSReader.hh"
 #include "payload/ZIPFile.hh"
 
-#include <common/Array.hh>
+#include <portable/Array.hh>
 extern "C" {
 #include <monocypher/monocypher.h>
 }

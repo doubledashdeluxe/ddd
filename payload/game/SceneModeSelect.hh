@@ -2,9 +2,9 @@
 
 #include "game/Scene.hh"
 
-#include <common/Array.hh>
 #include <jsystem/J2DScreen.hh>
 #include <payload/SlidingText.hh>
+#include <portable/Array.hh>
 
 class SceneModeSelect : public Scene {
 public:

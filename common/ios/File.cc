@@ -1,9 +1,10 @@
 #include "File.hh"
 
-#include "common/Array.hh"
 #include "common/Bytes.hh"
 #include "common/DCache.hh"
 #include "common/Memory.hh"
+
+#include <portable/Array.hh>
 
 extern "C" {
 #include <string.h>

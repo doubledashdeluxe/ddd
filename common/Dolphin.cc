@@ -1,6 +1,6 @@
 #include "Dolphin.hh"
 
-#include "common/Array.hh"
+#include <portable/Array.hh>
 
 Dolphin::Dolphin() : IOS::Resource("/dev/dolphin", IOS::Mode::None, false) {}
 

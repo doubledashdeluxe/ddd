@@ -3,7 +3,7 @@
 #include "payload/crypto/Session.hh"
 #include "payload/crypto/SymmetricState.hh"
 
-#include <common/Array.hh>
+#include <portable/Array.hh>
 
 class KX {
 public:

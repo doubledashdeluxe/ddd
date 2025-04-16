@@ -4,8 +4,8 @@
 #include "game/KartID.hh"
 #include "game/Scene.hh"
 
-#include <common/Array.hh>
 #include <jsystem/J2DScreen.hh>
+#include <portable/Array.hh>
 
 class SceneCharacterSelect : public Scene {
 public:

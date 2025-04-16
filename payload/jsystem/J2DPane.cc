@@ -1,6 +1,6 @@
 #include "J2DPane.hh"
 
-#include <common/Array.hh>
+#include <portable/Array.hh>
 
 extern "C" {
 #include <stdio.h>

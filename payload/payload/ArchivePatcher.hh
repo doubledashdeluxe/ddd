@@ -2,9 +2,9 @@
 
 #include "payload/Archive.hh"
 
-#include <common/Array.hh>
 #include <common/storage/Storage.hh>
 #include <jsystem/JKRHeap.hh>
+#include <portable/Array.hh>
 
 class ArchivePatcher {
 public:

@@ -3,7 +3,7 @@
 #include "game/Scene.hh"
 #include "game/SceneTitleLine.hh"
 
-#include <common/Array.hh>
+#include <portable/Array.hh>
 
 class SceneOption : public Scene {
 public:

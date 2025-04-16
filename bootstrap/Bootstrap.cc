@@ -1,6 +1,5 @@
 #include "Bootstrap.hh"
 
-#include <common/Array.hh>
 #include <common/Bytes.hh>
 #include <common/Console.hh>
 #include <common/ES.hh>
@@ -9,6 +8,7 @@
 #include <common/ios/File.hh>
 #include <common/ios/KernelUID.hh>
 #include <portable/Algorithm.hh>
+#include <portable/Array.hh>
 
 extern "C" {
 #include <stdio.h>

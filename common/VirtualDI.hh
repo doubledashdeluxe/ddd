@@ -1,7 +1,8 @@
 #pragma once
 
-#include "common/Array.hh"
 #include "common/storage/Storage.hh"
+
+#include <portable/Array.hh>
 
 class VirtualDI {
 public:

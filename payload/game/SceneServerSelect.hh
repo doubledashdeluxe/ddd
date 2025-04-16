@@ -2,9 +2,9 @@
 
 #include "game/Scene.hh"
 
-#include <common/Array.hh>
 #include <jsystem/J2DScreen.hh>
 #include <payload/online/ClientReadHandler.hh>
+#include <portable/Array.hh>
 
 class SceneServerSelect
     : public Scene

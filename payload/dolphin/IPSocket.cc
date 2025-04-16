@@ -9,7 +9,6 @@ extern "C" {
 
 #include <common/Align.hh>
 #include <common/Arena.hh>
-#include <common/Array.hh>
 #include <common/Bytes.hh>
 #include <common/Clock.hh>
 #include <common/Platform.hh>
@@ -18,6 +17,7 @@ extern "C" {
 #include <jsystem/JKRExpHeap.hh>
 #include <jsystem/JKRHeap.hh>
 #include <payload/Lock.hh>
+#include <portable/Array.hh>
 
 extern "C" {
 #include <assert.h>

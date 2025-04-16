@@ -9,7 +9,6 @@
 #include "game/SysDebug.hh"
 #include "game/System.hh"
 
-#include <common/Array.hh>
 #include <common/Clock.hh>
 #include <common/Log.hh>
 #include <jsystem/JKRExpHeap.hh>
@@ -18,6 +17,7 @@
 #include <payload/ArchivePatcher.hh>
 #include <payload/DOLBinary.hh>
 #include <payload/FileLoader.hh>
+#include <portable/Array.hh>
 
 extern "C" {
 #include <assert.h>

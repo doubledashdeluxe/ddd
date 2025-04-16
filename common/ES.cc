@@ -1,6 +1,5 @@
 #include "ES.hh"
 
-#include "common/Array.hh"
 #include "common/Bytes.hh"
 
 ES::ES() : IOS::Resource("/dev/es", IOS::Mode::None) {}

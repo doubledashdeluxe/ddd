@@ -1,7 +1,8 @@
 #pragma once
 
-#include "common/Array.hh"
 #include "common/ios/Resource.hh"
+
+#include <portable/Array.hh>
 
 class ES : private IOS::Resource {
 public:

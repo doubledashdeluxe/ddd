@@ -1,12 +1,12 @@
 #pragma once
 
-#include <common/Array.hh>
 extern "C" {
 #include <dolphin/IPSocket.h>
 }
 #include <formats/ClientState.hh>
 #include <formats/ServerState.hh>
 #include <jsystem/JKRHeap.hh>
+#include <portable/Array.hh>
 
 class ConnectionState {
 public:

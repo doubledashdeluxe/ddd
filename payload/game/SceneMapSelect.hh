@@ -2,7 +2,6 @@
 
 #include "game/Scene.hh"
 
-#include <common/Array.hh>
 #include <common/UniquePtr.hh>
 extern "C" {
 #include <dolphin/OSMessage.h>
@@ -11,6 +10,7 @@ extern "C" {
 #include <jsystem/J2DScreen.hh>
 #include <jsystem/ResTIMG.hh>
 #include <payload/Mutex.hh>
+#include <portable/Array.hh>
 
 class SceneMapSelect : public Scene {
 public:
