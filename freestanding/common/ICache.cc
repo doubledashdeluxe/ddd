@@ -1,6 +1,6 @@
 #include <common/ICache.hh>
 
-#include <common/Align.hh>
+#include <portable/Align.hh>
 
 #ifdef __CWCC__
 void ICache::Invalidate(void *start, size_t size) {

@@ -1,6 +1,6 @@
 #include <common/DCache.hh>
 
-#include <common/Align.hh>
+#include <portable/Align.hh>
 
 #ifdef __CWCC__
 void DCache::Store(const void *start, size_t size) {

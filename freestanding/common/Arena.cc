@@ -1,6 +1,6 @@
 #include <common/Arena.hh>
 
-#include <common/Align.hh>
+#include <portable/Align.hh>
 
 extern "C" {
 #include <assert.h>

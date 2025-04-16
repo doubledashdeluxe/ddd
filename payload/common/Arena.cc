@@ -1,9 +1,11 @@
 #include <common/Arena.hh>
 
-#include <common/Align.hh>
 extern "C" {
 #include <dolphin/OSArena.h>
+}
+#include <portable/Align.hh>
 
+extern "C" {
 #include <assert.h>
 }
 

@@ -2,11 +2,11 @@
 
 #include "payload/Lock.hh"
 
-#include <common/Align.hh>
 #include <common/Memory.hh>
 extern "C" {
 #include <dolphin/OSInterrupt.h>
 }
+#include <portable/Align.hh>
 
 struct MIChannel {
     u16 start;

@@ -1,9 +1,10 @@
 #include "VI.hh"
 
-#include "common/Align.hh"
 #include "common/Arena.hh"
 #include "common/DCache.hh"
 #include "common/Memory.hh"
+
+#include <portable/Align.hh>
 
 extern "C" u32 videoMode;
 

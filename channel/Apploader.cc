@@ -1,12 +1,14 @@
 #include "Apploader.hh"
 
-#include <common/Align.hh>
 #include <common/DiscID.hh>
 #include <common/ICache.hh>
 #include <common/Log.hh>
 extern "C" {
 #include <monocypher/monocypher.h>
+}
+#include <portable/Align.hh>
 
+extern "C" {
 #include <string.h>
 }
 

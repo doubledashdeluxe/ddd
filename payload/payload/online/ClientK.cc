@@ -2,7 +2,6 @@
 
 #include "payload/crypto/Random.hh"
 
-#include <common/Align.hh>
 #include <common/Arena.hh>
 #include <common/Bytes.hh>
 #include <common/ECID.hh>
@@ -13,7 +12,10 @@
 extern "C" {
 #include <dolphin/OSArena.h>
 #include <monocypher/monocypher.h>
+}
+#include <portable/Align.hh>
 
+extern "C" {
 #include <assert.h>
 }
 

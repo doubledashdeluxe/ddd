@@ -4,7 +4,6 @@
 #include "channel/DI.hh"
 #include "channel/SRAM.hh"
 
-#include <common/Align.hh>
 #include <common/Arena.hh>
 #include <common/Clock.hh>
 #include <common/Console.hh>
@@ -21,6 +20,7 @@
 #include <common/storage/Storage.hh>
 #include <common/storage/USBStorage.hh>
 #include <common/storage/WiiSDStorage.hh>
+#include <portable/Align.hh>
 
 extern "C" {
 #include <string.h>

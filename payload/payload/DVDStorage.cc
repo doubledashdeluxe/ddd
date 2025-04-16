@@ -1,9 +1,9 @@
 #include "DVDStorage.hh"
 
-#include <common/Align.hh>
 #include <common/Arena.hh>
 #include <common/Memory.hh>
 #include <portable/Algorithm.hh>
+#include <portable/Align.hh>
 
 extern "C" {
 #include <assert.h>

@@ -1,8 +1,8 @@
 #include "Archive.hh"
 
-#include <common/Align.hh>
 #include <common/Bytes.hh>
 #include <common/Memory.hh>
+#include <portable/Align.hh>
 
 extern "C" {
 #include <string.h>

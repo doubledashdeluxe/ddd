@@ -7,7 +7,6 @@ extern "C" {
 #include "dolphin/OSThread.h"
 }
 
-#include <common/Align.hh>
 #include <common/Arena.hh>
 #include <common/Bytes.hh>
 #include <common/Clock.hh>
@@ -17,6 +16,7 @@ extern "C" {
 #include <jsystem/JKRExpHeap.hh>
 #include <jsystem/JKRHeap.hh>
 #include <payload/Lock.hh>
+#include <portable/Align.hh>
 #include <portable/Array.hh>
 
 extern "C" {

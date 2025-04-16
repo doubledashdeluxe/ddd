@@ -12,7 +12,6 @@
 #include "game/SequenceApp.hh"
 #include "game/SequenceInfo.hh"
 
-#include <common/Align.hh>
 extern "C" {
 #include <dolphin/GXTransform.h>
 #include <dolphin/OSTime.h>
@@ -21,6 +20,7 @@ extern "C" {
 #include <jsystem/J2DOrthoGraph.hh>
 #include <jsystem/JKRExpHeap.hh>
 #include <portable/Algorithm.hh>
+#include <portable/Align.hh>
 
 extern "C" {
 #include <math.h>

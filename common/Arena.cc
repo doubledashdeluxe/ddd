@@ -1,6 +1,6 @@
 #include "Arena.hh"
 
-#include "common/Align.hh"
+#include <portable/Align.hh>
 
 void MEM1Arena::Init() {
     MEM1Arena arena;
