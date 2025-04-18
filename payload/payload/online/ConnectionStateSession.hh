@@ -1,7 +1,8 @@
 #pragma once
 
-#include "payload/crypto/Session.hh"
 #include "payload/online/ConnectionState.hh"
+
+#include <portable/crypto/Session.hh>
 
 class ConnectionStateSession : public ConnectionState {
 public:

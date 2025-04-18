@@ -1,8 +1,7 @@
 #pragma once
 
-#include "payload/crypto/Session.hh"
-
 #include <portable/Array.hh>
+#include <portable/crypto/Session.hh>
 #include <portable/crypto/SymmetricState.hh>
 
 class KX {
