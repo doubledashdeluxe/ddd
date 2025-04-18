@@ -1,4 +1,4 @@
-#include <payload/SZSReader.hh>
+#include <portable/SZSReader.hh>
 #include <snitch/snitch_all.hpp>
 
 #include <vector>

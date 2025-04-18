@@ -1,9 +1,9 @@
 #pragma once
 
-#include "payload/SZSReader.hh"
 #include "payload/ZIPFile.hh"
 
 #include <jsystem/JKRHeap.hh>
+#include <portable/SZSReader.hh>
 #include <portable/UniquePtr.hh>
 
 class SZSCourseLoader : private SZSReader {

@@ -1,12 +1,12 @@
 #pragma once
 
-#include "payload/SZSReader.hh"
 #include "payload/ZIPFile.hh"
 
-#include <portable/Array.hh>
 extern "C" {
 #include <monocypher/monocypher.h>
 }
+#include <portable/Array.hh>
+#include <portable/SZSReader.hh>
 
 class SZSCourseHasher : private SZSReader {
 public:
