@@ -1,7 +1,6 @@
 #include "Console.hh"
 
 #include "common/Arena.hh"
-#include "common/Font.hh"
 
 extern "C" {
 #define NANOPRINTF_USE_FIELD_WIDTH_FORMAT_SPECIFIERS 1
@@ -13,7 +12,10 @@ extern "C" {
 #define NANOPRINTF_VISIBILITY_STATIC
 #define NANOPRINTF_IMPLEMENTATION
 #include <nanoprintf.h>
+}
+#include <portable/Font.hh>
 
+extern "C" {
 #include <string.h>
 }
 

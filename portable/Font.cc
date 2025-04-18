@@ -1,7 +1,7 @@
 #include "Font.hh"
 
 extern "C" {
-#include "common/Font.h"
+#include "portable/Font.h"
 }
 
 u8 Font::GetGlyphWidth() {
