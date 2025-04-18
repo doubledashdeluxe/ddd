@@ -10,7 +10,6 @@ extern "C" {
 #include <common/Arena.hh>
 #include <common/Clock.hh>
 #include <common/Platform.hh>
-#include <common/UniquePtr.hh>
 #include <common/ios/Resource.hh>
 #include <jsystem/JKRExpHeap.hh>
 #include <jsystem/JKRHeap.hh>
@@ -18,6 +17,7 @@ extern "C" {
 #include <portable/Align.hh>
 #include <portable/Array.hh>
 #include <portable/Bytes.hh>
+#include <portable/UniquePtr.hh>
 
 extern "C" {
 #include <assert.h>

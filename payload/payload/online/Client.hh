@@ -2,11 +2,11 @@
 
 #include "payload/online/ClientState.hh"
 
-#include <common/UniquePtr.hh>
 extern "C" {
 #include <dolphin/IPSocket.h>
 }
 #include <jsystem/JKRHeap.hh>
+#include <portable/UniquePtr.hh>
 
 class Client {
 public:

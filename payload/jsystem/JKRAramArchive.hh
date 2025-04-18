@@ -3,7 +3,7 @@
 #include "jsystem/JKRAramBlock.hh"
 #include "jsystem/JKRArchive.hh"
 
-#include <common/UniquePtr.hh>
+#include <portable/UniquePtr.hh>
 
 class JKRAramArchive : public JKRArchive {
 public:

@@ -1,11 +1,11 @@
 #pragma once
 
-#include <common/UniquePtr.hh>
 #include <common/storage/Storage.hh>
 extern "C" {
 #include <dolphin/CARD.h>
 }
 #include <portable/Array.hh>
+#include <portable/UniquePtr.hh>
 
 class VirtualCard : public Storage::Observer {
 public:

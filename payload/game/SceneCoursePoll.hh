@@ -2,7 +2,6 @@
 
 #include "game/Scene.hh"
 
-#include <common/UniquePtr.hh>
 extern "C" {
 #include <dolphin/OSMessage.h>
 #include <dolphin/OSThread.h>
@@ -11,6 +10,7 @@ extern "C" {
 #include <jsystem/ResTIMG.hh>
 #include <payload/Mutex.hh>
 #include <portable/Array.hh>
+#include <portable/UniquePtr.hh>
 
 class SceneCoursePoll : public Scene {
 public:

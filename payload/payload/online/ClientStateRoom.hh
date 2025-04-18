@@ -4,7 +4,7 @@
 #include "payload/online/ClientState.hh"
 #include "payload/online/Connection.hh"
 
-#include <common/UniquePtr.hh>
+#include <portable/UniquePtr.hh>
 
 class ClientStateRoom : public ClientState {
 public:

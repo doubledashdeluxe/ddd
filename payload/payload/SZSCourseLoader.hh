@@ -3,8 +3,8 @@
 #include "payload/SZSReader.hh"
 #include "payload/ZIPFile.hh"
 
-#include <common/UniquePtr.hh>
 #include <jsystem/JKRHeap.hh>
+#include <portable/UniquePtr.hh>
 
 class SZSCourseLoader : private SZSReader {
 public:

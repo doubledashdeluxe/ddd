@@ -2,9 +2,9 @@
 
 #include "payload/Archive.hh"
 
-#include <common/UniquePtr.hh>
 #include <jsystem/JKRAramBlock.hh>
 #include <jsystem/JKRHeap.hh>
+#include <portable/UniquePtr.hh>
 
 class ArchiveSwapper {
 public:
