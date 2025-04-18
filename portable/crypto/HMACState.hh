@@ -1,9 +1,10 @@
 #pragma once
 
+#include "portable/Array.hh"
+
 extern "C" {
 #include <monocypher/monocypher.h>
 }
-#include <portable/Array.hh>
 
 class HMACState {
 public:

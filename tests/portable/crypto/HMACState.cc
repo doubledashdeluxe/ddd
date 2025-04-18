@@ -1,4 +1,4 @@
-#include <payload/crypto/HMACState.hh>
+#include <portable/crypto/HMACState.hh>
 #include <snitch/snitch_all.hpp>
 
 TEST_CASE("HMACState") {

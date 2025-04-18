@@ -1,8 +1,7 @@
 #pragma once
 
-#include "payload/crypto/HMACState.hh"
-
 #include <portable/Array.hh>
+#include <portable/crypto/HMACState.hh>
 
 class HKDFState {
 public:
