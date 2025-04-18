@@ -6,13 +6,12 @@
 
 #include "SymmetricState.hh"
 
-extern "C" {
-#include <monocypher/monocypher.h>
-}
-#include <portable/Bytes.hh>
-#include <portable/crypto/HKDFState.hh>
+#include "portable/Bytes.hh"
+#include "portable/crypto/HKDFState.hh"
 
 extern "C" {
+#include <monocypher/monocypher.h>
+
 #include <stdio.h>
 #include <string.h>
 }

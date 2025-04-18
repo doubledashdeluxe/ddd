@@ -1,9 +1,9 @@
 #pragma once
 
 #include "payload/crypto/Session.hh"
-#include "payload/crypto/SymmetricState.hh"
 
 #include <portable/Array.hh>
+#include <portable/crypto/SymmetricState.hh>
 
 class KX {
 public:
