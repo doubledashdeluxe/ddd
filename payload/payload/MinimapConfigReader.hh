@@ -2,12 +2,11 @@
 
 #include "payload/ZIPFile.hh"
 
-#include <common/Optional.hh>
 #include <game/MinimapConfig.hh>
-
 extern "C" {
 #include <lwjson/lwjson.h>
 }
+#include <portable/Optional.hh>
 
 class MinimapConfigReader {
 public:
