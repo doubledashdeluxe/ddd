@@ -6,7 +6,6 @@
 #include "payload/MinimapConfigReader.hh"
 #include "payload/SZSCourseHasher.hh"
 #include "payload/SZSCourseLoader.hh"
-#include "payload/UTF8.hh"
 #include "payload/ZIPFile.hh"
 
 #include <common/DCache.hh>
@@ -15,7 +14,10 @@
 #include <game/ResMgr.hh>
 extern "C" {
 #include <monocypher/monocypher.h>
+}
+#include <portable/UTF8.hh>
 
+extern "C" {
 #include <stdio.h>
 #include <string.h>
 #include <strings.h>

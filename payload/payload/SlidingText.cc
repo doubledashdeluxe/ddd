@@ -1,9 +1,8 @@
 #include "SlidingText.hh"
 
-#include "payload/UTF8.hh"
-
 #include <game/Kart2DCommon.hh>
 #include <jsystem/J2DPicture.hh>
+#include <portable/UTF8.hh>
 
 SlidingText::SlidingText() {}
 

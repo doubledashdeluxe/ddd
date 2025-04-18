@@ -2,8 +2,8 @@
 
 #include "game/ResMgr.hh"
 
-#include <payload/UTF8.hh>
 #include <portable/Algorithm.hh>
+#include <portable/UTF8.hh>
 
 extern "C" {
 #include <string.h>
