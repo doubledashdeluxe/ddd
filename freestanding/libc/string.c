@@ -56,6 +56,15 @@ char *strchr(const char *s, int c) {
     return NULL;
 }
 
+int strcmp(const char *s1, const char *s2) {
+    for (; *s1 == *s2; s1++, s2++) {
+        if (*s1 == '\0') {
+            return 0;
+        }
+    }
+    return *s1 < *s2 ? -1 : 1;
+}
+
 size_t strlen(const char *s) {
     const char *f = s;
     while (*s != '\0') {
@@ -80,4 +89,14 @@ int strncmp(const char *s1, const char *s2, size_t n) {
     }
 
     return 0;
+}
+
+char *strrchr(const char *s, int c) {
+    char *p = NULL;
+    for (; *s; s++) {
+        if (*s == c) {
+            p = (char *)s;
+        }
+    }
+    return p;
 }
