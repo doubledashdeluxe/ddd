@@ -1,7 +1,8 @@
 #pragma once
 
-#include "payload/crypto/KX.hh"
 #include "payload/online/ConnectionState.hh"
+
+#include <portable/crypto/KX.hh>
 
 class ConnectionStateKX : public ConnectionState {
 public:

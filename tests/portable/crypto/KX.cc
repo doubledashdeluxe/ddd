@@ -2,7 +2,7 @@
 extern "C" {
 #include <monocypher/monocypher.h>
 }
-#include <payload/crypto/KX.hh>
+#include <portable/crypto/KX.hh>
 #include <snitch/snitch_all.hpp>
 
 #include <array>
