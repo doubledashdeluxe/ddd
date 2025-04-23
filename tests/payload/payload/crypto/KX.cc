@@ -1,8 +1,8 @@
+#include <helpers/crypto/Random.hh>
 extern "C" {
 #include <monocypher/monocypher.h>
 }
 #include <payload/crypto/KX.hh>
-#include <payload/crypto/Random.hh>
 #include <snitch/snitch_all.hpp>
 
 #include <array>

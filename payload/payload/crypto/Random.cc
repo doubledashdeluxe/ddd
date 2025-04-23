@@ -57,17 +57,6 @@ void Random::Get(void *data, size_t size) {
 
     crypto_wipe(s_buffer.values() + 32, s_offset - 32);
 }
-#else
-#include <algorithm>
-#include <climits>
-#include <random>
-
-void Random::Get(void *data, size_t size) {
-    static std::independent_bits_engine<std::random_device, CHAR_BIT, u8> engine;
-    std::generate(reinterpret_cast<u8 *>(data), reinterpret_cast<u8 *>(data) + size,
-            std::ref(engine));
-}
-#endif
 
 u32 Random::Get(u32 range) {
     range--;
@@ -86,7 +75,6 @@ u32 Random::Get(u32 range) {
     return x;
 }
 
-#ifdef __CWCC__
 bool Random::InitWithDiscTimings() {
     Storage::FileHandle file("dvd:/Movie/play1.thp", Storage::Mode::Read);
     alignas(0x20) Array<u8, 256> buffer;
