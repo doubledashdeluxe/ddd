@@ -1,9 +1,12 @@
 #include "ConnectionStateSession.hh"
 
+#include "payload/crypto/Random.hh"
 #include "payload/network/Socket.hh"
 #include "payload/online/ConnectionStateKX.hh"
 
 extern "C" {
+#include <monocypher/monocypher.h>
+
 #include <assert.h>
 }
 
@@ -14,7 +17,12 @@ ConnectionStateSession::ConnectionStateSession(JKRHeap *heap, Array<u8, 32> serv
 ConnectionStateSession::~ConnectionStateSession() {}
 
 ConnectionState &ConnectionStateSession::reset() {
-    return *(new (m_heap, 0x4) ConnectionStateKX(m_heap, m_serverPK, m_address));
+    Array<u8, 32> clientEphemeralK;
+    Random::Get(clientEphemeralK.values(), clientEphemeralK.count());
+    ConnectionState &state =
+            *(new (m_heap, 0x4) ConnectionStateKX(m_heap, clientEphemeralK, m_serverPK, m_address));
+    crypto_wipe(clientEphemeralK.values(), clientEphemeralK.count());
+    return state;
 }
 
 ConnectionState &ConnectionStateSession::read(ServerStateReader &reader, u8 *buffer, u32 size,

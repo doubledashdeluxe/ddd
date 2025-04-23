@@ -1,16 +1,20 @@
 #include "ConnectionStateKX.hh"
 
+#include "payload/crypto/Random.hh"
 #include "payload/network/Socket.hh"
 #include "payload/online/ClientK.hh"
 #include "payload/online/ConnectionStateSession.hh"
 
 extern "C" {
+#include <monocypher/monocypher.h>
+
 #include <assert.h>
 }
 
-ConnectionStateKX::ConnectionStateKX(JKRHeap *heap, Array<u8, 32> serverPK, SOSockAddr address)
-    : ConnectionState(heap, serverPK), m_address(address), m_clientState(ClientK::Get(), serverPK) {
-}
+ConnectionStateKX::ConnectionStateKX(JKRHeap *heap, const Array<u8, 32> &clientEphemeralK,
+        Array<u8, 32> serverPK, SOSockAddr address)
+    : ConnectionState(heap, serverPK), m_address(address),
+      m_clientState(ClientK::Get(), clientEphemeralK, serverPK) {}
 
 ConnectionStateKX::~ConnectionStateKX() {}
 
@@ -44,7 +48,10 @@ ConnectionState &ConnectionStateKX::write(ClientStateWriter & /* writer */, u8 *
     if (!m_clientState.update()) {
         session = m_clientState.clientSession();
         if (!session) {
-            m_clientState = KX::ClientState(ClientK::Get(), m_serverPK);
+            Array<u8, 32> clientEphemeralK;
+            Random::Get(clientEphemeralK.values(), clientEphemeralK.count());
+            m_clientState = KX::ClientState(ClientK::Get(), clientEphemeralK, m_serverPK);
+            crypto_wipe(clientEphemeralK.values(), clientEphemeralK.count());
         }
     }
 

@@ -13,7 +13,8 @@ public:
 
     class ClientState {
     public:
-        ClientState(const Array<u8, 32> &clientK, const Array<u8, 32> &serverPK);
+        ClientState(const Array<u8, 32> &clientK, const Array<u8, 32> &clientEphemeralK,
+                const Array<u8, 32> &serverPK);
         ~ClientState();
         bool hasM1() const;
         bool hasM2() const;
@@ -54,7 +55,7 @@ public:
 
     class ServerState {
     public:
-        ServerState(const Array<u8, 32> &serverK);
+        ServerState(const Array<u8, 32> &serverK, const Array<u8, 32> &serverEphemeralK);
         ~ServerState();
         bool hasM1() const;
         bool hasM2() const;

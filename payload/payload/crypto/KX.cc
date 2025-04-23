@@ -6,17 +6,17 @@
 
 #include "KX.hh"
 
-#include "payload/payload/crypto/Random.hh"
-
 extern "C" {
 #include <monocypher/monocypher.h>
 
 #include <string.h>
 }
 
-KX::ClientState::ClientState(const Array<u8, 32> &clientK, const Array<u8, 32> &serverPK)
+KX::ClientState::ClientState(const Array<u8, 32> &clientK, const Array<u8, 32> &clientEphemeralK,
+        const Array<u8, 32> &serverPK)
     : m_hasM1(false), m_hasM2(false), m_hasClientSession(false),
-      m_state(&ClientState::statePrologue), m_clientK(clientK), m_serverPK(serverPK) {}
+      m_state(&ClientState::statePrologue), m_clientK(clientK),
+      m_clientEphemeralK(clientEphemeralK), m_serverPK(serverPK) {}
 
 KX::ClientState::~ClientState() {
     crypto_wipe(m_clientEphemeralK.values(), m_clientEphemeralK.count());
@@ -70,7 +70,6 @@ void KX::ClientState::stateS() {
 }
 
 void KX::ClientState::stateM1E() {
-    Random::Get(m_clientEphemeralK.values(), m_clientEphemeralK.count());
     crypto_x25519_public_key(m_m1.values() + 0, m_clientEphemeralK.values());
     m_symmetricState.mixHash(m_m1.values() + 0, 32);
     m_state = &ClientState::stateM1ES;
@@ -136,9 +135,10 @@ void KX::ClientState::stateSession() {
     m_state = static_cast<State>(nullptr);
 }
 
-KX::ServerState::ServerState(const Array<u8, 32> &serverK)
+KX::ServerState::ServerState(const Array<u8, 32> &serverK, const Array<u8, 32> &serverEphemeralK)
     : m_hasM1(false), m_hasM2(false), m_hasServerSession(false),
-      m_state(&ServerState::statePrologue), m_serverK(serverK) {}
+      m_state(&ServerState::statePrologue), m_serverK(serverK),
+      m_serverEphemeralK(serverEphemeralK) {}
 
 KX::ServerState::~ServerState() {
     crypto_wipe(m_serverEphemeralK.values(), m_serverEphemeralK.count());
@@ -238,7 +238,6 @@ void KX::ServerState::stateM1Final() {
 }
 
 void KX::ServerState::stateM2E() {
-    Random::Get(m_serverEphemeralK.values(), m_serverEphemeralK.count());
     crypto_x25519_public_key(m_m2.values() + 0, m_serverEphemeralK.values());
     m_symmetricState.mixHash(m_m2.values() + 0, 32);
     m_state = &ServerState::stateM2EE;

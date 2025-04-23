@@ -5,7 +5,8 @@
 
 class ConnectionStateKX : public ConnectionState {
 public:
-    ConnectionStateKX(JKRHeap *heap, Array<u8, 32> serverPK, SOSockAddr address);
+    ConnectionStateKX(JKRHeap *heap, const Array<u8, 32> &clientEphemeralK, Array<u8, 32> serverPK,
+            SOSockAddr address);
     ~ConnectionStateKX() override;
     ConnectionState &reset() override;
     ConnectionState &read(ServerStateReader &reader, u8 *buffer, u32 size,

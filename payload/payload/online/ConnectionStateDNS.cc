@@ -1,9 +1,12 @@
 #include "ConnectionStateDNS.hh"
 
+#include "payload/crypto/Random.hh"
 #include "payload/network/DNS.hh"
 #include "payload/online/ConnectionStateKX.hh"
 
 extern "C" {
+#include <monocypher/monocypher.h>
+
 #include <stdio.h>
 #include <string.h>
 }
@@ -42,6 +45,11 @@ ConnectionState &ConnectionStateDNS::write(ClientStateWriter & /* writer */, u8 
         return *this;
     }
 
+    Array<u8, 32> clientEphemeralK;
+    Random::Get(clientEphemeralK.values(), clientEphemeralK.count());
     address.port = m_port;
-    return *(new (m_heap, 0x4) ConnectionStateKX(m_heap, m_serverPK, address));
+    ConnectionState &state =
+            *(new (m_heap, 0x4) ConnectionStateKX(m_heap, clientEphemeralK, m_serverPK, address));
+    crypto_wipe(clientEphemeralK.values(), clientEphemeralK.count());
+    return state;
 }

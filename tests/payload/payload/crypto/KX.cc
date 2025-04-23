@@ -8,18 +8,20 @@ extern "C" {
 #include <array>
 
 TEST_CASE("Invalid server PK") {
-    Array<u8, 32> clientK, serverK, invalidServerK, invalidServerPK;
+    Array<u8, 32> clientK, clientEphemeralK, serverK, serverEphemeralK, invalidServerK,
+            invalidServerPK;
     Random::Get(clientK.values(), clientK.count());
     Random::Get(serverK.values(), serverK.count());
+    Random::Get(serverEphemeralK.values(), serverEphemeralK.count());
     Random::Get(invalidServerK.values(), invalidServerK.count());
     crypto_x25519_public_key(invalidServerPK.values(), invalidServerK.values());
 
-    KX::ClientState clientState(clientK, invalidServerPK);
+    KX::ClientState clientState(clientK, clientEphemeralK, invalidServerPK);
     std::array<u8, KX::M1Size> m1;
     while (!clientState.getM1(m1.data())) {
         CHECK(clientState.update());
     }
-    KX::ServerState serverState(serverK);
+    KX::ServerState serverState(serverK, serverEphemeralK);
     CHECK(serverState.setM1(m1.data()));
     while (serverState.update()) {}
     CHECK_FALSE(serverState.hasM2());
@@ -27,16 +29,17 @@ TEST_CASE("Invalid server PK") {
 }
 
 TEST_CASE("Invalid m1") {
-    Array<u8, 32> clientK, serverK, serverPK;
+    Array<u8, 32> clientK, clientEphemeralK, serverK, serverEphemeralK, serverPK;
     Random::Get(clientK.values(), clientK.count());
     Random::Get(serverK.values(), serverK.count());
+    Random::Get(serverEphemeralK.values(), serverEphemeralK.count());
     crypto_x25519_public_key(serverPK.values(), serverK.values());
 
-    KX::ClientState clientState(clientK, serverPK);
+    KX::ClientState clientState(clientK, clientEphemeralK, serverPK);
     while (!clientState.hasM1()) {
         CHECK(clientState.update());
     }
-    KX::ServerState serverState(serverK);
+    KX::ServerState serverState(serverK, serverEphemeralK);
     std::array<u8, KX::M1Size> invalidM1;
     Random::Get(invalidM1.data(), invalidM1.size());
     CHECK(serverState.setM1(invalidM1.data()));
@@ -46,12 +49,12 @@ TEST_CASE("Invalid m1") {
 }
 
 TEST_CASE("Invalid m2") {
-    Array<u8, 32> clientK, serverK, serverPK;
+    Array<u8, 32> clientK, clientEphemeralK, serverK, serverPK;
     Random::Get(clientK.values(), clientK.count());
     Random::Get(serverK.values(), serverK.count());
     crypto_x25519_public_key(serverPK.values(), serverK.values());
 
-    KX::ClientState clientState(clientK, serverPK);
+    KX::ClientState clientState(clientK, clientEphemeralK, serverPK);
     while (!clientState.hasM1()) {
         CHECK(clientState.update());
     }
@@ -63,17 +66,18 @@ TEST_CASE("Invalid m2") {
 }
 
 TEST_CASE("Valid") {
-    Array<u8, 32> clientK, serverK, serverPK;
+    Array<u8, 32> clientK, clientEphemeralK, serverK, serverEphemeralK, serverPK;
     Random::Get(clientK.values(), clientK.count());
     Random::Get(serverK.values(), serverK.count());
+    Random::Get(serverEphemeralK.values(), serverEphemeralK.count());
     crypto_x25519_public_key(serverPK.values(), serverK.values());
 
-    KX::ClientState clientState(clientK, serverPK);
+    KX::ClientState clientState(clientK, clientEphemeralK, serverPK);
     std::array<u8, KX::M1Size> m1;
     while (!clientState.getM1(m1.data())) {
         CHECK(clientState.update());
     }
-    KX::ServerState serverState(serverK);
+    KX::ServerState serverState(serverK, serverEphemeralK);
     CHECK(serverState.setM1(m1.data()));
     while (serverState.update()) {}
     std::array<u8, KX::M2Size> m2;
