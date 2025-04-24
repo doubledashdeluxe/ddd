@@ -1,19 +1,10 @@
 #include "SC.hh"
 
-#include "common/ios/File.hh"
-
 extern "C" {
 #include <string.h>
 }
 
-SC::SC() : m_buffer(0) {
-    IOS::File file("/shared2/sys/SYSCONF", IOS::Mode::Read);
-    if (!file.ok() || file.read(m_buffer.values(), m_buffer.count()) < 0) {
-        Bytes::WriteBE<u32>(m_buffer.values(), 0x0, 0);
-    }
-}
-
-SC::SC(Array<u8, 0x4000> buffer) : m_buffer(buffer) {}
+SC::SC(Array<u8, 0x4000> &buffer) : m_buffer(buffer) {}
 
 SC::~SC() {}
 

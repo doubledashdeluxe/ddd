@@ -13,7 +13,7 @@
 
 #include <common/Log.hh>
 #include <common/Platform.hh>
-#include <common/SC.hh>
+#include <common/SCFile.hh>
 extern "C" {
 #include <dolphin/DVD.h>
 }
@@ -28,7 +28,7 @@ void System::Init() {
     REPLACED(Init)();
 
     if (!Platform::IsGameCube()) {
-        SC sc;
+        SCFile sc;
         u8 ar;
         if (sc.get("IPL.AR", ar) && ar) {
             s_defaultAspectRatio = 38.0f / 21.0f;

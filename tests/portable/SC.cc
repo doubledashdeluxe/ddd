@@ -1,4 +1,4 @@
-#include <common/SC.hh>
+#include <portable/SC.hh>
 #include <snitch/snitch_all.hpp>
 
 #include <cstring>

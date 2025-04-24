@@ -1,12 +1,11 @@
 #pragma once
 
-#include <portable/Array.hh>
-#include <portable/Bytes.hh>
+#include "portable/Array.hh"
+#include "portable/Bytes.hh"
 
 class SC {
 public:
-    SC();
-    SC(Array<u8, 0x4000> buffer);
+    SC(Array<u8, 0x4000> &buffer);
     ~SC();
     bool ok() const;
     bool get(const char *name, u8 &value);
@@ -30,5 +29,5 @@ private:
 
     bool getOffset(u8 type, const char *name, u16 &offset);
 
-    alignas(0x20) Array<u8, 0x4000> m_buffer;
+    Array<u8, 0x4000> &m_buffer;
 };
