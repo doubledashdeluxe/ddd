@@ -7,10 +7,10 @@ extern "C" {
 #include "dolphin/OSThread.h"
 }
 
-#include <common/Arena.hh>
-#include <common/Clock.hh>
-#include <common/Platform.hh>
-#include <common/ios/Resource.hh>
+#include <cube/Arena.hh>
+#include <cube/Clock.hh>
+#include <cube/Platform.hh>
+#include <cube/ios/Resource.hh>
 #include <jsystem/JKRExpHeap.hh>
 #include <jsystem/JKRHeap.hh>
 #include <payload/Lock.hh>

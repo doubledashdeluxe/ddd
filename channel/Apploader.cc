@@ -1,8 +1,8 @@
 #include "Apploader.hh"
 
-#include <common/DiscID.hh>
-#include <common/ICache.hh>
-#include <common/Log.hh>
+#include <cube/DiscID.hh>
+#include <cube/ICache.hh>
+#include <cube/Log.hh>
 extern "C" {
 #include <monocypher/monocypher.h>
 }

@@ -2,7 +2,7 @@
 
 #include "payload/Archive.hh"
 
-#include <common/storage/Storage.hh>
+#include <cube/storage/Storage.hh>
 #include <jsystem/JKRHeap.hh>
 #include <portable/Array.hh>
 

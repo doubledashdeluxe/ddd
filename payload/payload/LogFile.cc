@@ -2,8 +2,8 @@
 
 #include "payload/Lock.hh"
 
-#include <common/Clock.hh>
-#include <common/Log.hh>
+#include <cube/Clock.hh>
+#include <cube/Log.hh>
 extern "C" {
 #include <dolphin/OSTime.h>
 

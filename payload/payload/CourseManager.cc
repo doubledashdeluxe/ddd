@@ -8,8 +8,8 @@
 #include "payload/SZSCourseLoader.hh"
 #include "payload/ZIPFile.hh"
 
-#include <common/DCache.hh>
-#include <common/Log.hh>
+#include <cube/DCache.hh>
+#include <cube/Log.hh>
 #include <game/CourseID.hh>
 #include <game/ResMgr.hh>
 extern "C" {

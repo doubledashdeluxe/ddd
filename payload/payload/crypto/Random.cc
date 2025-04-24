@@ -3,11 +3,11 @@
 #ifdef __CWCC__
 #include "payload/Lock.hh"
 
-#include <common/Arena.hh>
-#include <common/Clock.hh>
-#include <common/ES.hh>
-#include <common/Platform.hh>
-#include <common/storage/Storage.hh>
+#include <cube/Arena.hh>
+#include <cube/Clock.hh>
+#include <cube/ES.hh>
+#include <cube/Platform.hh>
+#include <cube/storage/Storage.hh>
 extern "C" {
 #include <monocypher/monocypher.h>
 }

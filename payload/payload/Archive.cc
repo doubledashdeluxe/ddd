@@ -1,6 +1,6 @@
 #include "Archive.hh"
 
-#include <common/Memory.hh>
+#include <cube/Memory.hh>
 #include <portable/Align.hh>
 #include <portable/Bytes.hh>
 

@@ -7,7 +7,7 @@
 #include "game/SequenceApp.hh"
 #include "game/System.hh"
 
-#include <common/Log.hh>
+#include <cube/Log.hh>
 #include <payload/CourseManager.hh>
 #include <payload/online/Client.hh>
 #include <payload/online/ServerManager.hh>

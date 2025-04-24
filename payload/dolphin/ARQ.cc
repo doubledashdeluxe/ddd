@@ -2,9 +2,9 @@ extern "C" {
 #include "ARQ.h"
 }
 
-#include <common/DCache.hh>
-#include <common/Memory.hh>
-#include <common/Platform.hh>
+#include <cube/DCache.hh>
+#include <cube/Memory.hh>
+#include <cube/Platform.hh>
 
 extern "C" {
 #include <string.h>

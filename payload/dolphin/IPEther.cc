@@ -8,7 +8,7 @@ extern "C" {
 #include "dolphin/OSTime.h"
 }
 
-#include <common/Clock.hh>
+#include <cube/Clock.hh>
 #include <portable/Array.hh>
 
 extern "C" IPInterface IFDefault;

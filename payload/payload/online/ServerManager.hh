@@ -2,7 +2,7 @@
 
 #include "payload/StorageScanner.hh"
 
-#include <common/storage/Storage.hh>
+#include <cube/storage/Storage.hh>
 #include <portable/Ring.hh>
 
 class ServerManager : public StorageScanner {

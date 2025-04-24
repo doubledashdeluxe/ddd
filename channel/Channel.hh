@@ -1,6 +1,6 @@
 #pragma once
 
-#include <common/Context.hh>
+#include <cube/Context.hh>
 
 class Channel {
 public:

@@ -2,12 +2,12 @@
 
 #include "payload/crypto/Random.hh"
 
-#include <common/Arena.hh>
-#include <common/ECID.hh>
-#include <common/FS.hh>
-#include <common/Platform.hh>
-#include <common/ios/File.hh>
-#include <common/storage/Storage.hh>
+#include <cube/Arena.hh>
+#include <cube/ECID.hh>
+#include <cube/FS.hh>
+#include <cube/Platform.hh>
+#include <cube/ios/File.hh>
+#include <cube/storage/Storage.hh>
 extern "C" {
 #include <dolphin/OSArena.h>
 #include <monocypher/monocypher.h>

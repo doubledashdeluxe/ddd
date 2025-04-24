@@ -4,22 +4,22 @@
 #include "channel/DI.hh"
 #include "channel/SRAM.hh"
 
-#include <common/Arena.hh>
-#include <common/Clock.hh>
-#include <common/Console.hh>
-#include <common/DCache.hh>
-#include <common/DiscID.hh>
-#include <common/ICache.hh>
-#include <common/Log.hh>
-#include <common/Platform.hh>
-#include <common/USB.hh>
-#include <common/VI.hh>
-#include <common/VirtualDI.hh>
-#include <common/ios/Resource.hh>
-#include <common/storage/EXISDStorage.hh>
-#include <common/storage/Storage.hh>
-#include <common/storage/USBStorage.hh>
-#include <common/storage/WiiSDStorage.hh>
+#include <cube/Arena.hh>
+#include <cube/Clock.hh>
+#include <cube/Console.hh>
+#include <cube/DCache.hh>
+#include <cube/DiscID.hh>
+#include <cube/ICache.hh>
+#include <cube/Log.hh>
+#include <cube/Platform.hh>
+#include <cube/USB.hh>
+#include <cube/VI.hh>
+#include <cube/VirtualDI.hh>
+#include <cube/ios/Resource.hh>
+#include <cube/storage/EXISDStorage.hh>
+#include <cube/storage/Storage.hh>
+#include <cube/storage/USBStorage.hh>
+#include <cube/storage/WiiSDStorage.hh>
 #include <portable/Align.hh>
 
 extern "C" {

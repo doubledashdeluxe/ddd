@@ -1,6 +1,6 @@
 #include "FileLoader.hh"
 
-#include <common/storage/Storage.hh>
+#include <cube/storage/Storage.hh>
 
 void *FileLoader::Load(const char *path, JKRHeap *heap, u32 *size) {
     Storage::FileHandle file(path, Storage::Mode::Read);

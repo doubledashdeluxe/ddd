@@ -1,6 +1,6 @@
 #pragma once
 
-#include <common/storage/Storage.hh>
+#include <cube/storage/Storage.hh>
 extern "C" {
 #include <dolphin/OSMessage.h>
 #include <dolphin/OSThread.h>

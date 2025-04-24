@@ -1,6 +1,6 @@
 #include "J3DGD.hh"
 
-#include <common/Memory.hh>
+#include <cube/Memory.hh>
 
 void J3DGDSetTexImgPtr(u32 texMapID, void *ptr) {
     ptr = reinterpret_cast<void *>(Memory::CachedToPhysical(ptr) | 0x80000000);

@@ -1,11 +1,11 @@
 #include "Bootstrap.hh"
 
-#include <common/Console.hh>
-#include <common/ES.hh>
-#include <common/Log.hh>
-#include <common/VI.hh>
-#include <common/ios/File.hh>
-#include <common/ios/KernelUID.hh>
+#include <cube/Console.hh>
+#include <cube/ES.hh>
+#include <cube/Log.hh>
+#include <cube/VI.hh>
+#include <cube/ios/File.hh>
+#include <cube/ios/KernelUID.hh>
 #include <portable/Algorithm.hh>
 #include <portable/Array.hh>
 #include <portable/Bytes.hh>

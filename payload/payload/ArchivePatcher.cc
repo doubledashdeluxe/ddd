@@ -1,7 +1,7 @@
 #include "ArchivePatcher.hh"
 
-#include <common/DCache.hh>
-#include <common/Log.hh>
+#include <cube/DCache.hh>
+#include <cube/Log.hh>
 #include <portable/Algorithm.hh>
 #include <portable/Align.hh>
 #include <portable/Bytes.hh>

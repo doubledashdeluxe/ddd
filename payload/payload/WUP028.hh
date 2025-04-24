@@ -2,7 +2,7 @@
 
 #include "payload/Mutex.hh"
 
-#include <common/USB.hh>
+#include <cube/USB.hh>
 extern "C" {
 #include <dolphin/OSMessage.h>
 #include <dolphin/OSThread.h>

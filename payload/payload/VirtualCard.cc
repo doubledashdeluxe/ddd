@@ -1,8 +1,8 @@
 #include "VirtualCard.hh"
 
-#include <common/Arena.hh>
-#include <common/Clock.hh>
-#include <common/DiscID.hh>
+#include <cube/Arena.hh>
+#include <cube/Clock.hh>
+#include <cube/DiscID.hh>
 extern "C" {
 #include <dolphin/OSTime.h>
 }

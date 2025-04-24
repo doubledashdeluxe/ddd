@@ -2,9 +2,9 @@ extern "C" {
 #include "DVD.h"
 }
 
-#include <common/Clock.hh>
-#include <common/Memory.hh>
-#include <common/VirtualDI.hh>
+#include <cube/Clock.hh>
+#include <cube/Memory.hh>
+#include <cube/VirtualDI.hh>
 #include <payload/Lock.hh>
 #include <payload/Mutex.hh>
 #include <payload/Replace.hh>

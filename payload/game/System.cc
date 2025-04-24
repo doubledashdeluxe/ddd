@@ -11,9 +11,9 @@
 #include "game/ResMgr.hh"
 #include "game/SequenceApp.hh"
 
-#include <common/Log.hh>
-#include <common/Platform.hh>
-#include <common/SCFile.hh>
+#include <cube/Log.hh>
+#include <cube/Platform.hh>
+#include <cube/SCFile.hh>
 extern "C" {
 #include <dolphin/DVD.h>
 }

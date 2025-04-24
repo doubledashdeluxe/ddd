@@ -2,7 +2,7 @@
 
 #include "payload/online/ClientStateError.hh"
 
-#include <common/Log.hh>
+#include <cube/Log.hh>
 
 ClientStateServer::ClientStateServer(JKRHeap *heap, UDPSocket *socket)
     : ClientState(heap), m_socket(socket), m_index(0) {

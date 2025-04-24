@@ -1,6 +1,6 @@
 #include "DirCreator.hh"
 
-#include <common/Arena.hh>
+#include <cube/Arena.hh>
 
 extern "C" {
 #include <string.h>

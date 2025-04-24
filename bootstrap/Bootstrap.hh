@@ -1,6 +1,6 @@
 #pragma once
 
-#include <common/FS.hh>
+#include <cube/FS.hh>
 
 class Bootstrap {
 public:

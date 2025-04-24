@@ -2,7 +2,7 @@ extern "C" {
 #include "OSError.h"
 }
 
-#include <common/Log.hh>
+#include <cube/Log.hh>
 
 extern "C" {
 #include <stdio.h>

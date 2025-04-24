@@ -1,6 +1,6 @@
 #include "ArchiveSwapper.hh"
 
-#include <common/Log.hh>
+#include <cube/Log.hh>
 #include <jsystem/JKRAram.hh>
 #include <portable/Align.hh>
 

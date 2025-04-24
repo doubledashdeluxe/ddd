@@ -2,7 +2,7 @@ extern "C" {
 #include "OSContext.h"
 }
 
-#include <common/Memory.hh>
+#include <cube/Memory.hh>
 
 extern "C" u32 currentContextAddress;
 extern "C" OSContext *currentContext;

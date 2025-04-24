@@ -2,7 +2,7 @@ extern "C" {
 #include "GXTexture.h"
 }
 
-#include <common/Memory.hh>
+#include <cube/Memory.hh>
 
 extern "C" void GXInitTexObj(GXTexObj *obj, void *image_ptr, u16 width, u16 height, s32 format,
         s32 wrap_s, s32 wrap_t, BOOL mipmap) {

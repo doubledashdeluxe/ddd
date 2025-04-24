@@ -2,7 +2,7 @@
 
 #include "payload/Lock.hh"
 
-#include <common/Memory.hh>
+#include <cube/Memory.hh>
 extern "C" {
 #include <dolphin/OSInterrupt.h>
 }

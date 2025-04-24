@@ -2,9 +2,9 @@
 #include "payload/Payload.hh"
 #include "payload/PayloadBinary.hh"
 
-#include <common/Arena.hh>
-#include <common/Context.hh>
-#include <common/Platform.hh>
+#include <cube/Arena.hh>
+#include <cube/Context.hh>
+#include <cube/Platform.hh>
 extern "C" {
 #include <dolphin/DB.h>
 #include <dolphin/OS.h>

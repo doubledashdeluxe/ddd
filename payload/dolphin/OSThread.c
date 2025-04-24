@@ -1,6 +1,6 @@
 #include "OSThread.h"
 
-#include <common/Panic.h>
+#include <cube/Panic.h>
 #include <payload/Replace.h>
 
 static OSThread *thread = NULL;

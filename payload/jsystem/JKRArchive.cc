@@ -3,9 +3,9 @@
 #include "jsystem/JKRAramArchive.hh"
 #include "jsystem/JKRMemArchive.hh"
 
-#include <common/Clock.hh>
-#include <common/Log.hh>
-#include <common/storage/Storage.hh>
+#include <cube/Clock.hh>
+#include <cube/Log.hh>
+#include <cube/storage/Storage.hh>
 extern "C" {
 #include <dolphin/DVD.h>
 }

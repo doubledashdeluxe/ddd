@@ -2,8 +2,8 @@
 
 #include "payload/Lock.hh"
 
-#include <common/Arena.hh>
-#include <common/Log.hh>
+#include <cube/Arena.hh>
+#include <cube/Log.hh>
 #include <portable/Bytes.hh>
 
 extern "C" {

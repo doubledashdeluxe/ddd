@@ -1,10 +1,10 @@
 #include "bootstrap/Bootstrap.hh"
 #include "bootstrap/BootstrapBinary.hh"
 
-#include <common/Arena.hh>
-#include <common/Platform.hh>
+#include <cube/Arena.hh>
+#include <cube/Platform.hh>
 extern "C" {
-#include <common/StackCanary.h>
+#include <cube/StackCanary.h>
 
 #include <string.h>
 }

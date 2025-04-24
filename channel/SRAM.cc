@@ -1,6 +1,6 @@
 #include "SRAM.hh"
 
-#include <common/EXI.hh>
+#include <cube/EXI.hh>
 #include <portable/Bytes.hh>
 
 SRAM::SRAM() : m_ok(false) {

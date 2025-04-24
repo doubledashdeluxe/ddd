@@ -1,7 +1,7 @@
 #include "Patcher.hh"
 
-#include <common/DCache.hh>
-#include <common/ICache.hh>
+#include <cube/DCache.hh>
+#include <cube/ICache.hh>
 
 extern "C" u32 Config24MB[];
 extern "C" u32 Config48MB[];

@@ -2,7 +2,7 @@ extern "C" {
 #include "GDGeometry.h"
 }
 
-#include <common/Memory.hh>
+#include <cube/Memory.hh>
 
 void GDSetArray(u32 attr, const void *base, u8 stride) {
     REPLACED(GDSetArrayRaw)(attr, Memory::CachedToPhysical(base), stride);

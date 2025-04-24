@@ -1,7 +1,7 @@
 #include "DVDStorage.hh"
 
-#include <common/Arena.hh>
-#include <common/Memory.hh>
+#include <cube/Arena.hh>
+#include <cube/Memory.hh>
 #include <portable/Algorithm.hh>
 #include <portable/Align.hh>
 

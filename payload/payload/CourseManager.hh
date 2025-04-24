@@ -3,7 +3,7 @@
 #include "payload/StorageScanner.hh"
 #include "payload/ZIPFile.hh"
 
-#include <common/storage/Storage.hh>
+#include <cube/storage/Storage.hh>
 #include <game/MinimapConfig.hh>
 #include <jsystem/JKRHeap.hh>
 #include <portable/Array.hh>

@@ -1,6 +1,6 @@
 #include "JUTXfb.hh"
 
-#include <common/VI.hh>
+#include <cube/VI.hh>
 
 extern "C" {
 #include <assert.h>

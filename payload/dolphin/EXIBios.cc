@@ -4,8 +4,8 @@ extern "C" {
 #include "dolphin/OSInterrupt.h"
 }
 
-#include <common/Memory.hh>
-#include <common/Platform.hh>
+#include <cube/Memory.hh>
+#include <cube/Platform.hh>
 #include <payload/Lock.hh>
 
 extern "C" {

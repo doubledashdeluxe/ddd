@@ -1,6 +1,6 @@
 #pragma once
 
-#include <common/storage/Storage.hh>
+#include <cube/storage/Storage.hh>
 #include <portable/ZIP.hh>
 
 class ZIPFile : public ZIP {

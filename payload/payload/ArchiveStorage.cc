@@ -1,6 +1,6 @@
 #include "ArchiveStorage.hh"
 
-#include <common/Arena.hh>
+#include <cube/Arena.hh>
 extern "C" {
 #include <miniz/miniz.h>
 }

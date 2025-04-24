@@ -2,8 +2,8 @@ extern "C" {
 #include "VI.h"
 }
 
-#include <common/Console.hh>
-#include <common/VI.hh>
+#include <cube/Console.hh>
+#include <cube/VI.hh>
 #include <payload/Lock.hh>
 
 extern "C" volatile u16 visel;

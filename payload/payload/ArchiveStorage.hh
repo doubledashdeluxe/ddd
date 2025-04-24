@@ -3,7 +3,7 @@
 #include "payload/Archive.hh"
 #include "payload/Mutex.hh"
 
-#include <common/storage/Storage.hh>
+#include <cube/storage/Storage.hh>
 extern "C" {
 #include <dolphin/OSMessage.h>
 }

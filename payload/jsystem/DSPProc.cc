@@ -1,4 +1,4 @@
-#include <common/Memory.hh>
+#include <cube/Memory.hh>
 #include <payload/Replace.hh>
 
 void REPLACED(DsetupTable)(u32 r3, u32 r4, u32 r5, u32 r6, u32 r7);

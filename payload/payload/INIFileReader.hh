@@ -2,7 +2,7 @@
 
 #include "payload/INIReader.hh"
 
-#include <common/storage/Storage.hh>
+#include <cube/storage/Storage.hh>
 
 class INIFileReader : private INIReader {
 public:

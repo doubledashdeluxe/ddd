@@ -2,7 +2,7 @@ extern "C" {
 #include "AR.h"
 }
 
-#include <common/Platform.hh>
+#include <cube/Platform.hh>
 #include <payload/Lock.hh>
 
 static u32 s_stackPointer;

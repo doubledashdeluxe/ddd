@@ -1,7 +1,7 @@
 #include "DNS.hh"
 
-#include <common/Arena.hh>
-#include <common/Clock.hh>
+#include <cube/Arena.hh>
+#include <cube/Clock.hh>
 #include <portable/Algorithm.hh>
 #include <portable/Bytes.hh>
 

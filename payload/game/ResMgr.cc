@@ -9,8 +9,8 @@
 #include "game/SysDebug.hh"
 #include "game/System.hh"
 
-#include <common/Clock.hh>
-#include <common/Log.hh>
+#include <cube/Clock.hh>
+#include <cube/Log.hh>
 #include <jsystem/JKRExpHeap.hh>
 #include <jsystem/JKRMemArchive.hh>
 #include <payload/Archive.hh>

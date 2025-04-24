@@ -1,8 +1,8 @@
 #include "DI.hh"
 
-#include <common/Clock.hh>
-#include <common/DCache.hh>
-#include <common/Platform.hh>
+#include <cube/Clock.hh>
+#include <cube/DCache.hh>
+#include <cube/Platform.hh>
 
 extern "C" volatile u32 disr;
 extern "C" volatile u32 dicvr;

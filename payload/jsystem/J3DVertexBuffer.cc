@@ -2,7 +2,7 @@
 
 #include "jsystem/J3DSys.hh"
 
-#include <common/Memory.hh>
+#include <cube/Memory.hh>
 
 void J3DVertexBuffer::setArray() {
     J3DSys &sys = J3DSys::Instance();

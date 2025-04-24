@@ -13,7 +13,7 @@
 #include "game/SequenceInfo.hh"
 #include "game/System.hh"
 
-#include <common/Console.hh>
+#include <cube/Console.hh>
 extern "C" {
 #include <dolphin/OSTime.h>
 }
