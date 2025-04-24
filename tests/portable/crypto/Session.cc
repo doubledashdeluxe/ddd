@@ -1,4 +1,4 @@
-#include <helpers/crypto/Random.hh>
+#include <native/crypto/Random.hh>
 #include <portable/crypto/Session.hh>
 #include <snitch/snitch_all.hpp>
 

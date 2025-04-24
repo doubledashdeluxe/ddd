@@ -1,7 +1,7 @@
-#include <helpers/crypto/Random.hh>
 extern "C" {
 #include <monocypher/monocypher.h>
 }
+#include <native/crypto/Random.hh>
 #include <portable/crypto/KX.hh>
 #include <snitch/snitch_all.hpp>
 

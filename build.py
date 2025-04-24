@@ -138,11 +138,6 @@ def get_flags(tool, platform, target, format_code_dirs, args):
             flags += [
                 '-Wno-unused-parameter',
             ]
-        if target == 'tests':
-            flags += [
-                '-iquote', 'tests',
-                '-isystem', 'tests',
-            ]
     if tool == 'mld':
         flags += [
             '-fsanitize=undefined',
@@ -741,8 +736,8 @@ native_code_in_files = {
         *sorted(glob.glob(os.path.join('portable', '**', '*.c'), recursive=True)),
         *sorted(glob.glob(os.path.join('portable', '**', '*.cc'), recursive=True)),
     ],
-    'helpers': [
-        *sorted(glob.glob(os.path.join('tests', 'helpers', '**', '*.cc'), recursive=True)),
+    'native': [
+        *sorted(glob.glob(os.path.join('native', '**', '*.cc'), recursive=True)),
     ],
     'tests': [
         *sorted(glob.glob(os.path.join('tests', 'portable', '**', '*.cc'), recursive=True)),
@@ -776,7 +771,7 @@ n.build(
     [
         *native_code_out_files['vendor'],
         *native_code_out_files['portable'],
-        *native_code_out_files['helpers'],
+        *native_code_out_files['native'],
         *native_code_out_files['tests'],
     ],
     variables = {
