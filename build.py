@@ -740,8 +740,7 @@ native_code_in_files = {
         *sorted(glob.glob(os.path.join('native', '**', '*.cc'), recursive=True)),
     ],
     'tests': [
-        *sorted(glob.glob(os.path.join('tests', 'portable', '**', '*.cc'), recursive=True)),
-        *sorted(glob.glob(os.path.join('tests', 'tests', '**', '*.cc'), recursive=True)),
+        *sorted(glob.glob(os.path.join('tests', '**', '*.cc'), recursive=True)),
     ],
 }
 native_code_out_files = {target: [] for target in native_code_in_files}
