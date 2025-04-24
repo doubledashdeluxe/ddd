@@ -107,7 +107,7 @@ def get_flags(tool, platform, target, format_code_dirs, args):
                     flags += [
                         '-D', 'DOLPHIN_FORCE_GAMECUBE',
                     ]
-        if target == 'payload' or target == 'tests':
+        if target == 'payload':
             flags += [
                 '-iquote', 'payload',
                 '-isystem', 'payload',
@@ -733,18 +733,19 @@ n.build(
 n.newline()
 
 native_code_in_files = {
-    **code_in_files,
+    'vendor': [
+        *sorted(glob.glob(os.path.join('vendor', '**', '*.c'), recursive=True)),
+        *sorted(glob.glob(os.path.join('vendor', '**', '*.cc'), recursive=True)),
+    ],
+    'portable': [
+        *sorted(glob.glob(os.path.join('portable', '**', '*.c'), recursive=True)),
+        *sorted(glob.glob(os.path.join('portable', '**', '*.cc'), recursive=True)),
+    ],
     'helpers': [
         *sorted(glob.glob(os.path.join('tests', 'helpers', '**', '*.cc'), recursive=True)),
     ],
     'tests': [
-        *sorted(glob.glob(os.path.join('tests', 'libc', '**', '*.cc'), recursive=True)),
         *sorted(glob.glob(os.path.join('tests', 'portable', '**', '*.cc'), recursive=True)),
-        *sorted(glob.glob(os.path.join('tests', 'common', '**', '*.cc'), recursive=True)),
-        *sorted(glob.glob(os.path.join('tests', 'freestanding', '**', '*.cc'), recursive=True)),
-        *sorted(glob.glob(os.path.join('tests', 'bootstrap', '**', '*.cc'), recursive=True)),
-        *sorted(glob.glob(os.path.join('tests', 'channel', '**', '*.cc'), recursive=True)),
-        *sorted(glob.glob(os.path.join('tests', 'payload', '**', '*.cc'), recursive=True)),
         *sorted(glob.glob(os.path.join('tests', 'tests', '**', '*.cc'), recursive=True)),
     ],
 }
@@ -775,13 +776,11 @@ n.build(
     [
         *native_code_out_files['vendor'],
         *native_code_out_files['portable'],
-        *native_code_out_files['common'],
-        *native_code_out_files['payload'],
         *native_code_out_files['helpers'],
         *native_code_out_files['tests'],
     ],
     variables = {
-        'flags': get_flags('mld', 'cube', target, format_code_dirs, args),
+        'flags': get_flags('mld', 'native', target, format_code_dirs, args),
     },
 )
 n.newline()
