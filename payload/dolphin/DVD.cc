@@ -9,9 +9,7 @@ extern "C" {
 #include <payload/Mutex.hh>
 #include <payload/Replace.hh>
 
-#ifdef __CWCC__
 static Mutex s_mutex;
-#endif
 
 extern "C" void REPLACED(Read)(void *addr, s32 length, s32 offset, DVDCBCallback callback);
 extern "C" REPLACE void Read(void *addr, s32 length, s32 offset, DVDCBCallback callback) {
@@ -39,9 +37,7 @@ extern "C" REPLACE BOOL DVDReadAbsAsyncPrio(DVDCommandBlock *block, void *addr, 
         return REPLACED(DVDReadAbsAsyncPrio)(block, addr, length, offset, callback, prio);
     }
 
-#ifdef __CWCC__
     Lock<Mutex> lock(s_mutex);
-#endif
 
     block->command = 1;
     block->addr = addr;

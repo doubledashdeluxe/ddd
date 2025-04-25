@@ -1,6 +1,5 @@
 #include "Random.hh"
 
-#ifdef __CWCC__
 #include "payload/Lock.hh"
 
 #include <cube/Arena.hh>
@@ -110,4 +109,3 @@ bool Random::s_isInit = false;
 Mutex *Random::s_mutex = nullptr;
 Array<u8, 32 + 256> Random::s_buffer;
 u16 Random::s_offset = s_buffer.count();
-#endif

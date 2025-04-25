@@ -46,12 +46,6 @@ MEM2Arena::~MEM2Arena() {}
 
 MEM2Arena *MEM2Arena::s_instance = nullptr;
 
-#ifdef __CWCC__
 void *operator new(size_t size, Arena *arena, s32 align) {
     return arena->alloc(size, align);
 }
-#else
-void *operator new(size_t size, Arena * /* arena */, s32 /* align */) {
-    return operator new(size);
-}
-#endif

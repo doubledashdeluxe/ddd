@@ -7,7 +7,6 @@ extern "C" {
 }
 
 u32 DOSTime::Now() {
-#ifdef __CWCC__
     OSCalendarTime time;
     OSTicksToCalendarTime(OSGetTime(), &time);
 
@@ -36,7 +35,4 @@ u32 DOSTime::Now() {
     }
 
     return dosTime;
-#else
-    return 0;
-#endif
 }

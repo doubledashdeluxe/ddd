@@ -1,6 +1,5 @@
 #include <portable/Types.h>
 
-#ifdef __CWCC__
 u64 __udivdi3(u64 a, u64 b);
 s64 __divdi3(s64 a, s64 b);
 u64 __umoddi3(u64 a, u64 b);
@@ -43,6 +42,7 @@ void __destroy_arr(void *objects, Xtor dtor, size_t size, size_t count) {
     }
 }
 
+#ifdef __CWCC__
 asm void __ptmf_scall() {
     // clang-format off
 

@@ -1,6 +1,5 @@
 #include <cube/storage/Storage.hh>
 
-#ifdef __CWCC__
 #include <cube/Arena.hh>
 extern "C" {
 #include <dolphin/OSMessage.h>
@@ -79,34 +78,3 @@ void *Storage::Poll(void * /* param */) {
 }
 
 OSMessageQueue Storage::s_queue;
-#else
-void Storage::Init() {}
-
-void Storage::notify() {
-    poll();
-}
-
-void Storage::remove() {
-    removeWithoutLocking();
-}
-
-void Storage::add() {
-    addWithoutLocking();
-}
-
-Storage::StorageHandle::StorageHandle(const char *path) : m_storage(nullptr), m_prefix(nullptr) {
-    acquireWithoutLocking(path);
-}
-
-Storage::StorageHandle::StorageHandle(const FileHandle &file)
-    : m_storage(nullptr), m_prefix(nullptr) {
-    acquireWithoutLocking(file);
-}
-
-Storage::StorageHandle::StorageHandle(const DirHandle &dir)
-    : m_storage(nullptr), m_prefix(nullptr) {
-    acquireWithoutLocking(dir);
-}
-
-Storage::StorageHandle::~StorageHandle() {}
-#endif
