@@ -75,14 +75,18 @@ def get_flags(tool, platform, target, format_code_dirs, args):
                 '--fatal-warnings',
             ]
     if tool == 'mc' or tool == 'mcc' or tool == 'mld':
+        flags += [
+            '-fsanitize=address,undefined',
+        ]
         if args.ci:
             flags += [
                 '-Werror',
             ]
     if tool == 'mc' or tool == 'mcc':
         flags += [
+            '-fdata-sections',
+            '-ffunction-sections',
             '-fno-sanitize-recover=all',
-            '-fsanitize=undefined',
             '-isystem', '.',
             '-isystem', 'vendor',
             '-O2',
@@ -90,17 +94,6 @@ def get_flags(tool, platform, target, format_code_dirs, args):
             '-Werror=vla',
             '-Wextra',
         ]
-        if 'win' in sys.platform or 'msys' in sys.platform:
-            flags += [
-                '-flto=auto',
-                '-fsanitize-undefined-trap-on-error',
-            ]
-        else:
-            flags += [
-                '-fdata-sections',
-                '-ffunction-sections',
-                '-fsanitize=address',
-            ]
         if platform == 'cube':
             if target == 'bootstrap':
                 if args.dolphin_force_gamecube:
@@ -122,36 +115,25 @@ def get_flags(tool, platform, target, format_code_dirs, args):
         flags += [
             '-fcheck-new',
             '-std=c++20',
+            '-Wno-unused-private-field',
             '-Wsuggest-override',
         ]
         for code_dir in format_code_dirs:
             flags += ['-isystem', code_dir]
-        if 'win' in sys.platform or 'msys' in sys.platform:
-            flags += [
-                '-fno-sanitize=vptr',
-            ]
-        else:
-            flags += [
-                '-Wno-unused-private-field',
-            ]
         if target == 'formats':
             flags += [
                 '-Wno-unused-parameter',
             ]
     if tool == 'mld':
         flags += [
-            '-fsanitize=undefined',
+            '-fuse-ld=lld',
         ]
         if 'win' in sys.platform or 'msys' in sys.platform:
             flags += [
-                '-flto=auto',
-                '-fno-sanitize=vptr',
-                '-fsanitize-undefined-trap-on-error',
+                '-Wl,/opt:ref',
             ]
         else:
             flags += [
-                '-fsanitize=address',
-                '-fuse-ld=lld',
                 '-Wl,--gc-sections',
             ]
     return flags
@@ -191,7 +173,7 @@ n.variable('elf2bin', os.path.join('tools', 'elf2bin.py'))
 n.variable('elf2dol', os.path.join('tools', 'elf2dol.py'))
 n.variable('file_patcher', os.path.join('tools', 'file_patcher.py'))
 if 'win' in sys.platform or 'msys' in sys.platform:
-    n.variable('mwcc', os.path.join('tools', 'cw', 'modified_mwcceppc.exe'))
+    n.variable('mwcc', os.path.join('tools', 'cw', 'modified_mwcceppc'))
 else:
     n.variable('mwcc', os.path.join('tools', 'mwcc.py'))
 n.variable('patch', os.path.join('tools', 'patch.py'))
@@ -278,40 +260,29 @@ n.rule(
 )
 n.newline()
 
-if 'win' in sys.platform or 'msys' in sys.platform:
-    mc_command = 'gcc.exe -MD -MT $out -MF $out.d $flags -c $in -o $out'
-else:
-    mc_command = 'clang -MD -MT $out -MF $out.d $flags -c $in -o $out'
 n.rule(
     'mc',
-    command = mc_command,
+    command = 'clang -MD -MT $out -MF $out.d $flags -c $in -o $out',
     depfile = '$out.d',
     deps = 'gcc',
-    description = 'NC $out',
+    description = 'MC $out',
 )
 n.newline()
 
-if 'win' in sys.platform or 'msys' in sys.platform:
-    mcc_command = 'g++.exe -MD -MT $out -MF $out.d $flags -c $in -o $out'
-else:
-    mcc_command = 'clang++ -MD -MT $out -MF $out.d $flags -c $in -o $out'
 n.rule(
     'mcc',
-    command = mcc_command,
+    command = 'clang++ -MD -MT $out -MF $out.d $flags -c $in -o $out',
     depfile = '$out.d',
     deps = 'gcc',
-    description = 'NCC $out',
+    description = 'MCC $out',
 )
 n.newline()
 
-if 'win' in sys.platform or 'msys' in sys.platform:
-    mld_command = 'g++.exe $flags $in -o $out'
-else:
-    mld_command = 'clang++ $flags $in -o $out'
+mld_command = 'clang++ $flags $in -o $out'
 n.rule(
     'mld',
     command = mld_command,
-    description = 'NLD $out',
+    description = 'MLD $out',
 )
 n.newline()
 
@@ -737,6 +708,7 @@ native_code_in_files = {
         *sorted(glob.glob(os.path.join('portable', '**', '*.cc'), recursive=True)),
     ],
     'native': [
+        *sorted(glob.glob(os.path.join('native', '**', '*.c'), recursive=True)),
         *sorted(glob.glob(os.path.join('native', '**', '*.cc'), recursive=True)),
     ],
     'tests': [
