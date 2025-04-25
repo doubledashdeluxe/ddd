@@ -30,7 +30,7 @@ void LogFile::VPrintf(const char *format, va_list vlist) {
     }
     u64 seconds = Clock::TicksToSeconds(currentTime - s_startTime);
     u32 milliseconds = Clock::TicksToMilliseconds(currentTime - s_startTime) % 1000;
-    u32 length = snprintf(s_buffers[s_index].values() + s_offset, maxLength, "[%" PRIu64 ".%03u] ",
+    u32 length = snprintf(s_buffers[s_index].values() + s_offset, maxLength, "[%" PRIu64 ".%03lu] ",
             seconds, milliseconds);
     if (length >= maxLength) {
         s_offset = s_buffers[0].count();

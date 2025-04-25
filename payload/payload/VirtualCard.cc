@@ -359,7 +359,8 @@ VirtualCard *VirtualCard::Instance(s32 chan) {
 }
 
 VirtualCard::VirtualCard(s32 chan) : m_chan(chan), m_isMounted(false) {
-    snprintf(m_dirPath.values(), m_dirPath.count(), "main:/ddd/card %c", 'a' + m_chan);
+    snprintf(m_dirPath.values(), m_dirPath.count(), "main:/ddd/card %c",
+            static_cast<char>('a' + m_chan));
 }
 
 void VirtualCard::onAdd(const char * /* prefix */) {}
@@ -401,9 +402,9 @@ Array<char, 256> VirtualCard::getPath(CARDStat &stat) {
         }
         u8 kartID = Bytes::ReadBE<u8>(giRecord.values(), 0x02);
         snprintf(path.values(), path.count(),
-                "%s/%.2s-%.4s-%02x-%um%02us%03u-%.3s-%02x-%02x-%02x-%.2s.gci", m_dirPath.values(),
-                stat.company, stat.gameName, courseID, minutes, seconds, milliseconds, tag.values(),
-                charIDs[0], charIDs[1], kartID, &stat.fileName[0x1d]);
+                "%s/%.2s-%.4s-%02x-%lum%02lus%03lu-%.3s-%02x-%02x-%02x-%.2s.gci",
+                m_dirPath.values(), stat.company, stat.gameName, courseID, minutes, seconds,
+                milliseconds, tag.values(), charIDs[0], charIDs[1], kartID, &stat.fileName[0x1d]);
     }
     return path;
 }

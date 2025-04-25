@@ -105,8 +105,9 @@ void ArchiveSwapper::swap(JKRHeap *heap) {
                 continue;
             }
             u32 offset = node.getFileOffset();
-            if (offset >= dst - m_archive.getFiles() || offset >= m_archive.getFilesSize()) {
-                if (!src || offset < src - m_archive.getFiles()) {
+            if (offset >= static_cast<u32>(dst - m_archive.getFiles()) ||
+                    offset >= m_archive.getFilesSize()) {
+                if (!src || offset < static_cast<u32>(src - m_archive.getFiles())) {
                     nodeIndex = i;
                     src = m_archive.getFiles() + offset;
                 }
@@ -117,7 +118,7 @@ void ArchiveSwapper::swap(JKRHeap *heap) {
         }
         Archive::Node node = tree.getNode(nodeIndex);
         u32 size = AlignUp(node.getFileSize(), 0x20);
-        assert(dst + size - m_archive.getFiles() <= m_archive.getFilesSize());
+        assert(static_cast<u32>(dst + size - m_archive.getFiles()) <= m_archive.getFilesSize());
         memmove(dst, src, size);
         node.setFileOffset(dst - m_archive.getFiles());
         dst += size;
@@ -125,7 +126,7 @@ void ArchiveSwapper::swap(JKRHeap *heap) {
 
     if (!oldSwap.get()) {
         m_archive.setFilesSize(m_archive.getFilesSize() - m_minSwapSize);
-        assert(dst - m_archive.getFiles() <= m_archive.getFilesSize());
+        assert(static_cast<u32>(dst - m_archive.getFiles()) <= m_archive.getFilesSize());
         tree = Archive::Tree(m_archive.getFiles() + m_archive.getFilesSize());
         u32 treeSize = m_archive.getArchiveSize() - m_archive.getTreeOffset();
         memmove(tree.get(), m_archive.getTree().get(), treeSize);

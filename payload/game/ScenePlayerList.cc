@@ -117,7 +117,7 @@ void ScenePlayerList::slideIn() {
                 }
                 if (k == 1) {
                     Array<char, 32> name;
-                    snprintf(name.values(), name.count(), "PlayerNumberSimple_%uP.bti",
+                    snprintf(name.values(), name.count(), "PlayerNumberSimple_%luP.bti",
                             j + i * 2 + 1);
                     picture->changeTexture(name.values(), 0);
                 }

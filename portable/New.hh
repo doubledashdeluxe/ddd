@@ -1,6 +1,6 @@
 #pragma once
 
-#ifdef __CWCC__
+#ifdef CUBE
 #include "portable/Types.hh"
 
 void *operator new(size_t size, void *ptr);

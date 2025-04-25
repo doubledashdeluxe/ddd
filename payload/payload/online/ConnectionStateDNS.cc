@@ -15,7 +15,7 @@ ConnectionStateDNS::ConnectionStateDNS(JKRHeap *heap, Array<u8, 32> serverPK, co
     : ConnectionState(heap, serverPK), m_port(3549) {
     const char *port = strrchr(name, ':');
     if (port && sscanf(port, ":%hu", &m_port) == 1) {
-        snprintf(m_name.values(), m_name.count(), "%.*s", static_cast<s32>(port - name), name);
+        snprintf(m_name.values(), m_name.count(), "%.*s", static_cast<int>(port - name), name);
     } else {
         snprintf(m_name.values(), m_name.count(), "%s", name);
     }

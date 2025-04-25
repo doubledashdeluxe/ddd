@@ -48,7 +48,7 @@ SceneModeSelect::SceneModeSelect(JKRArchive *archive, JKRHeap *heap) : Scene(arc
         J2DPicture *iconPicture = m_modeScreens[i].search("Icon")->downcast<J2DPicture>();
         iconPicture->changeTexture(iconNames[i], 0);
         Array<char, 32> path;
-        snprintf(path.values(), path.count(), "/modenames/%u.txt", Modes[i]);
+        snprintf(path.values(), path.count(), "/modenames/%lu.txt", Modes[i]);
         char *name =
                 reinterpret_cast<char *>(ResMgr::GetPtr(ResMgr::ArchiveID::MRAMLoc, path.values()));
         u32 size = ResMgr::GetResSize(ResMgr::ArchiveID::MRAMLoc, name);

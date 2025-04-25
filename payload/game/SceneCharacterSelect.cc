@@ -31,7 +31,7 @@ SceneCharacterSelect::SceneCharacterSelect(JKRArchive *archive, JKRHeap *heap)
     : Scene(archive, heap), m_parentHeap(heap) {
     for (u32 i = 0; i < m_mainScreens.count(); i++) {
         Array<char, 32> file;
-        snprintf(file.values(), file.count(), "select_character%u.blo", i + 1);
+        snprintf(file.values(), file.count(), "select_character%lu.blo", i + 1);
         m_mainScreens[i].set(file.values(), 0x1040000, m_archive);
     }
     J2DScreen colBoxScreen;
@@ -51,34 +51,34 @@ SceneCharacterSelect::SceneCharacterSelect(JKRArchive *archive, JKRHeap *heap)
 
     for (u32 i = 0; i < m_mainAnmTransforms.count(); i++) {
         Array<char, 32> name;
-        snprintf(name.values(), name.count(), "select_character%u.bck", i + 1);
+        snprintf(name.values(), name.count(), "select_character%lu.bck", i + 1);
         m_mainAnmTransforms[i] = J2DAnmLoaderDataBase::Load(name.values(), m_archive);
         m_mainScreens[i].setAnimation(m_mainAnmTransforms[i]);
     }
     for (u32 i = 0; i < m_mainAnmTextureSRTKeys.count(); i++) {
         Array<char, 32> name;
-        snprintf(name.values(), name.count(), "select_character%u.btk", i + 1);
+        snprintf(name.values(), name.count(), "select_character%lu.btk", i + 1);
         m_mainAnmTextureSRTKeys[i] = J2DAnmLoaderDataBase::Load(name.values(), m_archive);
         m_mainAnmTextureSRTKeys[i]->searchUpdateMaterialID(&m_mainScreens[i]);
         m_mainScreens[i].setAnimation(m_mainAnmTextureSRTKeys[i]);
     }
     for (u32 i = 0; i < m_mainAnmTevRegKeys.count(); i++) {
         Array<char, 32> name;
-        snprintf(name.values(), name.count(), "select_character%u.brk", i + 2);
+        snprintf(name.values(), name.count(), "select_character%lu.brk", i + 2);
         m_mainAnmTevRegKeys[i] = J2DAnmLoaderDataBase::Load(name.values(), m_archive);
         m_mainAnmTevRegKeys[i]->searchUpdateMaterialID(&m_mainScreens[i + 1]);
         m_mainScreens[i + 1].setAnimation(m_mainAnmTevRegKeys[i]);
     }
     for (u32 i = 0; i < m_mainAnmColors.count(); i++) {
         Array<char, 32> name;
-        snprintf(name.values(), name.count(), "select_character%u.bpk", i + 1);
+        snprintf(name.values(), name.count(), "select_character%lu.bpk", i + 1);
         m_mainAnmColors[i] = J2DAnmLoaderDataBase::Load(name.values(), m_archive);
         m_mainAnmColors[i]->searchUpdateMaterialID(&m_mainScreens[i]);
         m_mainScreens[i].setAnimation(m_mainAnmColors[i]);
     }
     for (u32 i = 0; i < m_arrowAnmTransforms.count(); i++) {
         Array<char, 32> name;
-        snprintf(name.values(), name.count(), "select_character%u.bck", i + 1);
+        snprintf(name.values(), name.count(), "select_character%lu.bck", i + 1);
         m_arrowAnmTransforms[i] = J2DAnmLoaderDataBase::Load(name.values(), m_archive);
         for (u32 j = 1; j <= i + 1; j++) {
             m_mainScreens[i].search("ArL%u%u", i + 1, j)->setAnimation(m_arrowAnmTransforms[i]);
@@ -165,7 +165,7 @@ void SceneCharacterSelect::init() {
             }
             m_pads[j][1] = i;
             Array<char, 32> name;
-            snprintf(name.values(), name.count(), "SC_P%u_u.bti", l + 1);
+            snprintf(name.values(), name.count(), "SC_P%lu_u.bti", l + 1);
             picture->changeTexture(name.values(), 0);
         }
     }
@@ -378,7 +378,7 @@ void SceneCharacterSelect::calc() {
         for (u32 j = 0; j < m_padCount; j++) {
             if (m_characterIndices[j] == i) {
                 Array<char, 32> name;
-                snprintf(name.values(), name.count(), "SC_P%u_%c.bti", j + 1, "us"[i % 2]);
+                snprintf(name.values(), name.count(), "SC_P%lu_%c.bti", j + 1, "us"[i % 2]);
                 picture->changeTexture(name.values(), 0);
             }
         }

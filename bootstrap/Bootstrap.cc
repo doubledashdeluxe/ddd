@@ -115,7 +115,7 @@ bool Bootstrap::InstallChannelContent(FS &fs) {
         bool isInstalled = true;
         for (u32 i = 0; i < ContentCount; i++) {
             Array<char, 0x40> path;
-            snprintf(path.values(), path.count(), "/title/00010008/44444443/content/%08x.app", i);
+            snprintf(path.values(), path.count(), "/title/00010008/44444443/content/%08lx.app", i);
             if (!IsFileInstalled(path.values(), contents[i].data, contents[i].size)) {
                 isInstalled = false;
                 break;
@@ -137,7 +137,7 @@ bool Bootstrap::InstallChannelContent(FS &fs) {
     }
     for (u32 i = 0; i < ContentCount; i++) {
         Array<char, 0x40> path;
-        snprintf(path.values(), path.count(), "/tmp/content/%08x.app", i);
+        snprintf(path.values(), path.count(), "/tmp/content/%08lx.app", i);
         if (!fs.writeFile(path.values(), contents[i].data, contents[i].size, 0660)) {
             return false;
         }

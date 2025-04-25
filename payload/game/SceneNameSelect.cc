@@ -74,7 +74,7 @@ void SceneNameSelect::init() {
 
         J2DPicture *picture = m_padCountScreen.search("Cstok_p")->downcast<J2DPicture>();
         Array<char, 32> name;
-        snprintf(name.values(), name.count(), "Player%u.bti", m_padCount);
+        snprintf(name.values(), name.count(), "Player%lu.bti", m_padCount);
         picture->changeTexture(name.values(), 0);
 
         OnlineInfo &onlineInfo = OnlineInfo::Instance();

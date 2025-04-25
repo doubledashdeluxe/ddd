@@ -38,6 +38,7 @@ enum {
 #define alignment_assert(type, alignment) \
     __static_assert(alignof(type) == alignment, "alignof(" #type ") == " #alignment)
 #else
+#define offsetof __builtin_offsetof
 #define size_assert(type, size)
 #define alignment_assert(type, alignment) static_assert(alignof(type) == alignment)
 #endif

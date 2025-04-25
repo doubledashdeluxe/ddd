@@ -36,6 +36,15 @@ def get_flags(tool, platform, target, format_code_dirs, args):
             '-w', 'most',
             '-w', 'noextracomma',
         ]
+        if platform == 'cube':
+            flags += [
+                '-d', 'CUBE',
+            ]
+        if target == 'bootstrap':
+            if args.dolphin_force_gamecube:
+                flags += [
+                    '-d', 'DOLPHIN_FORCE_GAMECUBE',
+                ]
         if target == 'payload':
             flags += [
                 '-Ipayload',
@@ -44,11 +53,6 @@ def get_flags(tool, platform, target, format_code_dirs, args):
             flags += [
                 '-w', 'error',
             ]
-        if target == 'bootstrap':
-            if args.dolphin_force_gamecube:
-                flags += [
-                    '-d', 'DOLPHIN_FORCE_GAMECUBE',
-                ]
     if tool == 'c':
         flags += [
             '-lang', 'c99',
@@ -75,9 +79,15 @@ def get_flags(tool, platform, target, format_code_dirs, args):
                 '--fatal-warnings',
             ]
     if tool == 'mc' or tool == 'mcc' or tool == 'mld':
-        flags += [
-            '-fsanitize=address,undefined',
-        ]
+        if platform == 'cube':
+            flags += [
+                '-nostdlib',
+                '--target=ppc32-none-eabi',
+            ]
+        if platform == 'native':
+            flags += [
+                '-fsanitize=address,undefined',
+            ]
         if args.ci:
             flags += [
                 '-Werror',
@@ -95,6 +105,10 @@ def get_flags(tool, platform, target, format_code_dirs, args):
             '-Wextra',
         ]
         if platform == 'cube':
+            flags += [
+                '-D', 'CUBE',
+                '-isystem', 'libc',
+            ]
             if target == 'bootstrap':
                 if args.dolphin_force_gamecube:
                     flags += [
@@ -120,6 +134,10 @@ def get_flags(tool, platform, target, format_code_dirs, args):
         ]
         for code_dir in format_code_dirs:
             flags += ['-isystem', code_dir]
+        if platform == 'cube':
+            flags += [
+                '-fno-exceptions',
+            ]
         if target == 'formats':
             flags += [
                 '-Wno-unused-parameter',
@@ -128,14 +146,19 @@ def get_flags(tool, platform, target, format_code_dirs, args):
         flags += [
             '-fuse-ld=lld',
         ]
-        if 'win' in sys.platform or 'msys' in sys.platform:
-            flags += [
-                '-Wl,/opt:ref',
-            ]
-        else:
+        if platform == 'cube':
             flags += [
                 '-Wl,--gc-sections',
             ]
+        if platform == 'native':
+            if 'win' in sys.platform or 'msys' in sys.platform:
+                flags += [
+                    '-Wl,/opt:ref',
+                ]
+            else:
+                flags += [
+                    '-Wl,--gc-sections',
+                ]
     return flags
 
 

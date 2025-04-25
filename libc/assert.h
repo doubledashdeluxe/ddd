@@ -11,4 +11,6 @@ void Assert(const char *file, s32 line, const char *expression);
         } \
     } while (false)
 
+#ifdef __CWCC__
 #define static_assert(cond) __static_assert((cond), #cond)
+#endif
