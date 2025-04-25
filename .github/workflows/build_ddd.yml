@@ -150,6 +150,46 @@ jobs:
           python build.py --ci -- tests
           out/tests
 
+  check-linux:
+    name: Check on Linux
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install Ninja
+        run: sudo apt-get install ninja-build
+      - name: Install LLVM
+        run: |
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          sudo ./llvm.sh 17 all
+          sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-17 999
+          sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-17 999
+          sudo update-alternatives --install /usr/bin/ld.lld ld.lld /usr/bin/ld.lld-17 999
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Check
+        run: python build.py --ci -- checks
+
+  check-windows:
+    name: Check on Windows
+    runs-on: windows-2022
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install Ninja
+        run: pip install ninja
+      - name: Check
+        run: python build.py --ci -- checks
+
   format-linux:
     name: Format on Linux
     runs-on: ubuntu-22.04
