@@ -9,7 +9,7 @@ defaults:
 jobs:
   build-linux:
     name: Build on Linux
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
       - name: Checkout
@@ -20,16 +20,8 @@ jobs:
           sudo apt-get update
           sudo apt-get install wine32
           WINEARCH=win32 winecfg
-      - name: Install Ninja
-        run: sudo apt-get install ninja-build
-      - name: Install LLVM
-        run: |
-          wget https://apt.llvm.org/llvm.sh
-          chmod +x llvm.sh
-          sudo ./llvm.sh 17 all
-          sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-17 999
-          sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-17 999
-          sudo update-alternatives --install /usr/bin/ld.lld ld.lld /usr/bin/ld.lld-17 999
+      - name: Install LLD
+        run: sudo update-alternatives --install /usr/bin/ld.lld ld.lld /usr/bin/ld.lld-18 18
       - name: Install Python
         uses: actions/setup-python@v5
         with:
@@ -71,8 +63,6 @@ jobs:
           python-version: '3.11'
       - name: Install pyelftools
         run: pip install pyelftools
-      - name: Install Ninja
-        run: pip install ninja
       - name: Cache CodeWarrior
         id: cache-cw
         uses: actions/cache@v4
@@ -97,7 +87,7 @@ jobs:
 
   compare-results:
     name: Compare results
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs: [build-linux, build-windows]
     timeout-minutes: 5
     steps:
@@ -108,21 +98,11 @@ jobs:
 
   test-linux:
     name: Test on Linux
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Install Ninja
-        run: sudo apt-get install ninja-build
-      - name: Install LLVM
-        run: |
-          wget https://apt.llvm.org/llvm.sh
-          chmod +x llvm.sh
-          sudo ./llvm.sh 17 all
-          sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-17 999
-          sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-17 999
-          sudo update-alternatives --install /usr/bin/ld.lld ld.lld /usr/bin/ld.lld-17 999
       - name: Install Python
         uses: actions/setup-python@v5
         with:
@@ -143,8 +123,6 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Install Ninja
-        run: pip install ninja
       - name: Test
         run: |
           python build.py --ci -- tests
@@ -152,21 +130,11 @@ jobs:
 
   check-linux:
     name: Check on Linux
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Install Ninja
-        run: sudo apt-get install ninja-build
-      - name: Install LLVM
-        run: |
-          wget https://apt.llvm.org/llvm.sh
-          chmod +x llvm.sh
-          sudo ./llvm.sh 17 all
-          sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-17 999
-          sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-17 999
-          sudo update-alternatives --install /usr/bin/ld.lld ld.lld /usr/bin/ld.lld-17 999
       - name: Install Python
         uses: actions/setup-python@v5
         with:
@@ -185,14 +153,12 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Install Ninja
-        run: pip install ninja
       - name: Check
         run: python build.py --ci -- checks
 
   format-linux:
     name: Format on Linux
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
       - name: Checkout
@@ -200,4 +166,4 @@ jobs:
       - name: Format
         run: |
           dirs="formats libc cube freestanding bootstrap channel payload native tests"
-          find $dirs -regex '.*\.\(c\|h\|cc\|hh\)' | xargs clang-format-15 --dry-run -Werror
+          find $dirs -regex '.*\.\(c\|h\|cc\|hh\)' | xargs clang-format --dry-run -Werror
