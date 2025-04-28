@@ -377,20 +377,6 @@ for arc_file in asset_arc_files:
     )
     n.newline()
 
-asset_o_files = []
-for c_file in asset_c_files:
-    o_file = os.path.splitext(c_file)[0] + '.o'
-    asset_o_files += [o_file]
-    n.build(
-        o_file,
-        'c',
-        c_file,
-        variables = {
-            'flags': get_flags('c', 'cube', 'channel', [], args),
-        },
-    )
-    n.newline()
-
 format_kc_names = ['client-state', 'server-state']
 format_implicit = sorted(glob.glob(os.path.join('formats', '**'), recursive=True))
 format_code_dirs = []
@@ -436,6 +422,13 @@ for target in code_in_files:
             *sorted(glob.glob(os.path.join(target, '**', '*.c'), recursive=True)),
             *sorted(glob.glob(os.path.join(target, '**', '*.cc'), recursive=True)),
         ]
+for c_file in asset_c_files:
+    code_in_files['channel'] += [c_file]
+for region in ['P', 'E', 'J']:
+    for kind in ['I', 'D']:
+        in_file = os.path.join('$builddir', 'payload', f'payload{region}{kind}.c')
+        code_in_files['channel'] += [in_file]
+code_in_files['bootstrap'] += [os.path.join('$builddir', 'channel', 'channel.c')]
 code_out_files = {target: [] for target in code_in_files}
 for target in code_in_files:
     for in_file in code_in_files[target]:
@@ -582,20 +575,6 @@ for region in ['P', 'E', 'J']:
         )
         n.newline()
 
-for region in ['P', 'E', 'J']:
-    for kind in ['I', 'D']:
-        out_file = os.path.join('$builddir', 'payload', f'payload{region}{kind}.o')
-        code_out_files['channel'] += [out_file]
-        n.build(
-            out_file,
-            'c',
-            os.path.join('$builddir', 'payload', f'payload{region}{kind}.c'),
-            variables = {
-                'flags': get_flags('c', 'cube', 'channel', format_code_dirs, args),
-            },
-        )
-        n.newline()
-
 n.build(
     os.path.join('$builddir', 'channel', 'GM4.ld'),
     'script',
@@ -618,7 +597,6 @@ n.build(
         *code_out_files['cube'],
         *code_out_files['freestanding'],
         *code_out_files['channel'],
-        *asset_o_files,
     ],
     variables = {
         'flags' : ' '.join([
@@ -651,16 +629,6 @@ n.build(
 n.newline()
 
 n.build(
-    os.path.join('$builddir', 'channel', 'channel.o'),
-    'c',
-    os.path.join('$builddir', 'channel', 'channel.c'),
-    variables = {
-        'flags': get_flags('c', 'cube', 'bootstrap', format_code_dirs, args),
-    },
-)
-n.newline()
-
-n.build(
     os.path.join('$builddir', 'bootstrap', 'GM4.ld'),
     'script',
     [
@@ -682,7 +650,6 @@ n.build(
         *code_out_files['cube'],
         *code_out_files['freestanding'],
         *code_out_files['bootstrap'],
-        os.path.join('$builddir', 'channel', 'channel.o'),
     ],
     variables = {
         'flags' : ' '.join([
@@ -722,22 +689,16 @@ n.build(
 n.newline()
 
 native_code_in_files = {
-    'vendor': [
-        *sorted(glob.glob(os.path.join('vendor', '**', '*.c'), recursive=True)),
-        *sorted(glob.glob(os.path.join('vendor', '**', '*.cc'), recursive=True)),
-    ],
-    'portable': [
-        *sorted(glob.glob(os.path.join('portable', '**', '*.c'), recursive=True)),
-        *sorted(glob.glob(os.path.join('portable', '**', '*.cc'), recursive=True)),
-    ],
-    'native': [
-        *sorted(glob.glob(os.path.join('native', '**', '*.c'), recursive=True)),
-        *sorted(glob.glob(os.path.join('native', '**', '*.cc'), recursive=True)),
-    ],
-    'tests': [
-        *sorted(glob.glob(os.path.join('tests', '**', '*.cc'), recursive=True)),
-    ],
+    'vendor': None,
+    'portable': None,
+    'native': None,
+    'tests': None,
 }
+for target in native_code_in_files:
+    native_code_in_files[target] = [
+        *sorted(glob.glob(os.path.join(target, '**', '*.c'), recursive=True)),
+        *sorted(glob.glob(os.path.join(target, '**', '*.cc'), recursive=True)),
+    ]
 native_code_out_files = {target: [] for target in native_code_in_files}
 for target in native_code_in_files:
     for in_file in native_code_in_files[target]:
@@ -781,7 +742,26 @@ n.build(
 )
 n.newline()
 
-check_code_in_files = code_in_files
+check_code_in_files = {
+    'formats': format_cc_files,
+    'vendor': None,
+    'libc': None,
+    'portable': None,
+    'cube': None,
+    'freestanding': None,
+    'bootstrap': None,
+    'channel': None,
+    'payload': None,
+}
+for target in check_code_in_files:
+    in_files = check_code_in_files[target]
+    if in_files is None:
+        check_code_in_files[target] = [
+            *sorted(glob.glob(os.path.join(target, '**', '*.c'), recursive=True)),
+            *sorted(glob.glob(os.path.join(target, '**', '*.cc'), recursive=True)),
+        ]
+for c_file in asset_c_files:
+    check_code_in_files['channel'] += [c_file]
 check_code_out_files = {target: [] for target in check_code_in_files}
 for target in check_code_in_files:
     for in_file in check_code_in_files[target]:
