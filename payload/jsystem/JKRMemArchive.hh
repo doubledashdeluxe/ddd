@@ -2,7 +2,7 @@
 
 #include "jsystem/JKRArchive.hh"
 
-#include <payload/Archive.hh>
+#include <portable/Archive.hh>
 
 class JKRMemArchive : public JKRArchive {
 public:

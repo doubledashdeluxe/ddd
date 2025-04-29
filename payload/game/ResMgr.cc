@@ -13,10 +13,10 @@
 #include <cube/Log.hh>
 #include <jsystem/JKRExpHeap.hh>
 #include <jsystem/JKRMemArchive.hh>
-#include <payload/Archive.hh>
 #include <payload/ArchivePatcher.hh>
 #include <payload/DOLBinary.hh>
 #include <payload/FileLoader.hh>
+#include <portable/Archive.hh>
 #include <portable/Array.hh>
 
 extern "C" {

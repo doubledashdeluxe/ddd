@@ -1,12 +1,15 @@
 #include "Archive.hh"
 
-#include <cube/Memory.hh>
-#include <portable/Align.hh>
-#include <portable/Bytes.hh>
+#include "portable/Align.hh"
+#include "portable/Bytes.hh"
 
 extern "C" {
 #include <string.h>
+#ifdef _WIN32
+#define strncasecmp _strnicmp
+#else
 #include <strings.h>
+#endif
 }
 
 Archive::Tree::Tree(u8 *tree) : m_tree(tree) {}
@@ -14,7 +17,7 @@ Archive::Tree::Tree(u8 *tree) : m_tree(tree) {}
 Archive::Tree::~Tree() {}
 
 bool Archive::Tree::isValid(u32 treeSize, u32 filesSize) const {
-    if (!Memory::IsAligned(m_tree, 0x04)) {
+    if (!IsAligned(m_tree, 0x04)) {
         return false;
     }
 
@@ -193,7 +196,7 @@ Archive::Dir::Dir(u8 *dir) : m_dir(dir) {}
 Archive::Dir::~Dir() {}
 
 bool Archive::Dir::isValid(Tree tree) const {
-    if (!Memory::IsAligned(m_dir, 0x04)) {
+    if (!IsAligned(m_dir, 0x04)) {
         return false;
     }
 
@@ -280,7 +283,7 @@ Archive::Node::Node(u8 *node) : m_node(node) {}
 Archive::Node::~Node() {}
 
 bool Archive::Node::isValid(Tree tree, u32 filesSize) const {
-    if (!Memory::IsAligned(m_node, 0x04)) {
+    if (!IsAligned(m_node, 0x04)) {
         return false;
     }
 
@@ -415,7 +418,7 @@ Archive::Archive(u8 *archive) : m_archive(archive) {}
 Archive::~Archive() {}
 
 bool Archive::isValid(u32 archiveSize) const {
-    if (!Memory::IsAligned(m_archive, 0x20)) {
+    if (!IsAligned(m_archive, 0x20)) {
         return false;
     }
 

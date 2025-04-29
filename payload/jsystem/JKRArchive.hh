@@ -3,8 +3,8 @@
 #include "jsystem/JKRFileLoader.hh"
 #include "jsystem/JKRHeap.hh"
 
-#include <payload/Archive.hh>
 #include <payload/Replace.hh>
+#include <portable/Archive.hh>
 
 class JKRArchive : public JKRFileLoader {
 public:

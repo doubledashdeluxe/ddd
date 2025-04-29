@@ -1,12 +1,12 @@
 #pragma once
 
-#include "payload/Archive.hh"
 #include "payload/Mutex.hh"
 
 #include <cube/storage/Storage.hh>
 extern "C" {
 #include <dolphin/OSMessage.h>
 }
+#include <portable/Archive.hh>
 
 class ArchiveStorage : private Storage {
 public:
