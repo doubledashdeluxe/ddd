@@ -396,6 +396,13 @@ bool ZIP::readEOCD(u32 eocdOffset, const Array<u8, EOCDHeaderSize> &eocdHeader, 
 }
 
 bool ZIP::readCDNode(u32 cdNodeOffset, CDNode &cdNode) {
+    if (cdNodeOffset > m_eocd.cdOffset + m_eocd.cdSize) {
+        return false;
+    }
+    if (cdNodeOffset + CDNodeHeaderSize > m_eocd.cdOffset + m_eocd.cdSize) {
+        return false;
+    }
+
     Array<u8, CDNodeHeaderSize> cdNodeHeader;
     if (!read(cdNodeHeader.values(), cdNodeHeader.count(), cdNodeOffset)) {
         return false;
@@ -465,6 +472,13 @@ bool ZIP::readCDNode(u32 cdNodeOffset, CDNode &cdNode) {
 }
 
 bool ZIP::readLocalNode(u32 localNodeOffset, LocalNode &localNode) {
+    if (localNodeOffset > m_eocd.cdOffset) {
+        return false;
+    }
+    if (localNodeOffset + LocalNodeHeaderSize > m_eocd.cdOffset) {
+        return false;
+    }
+
     Array<u8, LocalNodeHeaderSize> localNodeHeader;
     if (!read(localNodeHeader.values(), localNodeHeader.count(), localNodeOffset)) {
         return false;
