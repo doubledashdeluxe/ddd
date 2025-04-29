@@ -84,10 +84,6 @@ def get_flags(tool, platform, target, format_code_dirs, args):
                 '-nostdlib',
                 '--target=ppc32-none-eabi',
             ]
-        if platform == 'native':
-            flags += [
-                '-fsanitize=address,undefined',
-            ]
         if args.ci:
             flags += [
                 '-Werror',
@@ -97,6 +93,7 @@ def get_flags(tool, platform, target, format_code_dirs, args):
             '-fdata-sections',
             '-ffunction-sections',
             '-fno-sanitize-recover=all',
+            '-g',
             '-isystem', '.',
             '-isystem', 'vendor',
             '-O2',
@@ -114,6 +111,10 @@ def get_flags(tool, platform, target, format_code_dirs, args):
                     flags += [
                         '-D', 'DOLPHIN_FORCE_GAMECUBE',
                     ]
+        if platform == 'native':
+            flags += [
+                '-fsanitize=address,fuzzer,undefined',
+            ]
         if target == 'payload':
             flags += [
                 '-iquote', 'payload',
@@ -149,6 +150,10 @@ def get_flags(tool, platform, target, format_code_dirs, args):
         if platform == 'cube':
             flags += [
                 '-Wl,--gc-sections',
+            ]
+        if platform == 'native':
+            flags += [
+                '-fsanitize=address,undefined',
             ]
         if platform == 'native':
             if 'win' in sys.platform or 'msys' in sys.platform:
@@ -693,6 +698,7 @@ native_code_in_files = {
     'portable': None,
     'native': None,
     'tests': None,
+    'fuzzers': None,
 }
 for target in native_code_in_files:
     native_code_in_files[target] = [
@@ -807,6 +813,38 @@ n.build(
     'phony',
     check_libraries,
 )
+
+fuzzer_binaries = []
+for out_file in native_code_out_files['fuzzers']:
+    base, _ = os.path.splitext(out_file)
+    base, _ = os.path.splitext(base)
+    target = out_file.split(os.path.sep)[3]
+    fuzzer_binary = os.path.join('$outdir', os.path.join(*base.split(os.path.sep)[2:]))
+    fuzzer_binaries += [fuzzer_binary]
+    n.build(
+        fuzzer_binary,
+        'mld',
+        [
+            *native_code_out_files['vendor'],
+            *native_code_out_files['portable'],
+            *native_code_out_files['native'],
+            out_file,
+        ],
+        variables = {
+            'flags': [
+                *get_flags('mld', 'native', target, format_code_dirs, args),
+                '-fsanitize=fuzzer',
+            ],
+        },
+    )
+    n.newline()
+
+n.build(
+    'fuzzers',
+    'phony',
+    fuzzer_binaries,
+)
+n.newline()
 
 if args.dry:
     with open('build.ninja', 'w') as out_file:
