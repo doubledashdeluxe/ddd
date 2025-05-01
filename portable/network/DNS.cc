@@ -79,6 +79,8 @@ DNS::DNS() : m_id(0) {
     m_resolvers[1] = 1 << 24 | 1 << 16 | 1 << 8 | 1 << 0; // Cloudflare
 }
 
+DNS::~DNS() {}
+
 bool DNS::readResponse(Response &response) {
     if (m_queries.empty()) {
         return false;
