@@ -19,6 +19,7 @@ enum {
 
 enum {
     SO_SUCCESS = 0,
+    SO_EAGAIN = -6,
     SO_EINVAL = -28,
     SO_ENETRESET = -39,
 };

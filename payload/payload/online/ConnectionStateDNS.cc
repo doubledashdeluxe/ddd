@@ -1,7 +1,7 @@
 #include "ConnectionStateDNS.hh"
 
 #include "payload/crypto/Random.hh"
-#include "payload/network/DNS.hh"
+#include "payload/network/CubeDNS.hh"
 #include "payload/online/ConnectionStateKX.hh"
 
 extern "C" {
@@ -41,7 +41,7 @@ ConnectionState &ConnectionStateDNS::write(ClientStateWriter & /* writer */, u8 
     SOSockAddr address;
     address.len = sizeof(address);
     address.family = AF_INET;
-    if (!DNS::Instance()->resolve(m_name.values(), address.addr)) {
+    if (!CubeDNS::Instance()->resolve(m_name.values(), address.addr)) {
         return *this;
     }
 

@@ -1,12 +1,9 @@
 #include "DNS.hh"
 
-#include <cube/Arena.hh>
-#include <cube/Clock.hh>
-#include <portable/Algorithm.hh>
-#include <portable/Bytes.hh>
+#include "portable/Algorithm.hh"
+#include "portable/Bytes.hh"
 
 extern "C" {
-#include <assert.h>
 #include <stdio.h>
 #include <string.h>
 }
@@ -24,9 +21,9 @@ bool DNS::resolve(const char *name, u32 &address) {
         return true;
     }
 
-    if (!m_socket.ok()) {
+    if (!ok()) {
         m_queries.reset();
-        m_socket.open();
+        open();
     }
 
     Response response;
@@ -42,7 +39,7 @@ bool DNS::resolve(const char *name, u32 &address) {
             continue;
         }
 
-        if (m_responses[i].expirationTime < Clock::GetMonotonicTicks()) {
+        if (m_responses[i].expirationTime < getMonotonicTicks()) {
             m_responses.swapRemoveFront(i);
             break;
         } else {
@@ -56,7 +53,7 @@ bool DNS::resolve(const char *name, u32 &address) {
             continue;
         }
 
-        if (m_queries[i].expirationTime < Clock::GetMonotonicTicks()) {
+        if (m_queries[i].expirationTime < getMonotonicTicks()) {
             m_queries.swapRemoveFront(i);
             break;
         } else {
@@ -66,7 +63,7 @@ bool DNS::resolve(const char *name, u32 &address) {
 
     Query query;
     query.id = m_id;
-    query.expirationTime = Clock::GetMonotonicTicks() + Clock::SecondsToTicks(2);
+    query.expirationTime = getMonotonicTicks() + secondsToTicks(2);
     s32 nameLength = snprintf(query.name.values(), query.name.count(), "%s", name);
     if (nameLength < 0 || static_cast<u32>(nameLength) >= query.name.count()) {
         return false;
@@ -77,23 +74,9 @@ bool DNS::resolve(const char *name, u32 &address) {
     return false;
 }
 
-void DNS::Init() {
-    s_instance = new (MEM1Arena::Instance(), 0x20) DNS;
-    assert(s_instance);
-}
-
-DNS *DNS::Instance() {
-    return s_instance;
-}
-
 DNS::DNS() : m_id(0) {
-    for (u32 i = 0; i < m_resolvers.count(); i++) {
-        m_resolvers[i].len = sizeof(m_resolvers[i]);
-        m_resolvers[i].family = AF_INET;
-        m_resolvers[i].port = 53;
-    }
-    m_resolvers[0].addr = 8 << 24 | 8 << 16 | 8 << 8 | 8 << 0; // Google
-    m_resolvers[1].addr = 1 << 24 | 1 << 16 | 1 << 8 | 1 << 0; // Cloudflare
+    m_resolvers[0] = 8 << 24 | 8 << 16 | 8 << 8 | 8 << 0; // Google
+    m_resolvers[1] = 1 << 24 | 1 << 16 | 1 << 8 | 1 << 0; // Cloudflare
 }
 
 bool DNS::readResponse(Response &response) {
@@ -102,9 +85,8 @@ bool DNS::readResponse(Response &response) {
     }
 
     Array<u8, 512> buffer;
-    SOSockAddr resolver;
-    resolver.len = sizeof(resolver);
-    s32 result = m_socket.recvFrom(buffer.values(), buffer.count(), resolver);
+    u32 resolver;
+    s32 result = recvFrom(buffer.values(), buffer.count(), resolver);
     if (result < 0x00c) {
         return false;
     }
@@ -158,7 +140,7 @@ bool DNS::readResponse(Response &response) {
         return false;
     }
 
-    response.expirationTime = Clock::GetMonotonicTicks() + Clock::SecondsToTicks(ttl);
+    response.expirationTime = getMonotonicTicks() + secondsToTicks(ttl);
     response.name = m_queries[queryIndex].name;
     response.address = Bytes::ReadBE<u32>(buffer.values(), result - 0x004);
 
@@ -203,7 +185,7 @@ bool DNS::writeQuery(const Query &query) {
     Bytes::WriteBE<u16>(buffer.values(), 0x00c + nameLength + 0x004, 1); // QCLASS
 
     for (u32 i = 0; i < m_resolvers.count(); i++) {
-        m_socket.sendTo(buffer.values(), 0x00c + nameLength + 0x006, m_resolvers[i]);
+        sendTo(buffer.values(), 0x00c + nameLength + 0x006, m_resolvers[i]);
     }
 
     if (m_queries.full()) {
@@ -213,5 +195,3 @@ bool DNS::writeQuery(const Query &query) {
 
     return true;
 }
-
-DNS *DNS::s_instance = nullptr;

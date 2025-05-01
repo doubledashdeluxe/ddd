@@ -101,6 +101,10 @@ def get_flags(tool, platform, target, format_code_dirs, args):
             '-Werror=vla',
             '-Wextra',
         ]
+        if 'win' in sys.platform or 'msys' in sys.platform:
+            flags += [
+                '-D', '_CRT_SECURE_NO_WARNINGS',
+            ]
         if platform == 'cube':
             flags += [
                 '-D', 'CUBE',

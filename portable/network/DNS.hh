@@ -1,16 +1,15 @@
 #pragma once
 
-#include "payload/network/UDPSocket.hh"
-
-#include <portable/Array.hh>
-#include <portable/Ring.hh>
+#include "portable/Array.hh"
+#include "portable/Ring.hh"
 
 class DNS {
 public:
     bool resolve(const char *name, u32 &address);
 
-    static void Init();
-    static DNS *Instance();
+protected:
+    DNS();
+    ~DNS();
 
 private:
     struct Query {
@@ -25,16 +24,18 @@ private:
         u32 address;
     };
 
-    DNS();
+    virtual bool ok() = 0;
+    virtual s32 open() = 0;
+    virtual s32 recvFrom(void *buffer, u32 size, u32 &address) = 0;
+    virtual s32 sendTo(const void *buffer, u32 size, u32 address) = 0;
+    virtual s64 secondsToTicks(s64 seconds) = 0;
+    virtual s64 getMonotonicTicks() = 0;
 
     bool readResponse(Response &response);
     bool writeQuery(const Query &query);
 
-    UDPSocket m_socket;
-    Array<SOSockAddr, 2> m_resolvers;
+    Array<u32, 2> m_resolvers;
     u16 m_id;
     Ring<Query, 32> m_queries;
     Ring<Response, 256> m_responses;
-
-    static DNS *s_instance;
 };

@@ -9,7 +9,7 @@
 #include "payload/VirtualCard.hh"
 #include "payload/WUP028.hh"
 #include "payload/crypto/Random.hh"
-#include "payload/network/DNS.hh"
+#include "payload/network/CubeDNS.hh"
 #include "payload/online/ClientK.hh"
 #include "payload/online/ServerManager.hh"
 
@@ -115,6 +115,6 @@ void Payload::Run(Context *context) {
     INFO("Initialized client key.");
 
     INFO("Initializing DNS...");
-    DNS::Init();
+    CubeDNS::Init();
     INFO("Initialized DNS.");
 }
