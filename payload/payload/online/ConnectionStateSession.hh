@@ -6,16 +6,16 @@
 
 class ConnectionStateSession : public ConnectionState {
 public:
-    ConnectionStateSession(Allocator &allocator, Array<u8, 32> serverPK, SOSockAddr address,
+    ConnectionStateSession(Allocator &allocator, Array<u8, 32> serverPK, Address address,
             Session session);
     ~ConnectionStateSession() override;
     ConnectionState &reset() override;
-    ConnectionState &read(ServerStateReader &reader, u8 *buffer, u32 size,
-            const SOSockAddr &address, bool &ok) override;
-    ConnectionState &write(ClientStateWriter &writer, u8 *buffer, u32 &size, SOSockAddr &address,
+    ConnectionState &read(ServerStateReader &reader, u8 *buffer, u32 size, const Address &address,
+            bool &ok) override;
+    ConnectionState &write(ClientStateWriter &writer, u8 *buffer, u32 &size, Address &address,
             bool &ok) override;
 
 private:
-    SOSockAddr m_address;
+    Address m_address;
     Session m_session;
 };

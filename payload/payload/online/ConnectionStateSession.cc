@@ -11,7 +11,7 @@ extern "C" {
 }
 
 ConnectionStateSession::ConnectionStateSession(Allocator &allocator, Array<u8, 32> serverPK,
-        SOSockAddr address, Session session)
+        Address address, Session session)
     : ConnectionState(allocator, serverPK), m_address(address), m_session(session) {}
 
 ConnectionStateSession::~ConnectionStateSession() {}
@@ -26,7 +26,7 @@ ConnectionState &ConnectionStateSession::reset() {
 }
 
 ConnectionState &ConnectionStateSession::read(ServerStateReader &reader, u8 *buffer, u32 size,
-        const SOSockAddr &address, bool &ok) {
+        const Address &address, bool &ok) {
     ok = address == m_address;
 
     if (!ok) {
@@ -55,7 +55,7 @@ ConnectionState &ConnectionStateSession::read(ServerStateReader &reader, u8 *buf
 }
 
 ConnectionState &ConnectionStateSession::write(ClientStateWriter &writer, u8 *buffer, u32 &size,
-        SOSockAddr &address, bool &ok) {
+        Address &address, bool &ok) {
     assert(size >= Session::MACSize + Session::NonceSize);
 
     ok = true;

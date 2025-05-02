@@ -29,20 +29,18 @@ ConnectionState &ConnectionStateDNS::reset() {
 }
 
 ConnectionState &ConnectionStateDNS::read(ServerStateReader & /* reader */, u8 * /* buffer */,
-        u32 /* size */, const SOSockAddr & /* address */, bool &ok) {
+        u32 /* size */, const Address & /* address */, bool &ok) {
     ok = false;
 
     return *this;
 }
 
 ConnectionState &ConnectionStateDNS::write(ClientStateWriter & /* writer */, u8 * /* buffer */,
-        u32 & /* size */, SOSockAddr & /* address */, bool &ok) {
+        u32 & /* size */, Address & /* address */, bool &ok) {
     ok = false;
 
-    SOSockAddr address;
-    address.len = sizeof(address);
-    address.family = AF_INET;
-    if (!CubeDNS::Instance()->resolve(m_name.values(), address.addr)) {
+    Address address;
+    if (!CubeDNS::Instance()->resolve(m_name.values(), address.address)) {
         return *this;
     }
 

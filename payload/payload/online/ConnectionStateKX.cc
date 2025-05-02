@@ -12,7 +12,7 @@ extern "C" {
 }
 
 ConnectionStateKX::ConnectionStateKX(Allocator &allocator, const Array<u8, 32> &clientEphemeralK,
-        Array<u8, 32> serverPK, SOSockAddr address)
+        Array<u8, 32> serverPK, Address address)
     : ConnectionState(allocator, serverPK), m_address(address),
       m_clientState(ClientK::Get(), clientEphemeralK, serverPK) {}
 
@@ -23,7 +23,7 @@ ConnectionState &ConnectionStateKX::reset() {
 }
 
 ConnectionState &ConnectionStateKX::read(ServerStateReader & /* reader */, u8 *buffer, u32 size,
-        const SOSockAddr &address, bool &ok) {
+        const Address &address, bool &ok) {
     ok = address == m_address;
 
     if (!ok) {
@@ -39,7 +39,7 @@ ConnectionState &ConnectionStateKX::read(ServerStateReader & /* reader */, u8 *b
 }
 
 ConnectionState &ConnectionStateKX::write(ClientStateWriter & /* writer */, u8 *buffer, u32 &size,
-        SOSockAddr &address, bool &ok) {
+        Address &address, bool &ok) {
     assert(size >= KX::M1Size);
 
     ok = false;

@@ -11,11 +11,6 @@ public:
         MaxServerCount = 32,
     };
 
-    struct Address {
-        Array<u8, 4> address;
-        u16 port;
-    };
-
     class Server {
     public:
         Server(Array<char, 32> name, Array<char, 32> address, Array<u8, 32> publicKey);

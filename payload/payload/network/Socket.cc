@@ -95,11 +95,3 @@ s32 Socket::fcntl(s32 command, s32 argument) {
 }
 
 u64 Socket::s_generation = 1;
-
-bool operator==(const SOSockAddr &a, const SOSockAddr &b) {
-    return a.len == b.len && a.family == b.family && a.port && b.port && a.addr == b.addr;
-}
-
-bool operator!=(const SOSockAddr &a, const SOSockAddr &b) {
-    return !(a == b);
-}

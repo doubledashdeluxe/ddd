@@ -34,6 +34,3 @@ private:
 
     static u64 s_generation;
 };
-
-bool operator==(const SOSockAddr &a, const SOSockAddr &b);
-bool operator!=(const SOSockAddr &a, const SOSockAddr &b);

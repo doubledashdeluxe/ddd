@@ -32,12 +32,15 @@ ClientState &ClientStateServer::read(ClientReadHandler &handler) {
     if (!m_connections.empty()) {
         for (u32 i = 0; i < 16; i++) {
             Array<u8, 512> buffer;
-            SOSockAddr address;
-            address.len = sizeof(address);
-            s32 result = m_socket->recvFrom(buffer.values(), buffer.count(), address);
+            SOSockAddr addr;
+            addr.len = sizeof(addr);
+            s32 result = m_socket->recvFrom(buffer.values(), buffer.count(), addr);
             if (result < 0) {
                 break;
             }
+            Address address;
+            address.address = addr.addr;
+            address.port = addr.port;
             for (u32 j = 0; j < m_connections.count(); j++) {
                 m_index = (m_index + 1) % m_connections.count();
                 if (m_connections[m_index]->read(*this, buffer.values(), result, address)) {
@@ -69,9 +72,14 @@ ClientState &ClientStateServer::writeStateServer() {
     if (!m_connections.empty()) {
         Array<u8, 512> buffer;
         u32 size = buffer.count();
-        SOSockAddr address;
+        Address address;
         if (m_connections[m_index]->write(*this, buffer.values(), size, address)) {
-            m_socket->sendTo(buffer.values(), size, address);
+            SOSockAddr addr;
+            addr.len = sizeof(addr);
+            addr.family = AF_INET;
+            addr.port = address.port;
+            addr.addr = address.address;
+            m_socket->sendTo(buffer.values(), size, addr);
         }
         m_index = (m_index + 1) % m_connections.count();
     }

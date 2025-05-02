@@ -7,9 +7,9 @@ public:
     ConnectionStateDNS(Allocator &allocator, Array<u8, 32> serverPK, const char *name);
     ~ConnectionStateDNS() override;
     ConnectionState &reset() override;
-    ConnectionState &read(ServerStateReader &reader, u8 *buffer, u32 size,
-            const SOSockAddr &address, bool &ok) override;
-    ConnectionState &write(ClientStateWriter &writer, u8 *buffer, u32 &size, SOSockAddr &address,
+    ConnectionState &read(ServerStateReader &reader, u8 *buffer, u32 size, const Address &address,
+            bool &ok) override;
+    ConnectionState &write(ClientStateWriter &writer, u8 *buffer, u32 &size, Address &address,
             bool &ok) override;
 
 private:

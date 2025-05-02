@@ -11,13 +11,13 @@ void Connection::reset() {
     while (updateState(m_state->reset())) {}
 }
 
-bool Connection::read(ServerStateReader &reader, u8 *buffer, u32 size, const SOSockAddr &address) {
+bool Connection::read(ServerStateReader &reader, u8 *buffer, u32 size, const Address &address) {
     bool ok;
     while (updateState(m_state->read(reader, buffer, size, address, ok)) && !ok) {}
     return ok;
 }
 
-bool Connection::write(ClientStateWriter &writer, u8 *buffer, u32 &size, SOSockAddr &address) {
+bool Connection::write(ClientStateWriter &writer, u8 *buffer, u32 &size, Address &address) {
     bool ok;
     while (updateState(m_state->write(writer, buffer, size, address, ok)) && !ok) {}
     return ok;
