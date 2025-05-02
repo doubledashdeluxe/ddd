@@ -1,6 +1,6 @@
 #include "ClientK.hh"
 
-#include "payload/crypto/Random.hh"
+#include "payload/crypto/CubeRandom.hh"
 
 #include <cube/Arena.hh>
 #include <cube/ECID.hh>
@@ -37,19 +37,20 @@ void ClientK::Init() {
     Bytes::WriteBE<u32>(pass.values(), 8, ecid.l);
 
     alignas(0x20) Array<u8, 32> key;
+    CubeRandom *random = CubeRandom::Instance();
     if (Platform::IsGameCube()) {
         const char *path = "main:/ddd/secret.bin";
         u32 keySize;
         if (!Storage::ReadFile(path, key.values(), key.count(), &keySize) ||
                 keySize != key.count()) {
-            Random::Get(key.values(), key.count());
+            random->get(key.values(), key.count());
             Storage::WriteFile(path, key.values(), key.count(), Storage::Mode::WriteAlways);
         }
     } else {
         const char *path = "/title/00010008/44444443/data/secret.bin";
         IOS::File file(path, IOS::Mode::Read);
         if (!file.ok() || file.read(key.values(), key.count()) != static_cast<s32>(key.count())) {
-            Random::Get(key.values(), key.count());
+            random->get(key.values(), key.count());
             FS().writeFile(path, key.values(), key.count(), 0660);
         }
     }

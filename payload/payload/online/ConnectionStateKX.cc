@@ -1,6 +1,6 @@
 #include "ConnectionStateKX.hh"
 
-#include "payload/crypto/Random.hh"
+#include "payload/crypto/CubeRandom.hh"
 #include "payload/online/ClientK.hh"
 #include "payload/online/ConnectionStateSession.hh"
 
@@ -48,7 +48,7 @@ ConnectionState &ConnectionStateKX::write(ClientStateWriter & /* writer */, u8 *
         session = m_clientState.clientSession();
         if (!session) {
             Array<u8, 32> clientEphemeralK;
-            Random::Get(clientEphemeralK.values(), clientEphemeralK.count());
+            CubeRandom::Instance()->get(clientEphemeralK.values(), clientEphemeralK.count());
             m_clientState = KX::ClientState(ClientK::Get(), clientEphemeralK, m_serverPK);
             crypto_wipe(clientEphemeralK.values(), clientEphemeralK.count());
         }

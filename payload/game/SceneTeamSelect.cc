@@ -15,7 +15,7 @@
 #include "game/System.hh"
 
 #include <jsystem/J2DAnmLoaderDataBase.hh>
-#include <payload/crypto/Random.hh>
+#include <payload/crypto/CubeRandom.hh>
 #include <portable/Algorithm.hh>
 
 extern "C" {
@@ -423,11 +423,12 @@ void SceneTeamSelect::stateSpin() {
             for (u32 i = 0; i < m_playerCount; i++) {
                 m_teams[i] = i % m_teamCount;
             }
+            CubeRandom *random = CubeRandom::Instance();
             for (u32 i = 0; i < m_playerCount - 1; i++) {
-                u32 j = i + Random::Get(m_playerCount - i);
+                u32 j = i + random->get(m_playerCount - i);
                 Swap(m_teams[i], m_teams[j]);
             }
-            m_entryIndex = Random::Get(m_playerCount);
+            m_entryIndex = random->get(m_playerCount);
             GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE_LITTLE2);
         }
     } else {

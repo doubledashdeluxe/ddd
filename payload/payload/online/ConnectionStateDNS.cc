@@ -1,6 +1,6 @@
 #include "ConnectionStateDNS.hh"
 
-#include "payload/crypto/Random.hh"
+#include "payload/crypto/CubeRandom.hh"
 #include "payload/online/ConnectionStateKX.hh"
 
 extern "C" {
@@ -44,7 +44,7 @@ ConnectionState &ConnectionStateDNS::write(ClientStateWriter & /* writer */, u8 
     }
 
     Array<u8, 32> clientEphemeralK;
-    Random::Get(clientEphemeralK.values(), clientEphemeralK.count());
+    CubeRandom::Instance()->get(clientEphemeralK.values(), clientEphemeralK.count());
     address.port = m_port;
     ConnectionState &state = *(new (m_platform.allocator())
                     ConnectionStateKX(m_platform, clientEphemeralK, m_serverPK, address));
