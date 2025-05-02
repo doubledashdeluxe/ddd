@@ -1,7 +1,6 @@
 #include "ConnectionStateSession.hh"
 
 #include "payload/crypto/Random.hh"
-#include "payload/network/Socket.hh"
 #include "payload/online/ConnectionStateKX.hh"
 
 extern "C" {
@@ -10,17 +9,17 @@ extern "C" {
 #include <assert.h>
 }
 
-ConnectionStateSession::ConnectionStateSession(Allocator &allocator, Array<u8, 32> serverPK,
+ConnectionStateSession::ConnectionStateSession(ClientPlatform &platform, Array<u8, 32> serverPK,
         Address address, Session session)
-    : ConnectionState(allocator, serverPK), m_address(address), m_session(session) {}
+    : ConnectionState(platform, serverPK), m_address(address), m_session(session) {}
 
 ConnectionStateSession::~ConnectionStateSession() {}
 
 ConnectionState &ConnectionStateSession::reset() {
     Array<u8, 32> clientEphemeralK;
     Random::Get(clientEphemeralK.values(), clientEphemeralK.count());
-    ConnectionState &state = *(new (m_allocator)
-                    ConnectionStateKX(m_allocator, clientEphemeralK, m_serverPK, m_address));
+    ConnectionState &state = *(new (m_platform.allocator())
+                    ConnectionStateKX(m_platform, clientEphemeralK, m_serverPK, m_address));
     crypto_wipe(clientEphemeralK.values(), clientEphemeralK.count());
     return state;
 }

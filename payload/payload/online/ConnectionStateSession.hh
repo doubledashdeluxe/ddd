@@ -6,7 +6,7 @@
 
 class ConnectionStateSession : public ConnectionState {
 public:
-    ConnectionStateSession(Allocator &allocator, Array<u8, 32> serverPK, Address address,
+    ConnectionStateSession(ClientPlatform &platform, Array<u8, 32> serverPK, Address address,
             Session session);
     ~ConnectionStateSession() override;
     ConnectionState &reset() override;

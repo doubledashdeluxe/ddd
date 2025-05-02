@@ -1,7 +1,6 @@
 #include "ConnectionStateKX.hh"
 
 #include "payload/crypto/Random.hh"
-#include "payload/network/Socket.hh"
 #include "payload/online/ClientK.hh"
 #include "payload/online/ConnectionStateSession.hh"
 
@@ -11,9 +10,9 @@ extern "C" {
 #include <assert.h>
 }
 
-ConnectionStateKX::ConnectionStateKX(Allocator &allocator, const Array<u8, 32> &clientEphemeralK,
-        Array<u8, 32> serverPK, Address address)
-    : ConnectionState(allocator, serverPK), m_address(address),
+ConnectionStateKX::ConnectionStateKX(ClientPlatform &platform,
+        const Array<u8, 32> &clientEphemeralK, Array<u8, 32> serverPK, Address address)
+    : ConnectionState(platform, serverPK), m_address(address),
       m_clientState(ClientK::Get(), clientEphemeralK, serverPK) {}
 
 ConnectionStateKX::~ConnectionStateKX() {}
@@ -56,8 +55,8 @@ ConnectionState &ConnectionStateKX::write(ClientStateWriter & /* writer */, u8 *
     }
 
     if (session) {
-        return *(new (m_allocator)
-                        ConnectionStateSession(m_allocator, m_serverPK, m_address, *session));
+        return *(new (m_platform.allocator())
+                        ConnectionStateSession(m_platform, m_serverPK, m_address, *session));
     }
 
     ok = m_clientState.getM1(buffer);

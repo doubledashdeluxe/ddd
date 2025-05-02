@@ -2,8 +2,8 @@
 
 #include "payload/online/ConnectionStateDNS.hh"
 
-Connection::Connection(Allocator &allocator, Array<u8, 32> serverPK, const char *name)
-    : m_state(new(allocator) ConnectionStateDNS(allocator, serverPK, name)) {}
+Connection::Connection(ClientPlatform &platform, Array<u8, 32> serverPK, const char *name)
+    : m_state(new(platform.allocator()) ConnectionStateDNS(platform, serverPK, name)) {}
 
 Connection::~Connection() {}
 

@@ -2,11 +2,11 @@
 
 #include "payload/online/ClientReadHandler.hh"
 
-#include <portable/Allocator.hh>
+#include <portable/online/ClientPlatform.hh>
 
 class ClientState {
 public:
-    ClientState(Allocator &allocator);
+    ClientState(ClientPlatform &platform);
     virtual ~ClientState();
     virtual bool needsSockets() = 0;
     virtual ClientState &read(ClientReadHandler &handler) = 0;
@@ -16,5 +16,5 @@ public:
     virtual ClientState &writeStateError();
 
 protected:
-    Allocator &m_allocator;
+    ClientPlatform &m_platform;
 };

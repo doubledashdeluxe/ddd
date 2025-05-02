@@ -4,7 +4,7 @@
 
 class ConnectionStateDNS : public ConnectionState {
 public:
-    ConnectionStateDNS(Allocator &allocator, Array<u8, 32> serverPK, const char *name);
+    ConnectionStateDNS(ClientPlatform &platform, Array<u8, 32> serverPK, const char *name);
     ~ConnectionStateDNS() override;
     ConnectionState &reset() override;
     ConnectionState &read(ServerStateReader &reader, u8 *buffer, u32 size, const Address &address,

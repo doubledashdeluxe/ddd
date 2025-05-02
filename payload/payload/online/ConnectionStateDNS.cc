@@ -11,9 +11,9 @@ extern "C" {
 #include <string.h>
 }
 
-ConnectionStateDNS::ConnectionStateDNS(Allocator &allocator, Array<u8, 32> serverPK,
+ConnectionStateDNS::ConnectionStateDNS(ClientPlatform &platform, Array<u8, 32> serverPK,
         const char *name)
-    : ConnectionState(allocator, serverPK), m_port(3549) {
+    : ConnectionState(platform, serverPK), m_port(3549) {
     const char *port = strrchr(name, ':');
     if (port && sscanf(port, ":%hu", &m_port) == 1) {
         snprintf(m_name.values(), m_name.count(), "%.*s", static_cast<int>(port - name), name);
@@ -47,8 +47,8 @@ ConnectionState &ConnectionStateDNS::write(ClientStateWriter & /* writer */, u8 
     Array<u8, 32> clientEphemeralK;
     Random::Get(clientEphemeralK.values(), clientEphemeralK.count());
     address.port = m_port;
-    ConnectionState &state = *(new (m_allocator)
-                    ConnectionStateKX(m_allocator, clientEphemeralK, m_serverPK, address));
+    ConnectionState &state = *(new (m_platform.allocator())
+                    ConnectionStateKX(m_platform, clientEphemeralK, m_serverPK, address));
     crypto_wipe(clientEphemeralK.values(), clientEphemeralK.count());
     return state;
 }

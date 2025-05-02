@@ -1,6 +1,6 @@
 #include "ConnectionState.hh"
 
-ConnectionState::ConnectionState(Allocator &allocator, Array<u8, 32> serverPK)
-    : m_allocator(allocator), m_serverPK(serverPK) {}
+ConnectionState::ConnectionState(ClientPlatform &platform, Array<u8, 32> serverPK)
+    : m_platform(platform), m_serverPK(serverPK) {}
 
 ConnectionState::~ConnectionState() {}

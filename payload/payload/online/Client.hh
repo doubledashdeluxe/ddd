@@ -1,7 +1,7 @@
 #pragma once
 
-#include "payload/HeapAllocator.hh"
 #include "payload/online/ClientState.hh"
+#include "payload/online/CubeClientPlatform.hh"
 
 extern "C" {
 #include <dolphin/IPSocket.h>
@@ -27,7 +27,7 @@ private:
     bool updateState(ClientState &nextState);
 
     SOConfig &m_config;
-    HeapAllocator m_allocator;
+    CubeClientPlatform m_platform;
     UniquePtr<ClientState> m_state;
 
     static Client *s_instance;

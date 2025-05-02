@@ -4,10 +4,10 @@
 
 #include <cube/Log.hh>
 
-ClientStateServer::ClientStateServer(Allocator &allocator, UDPSocket *socket)
-    : ClientState(allocator), m_socket(socket), m_index(0) {
+ClientStateServer::ClientStateServer(ClientPlatform &platform, UDPSocket *socket)
+    : ClientState(platform), m_socket(socket), m_index(0) {
     if (!m_socket.get()) {
-        m_socket.reset(new (allocator) UDPSocket);
+        m_socket.reset(new (platform.allocator()) UDPSocket);
     }
 }
 
@@ -51,7 +51,7 @@ ClientState &ClientStateServer::read(ClientReadHandler &handler) {
     }
 
     if (!handler.clientStateServer()) {
-        return *(new (m_allocator) ClientStateError(m_allocator));
+        return *(new (m_platform.allocator()) ClientStateError(m_platform));
     }
 
     return *this;
@@ -183,7 +183,8 @@ void ClientStateServer::checkConnections() {
             const ServerManager::Server &server = serverManager->server(i);
             Array<u8, 32> publicK = server.publicKey();
             const char *name = server.address();
-            Connection *connection = new (m_allocator) Connection(m_allocator, publicK, name);
+            Connection *connection =
+                    new (m_platform.allocator()) Connection(m_platform, publicK, name);
             m_connections.back()->reset(connection);
         }
     }

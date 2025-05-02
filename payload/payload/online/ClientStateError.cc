@@ -2,7 +2,7 @@
 
 #include "payload/online/ClientStateIdle.hh"
 
-ClientStateError::ClientStateError(Allocator &allocator) : ClientState(allocator) {}
+ClientStateError::ClientStateError(ClientPlatform &platform) : ClientState(platform) {}
 
 ClientStateError::~ClientStateError() {}
 

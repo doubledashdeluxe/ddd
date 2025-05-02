@@ -4,7 +4,7 @@
 
 class ClientStateError : public ClientState {
 public:
-    ClientStateError(Allocator &allocator);
+    ClientStateError(ClientPlatform &platform);
     ~ClientStateError() override;
     bool needsSockets() override;
     ClientState &read(ClientReadHandler &handler) override;
