@@ -2,7 +2,7 @@
 
 #include "payload/online/ClientStateIdle.hh"
 
-ClientStateError::ClientStateError(JKRHeap *heap) : ClientState(heap) {}
+ClientStateError::ClientStateError(Allocator &allocator) : ClientState(allocator) {}
 
 ClientStateError::~ClientStateError() {}
 

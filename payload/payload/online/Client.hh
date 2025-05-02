@@ -1,5 +1,6 @@
 #pragma once
 
+#include "payload/HeapAllocator.hh"
 #include "payload/online/ClientState.hh"
 
 extern "C" {
@@ -26,7 +27,7 @@ private:
     bool updateState(ClientState &nextState);
 
     SOConfig &m_config;
-    JKRHeap *m_heap;
+    HeapAllocator m_allocator;
     UniquePtr<ClientState> m_state;
 
     static Client *s_instance;

@@ -6,7 +6,7 @@
 #include <jsystem/JKRExpHeap.hh>
 
 void Client::reset() {
-    updateState(*(new (m_heap, 0x4) ClientStateIdle(m_heap)));
+    updateState(*(new (m_allocator) ClientStateIdle(m_allocator)));
 }
 
 void Client::read(ClientReadHandler &handler) {
@@ -38,7 +38,7 @@ Client *Client::Instance() {
     return s_instance;
 }
 
-Client::Client(SOConfig &config, JKRHeap *heap) : m_config(config), m_heap(heap) {
+Client::Client(SOConfig &config, JKRHeap *heap) : m_config(config), m_allocator(heap) {
     reset();
 }
 

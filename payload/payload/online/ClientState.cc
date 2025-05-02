@@ -2,22 +2,22 @@
 
 #include "payload/online/ClientStateError.hh"
 
-ClientState::ClientState(JKRHeap *heap) : m_heap(heap) {}
+ClientState::ClientState(Allocator &allocator) : m_allocator(allocator) {}
 
 ClientState::~ClientState() {}
 
 ClientState &ClientState::writeStateIdle() {
-    return *(new (m_heap, 0x4) ClientStateError(m_heap));
+    return *(new (m_allocator) ClientStateError(m_allocator));
 }
 
 ClientState &ClientState::writeStateServer() {
-    return *(new (m_heap, 0x4) ClientStateError(m_heap));
+    return *(new (m_allocator) ClientStateError(m_allocator));
 }
 
 ClientState &ClientState::writeStateRoom() {
-    return *(new (m_heap, 0x4) ClientStateError(m_heap));
+    return *(new (m_allocator) ClientStateError(m_allocator));
 }
 
 ClientState &ClientState::writeStateError() {
-    return *(new (m_heap, 0x4) ClientStateError(m_heap));
+    return *(new (m_allocator) ClientStateError(m_allocator));
 }

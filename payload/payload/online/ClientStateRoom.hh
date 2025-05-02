@@ -8,7 +8,7 @@
 
 class ClientStateRoom : public ClientState {
 public:
-    ClientStateRoom(JKRHeap *heap);
+    ClientStateRoom(Allocator &allocator);
     ~ClientStateRoom() override;
     bool needsSockets() override;
     ClientState &read(ClientReadHandler &handler) override;

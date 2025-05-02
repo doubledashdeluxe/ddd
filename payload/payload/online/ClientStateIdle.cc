@@ -3,7 +3,7 @@
 #include "payload/online/ClientStateError.hh"
 #include "payload/online/ClientStateServer.hh"
 
-ClientStateIdle::ClientStateIdle(JKRHeap *heap) : ClientState(heap) {}
+ClientStateIdle::ClientStateIdle(Allocator &allocator) : ClientState(allocator) {}
 
 ClientStateIdle::~ClientStateIdle() {}
 
@@ -13,7 +13,7 @@ bool ClientStateIdle::needsSockets() {
 
 ClientState &ClientStateIdle::read(ClientReadHandler &handler) {
     if (!handler.clientStateIdle()) {
-        return *(new (m_heap, 0x4) ClientStateError(m_heap));
+        return *(new (m_allocator) ClientStateError(m_allocator));
     }
 
     return *this;
@@ -24,5 +24,5 @@ ClientState &ClientStateIdle::writeStateIdle() {
 }
 
 ClientState &ClientStateIdle::writeStateServer() {
-    return *(new (m_heap, 0x4) ClientStateServer(m_heap, nullptr));
+    return *(new (m_allocator) ClientStateServer(m_allocator, nullptr));
 }

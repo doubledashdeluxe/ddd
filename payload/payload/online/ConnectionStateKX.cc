@@ -11,9 +11,9 @@ extern "C" {
 #include <assert.h>
 }
 
-ConnectionStateKX::ConnectionStateKX(JKRHeap *heap, const Array<u8, 32> &clientEphemeralK,
+ConnectionStateKX::ConnectionStateKX(Allocator &allocator, const Array<u8, 32> &clientEphemeralK,
         Array<u8, 32> serverPK, SOSockAddr address)
-    : ConnectionState(heap, serverPK), m_address(address),
+    : ConnectionState(allocator, serverPK), m_address(address),
       m_clientState(ClientK::Get(), clientEphemeralK, serverPK) {}
 
 ConnectionStateKX::~ConnectionStateKX() {}
@@ -56,7 +56,8 @@ ConnectionState &ConnectionStateKX::write(ClientStateWriter & /* writer */, u8 *
     }
 
     if (session) {
-        return *(new (m_heap, 0x4) ConnectionStateSession(m_heap, m_serverPK, m_address, *session));
+        return *(new (m_allocator)
+                        ConnectionStateSession(m_allocator, m_serverPK, m_address, *session));
     }
 
     ok = m_clientState.getM1(buffer);

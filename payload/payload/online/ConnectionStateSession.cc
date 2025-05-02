@@ -10,17 +10,17 @@ extern "C" {
 #include <assert.h>
 }
 
-ConnectionStateSession::ConnectionStateSession(JKRHeap *heap, Array<u8, 32> serverPK,
+ConnectionStateSession::ConnectionStateSession(Allocator &allocator, Array<u8, 32> serverPK,
         SOSockAddr address, Session session)
-    : ConnectionState(heap, serverPK), m_address(address), m_session(session) {}
+    : ConnectionState(allocator, serverPK), m_address(address), m_session(session) {}
 
 ConnectionStateSession::~ConnectionStateSession() {}
 
 ConnectionState &ConnectionStateSession::reset() {
     Array<u8, 32> clientEphemeralK;
     Random::Get(clientEphemeralK.values(), clientEphemeralK.count());
-    ConnectionState &state =
-            *(new (m_heap, 0x4) ConnectionStateKX(m_heap, clientEphemeralK, m_serverPK, m_address));
+    ConnectionState &state = *(new (m_allocator)
+                    ConnectionStateKX(m_allocator, clientEphemeralK, m_serverPK, m_address));
     crypto_wipe(clientEphemeralK.values(), clientEphemeralK.count());
     return state;
 }

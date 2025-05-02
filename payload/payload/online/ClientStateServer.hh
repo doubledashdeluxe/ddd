@@ -22,7 +22,7 @@ class ClientStateServer
     , private ClientIdentityWriter::Unspecified
     , private ClientIdentityUnspecifiedWriter {
 public:
-    ClientStateServer(JKRHeap *heap, UDPSocket *socket);
+    ClientStateServer(Allocator &allocator, UDPSocket *socket);
     ~ClientStateServer() override;
     bool needsSockets() override;
     ClientState &read(ClientReadHandler &handler) override;

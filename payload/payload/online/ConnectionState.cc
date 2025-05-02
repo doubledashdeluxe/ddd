@@ -1,6 +1,6 @@
 #include "ConnectionState.hh"
 
-ConnectionState::ConnectionState(JKRHeap *heap, Array<u8, 32> serverPK)
-    : m_heap(heap), m_serverPK(serverPK) {}
+ConnectionState::ConnectionState(Allocator &allocator, Array<u8, 32> serverPK)
+    : m_allocator(allocator), m_serverPK(serverPK) {}
 
 ConnectionState::~ConnectionState() {}

@@ -2,11 +2,11 @@
 
 #include "payload/online/ClientReadHandler.hh"
 
-#include <jsystem/JKRHeap.hh>
+#include <portable/Allocator.hh>
 
 class ClientState {
 public:
-    ClientState(JKRHeap *heap);
+    ClientState(Allocator &allocator);
     virtual ~ClientState();
     virtual bool needsSockets() = 0;
     virtual ClientState &read(ClientReadHandler &handler) = 0;
@@ -16,5 +16,5 @@ public:
     virtual ClientState &writeStateError();
 
 protected:
-    JKRHeap *m_heap;
+    Allocator &m_allocator;
 };

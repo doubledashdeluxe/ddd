@@ -6,7 +6,7 @@
 
 class ConnectionStateSession : public ConnectionState {
 public:
-    ConnectionStateSession(JKRHeap *heap, Array<u8, 32> serverPK, SOSockAddr address,
+    ConnectionStateSession(Allocator &allocator, Array<u8, 32> serverPK, SOSockAddr address,
             Session session);
     ~ConnectionStateSession() override;
     ConnectionState &reset() override;

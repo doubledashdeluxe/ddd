@@ -5,12 +5,12 @@ extern "C" {
 }
 #include <formats/ClientState.hh>
 #include <formats/ServerState.hh>
-#include <jsystem/JKRHeap.hh>
+#include <portable/Allocator.hh>
 #include <portable/Array.hh>
 
 class ConnectionState {
 public:
-    ConnectionState(JKRHeap *heap, Array<u8, 32> serverPK);
+    ConnectionState(Allocator &allocator, Array<u8, 32> serverPK);
     virtual ~ConnectionState();
     virtual ConnectionState &reset() = 0;
     virtual ConnectionState &read(ServerStateReader &reader, u8 *buffer, u32 size,
@@ -19,6 +19,6 @@ public:
             SOSockAddr &address, bool &ok) = 0;
 
 protected:
-    JKRHeap *m_heap;
+    Allocator &m_allocator;
     Array<u8, 32> m_serverPK;
 };
