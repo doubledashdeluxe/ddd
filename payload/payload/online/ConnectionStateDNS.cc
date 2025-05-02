@@ -1,7 +1,6 @@
 #include "ConnectionStateDNS.hh"
 
 #include "payload/crypto/Random.hh"
-#include "payload/network/CubeDNS.hh"
 #include "payload/online/ConnectionStateKX.hh"
 
 extern "C" {
@@ -40,7 +39,7 @@ ConnectionState &ConnectionStateDNS::write(ClientStateWriter & /* writer */, u8 
     ok = false;
 
     Address address;
-    if (!CubeDNS::Instance()->resolve(m_name.values(), address.address)) {
+    if (!m_platform.dns().resolve(m_name.values(), address.address)) {
         return *this;
     }
 

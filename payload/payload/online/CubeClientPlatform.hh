@@ -8,6 +8,7 @@ public:
     CubeClientPlatform(JKRHeap *heap);
 
     Allocator &allocator() override;
+    DNS &dns() override;
 
 private:
     HeapAllocator m_allocator;
