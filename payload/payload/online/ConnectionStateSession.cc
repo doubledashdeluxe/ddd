@@ -1,6 +1,5 @@
 #include "ConnectionStateSession.hh"
 
-#include "payload/crypto/CubeRandom.hh"
 #include "payload/online/ConnectionStateKX.hh"
 
 extern "C" {
@@ -17,7 +16,7 @@ ConnectionStateSession::~ConnectionStateSession() {}
 
 ConnectionState &ConnectionStateSession::reset() {
     Array<u8, 32> clientEphemeralK;
-    CubeRandom::Instance()->get(clientEphemeralK.values(), clientEphemeralK.count());
+    m_platform.random().get(clientEphemeralK.values(), clientEphemeralK.count());
     ConnectionState &state = *(new (m_platform.allocator())
                     ConnectionStateKX(m_platform, clientEphemeralK, m_serverPK, m_address));
     crypto_wipe(clientEphemeralK.values(), clientEphemeralK.count());
