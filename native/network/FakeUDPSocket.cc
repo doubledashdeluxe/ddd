@@ -23,7 +23,9 @@ s32 FakeUDPSocket::recvFrom(void *buffer, u32 size, Address &address) {
         return -1;
     }
 
-    memcpy(buffer, m_data.data(), m_data.size());
+    if (m_data.size() != 0) {
+        memcpy(buffer, m_data.data(), m_data.size());
+    }
     address = *m_address;
     return m_data.size();
 }
