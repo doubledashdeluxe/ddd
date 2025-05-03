@@ -5,10 +5,11 @@
 #include "portable/crypto/Random.hh"
 #include "portable/network/DNS.hh"
 
-class ClientPlatform {
-public:
-    virtual Allocator &allocator() = 0;
-    virtual Random &random() = 0;
-    virtual DNS &dns() = 0;
-    virtual const Array<u8, 32> &clientK() = 0;
+struct ClientPlatform {
+    ClientPlatform(Allocator &allocator, Random &random, DNS &dns, const Array<u8, 32> &clientK);
+
+    Allocator &allocator;
+    Random &random;
+    DNS &dns;
+    const Array<u8, 32> &clientK;
 };

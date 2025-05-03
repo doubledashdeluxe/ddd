@@ -1,13 +1,14 @@
 #pragma once
 
+#include "payload/HeapAllocator.hh"
 #include "payload/online/ClientState.hh"
-#include "payload/online/CubeClientPlatform.hh"
 
 extern "C" {
 #include <dolphin/IPSocket.h>
 }
 #include <jsystem/JKRHeap.hh>
 #include <portable/UniquePtr.hh>
+#include <portable/online/ClientPlatform.hh>
 
 class Client {
 public:
@@ -27,7 +28,8 @@ private:
     bool updateState(ClientState &nextState);
 
     SOConfig &m_config;
-    CubeClientPlatform m_platform;
+    HeapAllocator m_allocator;
+    ClientPlatform m_platform;
     UniquePtr<ClientState> m_state;
 
     static Client *s_instance;

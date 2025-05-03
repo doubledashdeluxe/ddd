@@ -38,14 +38,14 @@ ConnectionState &ConnectionStateDNS::write(ClientStateWriter & /* writer */, u8 
     ok = false;
 
     Address address;
-    if (!m_platform.dns().resolve(m_name.values(), address.address)) {
+    if (!m_platform.dns.resolve(m_name.values(), address.address)) {
         return *this;
     }
 
     Array<u8, 32> clientEphemeralK;
-    m_platform.random().get(clientEphemeralK.values(), clientEphemeralK.count());
+    m_platform.random.get(clientEphemeralK.values(), clientEphemeralK.count());
     address.port = m_port;
-    ConnectionState &state = *(new (m_platform.allocator())
+    ConnectionState &state = *(new (m_platform.allocator)
                     ConnectionStateKX(m_platform, clientEphemeralK, m_serverPK, address));
     crypto_wipe(clientEphemeralK.values(), clientEphemeralK.count());
     return state;

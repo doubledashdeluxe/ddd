@@ -13,7 +13,7 @@ bool ClientStateIdle::needsSockets() {
 
 ClientState &ClientStateIdle::read(ClientReadHandler &handler) {
     if (!handler.clientStateIdle()) {
-        return *(new (m_platform.allocator()) ClientStateError(m_platform));
+        return *(new (m_platform.allocator) ClientStateError(m_platform));
     }
 
     return *this;
@@ -24,5 +24,5 @@ ClientState &ClientStateIdle::writeStateIdle() {
 }
 
 ClientState &ClientStateIdle::writeStateServer() {
-    return *(new (m_platform.allocator()) ClientStateServer(m_platform, nullptr));
+    return *(new (m_platform.allocator) ClientStateServer(m_platform, nullptr));
 }

@@ -1,12 +1,15 @@
 #include "Client.hh"
 
+#include "payload/crypto/CubeRandom.hh"
+#include "payload/network/CubeDNS.hh"
 #include "payload/network/CubeSocket.hh"
+#include "payload/online/ClientK.hh"
 #include "payload/online/ClientStateIdle.hh"
 
 #include <jsystem/JKRExpHeap.hh>
 
 void Client::reset() {
-    updateState(*(new (m_platform.allocator()) ClientStateIdle(m_platform)));
+    updateState(*(new (m_platform.allocator) ClientStateIdle(m_platform)));
 }
 
 void Client::read(ClientReadHandler &handler) {
@@ -38,7 +41,9 @@ Client *Client::Instance() {
     return s_instance;
 }
 
-Client::Client(SOConfig &config, JKRHeap *heap) : m_config(config), m_platform(heap) {
+Client::Client(SOConfig &config, JKRHeap *heap)
+    : m_config(config), m_allocator(heap),
+      m_platform(m_allocator, *CubeRandom::Instance(), *CubeDNS::Instance(), ClientK::Get()) {
     reset();
 }
 

@@ -7,7 +7,7 @@
 ClientStateServer::ClientStateServer(ClientPlatform &platform, CubeUDPSocket *socket)
     : ClientState(platform), m_socket(socket), m_index(0) {
     if (!m_socket.get()) {
-        m_socket.reset(new (platform.allocator()) CubeUDPSocket);
+        m_socket.reset(new (platform.allocator) CubeUDPSocket);
     }
 }
 
@@ -47,7 +47,7 @@ ClientState &ClientStateServer::read(ClientReadHandler &handler) {
     }
 
     if (!handler.clientStateServer()) {
-        return *(new (m_platform.allocator()) ClientStateError(m_platform));
+        return *(new (m_platform.allocator) ClientStateError(m_platform));
     }
 
     return *this;
@@ -175,7 +175,7 @@ void ClientStateServer::checkConnections() {
             Array<u8, 32> publicK = server.publicKey();
             const char *name = server.address();
             Connection *connection =
-                    new (m_platform.allocator()) Connection(m_platform, publicK, name);
+                    new (m_platform.allocator) Connection(m_platform, publicK, name);
             m_connections.back()->reset(connection);
         }
     }

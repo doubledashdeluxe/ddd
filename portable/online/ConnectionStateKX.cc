@@ -11,7 +11,7 @@ extern "C" {
 ConnectionStateKX::ConnectionStateKX(ClientPlatform &platform,
         const Array<u8, 32> &clientEphemeralK, Array<u8, 32> serverPK, Address address)
     : ConnectionState(platform, serverPK), m_address(address),
-      m_clientState(platform.clientK(), clientEphemeralK, serverPK) {}
+      m_clientState(platform.clientK, clientEphemeralK, serverPK) {}
 
 ConnectionStateKX::~ConnectionStateKX() {}
 
@@ -46,14 +46,14 @@ ConnectionState &ConnectionStateKX::write(ClientStateWriter & /* writer */, u8 *
         session = m_clientState.clientSession();
         if (!session) {
             Array<u8, 32> clientEphemeralK;
-            m_platform.random().get(clientEphemeralK.values(), clientEphemeralK.count());
-            m_clientState = KX::ClientState(m_platform.clientK(), clientEphemeralK, m_serverPK);
+            m_platform.random.get(clientEphemeralK.values(), clientEphemeralK.count());
+            m_clientState = KX::ClientState(m_platform.clientK, clientEphemeralK, m_serverPK);
             crypto_wipe(clientEphemeralK.values(), clientEphemeralK.count());
         }
     }
 
     if (session) {
-        return *(new (m_platform.allocator())
+        return *(new (m_platform.allocator)
                         ConnectionStateSession(m_platform, m_serverPK, m_address, *session));
     }
 
