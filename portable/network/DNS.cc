@@ -21,9 +21,9 @@ bool DNS::resolve(const char *name, u32 &address) {
         return true;
     }
 
-    if (!ok()) {
+    if (!m_socket.ok()) {
         m_queries.reset();
-        open();
+        m_socket.open();
     }
 
     Response response;
@@ -74,7 +74,7 @@ bool DNS::resolve(const char *name, u32 &address) {
     return false;
 }
 
-DNS::DNS() : m_id(0) {
+DNS::DNS(UDPSocket &socket) : m_socket(socket), m_id(0) {
     m_resolvers[0].address = 8 << 24 | 8 << 16 | 8 << 8 | 8 << 0; // Google
     m_resolvers[1].address = 1 << 24 | 1 << 16 | 1 << 8 | 1 << 0; // Cloudflare
     for (u32 i = 0; i < m_resolvers.count(); i++) {
@@ -91,7 +91,7 @@ bool DNS::readResponse(Response &response) {
 
     Array<u8, 512> buffer;
     Address resolver;
-    s32 result = recvFrom(buffer.values(), buffer.count(), resolver);
+    s32 result = m_socket.recvFrom(buffer.values(), buffer.count(), resolver);
     if (result < 0x00c) {
         return false;
     }
@@ -190,7 +190,7 @@ bool DNS::writeQuery(const Query &query) {
     Bytes::WriteBE<u16>(buffer.values(), 0x00c + nameLength + 0x004, 1); // QCLASS
 
     for (u32 i = 0; i < m_resolvers.count(); i++) {
-        sendTo(buffer.values(), 0x00c + nameLength + 0x006, m_resolvers[i]);
+        m_socket.sendTo(buffer.values(), 0x00c + nameLength + 0x006, m_resolvers[i]);
     }
 
     if (m_queries.full()) {

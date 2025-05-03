@@ -16,23 +16,7 @@ CubeDNS *CubeDNS::Instance() {
     return s_instance;
 }
 
-CubeDNS::CubeDNS() {}
-
-bool CubeDNS::ok() {
-    return m_socket.ok();
-}
-
-s32 CubeDNS::open() {
-    return m_socket.open();
-}
-
-s32 CubeDNS::recvFrom(void *buffer, u32 size, Address &address) {
-    return m_socket.recvFrom(buffer, size, address);
-}
-
-s32 CubeDNS::sendTo(const void *buffer, u32 size, const Address &address) {
-    return m_socket.sendTo(buffer, size, address);
-}
+CubeDNS::CubeDNS() : DNS(m_socket) {}
 
 s64 CubeDNS::secondsToTicks(s64 seconds) {
     return Clock::SecondsToTicks(seconds);

@@ -1,33 +1,8 @@
 #include "FakeDNS.hh"
 
-#include <cstring>
-
-FakeDNS::FakeDNS(std::vector<u8> &data) : m_data(data) {}
+FakeDNS::FakeDNS(UDPSocket &socket) : DNS(socket) {}
 
 FakeDNS::~FakeDNS() = default;
-
-bool FakeDNS::ok() {
-    return true;
-}
-
-s32 FakeDNS::open() {
-    return 0;
-}
-
-s32 FakeDNS::recvFrom(void *buffer, u32 size, Address &address) {
-    if (m_data.size() > size || !m_address) {
-        return -1;
-    }
-
-    memcpy(buffer, m_data.data(), m_data.size());
-    address = *m_address;
-    return m_data.size();
-}
-
-s32 FakeDNS::sendTo(const void * /* buffer */, u32 size, const Address &address) {
-    m_address = address;
-    return size;
-}
 
 s64 FakeDNS::secondsToTicks(s64 seconds) {
     return seconds;

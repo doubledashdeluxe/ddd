@@ -2,7 +2,7 @@
 
 #include <vector>
 
-class FakeSZSReader : public SZSReader {
+class FakeSZSReader final : public SZSReader {
 public:
     FakeSZSReader(const std::vector<u8> *compressed);
     ~FakeSZSReader();
