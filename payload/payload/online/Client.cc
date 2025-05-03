@@ -4,10 +4,10 @@
 #include "payload/network/CubeDNS.hh"
 #include "payload/network/CubeNetwork.hh"
 #include "payload/online/ClientK.hh"
-#include "payload/online/ClientStateIdle.hh"
 #include "payload/online/CubeServerManager.hh"
 
 #include <jsystem/JKRExpHeap.hh>
+#include <portable/online/ClientStateIdle.hh>
 
 void Client::reset() {
     updateState(*(new (m_platform.allocator) ClientStateIdle(m_platform)));

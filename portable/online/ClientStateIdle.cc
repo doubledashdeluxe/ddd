@@ -1,7 +1,7 @@
 #include "ClientStateIdle.hh"
 
-#include "payload/online/ClientStateError.hh"
-#include "payload/online/ClientStateServer.hh"
+#include "portable/online/ClientStateError.hh"
+#include "portable/online/ClientStateServer.hh"
 
 ClientStateIdle::ClientStateIdle(ClientPlatform &platform) : ClientState(platform) {
     platform.socket.close();

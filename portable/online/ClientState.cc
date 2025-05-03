@@ -1,6 +1,6 @@
 #include "ClientState.hh"
 
-#include "payload/online/ClientStateError.hh"
+#include "portable/online/ClientStateError.hh"
 
 ClientState::ClientState(ClientPlatform &platform) : m_platform(platform) {}
 

@@ -1,8 +1,7 @@
 #include "ClientStateServer.hh"
 
-#include "payload/online/ClientStateError.hh"
-
-#include <portable/Log.hh>
+#include "portable/Log.hh"
+#include "portable/online/ClientStateError.hh"
 
 ClientStateServer::ClientStateServer(ClientPlatform &platform)
     : ClientState(platform), m_index(0) {}

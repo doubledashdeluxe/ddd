@@ -2,7 +2,6 @@
 
 #include "payload/HeapAllocator.hh"
 #include "payload/network/CubeUDPSocket.hh"
-#include "payload/online/ClientState.hh"
 
 extern "C" {
 #include <dolphin/IPSocket.h>
@@ -10,6 +9,7 @@ extern "C" {
 #include <jsystem/JKRHeap.hh>
 #include <portable/UniquePtr.hh>
 #include <portable/online/ClientPlatform.hh>
+#include <portable/online/ClientState.hh>
 
 class Client {
 public:
