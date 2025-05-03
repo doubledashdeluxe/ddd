@@ -75,8 +75,11 @@ bool DNS::resolve(const char *name, u32 &address) {
 }
 
 DNS::DNS() : m_id(0) {
-    m_resolvers[0] = 8 << 24 | 8 << 16 | 8 << 8 | 8 << 0; // Google
-    m_resolvers[1] = 1 << 24 | 1 << 16 | 1 << 8 | 1 << 0; // Cloudflare
+    m_resolvers[0].address = 8 << 24 | 8 << 16 | 8 << 8 | 8 << 0; // Google
+    m_resolvers[1].address = 1 << 24 | 1 << 16 | 1 << 8 | 1 << 0; // Cloudflare
+    for (u32 i = 0; i < m_resolvers.count(); i++) {
+        m_resolvers[i].port = 53;
+    }
 }
 
 DNS::~DNS() {}
@@ -87,7 +90,7 @@ bool DNS::readResponse(Response &response) {
     }
 
     Array<u8, 512> buffer;
-    u32 resolver;
+    Address resolver;
     s32 result = recvFrom(buffer.values(), buffer.count(), resolver);
     if (result < 0x00c) {
         return false;

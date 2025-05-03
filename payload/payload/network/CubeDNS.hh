@@ -1,6 +1,6 @@
 #pragma once
 
-#include "payload/network/UDPSocket.hh"
+#include "payload/network/CubeUDPSocket.hh"
 
 #include <portable/network/DNS.hh>
 
@@ -14,12 +14,12 @@ private:
 
     bool ok() override;
     s32 open() override;
-    s32 recvFrom(void *buffer, u32 size, u32 &address) override;
-    s32 sendTo(const void *buffer, u32 size, u32 address) override;
+    s32 recvFrom(void *buffer, u32 size, Address &address) override;
+    s32 sendTo(const void *buffer, u32 size, const Address &address) override;
     s64 secondsToTicks(s64 seconds) override;
     s64 getMonotonicTicks() override;
 
-    UDPSocket m_socket;
+    CubeUDPSocket m_socket;
 
     static CubeDNS *s_instance;
 };

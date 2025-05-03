@@ -1,6 +1,6 @@
 #pragma once
 
-#include "payload/network/UDPSocket.hh"
+#include "payload/network/CubeUDPSocket.hh"
 #include "payload/online/ClientState.hh"
 #include "payload/online/ServerManager.hh"
 
@@ -22,7 +22,7 @@ class ClientStateServer
     , private ClientIdentityWriter::Unspecified
     , private ClientIdentityUnspecifiedWriter {
 public:
-    ClientStateServer(ClientPlatform &platform, UDPSocket *socket);
+    ClientStateServer(ClientPlatform &platform, CubeUDPSocket *socket);
     ~ClientStateServer() override;
     bool needsSockets() override;
     ClientState &read(ClientReadHandler &handler) override;
@@ -62,7 +62,7 @@ private:
     void checkConnections();
     void checkSocket();
 
-    UniquePtr<UDPSocket> m_socket;
+    UniquePtr<CubeUDPSocket> m_socket;
     UniquePtr<Array<u8, 512>> m_buffer;
     Ring<UniquePtr<Connection>, ServerManager::MaxServerCount> m_connections;
     u32 m_index;

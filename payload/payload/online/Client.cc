@@ -1,6 +1,6 @@
 #include "Client.hh"
 
-#include "payload/network/Socket.hh"
+#include "payload/network/CubeSocket.hh"
 #include "payload/online/ClientStateIdle.hh"
 
 #include <jsystem/JKRExpHeap.hh>
@@ -50,9 +50,9 @@ bool Client::updateState(ClientState &nextState) {
 
     if (nextState.needsSockets()) {
         m_config.flag = 1 << 0;
-        Socket::EnsureStarted(m_config);
+        CubeSocket::EnsureStarted(m_config);
     } else {
-        Socket::EnsureStopped();
+        CubeSocket::EnsureStopped();
     }
 
     return hasChanged;

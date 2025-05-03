@@ -1,6 +1,6 @@
 #pragma once
 
-#include "payload/network/UDPSocket.hh"
+#include "payload/network/CubeUDPSocket.hh"
 #include "payload/online/ClientState.hh"
 
 #include <portable/UniquePtr.hh>
@@ -14,6 +14,6 @@ public:
     ClientState &read(ClientReadHandler &handler) override;
 
 private:
-    UniquePtr<UDPSocket> m_socket;
+    UniquePtr<CubeUDPSocket> m_socket;
     UniquePtr<Connection> m_connection;
 };

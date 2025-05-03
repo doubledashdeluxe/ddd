@@ -3,27 +3,27 @@
 extern "C" {
 #include <dolphin/IPSocket.h>
 }
+#include <portable/network/Address.hh>
 
-class Socket {
+class CubeSocket {
 public:
-    s32 close();
-    bool ok();
-
     static bool IsRunning();
     static void EnsureStarted(SOConfig &config);
     static void EnsureStopped();
 
 protected:
-    Socket();
-    ~Socket();
+    CubeSocket();
+    ~CubeSocket();
 
     s32 open(s32 type);
-    s32 recvFrom(void *buffer, u32 size, SOSockAddr *address);
-    s32 sendTo(const void *buffer, u32 size, const SOSockAddr *address);
+    s32 close();
+    bool ok();
+    s32 recvFrom(void *buffer, u32 size, Address *address);
+    s32 sendTo(const void *buffer, u32 size, const Address *address);
 
 private:
-    Socket(const Socket &);
-    Socket &operator=(const Socket &);
+    CubeSocket(const CubeSocket &);
+    CubeSocket &operator=(const CubeSocket &);
 
     s32 setIsBlocking(bool isBlocking);
 

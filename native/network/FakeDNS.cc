@@ -14,7 +14,7 @@ s32 FakeDNS::open() {
     return 0;
 }
 
-s32 FakeDNS::recvFrom(void *buffer, u32 size, u32 &address) {
+s32 FakeDNS::recvFrom(void *buffer, u32 size, Address &address) {
     if (m_data.size() > size || !m_address) {
         return -1;
     }
@@ -24,7 +24,7 @@ s32 FakeDNS::recvFrom(void *buffer, u32 size, u32 &address) {
     return m_data.size();
 }
 
-s32 FakeDNS::sendTo(const void * /* buffer */, u32 size, u32 address) {
+s32 FakeDNS::sendTo(const void * /* buffer */, u32 size, const Address &address) {
     m_address = address;
     return size;
 }

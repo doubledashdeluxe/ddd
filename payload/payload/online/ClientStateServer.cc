@@ -4,10 +4,10 @@
 
 #include <cube/Log.hh>
 
-ClientStateServer::ClientStateServer(ClientPlatform &platform, UDPSocket *socket)
+ClientStateServer::ClientStateServer(ClientPlatform &platform, CubeUDPSocket *socket)
     : ClientState(platform), m_socket(socket), m_index(0) {
     if (!m_socket.get()) {
-        m_socket.reset(new (platform.allocator()) UDPSocket);
+        m_socket.reset(new (platform.allocator()) CubeUDPSocket);
     }
 }
 
@@ -22,7 +22,7 @@ ClientState &ClientStateServer::read(ClientReadHandler &handler) {
         return *this;
     }
 
-    if (!Socket::IsRunning()) {
+    if (!CubeSocket::IsRunning()) {
         return *this;
     }
 
@@ -32,15 +32,11 @@ ClientState &ClientStateServer::read(ClientReadHandler &handler) {
     if (!m_connections.empty()) {
         for (u32 i = 0; i < 16; i++) {
             Array<u8, 512> buffer;
-            SOSockAddr addr;
-            addr.len = sizeof(addr);
-            s32 result = m_socket->recvFrom(buffer.values(), buffer.count(), addr);
+            Address address;
+            s32 result = m_socket->recvFrom(buffer.values(), buffer.count(), address);
             if (result < 0) {
                 break;
             }
-            Address address;
-            address.address = addr.addr;
-            address.port = addr.port;
             for (u32 j = 0; j < m_connections.count(); j++) {
                 m_index = (m_index + 1) % m_connections.count();
                 if (m_connections[m_index]->read(*this, buffer.values(), result, address)) {
@@ -62,7 +58,7 @@ ClientState &ClientStateServer::writeStateServer() {
         return *this;
     }
 
-    if (!Socket::IsRunning()) {
+    if (!CubeSocket::IsRunning()) {
         return *this;
     }
 
@@ -74,12 +70,7 @@ ClientState &ClientStateServer::writeStateServer() {
         u32 size = buffer.count();
         Address address;
         if (m_connections[m_index]->write(*this, buffer.values(), size, address)) {
-            SOSockAddr addr;
-            addr.len = sizeof(addr);
-            addr.family = AF_INET;
-            addr.port = address.port;
-            addr.addr = address.address;
-            m_socket->sendTo(buffer.values(), size, addr);
+            m_socket->sendTo(buffer.values(), size, address);
         }
         m_index = (m_index + 1) % m_connections.count();
     }
