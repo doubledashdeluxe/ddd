@@ -3,10 +3,12 @@
 extern "C" {
 #include <dolphin/IPSocket.h>
 }
+#include <portable/network/Network.hh>
 
-class CubeNetwork {
+class CubeNetwork : public Network {
 public:
-    bool isRunning() const;
+    bool isRunning() const override;
+
     void ensureStarted(SOConfig &config);
     void ensureStopped();
     u64 generation() const;
