@@ -1,4 +1,4 @@
-#include "ServerManager.hh"
+#include "CubeServerManager.hh"
 
 #include "payload/INIFileReader.hh"
 
@@ -9,54 +9,39 @@
 extern "C" {
 #include <stdio.h>
 #include <string.h>
-#include <strings.h>
 }
 
-ServerManager::Server::Server(Array<char, 32> name, Array<char, 32> address,
-        Array<u8, 32> publicKey)
-    : m_name(name), m_address(address), m_publicKey(publicKey) {}
-
-ServerManager::Server::~Server() {}
-
-const char *ServerManager::Server::name() const {
-    return m_name.values();
+bool CubeServerManager::isLocked() {
+    return StorageScanner::isLocked();
 }
 
-const char *ServerManager::Server::address() const {
-    return m_address.values();
+bool CubeServerManager::lock() {
+    return StorageScanner::lock();
 }
 
-Array<u8, 32> ServerManager::Server::publicKey() const {
-    return m_publicKey;
+void CubeServerManager::unlock() {
+    StorageScanner::unlock();
 }
 
-u32 ServerManager::serverCount() const {
-    return m_servers.count();
+void CubeServerManager::Init() {
+    s_instance = new (MEM1Arena::Instance(), 0x4) CubeServerManager;
 }
 
-const ServerManager::Server &ServerManager::server(u32 index) const {
-    return m_servers[index];
-}
-
-void ServerManager::Init() {
-    s_instance = new (MEM1Arena::Instance(), 0x4) ServerManager;
-}
-
-ServerManager *ServerManager::Instance() {
+CubeServerManager *CubeServerManager::Instance() {
     return s_instance;
 }
 
-ServerManager::ServerManager() {
+CubeServerManager::CubeServerManager() {
     StorageScanner *param = this;
     OSCreateThread(&m_thread, Run, param, m_stack.values() + m_stack.count(), m_stack.count(), 27,
             0);
 }
 
-OSThread &ServerManager::thread() {
+OSThread &CubeServerManager::thread() {
     return m_thread;
 }
 
-void ServerManager::process() {
+void CubeServerManager::process() {
     m_servers.reset();
     Array<char, 256> path;
     snprintf(path.values(), path.count(), "main:/ddd/servers");
@@ -66,7 +51,7 @@ void ServerManager::process() {
     sortServersByName();
 }
 
-void ServerManager::addServers(Array<char, 256> &path, Storage::NodeInfo &nodeInfo) {
+void CubeServerManager::addServers(Array<char, 256> &path, Storage::NodeInfo &nodeInfo) {
     u32 length = strlen(path.values());
     for (Storage::DirHandle dir(path.values()); dir.read(nodeInfo);) {
         snprintf(path.values() + length, path.count() - length, "/%s", nodeInfo.name.values());
@@ -79,7 +64,7 @@ void ServerManager::addServers(Array<char, 256> &path, Storage::NodeInfo &nodeIn
     path[length] = '\0';
 }
 
-void ServerManager::addServer(const Array<char, 256> &path) {
+void CubeServerManager::addServer(const Array<char, 256> &path) {
     ServerINI serverINI;
     Array<INIReader::Field, 3> iniFields;
     iniFields[0] = (INIReader::Field){"servername", &serverINI.fallbackName};
@@ -130,13 +115,13 @@ void ServerManager::addServer(const Array<char, 256> &path) {
     m_servers.pushBack(server);
 }
 
-void ServerManager::sortServersByName() {
+void CubeServerManager::sortServersByName() {
     Sort(m_servers, m_servers.count(), CompareServersByName);
 }
 
-bool ServerManager::CompareServersByName(const Server &a, const Server &b) {
+bool CubeServerManager::CompareServersByName(const Server &a, const Server &b) {
     const char *na = a.name(), *nb = b.name();
     return UTF8::CaseCompare(na, nb) <= 0;
 }
 
-ServerManager *ServerManager::s_instance = nullptr;
+CubeServerManager *CubeServerManager::s_instance = nullptr;

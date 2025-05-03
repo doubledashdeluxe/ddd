@@ -3,34 +3,18 @@
 #include "payload/StorageScanner.hh"
 
 #include <cube/storage/Storage.hh>
-#include <portable/Ring.hh>
+#include <portable/online/ServerManager.hh>
 
-class ServerManager : public StorageScanner {
+class CubeServerManager
+    : public ServerManager
+    , public StorageScanner {
 public:
-    enum {
-        MaxServerCount = 32,
-    };
-
-    class Server {
-    public:
-        Server(Array<char, 32> name, Array<char, 32> address, Array<u8, 32> publicKey);
-        ~Server();
-
-        const char *name() const;
-        const char *address() const;
-        Array<u8, 32> publicKey() const;
-
-    private:
-        Array<char, 32> m_name;
-        Array<char, 32> m_address;
-        Array<u8, 32> m_publicKey;
-    };
-
-    u32 serverCount() const;
-    const Server &server(u32 index) const;
+    bool isLocked() override;
+    bool lock() override;
+    void unlock() override;
 
     static void Init();
-    static ServerManager *Instance();
+    static CubeServerManager *Instance();
 
 private:
     struct ServerINI {
@@ -40,7 +24,7 @@ private:
         Array<char, INIReader::FieldSize> publicKey;
     };
 
-    ServerManager();
+    CubeServerManager();
 
     OSThread &thread() override;
     void process() override;
@@ -53,7 +37,6 @@ private:
 
     Array<u8, 16 * 1024> m_stack;
     OSThread m_thread;
-    Ring<Server, MaxServerCount> m_servers;
 
-    static ServerManager *s_instance;
+    static CubeServerManager *s_instance;
 };

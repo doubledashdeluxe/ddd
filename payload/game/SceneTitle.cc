@@ -22,7 +22,7 @@ extern "C" {
 #include <payload/CourseManager.hh>
 #include <payload/MemoryProtection.hh>
 #include <payload/online/Client.hh>
-#include <payload/online/ServerManager.hh>
+#include <payload/online/CubeServerManager.hh>
 
 SceneTitle::SceneTitle(JKRArchive *archive, JKRHeap *heap)
     : Scene(archive, heap), m_printMemoryCard(heap) {
@@ -137,7 +137,7 @@ void SceneTitle::calc() {
 
 void SceneTitle::fadeIn() {
     CourseManager::Instance()->unlock();
-    ServerManager::Instance()->unlock();
+    CubeServerManager::Instance()->unlock();
     Client::Instance()->reset();
     m_entryIndex = Entry::Count;
     m_lanIsEnabled = false;

@@ -12,7 +12,7 @@
 
 #include <jsystem/J2DAnmLoaderDataBase.hh>
 #include <payload/online/Client.hh>
-#include <payload/online/ServerManager.hh>
+#include <payload/online/CubeServerManager.hh>
 
 extern "C" {
 #include <string.h>
@@ -69,7 +69,7 @@ void SceneServerSelect::init() {
         Client::Instance()->reset();
     }
 
-    if (ServerManager::Instance()->lock()) {
+    if (CubeServerManager::Instance()->lock()) {
         slideIn();
     } else {
         wait();
@@ -160,7 +160,7 @@ void SceneServerSelect::wait() {
 }
 
 void SceneServerSelect::slideIn() {
-    m_serverCount = ServerManager::Instance()->serverCount();
+    m_serverCount = CubeServerManager::Instance()->serverCount();
     if (SequenceApp::Instance()->prevScene() != SceneType::RoomTypeSelect) {
         m_serverIndex = 0;
     }
@@ -212,7 +212,7 @@ void SceneServerSelect::nextScene() {
 }
 
 void SceneServerSelect::stateWait() {
-    if (ServerManager::Instance()->lock()) {
+    if (CubeServerManager::Instance()->lock()) {
         slideIn();
     }
 }
@@ -303,7 +303,7 @@ void SceneServerSelect::stateNextScene() {
 
 void SceneServerSelect::refreshServers() {
     Kart2DCommon *kart2DCommon = Kart2DCommon::Instance();
-    ServerManager *serverManager = ServerManager::Instance();
+    CubeServerManager *serverManager = CubeServerManager::Instance();
     for (u32 i = 0; i < 6; i++) {
         u32 serverIndex = m_rowIndex + i;
         if (serverIndex >= m_serverCount) {

@@ -1,11 +1,11 @@
 #pragma once
 
 #include "payload/online/ClientState.hh"
-#include "payload/online/ServerManager.hh"
 
 #include <portable/Ring.hh>
 #include <portable/UniquePtr.hh>
 #include <portable/online/Connection.hh>
+#include <portable/online/ServerManager.hh>
 
 class ClientStateServer
     : public ClientState

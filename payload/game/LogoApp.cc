@@ -10,7 +10,7 @@
 #include <cube/Log.hh>
 #include <payload/CourseManager.hh>
 #include <payload/online/Client.hh>
-#include <payload/online/ServerManager.hh>
+#include <payload/online/CubeServerManager.hh>
 
 void LogoApp::draw() {}
 
@@ -40,7 +40,7 @@ void LogoApp::calc() {
         }
         INFO("Loaded se00_0.aw.");
         CourseManager::Instance()->start();
-        ServerManager::Instance()->start();
+        CubeServerManager::Instance()->start();
         Client::Init(System::GetAppHeap(), BBAMgr::Config());
         SequenceApp::Call(SceneType::Title);
         return;

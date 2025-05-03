@@ -22,7 +22,7 @@ extern "C" {
 #include <payload/CourseManager.hh>
 #include <payload/DOLBinary.hh>
 #include <payload/PayloadBinary.hh>
-#include <payload/online/ServerManager.hh>
+#include <payload/online/CubeServerManager.hh>
 
 void System::Init() {
     REPLACED(Init)();
@@ -44,7 +44,7 @@ void System::Init() {
     DEBUG("%p %p CourseManager", courseManagerStart, courseManagerEnd);
     DEBUG("%p %p mainD.dol", DOLBinary::CtorsSectionStart(), DOLBinary::End());
     DEBUG("%p %p payloadD.bin", PayloadBinary::CtorsSectionStart(), PayloadBinary::End());
-    const u8 *serverManagerStart = reinterpret_cast<u8 *>(ServerManager::Instance());
+    const u8 *serverManagerStart = reinterpret_cast<u8 *>(CubeServerManager::Instance());
     const u8 *serverManagerEnd = serverManagerStart + sizeof(ServerManager);
     DEBUG("%p %p ServerManager", serverManagerStart, serverManagerEnd);
     const JKRHeap *systemHeap = JKRHeap::GetSystemHeap();

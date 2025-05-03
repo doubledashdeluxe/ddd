@@ -14,7 +14,7 @@
 
 #include <jsystem/J2DAnmLoaderDataBase.hh>
 #include <payload/online/Client.hh>
-#include <payload/online/ServerManager.hh>
+#include <payload/online/CubeServerManager.hh>
 
 extern "C" {
 #include <stdio.h>
@@ -131,7 +131,7 @@ void SceneNameSelect::calc() {
 }
 
 void SceneNameSelect::slideIn() {
-    ServerManager::Instance()->unlock();
+    CubeServerManager::Instance()->unlock();
     Client::Instance()->reset();
     MenuTitleLine::Instance()->drop("SelectName.bti");
     m_mainAnmTransformFrame = 0;

@@ -12,7 +12,7 @@
 
 #include <jsystem/J2DAnmLoaderDataBase.hh>
 #include <payload/online/Client.hh>
-#include <payload/online/ServerManager.hh>
+#include <payload/online/CubeServerManager.hh>
 
 extern "C" {
 #include <stdio.h>
@@ -229,7 +229,7 @@ void SceneTandemSelect::calc() {
 }
 
 void SceneTandemSelect::slideIn() {
-    ServerManager::Instance()->unlock();
+    CubeServerManager::Instance()->unlock();
     Client::Instance()->reset();
     MenuTitleLine::Instance()->drop(MenuTitleLine::Title::SelectTandem);
     m_mainAnmTransformFrame = 0;
