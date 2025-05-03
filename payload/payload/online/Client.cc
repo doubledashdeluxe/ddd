@@ -5,6 +5,7 @@
 #include "payload/network/CubeSocket.hh"
 #include "payload/online/ClientK.hh"
 #include "payload/online/ClientStateIdle.hh"
+#include "payload/online/CubeServerManager.hh"
 
 #include <jsystem/JKRExpHeap.hh>
 
@@ -42,8 +43,9 @@ Client *Client::Instance() {
 }
 
 Client::Client(SOConfig &config, JKRHeap *heap)
-    : m_config(config), m_allocator(heap), m_platform(m_allocator, *CubeRandom::Instance(),
-                                                   *CubeDNS::Instance(), m_socket, ClientK::Get()) {
+    : m_config(config), m_allocator(heap),
+      m_platform(m_allocator, *CubeRandom::Instance(), *CubeDNS::Instance(), m_socket,
+              *CubeServerManager::Instance(), ClientK::Get()) {
     reset();
 }
 

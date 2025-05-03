@@ -2,7 +2,6 @@
 
 #include "payload/network/CubeSocket.hh"
 #include "payload/online/ClientStateError.hh"
-#include "payload/online/CubeServerManager.hh"
 
 #include <cube/Log.hh>
 
@@ -16,7 +15,7 @@ bool ClientStateServer::needsSockets() {
 }
 
 ClientState &ClientStateServer::read(ClientReadHandler &handler) {
-    if (!CubeServerManager::Instance()->isLocked()) {
+    if (!m_platform.serverManager.isLocked()) {
         return *this;
     }
 
@@ -52,7 +51,7 @@ ClientState &ClientStateServer::read(ClientReadHandler &handler) {
 }
 
 ClientState &ClientStateServer::writeStateServer() {
-    if (!CubeServerManager::Instance()->isLocked()) {
+    if (!m_platform.serverManager.isLocked()) {
         return *this;
     }
 
@@ -166,10 +165,9 @@ u8 ClientStateServer::getPatch() {
 
 void ClientStateServer::checkConnections() {
     if (m_connections.empty()) {
-        CubeServerManager *serverManager = CubeServerManager::Instance();
-        for (u32 i = 0; i < serverManager->serverCount(); i++) {
+        for (u32 i = 0; i < m_platform.serverManager.serverCount(); i++) {
             m_connections.pushBack();
-            const ServerManager::Server &server = serverManager->server(i);
+            const ServerManager::Server &server = m_platform.serverManager.server(i);
             Array<u8, 32> publicK = server.publicKey();
             const char *name = server.address();
             Connection *connection =
