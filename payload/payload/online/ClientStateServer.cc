@@ -1,15 +1,12 @@
 #include "ClientStateServer.hh"
 
+#include "payload/network/CubeSocket.hh"
 #include "payload/online/ClientStateError.hh"
 
 #include <cube/Log.hh>
 
-ClientStateServer::ClientStateServer(ClientPlatform &platform, CubeUDPSocket *socket)
-    : ClientState(platform), m_socket(socket), m_index(0) {
-    if (!m_socket.get()) {
-        m_socket.reset(new (platform.allocator) CubeUDPSocket);
-    }
-}
+ClientStateServer::ClientStateServer(ClientPlatform &platform)
+    : ClientState(platform), m_index(0) {}
 
 ClientStateServer::~ClientStateServer() {}
 
@@ -33,7 +30,7 @@ ClientState &ClientStateServer::read(ClientReadHandler &handler) {
         for (u32 i = 0; i < 16; i++) {
             Array<u8, 512> buffer;
             Address address;
-            s32 result = m_socket->recvFrom(buffer.values(), buffer.count(), address);
+            s32 result = m_platform.socket.recvFrom(buffer.values(), buffer.count(), address);
             if (result < 0) {
                 break;
             }
@@ -70,7 +67,7 @@ ClientState &ClientStateServer::writeStateServer() {
         u32 size = buffer.count();
         Address address;
         if (m_connections[m_index]->write(*this, buffer.values(), size, address)) {
-            m_socket->sendTo(buffer.values(), size, address);
+            m_platform.socket.sendTo(buffer.values(), size, address);
         }
         m_index = (m_index + 1) % m_connections.count();
     }
@@ -182,10 +179,10 @@ void ClientStateServer::checkConnections() {
 }
 
 void ClientStateServer::checkSocket() {
-    if (!m_socket->ok()) {
+    if (!m_platform.socket.ok()) {
         for (u32 i = 0; i < m_connections.count(); i++) {
             m_connections[i]->reset();
         }
-        m_socket->open();
+        m_platform.socket.open();
     }
 }

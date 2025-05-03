@@ -3,7 +3,9 @@
 #include "payload/online/ClientStateError.hh"
 #include "payload/online/ClientStateServer.hh"
 
-ClientStateIdle::ClientStateIdle(ClientPlatform &platform) : ClientState(platform) {}
+ClientStateIdle::ClientStateIdle(ClientPlatform &platform) : ClientState(platform) {
+    platform.socket.close();
+}
 
 ClientStateIdle::~ClientStateIdle() {}
 
@@ -24,5 +26,5 @@ ClientState &ClientStateIdle::writeStateIdle() {
 }
 
 ClientState &ClientStateIdle::writeStateServer() {
-    return *(new (m_platform.allocator) ClientStateServer(m_platform, nullptr));
+    return *(new (m_platform.allocator) ClientStateServer(m_platform));
 }

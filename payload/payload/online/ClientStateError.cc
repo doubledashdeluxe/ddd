@@ -2,7 +2,9 @@
 
 #include "payload/online/ClientStateIdle.hh"
 
-ClientStateError::ClientStateError(ClientPlatform &platform) : ClientState(platform) {}
+ClientStateError::ClientStateError(ClientPlatform &platform) : ClientState(platform) {
+    platform.socket.close();
+}
 
 ClientStateError::~ClientStateError() {}
 

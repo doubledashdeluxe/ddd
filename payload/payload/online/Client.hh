@@ -1,6 +1,7 @@
 #pragma once
 
 #include "payload/HeapAllocator.hh"
+#include "payload/network/CubeUDPSocket.hh"
 #include "payload/online/ClientState.hh"
 
 extern "C" {
@@ -29,6 +30,7 @@ private:
 
     SOConfig &m_config;
     HeapAllocator m_allocator;
+    CubeUDPSocket m_socket;
     ClientPlatform m_platform;
     UniquePtr<ClientState> m_state;
 

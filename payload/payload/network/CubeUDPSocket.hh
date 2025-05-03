@@ -4,15 +4,9 @@
 
 #include <portable/network/UDPSocket.hh>
 
-#ifdef __CWCC__
 class CubeUDPSocket
     : public UDPSocket
     , private CubeSocket {
-#else
-class CubeUDPSocket final
-    : public UDPSocket
-    , private CubeSocket {
-#endif
 public:
     CubeUDPSocket();
     ~CubeUDPSocket();
