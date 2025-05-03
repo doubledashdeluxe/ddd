@@ -9,12 +9,12 @@
 #include "payload/ZIPFile.hh"
 
 #include <cube/DCache.hh>
-#include <cube/Log.hh>
 #include <game/CourseID.hh>
 #include <game/ResMgr.hh>
 extern "C" {
 #include <monocypher/monocypher.h>
 }
+#include <portable/Log.hh>
 #include <portable/UTF8.hh>
 
 extern "C" {

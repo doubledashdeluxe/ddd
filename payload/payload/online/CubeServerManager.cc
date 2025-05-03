@@ -3,7 +3,7 @@
 #include "payload/INIFileReader.hh"
 
 #include <cube/Arena.hh>
-#include <cube/Log.hh>
+#include <portable/Log.hh>
 #include <portable/UTF8.hh>
 
 extern "C" {

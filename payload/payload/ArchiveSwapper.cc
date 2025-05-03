@@ -1,8 +1,8 @@
 #include "ArchiveSwapper.hh"
 
-#include <cube/Log.hh>
 #include <jsystem/JKRAram.hh>
 #include <portable/Align.hh>
+#include <portable/Log.hh>
 
 extern "C" {
 #include <assert.h>

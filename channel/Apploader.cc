@@ -2,11 +2,11 @@
 
 #include <cube/DiscID.hh>
 #include <cube/ICache.hh>
-#include <cube/Log.hh>
 extern "C" {
 #include <monocypher/monocypher.h>
 }
 #include <portable/Align.hh>
+#include <portable/Log.hh>
 
 extern "C" {
 #include <string.h>

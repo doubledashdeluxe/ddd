@@ -7,10 +7,10 @@
 #include <cube/Arena.hh>
 #include <cube/Clock.hh>
 #include <cube/Console.hh>
+#include <cube/CubeLogger.hh>
 #include <cube/DCache.hh>
 #include <cube/DiscID.hh>
 #include <cube/ICache.hh>
-#include <cube/Log.hh>
 #include <cube/Platform.hh>
 #include <cube/USB.hh>
 #include <cube/VI.hh>
@@ -21,6 +21,7 @@
 #include <cube/storage/USBStorage.hh>
 #include <cube/storage/WiiSDStorage.hh>
 #include <portable/Align.hh>
+#include <portable/Log.hh>
 
 extern "C" {
 #include <string.h>
@@ -68,8 +69,8 @@ extern "C" volatile u32 aipprot;
 
 Channel::PayloadEntryFunc Channel::Run(Context *context) {
     VI::Init();
-
     Console::Init(VI::Instance());
+    CubeLogger::Init();
     INFO("Double Dash Deluxe Channel");
 
     if (!Platform::IsGameCube()) {

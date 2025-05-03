@@ -1,9 +1,9 @@
 #include "WiiSDStorage.hh"
 
-#include "cube/Log.hh"
 #include "cube/Memory.hh"
 
 #include <portable/Algorithm.hh>
+#include <portable/Log.hh>
 
 extern "C" {
 #include <assert.h>

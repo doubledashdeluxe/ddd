@@ -4,13 +4,13 @@
 #include "jsystem/JKRMemArchive.hh"
 
 #include <cube/Clock.hh>
-#include <cube/Log.hh>
 #include <cube/storage/Storage.hh>
 extern "C" {
 #include <dolphin/DVD.h>
 }
 #include <payload/ArchivePatcher.hh>
 #include <portable/Bytes.hh>
+#include <portable/Log.hh>
 #include <portable/New.hh>
 
 extern "C" {

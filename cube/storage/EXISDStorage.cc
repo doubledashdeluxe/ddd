@@ -1,9 +1,9 @@
 #include "EXISDStorage.hh"
 
 #include "cube/Clock.hh"
-#include "cube/Log.hh"
 
 #include <portable/Bytes.hh>
+#include <portable/Log.hh>
 
 u32 EXISDStorage::priority() {
     return 3 + m_channel;

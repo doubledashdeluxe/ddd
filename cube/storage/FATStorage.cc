@@ -1,7 +1,8 @@
 #include "FATStorage.hh"
 
-#include "cube/Log.hh"
 #include "cube/Panic.hh"
+
+#include <portable/Log.hh>
 
 extern "C" {
 #include <assert.h>

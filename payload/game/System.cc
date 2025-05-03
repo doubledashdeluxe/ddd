@@ -11,7 +11,6 @@
 #include "game/ResMgr.hh"
 #include "game/SequenceApp.hh"
 
-#include <cube/Log.hh>
 #include <cube/Platform.hh>
 #include <cube/SCFile.hh>
 extern "C" {
@@ -23,6 +22,7 @@ extern "C" {
 #include <payload/DOLBinary.hh>
 #include <payload/PayloadBinary.hh>
 #include <payload/online/CubeServerManager.hh>
+#include <portable/Log.hh>
 
 void System::Init() {
     REPLACED(Init)();

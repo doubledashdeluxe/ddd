@@ -1,14 +1,15 @@
 #include "Bootstrap.hh"
 
 #include <cube/Console.hh>
+#include <cube/CubeLogger.hh>
 #include <cube/ES.hh>
-#include <cube/Log.hh>
 #include <cube/VI.hh>
 #include <cube/ios/File.hh>
 #include <cube/ios/KernelUID.hh>
 #include <portable/Algorithm.hh>
 #include <portable/Array.hh>
 #include <portable/Bytes.hh>
+#include <portable/Log.hh>
 
 extern "C" {
 #include <stdio.h>
@@ -22,8 +23,8 @@ extern "C" u32 iosVersion;
 
 void Bootstrap::Run() {
     VI::Init();
-
     Console::Init(VI::Instance());
+    CubeLogger::Init();
     INFO("Double Dash Deluxe Bootstrap");
 
     if (iosVersion >> 16 != 58 && iosVersion >> 16 != 59) {

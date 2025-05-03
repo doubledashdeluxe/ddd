@@ -2,7 +2,7 @@
 
 #include "payload/online/ClientStateError.hh"
 
-#include <cube/Log.hh>
+#include <portable/Log.hh>
 
 ClientStateServer::ClientStateServer(ClientPlatform &platform)
     : ClientState(platform), m_index(0) {}

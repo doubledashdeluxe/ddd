@@ -10,7 +10,6 @@
 #include "game/System.hh"
 
 #include <cube/Clock.hh>
-#include <cube/Log.hh>
 #include <jsystem/JKRExpHeap.hh>
 #include <jsystem/JKRMemArchive.hh>
 #include <payload/ArchivePatcher.hh>
@@ -18,6 +17,7 @@
 #include <payload/FileLoader.hh>
 #include <portable/Archive.hh>
 #include <portable/Array.hh>
+#include <portable/Log.hh>
 
 extern "C" {
 #include <assert.h>

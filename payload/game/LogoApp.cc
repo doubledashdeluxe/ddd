@@ -7,10 +7,10 @@
 #include "game/SequenceApp.hh"
 #include "game/System.hh"
 
-#include <cube/Log.hh>
 #include <payload/CourseManager.hh>
 #include <payload/online/Client.hh>
 #include <payload/online/CubeServerManager.hh>
+#include <portable/Log.hh>
 
 void LogoApp::draw() {}
 

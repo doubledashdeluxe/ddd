@@ -14,7 +14,7 @@
 #include "payload/online/CubeServerManager.hh"
 
 #include <cube/Clock.hh>
-#include <cube/Log.hh>
+#include <cube/CubeLogger.hh>
 #include <cube/Platform.hh>
 #include <cube/USB.hh>
 #include <cube/VirtualDI.hh>
@@ -23,9 +23,11 @@
 #include <cube/storage/Storage.hh>
 #include <cube/storage/USBStorage.hh>
 #include <cube/storage/WiiSDStorage.hh>
+#include <portable/Log.hh>
 
 void Payload::Run(Context *context) {
     INFO("Started payload.");
+    CubeLogger::Init();
 
     if (!Platform::IsGameCube()) {
         INFO("Initializing IOS...");

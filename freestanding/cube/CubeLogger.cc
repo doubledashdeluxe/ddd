@@ -1,15 +1,8 @@
-#include <cube/Log.hh>
+#include <cube/CubeLogger.hh>
 
 #include <cube/Console.hh>
 
-extern "C" void Log(u32 level, const char *shortFormat, const char *longFormat, ...) {
-    va_list vlist;
-    va_start(vlist, longFormat);
-    VLog(level, shortFormat, longFormat, vlist);
-    va_end(vlist);
-}
-
-extern "C" void VLog(u32 level, const char *shortFormat, const char * /* longFormat */,
+void CubeLogger::vlog(u32 level, const char *shortFormat, const char * /* longFormat */,
         va_list vlist) {
     Console::Color bg = Console::Color::Black;
     Console::Color fg;

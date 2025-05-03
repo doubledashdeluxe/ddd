@@ -3,10 +3,12 @@
 #include "payload/Lock.hh"
 
 #include <cube/Clock.hh>
-#include <cube/Log.hh>
 extern "C" {
 #include <dolphin/OSTime.h>
+}
+#include <portable/Log.hh>
 
+extern "C" {
 #include <ctype.h>
 #include <inttypes.h>
 #include <stdio.h>

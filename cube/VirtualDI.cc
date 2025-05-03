@@ -3,7 +3,8 @@
 #include "cube/Arena.hh"
 #include "cube/DCache.hh"
 #include "cube/DiscID.hh"
-#include "cube/Log.hh"
+
+#include <portable/Log.hh>
 
 extern "C" {
 #include <stdio.h>
