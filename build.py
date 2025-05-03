@@ -698,6 +698,7 @@ n.build(
 n.newline()
 
 native_code_in_files = {
+    'formats': format_cc_files,
     'vendor': None,
     'portable': None,
     'native': None,
@@ -705,15 +706,20 @@ native_code_in_files = {
     'fuzzers': None,
 }
 for target in native_code_in_files:
-    native_code_in_files[target] = [
-        *sorted(glob.glob(os.path.join(target, '**', '*.c'), recursive=True)),
-        *sorted(glob.glob(os.path.join(target, '**', '*.cc'), recursive=True)),
-    ]
+    in_files = native_code_in_files[target]
+    if in_files is None:
+        native_code_in_files[target] = [
+            *sorted(glob.glob(os.path.join(target, '**', '*.c'), recursive=True)),
+            *sorted(glob.glob(os.path.join(target, '**', '*.cc'), recursive=True)),
+        ]
 native_code_out_files = {target: [] for target in native_code_in_files}
 for target in native_code_in_files:
     for in_file in native_code_in_files[target]:
         _, ext = os.path.splitext(in_file)
-        out_file = os.path.join('$builddir', 'native', in_file + '.o')
+        if in_file.startswith('$builddir'):
+            out_file = in_file.replace('$builddir', os.path.join('$builddir', 'native')) + '.o'
+        else:
+            out_file = os.path.join('$builddir', 'native', in_file + '.o')
         native_code_out_files[target] += [out_file]
         tool = f'm{ext[1:]}'
         n.build(
@@ -734,6 +740,7 @@ n.build(
     test_binary,
     'mld',
     [
+        *native_code_out_files['formats'],
         *native_code_out_files['vendor'],
         *native_code_out_files['portable'],
         *native_code_out_files['native'],
@@ -749,6 +756,39 @@ n.build(
     'tests',
     'phony',
     test_binary,
+)
+n.newline()
+
+fuzzer_binaries = []
+for out_file in native_code_out_files['fuzzers']:
+    base, _ = os.path.splitext(out_file)
+    base, _ = os.path.splitext(base)
+    target = out_file.split(os.path.sep)[3]
+    fuzzer_binary = os.path.join('$outdir', os.path.join(*base.split(os.path.sep)[2:]))
+    fuzzer_binaries += [fuzzer_binary]
+    n.build(
+        fuzzer_binary,
+        'mld',
+        [
+            *native_code_out_files['formats'],
+            *native_code_out_files['vendor'],
+            *native_code_out_files['portable'],
+            *native_code_out_files['native'],
+            out_file,
+        ],
+        variables = {
+            'flags': [
+                *get_flags('mld', 'native', target, format_code_dirs, args),
+                '-fsanitize=fuzzer',
+            ],
+        },
+    )
+    n.newline()
+
+n.build(
+    'fuzzers',
+    'phony',
+    fuzzer_binaries,
 )
 n.newline()
 
@@ -817,38 +857,6 @@ n.build(
     'phony',
     check_libraries,
 )
-
-fuzzer_binaries = []
-for out_file in native_code_out_files['fuzzers']:
-    base, _ = os.path.splitext(out_file)
-    base, _ = os.path.splitext(base)
-    target = out_file.split(os.path.sep)[3]
-    fuzzer_binary = os.path.join('$outdir', os.path.join(*base.split(os.path.sep)[2:]))
-    fuzzer_binaries += [fuzzer_binary]
-    n.build(
-        fuzzer_binary,
-        'mld',
-        [
-            *native_code_out_files['vendor'],
-            *native_code_out_files['portable'],
-            *native_code_out_files['native'],
-            out_file,
-        ],
-        variables = {
-            'flags': [
-                *get_flags('mld', 'native', target, format_code_dirs, args),
-                '-fsanitize=fuzzer',
-            ],
-        },
-    )
-    n.newline()
-
-n.build(
-    'fuzzers',
-    'phony',
-    fuzzer_binaries,
-)
-n.newline()
 
 if args.dry:
     with open('build.ninja', 'w') as out_file:

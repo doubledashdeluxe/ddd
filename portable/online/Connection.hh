@@ -1,10 +1,9 @@
 #pragma once
 
-#include "payload/online/ConnectionState.hh"
-
-#include <portable/UniquePtr.hh>
-#include <portable/network/Address.hh>
-#include <portable/online/ClientPlatform.hh>
+#include "portable/UniquePtr.hh"
+#include "portable/network/Address.hh"
+#include "portable/online/ClientPlatform.hh"
+#include "portable/online/ConnectionState.hh"
 
 class Connection {
 public:

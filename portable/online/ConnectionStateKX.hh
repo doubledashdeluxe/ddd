@@ -1,14 +1,13 @@
 #pragma once
 
-#include "payload/online/ConnectionState.hh"
+#include "portable/crypto/KX.hh"
+#include "portable/online/ConnectionState.hh"
 
-#include <portable/crypto/Session.hh>
-
-class ConnectionStateSession : public ConnectionState {
+class ConnectionStateKX : public ConnectionState {
 public:
-    ConnectionStateSession(ClientPlatform &platform, Array<u8, 32> serverPK, Address address,
-            Session session);
-    ~ConnectionStateSession() override;
+    ConnectionStateKX(ClientPlatform &platform, const Array<u8, 32> &clientEphemeralK,
+            Array<u8, 32> serverPK, Address address);
+    ~ConnectionStateKX() override;
     ConnectionState &reset() override;
     ConnectionState &read(ServerStateReader &reader, u8 *buffer, u32 size, const Address &address,
             bool &ok) override;
@@ -17,5 +16,5 @@ public:
 
 private:
     Address m_address;
-    Session m_session;
+    KX::ClientState m_clientState;
 };

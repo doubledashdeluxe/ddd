@@ -1,10 +1,11 @@
 #pragma once
 
+#include "portable/Array.hh"
+#include "portable/network/Address.hh"
+#include "portable/online/ClientPlatform.hh"
+
 #include <formats/ClientState.hh>
 #include <formats/ServerState.hh>
-#include <portable/Array.hh>
-#include <portable/network/Address.hh>
-#include <portable/online/ClientPlatform.hh>
 
 class ConnectionState {
 public:

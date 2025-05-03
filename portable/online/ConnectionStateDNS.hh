@@ -1,6 +1,6 @@
 #pragma once
 
-#include "payload/online/ConnectionState.hh"
+#include "portable/online/ConnectionState.hh"
 
 class ConnectionStateDNS : public ConnectionState {
 public:

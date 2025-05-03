@@ -1,6 +1,6 @@
 #include "ConnectionStateKX.hh"
 
-#include "payload/online/ConnectionStateSession.hh"
+#include "portable/online/ConnectionStateSession.hh"
 
 extern "C" {
 #include <monocypher/monocypher.h>

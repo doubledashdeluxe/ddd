@@ -1,6 +1,6 @@
 #include "Connection.hh"
 
-#include "payload/online/ConnectionStateDNS.hh"
+#include "portable/online/ConnectionStateDNS.hh"
 
 Connection::Connection(ClientPlatform &platform, Array<u8, 32> serverPK, const char *name)
     : m_state(new(platform.allocator()) ConnectionStateDNS(platform, serverPK, name)) {}

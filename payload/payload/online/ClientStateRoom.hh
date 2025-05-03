@@ -2,9 +2,9 @@
 
 #include "payload/network/UDPSocket.hh"
 #include "payload/online/ClientState.hh"
-#include "payload/online/Connection.hh"
 
 #include <portable/UniquePtr.hh>
+#include <portable/online/Connection.hh>
 
 class ClientStateRoom : public ClientState {
 public:
