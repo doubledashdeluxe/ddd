@@ -1,5 +1,9 @@
 #include "CubeUDPSocket.hh"
 
+extern "C" {
+#include <dolphin/IPSocket.h>
+}
+
 CubeUDPSocket::CubeUDPSocket() {}
 
 CubeUDPSocket::~CubeUDPSocket() {}

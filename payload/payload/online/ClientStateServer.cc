@@ -1,6 +1,6 @@
 #include "ClientStateServer.hh"
 
-#include "payload/network/CubeSocket.hh"
+#include "payload/network/CubeNetwork.hh"
 #include "payload/online/ClientStateError.hh"
 
 #include <cube/Log.hh>
@@ -19,7 +19,7 @@ ClientState &ClientStateServer::read(ClientReadHandler &handler) {
         return *this;
     }
 
-    if (!CubeSocket::IsRunning()) {
+    if (!CubeNetwork::Instance().isRunning()) {
         return *this;
     }
 
@@ -55,7 +55,7 @@ ClientState &ClientStateServer::writeStateServer() {
         return *this;
     }
 
-    if (!CubeSocket::IsRunning()) {
+    if (!CubeNetwork::Instance().isRunning()) {
         return *this;
     }
 

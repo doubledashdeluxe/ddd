@@ -2,7 +2,7 @@
 
 #include "payload/crypto/CubeRandom.hh"
 #include "payload/network/CubeDNS.hh"
-#include "payload/network/CubeSocket.hh"
+#include "payload/network/CubeNetwork.hh"
 #include "payload/online/ClientK.hh"
 #include "payload/online/ClientStateIdle.hh"
 #include "payload/online/CubeServerManager.hh"
@@ -57,9 +57,9 @@ bool Client::updateState(ClientState &nextState) {
 
     if (nextState.needsSockets()) {
         m_config.flag = 1 << 0;
-        CubeSocket::EnsureStarted(m_config);
+        CubeNetwork::Instance().ensureStarted(m_config);
     } else {
-        CubeSocket::EnsureStopped();
+        CubeNetwork::Instance().ensureStopped();
     }
 
     return hasChanged;

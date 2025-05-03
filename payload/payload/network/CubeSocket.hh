@@ -1,16 +1,8 @@
 #pragma once
 
-extern "C" {
-#include <dolphin/IPSocket.h>
-}
 #include <portable/network/Address.hh>
 
 class CubeSocket {
-public:
-    static bool IsRunning();
-    static void EnsureStarted(SOConfig &config);
-    static void EnsureStopped();
-
 protected:
     CubeSocket();
     ~CubeSocket();
@@ -31,6 +23,4 @@ private:
 
     s32 m_socket;
     u64 m_generation;
-
-    static u64 s_generation;
 };

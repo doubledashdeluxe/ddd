@@ -1,29 +1,10 @@
 #include "CubeSocket.hh"
 
+#include "payload/network/CubeNetwork.hh"
+
 extern "C" {
 #include <dolphin/IPRoute.h>
-}
-
-bool CubeSocket::IsRunning() {
-    return SOIsRunning();
-}
-
-void CubeSocket::EnsureStarted(SOConfig &config) {
-    if (SOIsRunning()) {
-        if (IPGetConfigError(nullptr) == 0) {
-            return;
-        }
-        SOCleanup();
-    }
-
-    SOStartup(&config);
-    s_generation++;
-}
-
-void CubeSocket::EnsureStopped() {
-    if (SOIsRunning()) {
-        SOCleanup();
-    }
+#include <dolphin/IPSocket.h>
 }
 
 CubeSocket::CubeSocket() : m_socket(SO_EINVAL), m_generation(0) {}
@@ -35,7 +16,7 @@ CubeSocket::~CubeSocket() {
 s32 CubeSocket::open(s32 type) {
     close();
 
-    m_generation = s_generation;
+    m_generation = CubeNetwork::Instance().generation();
 
     m_socket = SOSocket(AF_INET, type, 0);
     if (m_socket < 0) {
@@ -60,11 +41,11 @@ s32 CubeSocket::close() {
 }
 
 bool CubeSocket::ok() {
-    return m_generation == s_generation && m_socket >= 0;
+    return m_generation == CubeNetwork::Instance().generation() && m_socket >= 0;
 }
 
 s32 CubeSocket::recvFrom(void *buffer, u32 size, Address *address) {
-    if (m_generation != s_generation) {
+    if (m_generation != CubeNetwork::Instance().generation()) {
         return SO_ENETRESET;
     }
 
@@ -83,7 +64,7 @@ s32 CubeSocket::recvFrom(void *buffer, u32 size, Address *address) {
 }
 
 s32 CubeSocket::sendTo(const void *buffer, u32 size, const Address *address) {
-    if (m_generation != s_generation) {
+    if (m_generation != CubeNetwork::Instance().generation()) {
         return SO_ENETRESET;
     }
 
@@ -107,11 +88,9 @@ s32 CubeSocket::setIsBlocking(bool isBlocking) {
 }
 
 s32 CubeSocket::fcntl(s32 command, s32 argument) {
-    if (m_generation != s_generation) {
+    if (m_generation != CubeNetwork::Instance().generation()) {
         return SO_ENETRESET;
     }
 
     return SOFcntl(m_socket, command, argument);
 }
-
-u64 CubeSocket::s_generation = 1;
