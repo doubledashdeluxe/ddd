@@ -153,8 +153,7 @@ bool ZIP::Reader::read(const u8 *&buffer, u32 &size) {
     return true;
 }
 
-ZIP::Writer::Writer(ZIP &zip, const char *path, u32 size)
-    : m_ok(false), m_zip(zip), m_size(size) {
+ZIP::Writer::Writer(ZIP &zip, const char *path, u32 size) : m_ok(false), m_zip(zip), m_size(size) {
     if (path[0] != '/') {
         return;
     }

@@ -165,5 +165,5 @@ jobs:
         uses: actions/checkout@v4
       - name: Format
         run: |
-          dirs="formats libc cube freestanding bootstrap channel payload native tests"
-          find $dirs -regex '.*\.\(c\|h\|cc\|hh\)' | xargs clang-format --dry-run -Werror
+          files=$(find . -regex '.*\.\(c\|h\|cc\|hh\)' ! -path '*/vendor/*' ! -path '*/build/*')
+          clang-format --dry-run -Werror $files

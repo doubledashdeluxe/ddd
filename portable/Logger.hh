@@ -9,7 +9,8 @@ extern "C" {
 
 class Logger {
 public:
-    virtual void vlog(u32 level, const char *shortFormat, const char *longFormat, va_list vlist) = 0;
+    virtual void vlog(u32 level, const char *shortFormat, const char *longFormat,
+            va_list vlist) = 0;
 
     static Logger *Instance();
 
