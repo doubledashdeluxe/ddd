@@ -1,10 +1,10 @@
-#include <ctype.h>
+#include "CCtype.hh"
 
-int isdigit(int c) {
+int CCtype::Isdigit(int c) {
     return c >= '0' && c <= '9';
 }
 
-int tolower(int c) {
+int CCtype::Tolower(int c) {
     if (c >= 'A' && c <= 'Z') {
         c += 'a' - 'A';
     }

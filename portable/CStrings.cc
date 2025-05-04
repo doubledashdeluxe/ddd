@@ -1,8 +1,10 @@
-#include <strings.h>
+#include "CStrings.hh"
 
+extern "C" {
 #include <ctype.h>
+}
 
-int strncasecmp(const char *s1, const char *s2, size_t n) {
+int CStrings::Strncasecmp(const char *s1, const char *s2, size_t n) {
     for (size_t i = 0; i < n; i++) {
         char c1 = tolower(s1[i]), c2 = tolower(s2[i]);
 
