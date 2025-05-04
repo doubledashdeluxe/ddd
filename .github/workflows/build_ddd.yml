@@ -96,9 +96,15 @@ jobs:
       - name: Compare
         run: cmp ddd-linux/boot.dol ddd-windows/boot.dol
 
-  test-linux:
-    name: Test on Linux
-    runs-on: ubuntu-24.04
+  test:
+    name: Test
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-24.04
+          - windows-2022
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 20
     steps:
       - name: Checkout
@@ -112,25 +118,15 @@ jobs:
           python build.py --ci -- tests
           out/tests
 
-  test-windows:
-    name: Test on Windows
-    runs-on: windows-2022
-    timeout-minutes: 20
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Install Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      - name: Test
-        run: |
-          python build.py --ci -- tests
-          out/tests
-
-  check-linux:
-    name: Check on Linux
-    runs-on: ubuntu-24.04
+  check:
+    name: Check
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-24.04
+          - windows-2022
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 20
     steps:
       - name: Checkout
@@ -142,37 +138,15 @@ jobs:
       - name: Check
         run: python build.py --ci -- checks
 
-  check-windows:
-    name: Check on Windows
-    runs-on: windows-2022
-    timeout-minutes: 20
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Install Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      - name: Check
-        run: python build.py --ci -- checks
-
-  format-linux:
-    name: Format on Linux
-    runs-on: ubuntu-24.04
-    timeout-minutes: 5
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Install Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      - name: Format
-        run: python format.py --ci
-
-  format-windows:
-    name: Format on Windows
-    runs-on: windows-2022
+  format:
+    name: Format
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-24.04
+          - windows-2022
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 5
     steps:
       - name: Checkout
