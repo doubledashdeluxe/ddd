@@ -163,7 +163,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
       - name: Format
-        run: |
-          files=$(find . -regex '.*\.\(c\|h\|cc\|hh\)' ! -path '*/vendor/*' ! -path '*/build/*')
-          clang-format --dry-run -Werror $files
+        run: python format.py --ci

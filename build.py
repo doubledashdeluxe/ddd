@@ -878,4 +878,4 @@ else:
 
 os.remove(out_file.name)
 if returncode != 0:
-    sys.exit(returncode)
+    raise SystemExit(returncode)
