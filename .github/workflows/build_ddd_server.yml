@@ -47,8 +47,14 @@ jobs:
         run: cargo test
 
   format:
-    name: Format on Linux
-    runs-on: ubuntu-24.04
+    name: Format
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-24.04
+          - windows-2022
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 5
     steps:
       - name: Checkout
