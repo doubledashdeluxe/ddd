@@ -4,6 +4,7 @@
 import argparse
 import glob
 import io
+import json
 import os
 import subprocess
 import sys
@@ -354,6 +355,10 @@ n.build(
     ]
 )
 n.newline()
+
+compile_commands = []
+
+repo_dir = os.path.dirname(os.path.abspath(__file__))
 
 asset_arc_files = []
 for in_dir in sorted(glob.glob(os.path.join('assets', '*'))):
@@ -722,16 +727,37 @@ for target in native_code_in_files:
             out_file = os.path.join('$builddir', 'native', in_file + '.o')
         native_code_out_files[target] += [out_file]
         tool = f'm{ext[1:]}'
+        flags = get_flags(tool, 'native', target, format_code_dirs, args)
         n.build(
             out_file,
             tool,
             in_file,
             variables = {
-                'flags': get_flags(tool, 'native', target, format_code_dirs, args),
+                'flags': flags,
             },
             order_only = format_hh_files,
         )
         n.newline()
+        arguments = [
+            {'c': 'clang', 'cc': 'clang++'}[ext[1:]],
+            '-MD',
+            '-MT',
+            out_file,
+            '-MF',
+            f'{out_file}.d',
+            *flags,
+            '-c',
+            in_file,
+            '-o',
+            out_file,
+        ]
+        compile_command = {
+            'directory': repo_dir,
+            'file': in_file,
+            'arguments': arguments,
+            'output': out_file,
+        }
+        compile_commands += [compile_command]
 
 test_binary = os.path.join('$outdir', 'tests')
 if 'win' in sys.platform or 'msys' in sys.platform:
@@ -816,19 +842,43 @@ check_code_out_files = {target: [] for target in check_code_in_files}
 for target in check_code_in_files:
     for in_file in check_code_in_files[target]:
         _, ext = os.path.splitext(in_file)
-        out_file = os.path.join('$builddir', 'checks', in_file + '.o')
+        if in_file.startswith('$builddir'):
+            out_file = in_file.replace('$builddir', os.path.join('$builddir', 'checks')) + '.o'
+        else:
+            out_file = os.path.join('$builddir', 'checks', in_file + '.o')
         check_code_out_files[target] += [out_file]
         tool = f'm{ext[1:]}'
+        flags = get_flags(tool, 'cube', target, format_code_dirs, args)
         n.build(
             out_file,
             tool,
             in_file,
             variables = {
-                'flags': get_flags(tool, 'cube', target, format_code_dirs, args),
+                'flags': flags,
             },
             order_only = format_hh_files,
         )
         n.newline()
+        arguments = [
+            {'c': 'clang', 'cc': 'clang++'}[ext[1:]],
+            '-MD',
+            '-MT',
+            out_file,
+            '-MF',
+            f'{out_file}.d',
+            *flags,
+            '-c',
+            in_file,
+            '-o',
+            out_file,
+        ]
+        compile_command = {
+            'directory': repo_dir,
+            'file': in_file,
+            'arguments': arguments,
+            'output': out_file,
+        }
+        compile_commands += [compile_command]
 
 check_libraries = []
 for target in ['bootstrap', 'channel', 'payload']:
@@ -875,6 +925,9 @@ except KeyboardInterrupt:
     returncode = 130 # 128 + SIGINT
 else:
     returncode = proc.returncode
+
+with open(os.path.join('build', 'compile_commands.json'), 'w') as compile_commands_file:
+    json.dump(compile_commands, compile_commands_file, indent=4)
 
 os.remove(out_file.name)
 if returncode != 0:
