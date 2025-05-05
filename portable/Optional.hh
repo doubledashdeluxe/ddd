@@ -1,6 +1,7 @@
 #pragma once
 
 #include "portable/New.hh"
+#include "portable/Types.hh"
 
 template <typename T>
 class Optional {

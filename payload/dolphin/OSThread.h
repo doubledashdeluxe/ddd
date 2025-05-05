@@ -2,6 +2,8 @@
 
 #include "dolphin/OSContext.h"
 
+#include <portable/Types.h>
+
 enum {
     OS_THREAD_STATE_EXITED = 0,
     OS_THREAD_STATE_READY = 1 << 0,

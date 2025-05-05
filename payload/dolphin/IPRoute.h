@@ -3,6 +3,7 @@
 #include "dolphin/IPEther.h"
 
 #include <payload/Replace.h>
+#include <portable/Types.h>
 
 void REPLACED(IPGetMacAddr)(const IPInterface *interface, u8 macAddr[6]);
 REPLACE void IPGetMacAddr(const IPInterface *interface, u8 macAddr[6]);

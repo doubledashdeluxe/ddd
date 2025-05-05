@@ -2,6 +2,8 @@
 
 #include "dolphin/OSContext.h"
 
+#include <portable/Types.h>
+
 typedef void (*OSInterruptHandler)(s16 interrupt, OSContext *context);
 
 BOOL OSDisableInterrupts(void);

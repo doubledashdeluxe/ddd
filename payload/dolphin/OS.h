@@ -2,6 +2,8 @@
 
 #include "dolphin/OSContext.h"
 
+#include <portable/Types.h>
+
 typedef void (*OSExceptionHandler)(u8 exception, OSContext *context);
 
 void OSInit(void);

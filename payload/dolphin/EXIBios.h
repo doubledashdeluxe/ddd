@@ -3,6 +3,7 @@
 #include "dolphin/OSContext.h"
 
 #include <payload/Replace.h>
+#include <portable/Types.h>
 
 enum {
     EXI_READ = 0,

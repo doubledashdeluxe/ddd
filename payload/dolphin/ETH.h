@@ -1,5 +1,7 @@
 #pragma once
 
+#include <portable/Types.h>
+
 enum {
     ETH_MODE_AUTO = 0,
     ETH_MODE_100FULL = 1,
