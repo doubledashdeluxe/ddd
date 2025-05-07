@@ -791,6 +791,8 @@ for out_file in native_code_out_files['fuzzers']:
     base, _ = os.path.splitext(base)
     target = out_file.split(os.path.sep)[3]
     fuzzer_binary = os.path.join('$outdir', os.path.join(*base.split(os.path.sep)[2:]))
+    if 'win' in sys.platform or 'msys' in sys.platform:
+        fuzzer_binary += '.exe'
     fuzzer_binaries += [fuzzer_binary]
     n.build(
         fuzzer_binary,
