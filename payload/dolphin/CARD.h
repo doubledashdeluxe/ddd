@@ -31,8 +31,8 @@ typedef struct CARDStat {
     char fileName[CARD_FILENAME_MAX];
     u32 length;
     u32 time;
-    u8 gameName[4];
-    u8 company[2];
+    char gameName[4];
+    char company[2];
     u8 bannerFormat;
     u8 _2f[0x30 - 0x2f];
     u32 iconAddr;
