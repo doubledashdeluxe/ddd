@@ -5,7 +5,7 @@
 #include <optional>
 #include <vector>
 
-class FakeUDPSocket final : public UDPSocket {
+class FakeUDPSocket : public UDPSocket {
 public:
     FakeUDPSocket(std::vector<u8> &data);
     ~FakeUDPSocket();
