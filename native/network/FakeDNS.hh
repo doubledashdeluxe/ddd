@@ -2,9 +2,6 @@
 
 #include <portable/network/DNS.hh>
 
-#include <optional>
-#include <vector>
-
 class FakeDNS final : public DNS {
 public:
     FakeDNS(UDPSocket &socket);

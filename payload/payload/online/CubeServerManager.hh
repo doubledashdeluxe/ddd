@@ -35,6 +35,7 @@ private:
 
     static bool CompareServersByName(const Server &a, const Server &b);
 
+    Ring<Server, MaxServerCount> m_servers;
     Array<u8, 16 * 1024> m_stack;
     OSThread m_thread;
 

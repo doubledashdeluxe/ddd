@@ -31,7 +31,7 @@ CubeServerManager *CubeServerManager::Instance() {
     return s_instance;
 }
 
-CubeServerManager::CubeServerManager() {
+CubeServerManager::CubeServerManager() : ServerManager(m_servers) {
     StorageScanner *param = this;
     OSCreateThread(&m_thread, Run, param, m_stack.values() + m_stack.count(), m_stack.count(), 27,
             0);

@@ -8,7 +8,7 @@
 
 class DNSFakeUDPSocket final : public FakeUDPSocket {
 public:
-    DNSFakeUDPSocket(std::map<std::vector<std::string>, u32> servers);
+    DNSFakeUDPSocket(const std::map<std::vector<std::string>, u32> &servers);
     ~DNSFakeUDPSocket();
 
     s32 sendTo(const void *buffer, u32 size, const Address &address) override;
@@ -29,5 +29,5 @@ private:
     void writeResponse(const Response &response);
 
     std::vector<u8> m_data;
-    std::map<std::vector<std::string>, u32> m_servers;
+    const std::map<std::vector<std::string>, u32> &m_servers;
 };

@@ -26,6 +26,6 @@ const ServerManager::Server &ServerManager::server(u32 index) const {
     return m_servers[index];
 }
 
-ServerManager::ServerManager() {}
+ServerManager::ServerManager(const Ring<Server, MaxServerCount> &servers) : m_servers(servers) {}
 
 ServerManager::~ServerManager() {}

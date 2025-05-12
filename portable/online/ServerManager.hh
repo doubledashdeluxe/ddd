@@ -32,8 +32,9 @@ public:
     const Server &server(u32 index) const;
 
 protected:
-    ServerManager();
+    ServerManager(const Ring<Server, MaxServerCount> &servers);
     ~ServerManager();
 
-    Ring<Server, MaxServerCount> m_servers;
+private:
+    const Ring<Server, MaxServerCount> &m_servers;
 };

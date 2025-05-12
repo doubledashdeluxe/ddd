@@ -4,7 +4,7 @@
 
 #include <cstring>
 
-DNSFakeUDPSocket::DNSFakeUDPSocket(std::map<std::vector<std::string>, u32> servers)
+DNSFakeUDPSocket::DNSFakeUDPSocket(const std::map<std::vector<std::string>, u32> &servers)
     : FakeUDPSocket(m_data), m_servers(servers) {}
 
 DNSFakeUDPSocket::~DNSFakeUDPSocket() = default;
