@@ -101,6 +101,7 @@ def get_flags(tool, platform, target, format_code_dirs, args):
             '-Wall',
             '-Werror=vla',
             '-Wextra',
+            '-Wimplicit-fallthrough',
         ]
         if 'win' in sys.platform or 'msys' in sys.platform:
             flags += [

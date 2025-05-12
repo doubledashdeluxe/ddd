@@ -31,6 +31,7 @@ void OneVariantReader::read(const u8 *buffer, u32 &offset) {
         {
             setFirst(Bytes::ReadBE<u32>(buffer, offset));
             offset += 4;
+            break;
         }
     }
 }

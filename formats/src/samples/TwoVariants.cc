@@ -58,11 +58,13 @@ void TwoVariantsReader::read(const u8 *buffer, u32 &offset) {
                 setFirstElement(i0, Bytes::ReadBE<u32>(buffer, offset));
                 offset += 4;
             }
+            break;
         }
     case 1:
         {
             setSecond(Bytes::ReadBE<u8>(buffer, offset));
             offset += 1;
+            break;
         }
     }
 }

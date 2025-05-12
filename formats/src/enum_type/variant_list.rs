@@ -182,7 +182,14 @@ impl<L: VariantList, T: DataType> VariantList for (L, Variant<T>) {
 
     fn cc_read(&self) -> String {
         format!(
-            concat!("{}", "    case {}:\n", "        {{\n", "        {}\n", "        }}\n"),
+            concat!(
+                "{}",
+                "    case {}:\n",
+                "        {{\n",
+                "        {}\n",
+                "            break;\n",
+                "        }}\n"
+            ),
             self.0.cc_read(),
             L::count(),
             self.1
