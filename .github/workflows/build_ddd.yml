@@ -138,7 +138,7 @@ jobs:
       - name: Fuzz
         run: |
           python build.py --ci -- fuzzers
-          python fuzz.py fuzzer-inputs/*
+          python fuzz.py data/fuzzers/inputs/*
           python fuzz.py -max_total_time=10
 
   check:
