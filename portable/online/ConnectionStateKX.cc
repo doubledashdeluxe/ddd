@@ -8,7 +8,7 @@ extern "C" {
 #include <assert.h>
 }
 
-ConnectionStateKX::ConnectionStateKX(ClientPlatform &platform,
+ConnectionStateKX::ConnectionStateKX(const ClientPlatform &platform,
         const Array<u8, 32> &clientEphemeralK, Array<u8, 32> serverPK, Address address)
     : ConnectionState(platform, serverPK), m_address(address),
       m_clientState(platform.clientK, clientEphemeralK, serverPK) {}

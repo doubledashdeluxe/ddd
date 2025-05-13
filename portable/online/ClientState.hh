@@ -5,7 +5,7 @@
 
 class ClientState {
 public:
-    ClientState(ClientPlatform &platform);
+    ClientState(const ClientPlatform &platform);
     virtual ~ClientState();
     virtual bool needsSockets() = 0;
     virtual ClientState &read(ClientReadHandler &handler) = 0;
@@ -15,5 +15,5 @@ public:
     virtual ClientState &writeStateError();
 
 protected:
-    ClientPlatform &m_platform;
+    const ClientPlatform &m_platform;
 };

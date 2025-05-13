@@ -4,7 +4,7 @@
 
 class ClientStateIdle : public ClientState {
 public:
-    ClientStateIdle(ClientPlatform &platform);
+    ClientStateIdle(const ClientPlatform &platform);
     ~ClientStateIdle() override;
     bool needsSockets() override;
     ClientState &read(ClientReadHandler &handler) override;

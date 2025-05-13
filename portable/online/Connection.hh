@@ -7,7 +7,7 @@
 
 class Connection {
 public:
-    Connection(ClientPlatform &clientPlatform, Array<u8, 32> serverPK, const char *name);
+    Connection(const ClientPlatform &clientPlatform, Array<u8, 32> serverPK, const char *name);
     ~Connection();
     void reset();
     bool read(ServerStateReader &reader, u8 *buffer, u32 size, const Address &address);

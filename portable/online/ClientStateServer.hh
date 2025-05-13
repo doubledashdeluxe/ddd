@@ -20,7 +20,7 @@ class ClientStateServer
     , private ClientIdentityWriter::Unspecified
     , private ClientIdentityUnspecifiedWriter {
 public:
-    ClientStateServer(ClientPlatform &platform);
+    ClientStateServer(const ClientPlatform &platform);
     ~ClientStateServer() override;
     bool needsSockets() override;
     ClientState &read(ClientReadHandler &handler) override;

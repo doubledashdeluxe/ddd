@@ -3,7 +3,7 @@
 #include "portable/Log.hh"
 #include "portable/online/ClientStateError.hh"
 
-ClientStateServer::ClientStateServer(ClientPlatform &platform)
+ClientStateServer::ClientStateServer(const ClientPlatform &platform)
     : ClientState(platform), m_index(0) {}
 
 ClientStateServer::~ClientStateServer() {}

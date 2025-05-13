@@ -9,7 +9,7 @@ extern "C" {
 #include <string.h>
 }
 
-ConnectionStateDNS::ConnectionStateDNS(ClientPlatform &platform, Array<u8, 32> serverPK,
+ConnectionStateDNS::ConnectionStateDNS(const ClientPlatform &platform, Array<u8, 32> serverPK,
         const char *name)
     : ConnectionState(platform, serverPK), m_port(3549) {
     const char *port = strrchr(name, ':');

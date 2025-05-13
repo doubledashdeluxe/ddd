@@ -2,7 +2,7 @@
 
 #include "portable/online/ClientStateError.hh"
 
-ClientState::ClientState(ClientPlatform &platform) : m_platform(platform) {}
+ClientState::ClientState(const ClientPlatform &platform) : m_platform(platform) {}
 
 ClientState::~ClientState() {}
 

@@ -8,8 +8,8 @@ extern "C" {
 #include <assert.h>
 }
 
-ConnectionStateSession::ConnectionStateSession(ClientPlatform &platform, Array<u8, 32> serverPK,
-        Address address, Session session)
+ConnectionStateSession::ConnectionStateSession(const ClientPlatform &platform,
+        Array<u8, 32> serverPK, Address address, Session session)
     : ConnectionState(platform, serverPK), m_address(address), m_session(session) {}
 
 ConnectionStateSession::~ConnectionStateSession() {}
