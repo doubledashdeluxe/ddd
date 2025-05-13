@@ -930,7 +930,8 @@ else:
     returncode = proc.returncode
 
 with open(os.path.join('build', 'compile_commands.json'), 'w') as compile_commands_file:
-    json.dump(compile_commands, compile_commands_file, indent=4)
+    compile_commands = json.dumps(compile_commands, indent=4).replace('$builddir', 'build')
+    compile_commands_file.write(compile_commands)
 
 os.remove(out_file.name)
 if returncode != 0:
