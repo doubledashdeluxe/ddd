@@ -353,7 +353,7 @@ u32 Archive::Node::getNameOffset() const {
 }
 
 char *Archive::Node::getName(char *names) const {
-    return reinterpret_cast<char *>(names + getNameOffset());
+    return names + getNameOffset();
 }
 
 u32 Archive::Node::getDirIndex() const {
