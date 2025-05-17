@@ -28,7 +28,7 @@ JKRArchive *JKRArchive::Mount(const char *path, u32 mountMode, JKRHeap *heap, u3
 }
 
 JKRArchive *JKRArchive::Mount(void *archive, JKRHeap *heap, u32 mountDirection) {
-    u32 archiveSize = Archive(reinterpret_cast<u8 *>(archive)).getArchiveSize();
+    u32 archiveSize = Archive(static_cast<u8 *>(archive)).getArchiveSize();
     return Mount(archive, archiveSize, MountMode::Mem, heap, mountDirection, false, true);
 }
 
@@ -42,7 +42,7 @@ JKRArchive *JKRArchive::Mount(const char *path, u32 mountMode, JKRHeap *heap, u3
 JKRArchive *JKRArchive::Mount(s32 entrynum, u32 mountMode, JKRHeap *heap, u32 mountDirection,
         bool patchesAllowed) {
     for (JSUPtrLink *link = s_volumeList.getFirstLink(); link; link = link->getNext()) {
-        JKRArchive *volume = reinterpret_cast<JKRArchive *>(link->getObjectPtr());
+        JKRArchive *volume = static_cast<JKRArchive *>(link->getObjectPtr());
         if (volume->m_entrynum == entrynum) {
             volume->m_mountCount++;
             return volume;
@@ -107,15 +107,15 @@ JKRArchive *JKRArchive::Mount(s32 entrynum, u32 mountMode, JKRHeap *heap, u32 mo
 
 JKRArchive *JKRArchive::Mount(void *archive, u32 archiveSize, u32 mountMode, JKRHeap *heap,
         u32 mountDirection, bool ownsMemory, bool patchesAllowed) {
-    return Mount(Archive(reinterpret_cast<u8 *>(archive)), archiveSize, mountMode, heap,
-            mountDirection, ownsMemory, patchesAllowed);
+    return Mount(Archive(static_cast<u8 *>(archive)), archiveSize, mountMode, heap, mountDirection,
+            ownsMemory, patchesAllowed);
 }
 
 JKRArchive *JKRArchive::Mount(Archive archive, u32 archiveSize, u32 mountMode, JKRHeap *heap,
         u32 mountDirection, bool ownsMemory, bool patchesAllowed) {
     s32 entrynum = reinterpret_cast<intptr_t>(archive.get());
     for (JSUPtrLink *link = s_volumeList.getFirstLink(); link; link = link->getNext()) {
-        JKRArchive *volume = reinterpret_cast<JKRArchive *>(link->getObjectPtr());
+        JKRArchive *volume = static_cast<JKRArchive *>(link->getObjectPtr());
         if (volume->m_entrynum == entrynum) {
             volume->m_mountCount++;
             return volume;

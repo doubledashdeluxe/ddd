@@ -49,8 +49,7 @@ SceneModeSelect::SceneModeSelect(JKRArchive *archive, JKRHeap *heap) : Scene(arc
         iconPicture->changeTexture(iconNames[i], 0);
         Array<char, 32> path;
         snprintf(path.values(), path.count(), "/modenames/%lu.txt", Modes[i]);
-        char *name =
-                reinterpret_cast<char *>(ResMgr::GetPtr(ResMgr::ArchiveID::MRAMLoc, path.values()));
+        char *name = static_cast<char *>(ResMgr::GetPtr(ResMgr::ArchiveID::MRAMLoc, path.values()));
         u32 size = ResMgr::GetResSize(ResMgr::ArchiveID::MRAMLoc, name);
         name[size - 1] = '\0';
         kart2DCommon->changeUnicodeTexture(name, 24, m_modeScreens[i], "Name");

@@ -27,8 +27,8 @@ extern "C" void RunChannel() {
     size_t bssSize = ChannelBinary::BssSectionSize();
     memset(bssStart, 0, bssSize);
 
-    void (**ctorsStart)() = reinterpret_cast<void (**)()>(ChannelBinary::CtorsSectionStart());
-    void (**ctorsEnd)() = reinterpret_cast<void (**)()>(ChannelBinary::CtorsSectionEnd());
+    void (**ctorsStart)() = static_cast<void (**)()>(ChannelBinary::CtorsSectionStart());
+    void (**ctorsEnd)() = static_cast<void (**)()>(ChannelBinary::CtorsSectionEnd());
     for (void (**ctor)() = ctorsStart; ctor < ctorsEnd; ctor++) {
         (*ctor)();
     }

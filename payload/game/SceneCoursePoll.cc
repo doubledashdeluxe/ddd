@@ -468,7 +468,7 @@ bool SceneCoursePoll::load(const Array<u32, MaxPlayerCount> &courseIndices) {
             void *texture = course->loadThumbnail(m_heap);
             {
                 Lock<Mutex> lock(m_mutex);
-                thumbnail->reset(reinterpret_cast<ResTIMG *>(texture));
+                thumbnail->reset(static_cast<ResTIMG *>(texture));
             }
             return false;
         }
@@ -476,7 +476,7 @@ bool SceneCoursePoll::load(const Array<u32, MaxPlayerCount> &courseIndices) {
             void *texture = course->loadNameImage(m_heap);
             {
                 Lock<Mutex> lock(m_mutex);
-                nameImage->reset(reinterpret_cast<ResTIMG *>(texture));
+                nameImage->reset(static_cast<ResTIMG *>(texture));
             }
             return false;
         }
@@ -485,5 +485,5 @@ bool SceneCoursePoll::load(const Array<u32, MaxPlayerCount> &courseIndices) {
 }
 
 void *SceneCoursePoll::Load(void *param) {
-    return reinterpret_cast<SceneCoursePoll *>(param)->load();
+    return static_cast<SceneCoursePoll *>(param)->load();
 }

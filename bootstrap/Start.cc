@@ -20,8 +20,8 @@ extern "C" void RunBootstrap() {
     size_t bssSize = BootstrapBinary::BssSectionSize();
     memset(bssStart, 0, bssSize);
 
-    void (**ctorsStart)() = reinterpret_cast<void (**)()>(BootstrapBinary::CtorsSectionStart());
-    void (**ctorsEnd)() = reinterpret_cast<void (**)()>(BootstrapBinary::CtorsSectionEnd());
+    void (**ctorsStart)() = static_cast<void (**)()>(BootstrapBinary::CtorsSectionStart());
+    void (**ctorsEnd)() = static_cast<void (**)()>(BootstrapBinary::CtorsSectionEnd());
     for (void (**ctor)() = ctorsStart; ctor < ctorsEnd; ctor++) {
         (*ctor)();
     }

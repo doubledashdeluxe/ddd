@@ -60,7 +60,7 @@ ResTIMG *Kart2DCommon::getAsciiTexture(char c) {
     default:
         return REPLACED(getAsciiTexture(c));
     }
-    return reinterpret_cast<ResTIMG *>(ResMgr::GetPtr(ResMgr::ArchiveID::Race2D, path));
+    return static_cast<ResTIMG *>(ResMgr::GetPtr(ResMgr::ArchiveID::Race2D, path));
 }
 
 ResTIMG *Kart2DCommon::getUnicodeTexture(u32 cp) {
@@ -260,7 +260,7 @@ ResTIMG *Kart2DCommon::getUnicodeTexture(u32 cp) {
         path = "timg/MarioFontQuestion.bti";
         break;
     }
-    return reinterpret_cast<ResTIMG *>(ResMgr::GetPtr(ResMgr::ArchiveID::Race2D, path));
+    return static_cast<ResTIMG *>(ResMgr::GetPtr(ResMgr::ArchiveID::Race2D, path));
 }
 
 ResTIMG *Kart2DCommon::getNumberTexture(u32 index) {

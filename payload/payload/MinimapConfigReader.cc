@@ -106,5 +106,5 @@ void MinimapConfigReader::handle(lwjson_stream_type_t type) {
 
 void MinimapConfigReader::Handle(lwjson_stream_parser *jsp, lwjson_stream_type_t type) {
     void *userData = lwjson_stream_get_user_data(jsp);
-    reinterpret_cast<MinimapConfigReader *>(userData)->handle(type);
+    static_cast<MinimapConfigReader *>(userData)->handle(type);
 }

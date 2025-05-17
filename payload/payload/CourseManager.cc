@@ -53,8 +53,7 @@ CourseManager::DefaultPack::~DefaultPack() {}
 const char *CourseManager::DefaultPack::name() const {
     Array<char, 32> path;
     snprintf(path.values(), path.count(), "/packnames/%s.txt", m_name.values());
-    char *name =
-            reinterpret_cast<char *>(ResMgr::GetPtr(ResMgr::ArchiveID::MRAMLoc, path.values()));
+    char *name = static_cast<char *>(ResMgr::GetPtr(ResMgr::ArchiveID::MRAMLoc, path.values()));
     u32 size = ResMgr::GetResSize(ResMgr::ArchiveID::MRAMLoc, name);
     name[size - 1] = '\0';
     return name;
@@ -99,8 +98,7 @@ u32 CourseManager::DefaultCourse::musicID() const {
 const char *CourseManager::DefaultCourse::name() const {
     Array<char, 32> path;
     snprintf(path.values(), path.count(), "/coursenames/%02lx.txt", m_courseID);
-    char *name =
-            reinterpret_cast<char *>(ResMgr::GetPtr(ResMgr::ArchiveID::MRAMLoc, path.values()));
+    char *name = static_cast<char *>(ResMgr::GetPtr(ResMgr::ArchiveID::MRAMLoc, path.values()));
     u32 size = ResMgr::GetResSize(ResMgr::ArchiveID::MRAMLoc, name);
     name[size - 1] = '\0';
     return name;
@@ -205,7 +203,7 @@ void *CourseManager::CustomCourse::loadThumbnail(JKRHeap *heap) const {
     snprintf(thumbnailPrefix.values(), thumbnailPrefix.count(), "/%scourse_images/",
             m_prefix.values());
     u32 thumbnailSize;
-    UniquePtr<u8[]> thumbnail(reinterpret_cast<u8 *>(s_instance->loadLocalizedFile(m_path.values(),
+    UniquePtr<u8[]> thumbnail(static_cast<u8 *>(s_instance->loadLocalizedFile(m_path.values(),
             thumbnailPrefix.values(), "/track_image.bti", heap, &thumbnailSize)));
     if (!thumbnail.get() || thumbnailSize < 0x20) {
         return nullptr;
@@ -219,7 +217,7 @@ void *CourseManager::CustomCourse::loadNameImage(JKRHeap *heap) const {
     snprintf(nameImagePrefix.values(), nameImagePrefix.count(), "/%scourse_images/",
             m_prefix.values());
     u32 nameImageSize;
-    UniquePtr<u8[]> nameImage(reinterpret_cast<u8 *>(s_instance->loadLocalizedFile(m_path.values(),
+    UniquePtr<u8[]> nameImage(static_cast<u8 *>(s_instance->loadLocalizedFile(m_path.values(),
             nameImagePrefix.values(), "/track_name.bti", heap, &nameImageSize)));
     if (!nameImage.get() || nameImageSize < 0x20) {
         return nullptr;

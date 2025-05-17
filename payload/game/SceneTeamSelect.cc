@@ -45,7 +45,7 @@ SceneTeamSelect::SceneTeamSelect(JKRArchive *archive, JKRHeap *heap) : Scene(arc
     Kart2DCommon *kart2DCommon = Kart2DCommon::Instance();
     J2DScreen &okScreen = m_entryScreens[MaxEntryCount - 1];
     const char *path = "/ok.txt";
-    char *ok = reinterpret_cast<char *>(ResMgr::GetPtr(ResMgr::ArchiveID::MRAMLoc, path));
+    char *ok = static_cast<char *>(ResMgr::GetPtr(ResMgr::ArchiveID::MRAMLoc, path));
     u32 size = ResMgr::GetResSize(ResMgr::ArchiveID::MRAMLoc, ok);
     ok[size - 1] = '\0';
     kart2DCommon->changeUnicodeTexture(ok, 6, okScreen, "Ok");
@@ -169,8 +169,7 @@ void SceneTeamSelect::calc() {
     for (u32 i = 0; i < m_playerCount; i++) {
         Array<char, 32> path;
         snprintf(path.values(), path.count(), "/teamnames/%u.txt", m_teams[i]);
-        char *name =
-                reinterpret_cast<char *>(ResMgr::GetPtr(ResMgr::ArchiveID::MRAMLoc, path.values()));
+        char *name = static_cast<char *>(ResMgr::GetPtr(ResMgr::ArchiveID::MRAMLoc, path.values()));
         u32 size = ResMgr::GetResSize(ResMgr::ArchiveID::MRAMLoc, name);
         name[size - 1] = '\0';
         f32 startX, endX;

@@ -96,11 +96,11 @@ bool EXISDStorage::dispatch(struct Transfer *transfer) {
 }
 
 void *EXISDStorage::Run(void *param) {
-    return reinterpret_cast<EXISDStorage *>(param)->run();
+    return static_cast<EXISDStorage *>(param)->run();
 }
 
 void *EXISDStorage::Transfer(void *param) {
-    return reinterpret_cast<EXISDStorage *>(param)->transfer();
+    return static_cast<EXISDStorage *>(param)->transfer();
 }
 
 void EXISDStorage::HandleEXT(s32 chan, struct OSContext * /* context */) {

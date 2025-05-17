@@ -84,7 +84,7 @@ bool WiiSDStorage::transfer(bool isWrite, u32 firstSector, u32 sectorCount, void
             }
             firstSector += chunkSectorCount;
             sectorCount -= chunkSectorCount;
-            buffer = reinterpret_cast<u8 *>(buffer) + chunkSectorCount * SectorSize;
+            buffer = static_cast<u8 *>(buffer) + chunkSectorCount * SectorSize;
         }
         return true;
     }

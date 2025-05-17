@@ -236,12 +236,12 @@ bool JASAramStream::openFile(s32 entrynum) {
 }
 
 void JASAramStream::HeaderLoad(void *userData) {
-    HeaderLoadTask *task = reinterpret_cast<HeaderLoadTask *>(userData);
+    HeaderLoadTask *task = static_cast<HeaderLoadTask *>(userData);
     task->aramStream->headerLoad(task->entrynum, task->aramBufferSize, task->aramBlockCount);
 }
 
 void JASAramStream::Finish(void *userData) {
-    JASAramStream *aramStream = reinterpret_cast<JASAramStream *>(userData);
+    JASAramStream *aramStream = static_cast<JASAramStream *>(userData);
     aramStream->m_file.close();
 
     REPLACED(Finish)(userData);

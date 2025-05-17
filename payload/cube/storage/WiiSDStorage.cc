@@ -62,7 +62,7 @@ bool WiiSDStorage::waitFor(Status status) {
 }
 
 void *WiiSDStorage::Run(void *param) {
-    return reinterpret_cast<WiiSDStorage *>(param)->run();
+    return static_cast<WiiSDStorage *>(param)->run();
 }
 
 OSMessageQueue WiiSDStorage::s_queue;

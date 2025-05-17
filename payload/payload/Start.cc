@@ -23,8 +23,8 @@ extern "C" void __init_user(void);
 extern "C" int main(void);
 
 extern "C" void RunPayload(Context *context) {
-    void (**ctorsStart)() = reinterpret_cast<void (**)()>(PayloadBinary::CtorsSectionStart());
-    void (**ctorsEnd)() = reinterpret_cast<void (**)()>(PayloadBinary::CtorsSectionEnd());
+    void (**ctorsStart)() = static_cast<void (**)()>(PayloadBinary::CtorsSectionStart());
+    void (**ctorsEnd)() = static_cast<void (**)()>(PayloadBinary::CtorsSectionEnd());
     for (void (**ctor)() = ctorsStart; ctor < ctorsEnd; ctor++) {
         (*ctor)();
     }

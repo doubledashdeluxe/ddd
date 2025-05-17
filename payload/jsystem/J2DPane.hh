@@ -68,12 +68,12 @@ public:
 
     template <typename P>
     const P *downcast() const {
-        return reinterpret_cast<const P *>(getTypeID() == P::GetTypeID() ? this : nullptr);
+        return static_cast<const P *>(getTypeID() == P::GetTypeID() ? this : nullptr);
     }
 
     template <typename P>
     P *downcast() {
-        return reinterpret_cast<P *>(getTypeID() == P::GetTypeID() ? this : nullptr);
+        return static_cast<P *>(getTypeID() == P::GetTypeID() ? this : nullptr);
     }
 
     const TBox<f32> &getBox() const;

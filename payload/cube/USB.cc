@@ -56,7 +56,7 @@ void USB::Init() {
 }
 
 void *USB::Run(void *param) {
-    Backend *backend = reinterpret_cast<Backend *>(param);
+    Backend *backend = static_cast<Backend *>(param);
     while (true) {
         Array<Resource::DeviceEntry, 0x20> deviceEntries;
         s32 result = backend->resource->getDeviceChange(deviceEntries);

@@ -70,7 +70,7 @@ void *Storage::Poll(void * /* param */) {
     while (true) {
         void *msg;
         OSReceiveMessage(&s_queue, &msg, OS_MESSAGE_BLOCK);
-        Storage *storage = reinterpret_cast<Storage *>(msg);
+        Storage *storage = static_cast<Storage *>(msg);
 
         Lock<Mutex> lock(*storage->m_mutex);
         storage->poll();
