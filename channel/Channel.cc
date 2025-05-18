@@ -20,6 +20,9 @@
 #include <cube/storage/Storage.hh>
 #include <cube/storage/USBStorage.hh>
 #include <cube/storage/WiiSDStorage.hh>
+extern "C" {
+#include <miniz/miniz.h>
+}
 #include <portable/Align.hh>
 #include <portable/Log.hh>
 
@@ -119,47 +122,49 @@ Channel::PayloadEntryFunc Channel::Run(Context *context) {
 
     void *payloadIDst;
     const void *payloadISrc;
-    size_t payloadISize;
+    size_t payloadISrcSize;
     const void *payloadDSrc;
-    size_t payloadDSize;
+    size_t payloadDSrcSize;
     switch (DiscID::Get().gameID[3]) {
     case 'P':
         payloadIDst = reinterpret_cast<void *>(0x802d84a0);
         payloadISrc = &payloadPI;
-        payloadISize = payloadPI_size;
+        payloadISrcSize = payloadPI_size;
         payloadDSrc = &payloadPD;
-        payloadDSize = payloadPD_size;
+        payloadDSrcSize = payloadPD_size;
         break;
     case 'E':
         payloadIDst = reinterpret_cast<void *>(0x802d8520);
         payloadISrc = &payloadEI;
-        payloadISize = payloadEI_size;
+        payloadISrcSize = payloadEI_size;
         payloadDSrc = &payloadED;
-        payloadDSize = payloadED_size;
+        payloadDSrcSize = payloadED_size;
         break;
     case 'J':
         payloadIDst = reinterpret_cast<void *>(0x802d8540);
         payloadISrc = &payloadJI;
-        payloadISize = payloadJI_size;
+        payloadISrcSize = payloadJI_size;
         payloadDSrc = &payloadJD;
-        payloadDSize = payloadJD_size;
+        payloadDSrcSize = payloadJD_size;
         break;
     default:
         ERROR("Region detection failed!");
         return nullptr;
     }
 
-    INFO("Copying payload instructions...");
-    memcpy(payloadIDst, payloadISrc, payloadISize);
-    DCache::Flush(payloadIDst, payloadISize);
-    ICache::Invalidate(payloadIDst, payloadISize);
-    INFO("Copied payload instructions.");
+    INFO("Decompressing payload instructions...");
+    size_t payloadIDstSize = tinfl_decompress_mem_to_mem(payloadIDst,
+            0x80360000 - reinterpret_cast<uintptr_t>(payloadIDst), payloadISrc, payloadISrcSize, 0);
+    DCache::Flush(payloadIDst, payloadIDstSize);
+    ICache::Invalidate(payloadIDst, payloadIDstSize);
+    INFO("Decompressed payload instructions.");
 
-    INFO("Copying payload data...");
+    INFO("Decompressing payload data...");
     uintptr_t payloadDDstAddress = 0x80800000;
     void *payloadDDst = reinterpret_cast<void *>(payloadDDstAddress);
-    memcpy(payloadDDst, payloadDSrc, payloadDSize);
-    INFO("Copied payload data.");
+    size_t payloadDDstSize =
+            tinfl_decompress_mem_to_mem(payloadDDst, 128 * 1024, payloadDSrc, payloadDSrcSize, 0);
+    INFO("Decompressed payload data.");
 
     INFO("Copying common archive...");
     context->commonArchive = MEM1Arena::Instance()->alloc(commonArchive_size, -0x20);
@@ -180,7 +185,7 @@ Channel::PayloadEntryFunc Channel::Run(Context *context) {
         // Enable OSReport over EXI
         consoleType |= 0x10000000;
     }
-    arenaLo = payloadDDstAddress + payloadDSize;
+    arenaLo = payloadDDstAddress + payloadDDstSize;
     arenaHi = reinterpret_cast<uintptr_t>(MEM1Arena::Instance()->alloc(0x0, -0x4));
 
     INFO("Copying low memory...");
@@ -188,7 +193,7 @@ Channel::PayloadEntryFunc Channel::Run(Context *context) {
     void *lowMemoryDst = reinterpret_cast<void *>(lowMemoryDstAddress);
     void *lowMemorySrc = reinterpret_cast<void *>(0x80000000);
     size_t lowMemorySize = 0x56c0;
-    memmove(lowMemoryDst, lowMemorySrc, lowMemorySize);
+    memcpy(lowMemoryDst, lowMemorySrc, lowMemorySize);
     INFO("Copied low memory.");
 
     INFO("Starting payload...");
