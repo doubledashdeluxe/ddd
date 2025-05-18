@@ -1,5 +1,7 @@
 #pragma once
 
+#include "game/PadMgr.hh"
+
 #include <jsystem/JUTGamePad.hh>
 
 class KartGamePad : public JUTGamePad {
@@ -8,6 +10,7 @@ public:
     ~KartGamePad() override;
 
     s32 padPort() const;
+    void expand(const PadMgr::KartPadData &data);
 
     static KartGamePad *GamePad(u32 index);
     static KartGamePad *KartPad(u32 index);
