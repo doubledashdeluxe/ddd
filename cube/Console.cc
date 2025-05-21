@@ -117,7 +117,7 @@ void Console::scroll() {
 }
 
 void Console::Putchar(int c, void *ctx) {
-    reinterpret_cast<Console *>(ctx)->putchar(c);
+    static_cast<Console *>(ctx)->putchar(c);
 }
 
 Console *Console::s_instance = nullptr;

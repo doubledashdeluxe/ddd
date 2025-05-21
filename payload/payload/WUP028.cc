@@ -224,11 +224,11 @@ void *WUP028::transfer() {
 }
 
 void *WUP028::Poll(void *param) {
-    return reinterpret_cast<WUP028 *>(param)->poll();
+    return static_cast<WUP028 *>(param)->poll();
 }
 
 void *WUP028::Transfer(void *param) {
-    return reinterpret_cast<WUP028 *>(param)->transfer();
+    return static_cast<WUP028 *>(param)->transfer();
 }
 
 WUP028 *WUP028::s_instance = nullptr;

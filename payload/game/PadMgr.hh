@@ -18,5 +18,9 @@ public:
 
 private:
     PadMgr();
+
+    REPLACE static void ProcessKartPad();
+
+    static BOOL s_kartPadInput;
 };
 size_assert(PadMgr, 0x1);

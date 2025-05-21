@@ -1,3 +1,10 @@
+// clang-format off
+//
+// Resources:
+// - https://www.geeksforgeeks.org/in-place-merge-sort
+//
+// clang-format on
+
 #pragma once
 
 #include "portable/Types.hh"

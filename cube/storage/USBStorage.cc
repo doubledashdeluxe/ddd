@@ -1,3 +1,12 @@
+// clang-format off
+//
+// Resources:
+// - https://www.usb.org/sites/default/files/usbmassbulk_10.pdf
+// - https://www.seagate.com/files/staticfiles/support/docs/manual/Interface%20manuals/100293068j.pdf
+// - https://www.downtowndougbrown.com/2018/12/usb-mass-storage-with-embedded-devices-tips-and-quirks
+//
+// clang-format on
+
 #include "USBStorage.hh"
 
 #include "cube/Clock.hh"
@@ -302,14 +311,14 @@ bool USBStorage::scsiTransfer(USB::Device *device, bool isWrite, u32 size, void 
         for (u32 offset = 0; offset < size; offset += m_buffer.count()) {
             u32 chunkSize = Min<u32>(size - offset, m_buffer.count());
             if (isWrite) {
-                memcpy(m_buffer.values(), reinterpret_cast<u8 *>(data) + offset, chunkSize);
+                memcpy(m_buffer.values(), static_cast<u8 *>(data) + offset, chunkSize);
             }
             if (!device->bulkTransfer(m_buffer.values(), chunkSize, endpointDirection,
                         endpointNumber)) {
                 return false;
             }
             if (!isWrite) {
-                memcpy(reinterpret_cast<u8 *>(data) + offset, m_buffer.values(), chunkSize);
+                memcpy(static_cast<u8 *>(data) + offset, m_buffer.values(), chunkSize);
             }
         }
     }

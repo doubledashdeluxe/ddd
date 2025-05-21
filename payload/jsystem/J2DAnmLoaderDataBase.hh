@@ -11,6 +11,6 @@ public:
     template <typename T>
     static T *Load(const char *name, JKRFileLoader *fileLoader) {
         void *resource = JKRFileLoader::GetGlbResource(name, fileLoader);
-        return reinterpret_cast<T *>(Load(resource));
+        return static_cast<T *>(Load(resource));
     }
 };

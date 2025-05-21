@@ -34,7 +34,7 @@ bool EXI::Device::immRead(void *buffer, u32 size) {
         while (exi[m_channel].cr & 1) {}
         chunk = exi[m_channel].data;
         memcpy(buffer, &chunk, chunkSize);
-        buffer = reinterpret_cast<u8 *>(buffer) + chunkSize;
+        buffer = static_cast<u8 *>(buffer) + chunkSize;
         size -= chunkSize;
     }
     return true;
@@ -48,7 +48,7 @@ bool EXI::Device::immWrite(const void *buffer, u32 size) {
         exi[m_channel].data = chunk;
         exi[m_channel].cr = (chunkSize - 1) << 4 | 1 << 2 | 1 << 0;
         while (exi[m_channel].cr & 1) {}
-        buffer = reinterpret_cast<const u8 *>(buffer) + chunkSize;
+        buffer = static_cast<const u8 *>(buffer) + chunkSize;
         size -= chunkSize;
     }
     return true;

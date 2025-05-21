@@ -80,7 +80,7 @@ bool Apploader::Read(ReadFunc read, void *dst, u32 size, u32 offset, const Array
         return false;
     }
     Array<u8, 32> hash;
-    crypto_blake2b(hash.values(), hash.count(), reinterpret_cast<u8 *>(dst), size);
+    crypto_blake2b(hash.values(), hash.count(), static_cast<u8 *>(dst), size);
     if (crypto_verify32(hash.values(), (*hashes++).values())) {
         ERROR("Please ensure that the game disc is not modified in any capacity!");
         return false;

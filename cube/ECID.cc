@@ -1,3 +1,10 @@
+// clang-format off
+//
+// Resources:
+// - https://github.com/dolphin-emu/dolphin/blob/2503a/Source/Core/Core/PowerPC/PowerPC.cpp
+//
+// clang-format on
+
 #include "ECID.hh"
 
 #ifdef __CWCC__
