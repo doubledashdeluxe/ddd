@@ -137,6 +137,7 @@ def get_flags(tool, platform, target, format_code_dirs, args):
             '-fcheck-new',
             '-std=c++20',
             '-Wno-unused-private-field',
+            '-Wold-style-cast',
             '-Wsuggest-override',
         ]
         for code_dir in format_code_dirs:

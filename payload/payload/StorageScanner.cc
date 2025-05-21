@@ -58,7 +58,7 @@ Array<char, INIReader::FieldSize> &StorageScanner::getLocalizedEntry(
 }
 
 void *StorageScanner::Run(void *param) {
-    return reinterpret_cast<StorageScanner *>(param)->run();
+    return static_cast<StorageScanner *>(param)->run();
 }
 
 void StorageScanner::onAdd(const char *prefix) {

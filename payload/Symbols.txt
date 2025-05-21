@@ -412,6 +412,7 @@
 801d0c9c Get3DVpDiv2W__6SystemFUc
 801d0ccc Get3DVpDiv4X__6SystemFUc
 801d0cf8 Get3DVpDiv4W__6SystemFUc
+801d139c expand__11KartGamePadFRCQ26PadMgr11KartPadData
 801d1a9c Draw__6AppMgrFv
 801d1af4 Calc__6AppMgrFv
 801d2290 Call__12ErrorViewAppFl
@@ -432,7 +433,10 @@
 801d9928 checkFinishAllLoading__11SequenceAppFv
 801d9990 createScene__11SequenceAppFl
 801dc140 Framework__6PadMgrFv
+801dc1c4 ProcessKartPad__6PadMgrFv
 801dc290 GetPadData__6PadMgrFUcbPQ26PadMgr11KartPadData
+801dc900 line__11PadRecorderFUcPQ26PadMgr11KartPadData
+801dcacc framework__11PadRecorderFv
 801dd1b4 processDHCP__6BBAMgrFv
 801dd3c4 processAutoIP__6BBAMgrFv
 801dd628 disconnecting__6BBAMgrFb
@@ -551,6 +555,8 @@
 803d5c50 s_aspectSub__6System
 803d5c58 s_instance__10NetGameMgr
 803d5c60 s_instance__11SequenceApp
+803d5c98 s_kartPadInput__6PadMgr
+803d5c9c s_instance__11PadRecorder
 803d5ca8 s_instance__6BBAMgr
 803d5cb8 s_instance__12Kart2DCommon
 803d5cd0 s_instance__14MenuBackground

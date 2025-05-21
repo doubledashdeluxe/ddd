@@ -23,7 +23,7 @@ void Random::get(void *data, size_t size) {
 
         size_t chunkSize = Min(size, m_buffer.count() - m_offset);
         memcpy(data, m_buffer.values() + m_offset, chunkSize);
-        data = reinterpret_cast<u8 *>(data) + chunkSize;
+        data = static_cast<u8 *>(data) + chunkSize;
         size -= chunkSize;
         m_offset += chunkSize;
     }

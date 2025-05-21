@@ -1,3 +1,11 @@
+// clang-format off
+//
+// Resources:
+// - https://wiibrew.org/wiki//dev/sdio
+// - https://github.com/dolphin-emu/dolphin/blob/2503a/Source/Core/Core/IOS/SDIO/SDIOSlot0.cpp
+//
+// clang-format on
+
 #include "WiiSDStorage.hh"
 
 #include "cube/Memory.hh"
@@ -84,7 +92,7 @@ bool WiiSDStorage::transfer(bool isWrite, u32 firstSector, u32 sectorCount, void
             }
             firstSector += chunkSectorCount;
             sectorCount -= chunkSectorCount;
-            buffer = reinterpret_cast<u8 *>(buffer) + chunkSectorCount * SectorSize;
+            buffer = static_cast<u8 *>(buffer) + chunkSectorCount * SectorSize;
         }
         return true;
     }

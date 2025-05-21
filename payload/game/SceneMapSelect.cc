@@ -801,7 +801,7 @@ bool SceneMapSelect::load(const Array<u32, 12> &nextMapIndices) {
             void *texture = course->loadThumbnail(m_heap);
             {
                 Lock<Mutex> lock(m_mutex);
-                thumbnail.reset(reinterpret_cast<ResTIMG *>(texture));
+                thumbnail.reset(static_cast<ResTIMG *>(texture));
             }
             return false;
         }
@@ -810,7 +810,7 @@ bool SceneMapSelect::load(const Array<u32, 12> &nextMapIndices) {
             void *texture = course->loadNameImage(m_heap);
             {
                 Lock<Mutex> lock(m_mutex);
-                nameImage.reset(reinterpret_cast<ResTIMG *>(texture));
+                nameImage.reset(static_cast<ResTIMG *>(texture));
             }
             return false;
         }
@@ -846,5 +846,5 @@ UniquePtr<ResTIMG> &SceneMapSelect::findTexture(Array<UniquePtr<ResTIMG>, 12> &t
 }
 
 void *SceneMapSelect::Load(void *param) {
-    return reinterpret_cast<SceneMapSelect *>(param)->load();
+    return static_cast<SceneMapSelect *>(param)->load();
 }

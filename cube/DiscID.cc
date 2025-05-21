@@ -1,3 +1,10 @@
+// clang-format off
+//
+// Resources:
+// - https://wiibrew.org/wiki/Wii_disc#Header
+//
+// clang-format on
+
 #include "DiscID.hh"
 
 extern "C" {

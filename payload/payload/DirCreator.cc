@@ -37,7 +37,7 @@ void *DirCreator::run() {
 }
 
 void *DirCreator::Run(void *param) {
-    return reinterpret_cast<DirCreator *>(param)->run();
+    return static_cast<DirCreator *>(param)->run();
 }
 
 DirCreator *DirCreator::s_instance = nullptr;

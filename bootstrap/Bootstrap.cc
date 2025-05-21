@@ -186,7 +186,7 @@ bool Bootstrap::IsFileInstalled(const char *path, const void *data, u32 size) {
         if (memcmp(buffer.values(), data, chunkSize)) {
             return false;
         }
-        data = reinterpret_cast<const u8 *>(data) + chunkSize;
+        data = static_cast<const u8 *>(data) + chunkSize;
         size -= chunkSize;
     }
 
