@@ -286,7 +286,7 @@ bool EXISDStorage::transferRead(u32 firstSector, u32 sectorCount, void *buffer) 
             return false;
         }
 
-        if (ComputeCRC16(reinterpret_cast<u8 *>(buffer), SectorSize) !=
+        if (ComputeCRC16(static_cast<u8 *>(buffer), SectorSize) !=
                 Bytes::ReadBE<u16>(crc16.values(), 0)) {
             DEBUG("Mismatched CRC16");
             return false;
@@ -294,7 +294,7 @@ bool EXISDStorage::transferRead(u32 firstSector, u32 sectorCount, void *buffer) 
 
         firstSector++;
         sectorCount--;
-        buffer = reinterpret_cast<u8 *>(buffer) + SectorSize;
+        buffer = static_cast<u8 *>(buffer) + SectorSize;
     }
 
     if (!sendCommand(Command::StopTransmission, 0)) {
@@ -357,7 +357,7 @@ bool EXISDStorage::transferWrite(u32 firstSector, u32 sectorCount, void *buffer)
 
             Array<u8, 2> crc16;
             Bytes::WriteBE<u16>(crc16.values(), 0,
-                    ComputeCRC16(reinterpret_cast<const u8 *>(buffer), SectorSize));
+                    ComputeCRC16(static_cast<const u8 *>(buffer), SectorSize));
             if (!device.immWrite(crc16.values(), crc16.count())) {
                 DEBUG("Failed to write CRC16");
                 return false;
@@ -379,7 +379,7 @@ bool EXISDStorage::transferWrite(u32 firstSector, u32 sectorCount, void *buffer)
         }
 
         sectorCount--;
-        buffer = reinterpret_cast<u8 *>(buffer) + SectorSize;
+        buffer = static_cast<u8 *>(buffer) + SectorSize;
     }
 
     {

@@ -56,5 +56,5 @@ bool Clock::ReadRTC(u32 &rtc) {
 }
 
 void Clock::HandleAlarm(OSAlarm *alarm, OSContext * /* context */) {
-    OSResumeThread(reinterpret_cast<Alarm *>(alarm)->thread);
+    OSResumeThread(static_cast<Alarm *>(alarm)->thread);
 }

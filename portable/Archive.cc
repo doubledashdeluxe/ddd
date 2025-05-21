@@ -1,3 +1,10 @@
+// clang-format off
+//
+// Resources:
+// - https://www.lumasworkshop.com/wiki/RARC_(File_Format)
+//
+// clang-format on
+
 #include "Archive.hh"
 
 #include "portable/Align.hh"
@@ -353,7 +360,7 @@ u32 Archive::Node::getNameOffset() const {
 }
 
 char *Archive::Node::getName(char *names) const {
-    return reinterpret_cast<char *>(names + getNameOffset());
+    return names + getNameOffset();
 }
 
 u32 Archive::Node::getDirIndex() const {

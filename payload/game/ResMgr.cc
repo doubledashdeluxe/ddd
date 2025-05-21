@@ -151,7 +151,7 @@ void ResMgr::LoadKeepData(void * /* userData */) {
             race2DArchive.reset();
 
             u32 mramArchiveSize;
-            UniquePtr<u8[]> mramArchive(reinterpret_cast<u8 *>(
+            UniquePtr<u8[]> mramArchive(static_cast<u8 *>(
                     FileLoader::Load("dvd:/MRAM.arc", System::GetAppHeap(), &mramArchiveSize)));
             if (!mramArchive.get()) {
                 continue;

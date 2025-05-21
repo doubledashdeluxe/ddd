@@ -70,11 +70,11 @@ int INIReader::handle(const char *section, const char *name, const char *value) 
 }
 
 char *INIReader::Read(char *str, int num, void *stream) {
-    return reinterpret_cast<INIReader *>(stream)->read(str, num);
+    return static_cast<INIReader *>(stream)->read(str, num);
 }
 
 int INIReader::Handle(void *user, const char *section, const char *name, const char *value) {
-    return reinterpret_cast<INIReader *>(user)->handle(section, name, value);
+    return static_cast<INIReader *>(user)->handle(section, name, value);
 }
 
 void INIReader::SetField(const char *value, Array<char, FieldSize> *field) {

@@ -1,3 +1,10 @@
+// clang-format off
+//
+// Resources:
+// - https://github.com/dolphin-emu/dolphin/blob/2503a/Source/Core/Core/IOS/DolphinDevice.cpp
+//
+// clang-format on
+
 #include "Dolphin.hh"
 
 #include <portable/Array.hh>

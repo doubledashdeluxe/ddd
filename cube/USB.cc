@@ -1,3 +1,14 @@
+// clang-format off
+//
+// Resources:
+// - https://wiibrew.org/wiki//dev/usb/ven
+// - https://github.com/dolphin-emu/dolphin/blob/2503a/Source/Core/Core/IOS/USB/USB_VEN/VEN.cpp
+// - https://www.usb.org/document-library/usb-20-specification
+// - https://www.beyondlogic.org/usbnutshell/usb1.shtml
+// - https://libusb.sourceforge.io/api-1.0/annotated.html
+//
+// clang-format on
+
 #include "USB.hh"
 
 #include "cube/Arena.hh"

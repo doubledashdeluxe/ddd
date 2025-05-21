@@ -1,3 +1,11 @@
+// clang-format off
+//
+// Resources:
+// - https://www.gc-forever.com/yagcd/chap5.html#sec5.3
+// - https://github.com/dolphin-emu/dolphin/blob/2503a/Source/Core/Core/HW/VideoInterface.cpp
+//
+// clang-format on
+
 #include "VI.hh"
 
 #include "cube/Arena.hh"
