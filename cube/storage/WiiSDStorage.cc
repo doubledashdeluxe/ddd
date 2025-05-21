@@ -1,3 +1,11 @@
+// clang-format off
+//
+// Resources:
+// - https://wiibrew.org/wiki//dev/sdio
+// - https://github.com/dolphin-emu/dolphin/blob/2503a/Source/Core/Core/IOS/SDIO/SDIOSlot0.cpp
+//
+// clang-format on
+
 #include "WiiSDStorage.hh"
 
 #include "cube/Memory.hh"

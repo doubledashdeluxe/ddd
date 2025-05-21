@@ -1,3 +1,10 @@
+// clang-format off
+//
+// Resources:
+// - https://datatracker.ietf.org/doc/html/rfc1035
+//
+// clang-format on
+
 #include "DNS.hh"
 
 #include "portable/Algorithm.hh"

@@ -1,3 +1,10 @@
+// clang-format off
+//
+// Resources:
+// - https://www.lumasworkshop.com/wiki/RARC_(File_Format)
+//
+// clang-format on
+
 #include "Archive.hh"
 
 #include "portable/Align.hh"

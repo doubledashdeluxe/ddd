@@ -1,3 +1,10 @@
+// clang-format off
+//
+// Resources:
+// - https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT
+//
+// clang-format on
+
 #include "ZIP.hh"
 
 #include "portable/Algorithm.hh"

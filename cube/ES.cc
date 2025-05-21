@@ -1,3 +1,11 @@
+// clang-format off
+//
+// Resources:
+// - https://wiibrew.org/wiki//dev/es
+// - https://github.com/dolphin-emu/dolphin/blob/2503a/Source/Core/Core/IOS/ES
+//
+// clang-format on
+
 #include "ES.hh"
 
 #include <portable/Bytes.hh>

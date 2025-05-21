@@ -1,3 +1,10 @@
+// clang-format off
+//
+// Resources:
+// - https://wiibrew.org/wiki/Memory_map
+//
+// clang-format on
+
 #include "Clock.hh"
 
 extern "C" u32 busClock;

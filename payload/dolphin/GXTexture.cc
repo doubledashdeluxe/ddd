@@ -1,3 +1,10 @@
+// clang-format off
+//
+// Resources:
+// - https://github.com/dolphin-emu/dolphin/blob/2503a/Source/Core/VideoCommon/BPStructs.cpp#L390
+//
+// clang-format on
+
 extern "C" {
 #include "GXTexture.h"
 }
@@ -13,7 +20,7 @@ extern "C" void GXInitTexObj(GXTexObj *obj, void *image_ptr, u16 width, u16 heig
 extern "C" void GXInitTlutObj(GXTlutObj *tlut_obj, void *lut, s32 fmt, u16 n_entries) {
     tlut_obj->fmt = fmt << 10;
     // The Dolphin SDK doesn't reset the middle bits, which is an issue in Wii mode as they are not
-    // masked. Reference (Dolphin Emulator): https://is.gd/ghHrLe
+    // masked.
     tlut_obj->lut = 0x64 << 24 | (Memory::CachedToPhysical(lut) & 0x13ffffff) >> 5;
     tlut_obj->n_entries = n_entries;
 }

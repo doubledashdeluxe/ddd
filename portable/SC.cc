@@ -1,3 +1,10 @@
+// clang-format off
+//
+// Resources:
+// - https://wiibrew.org/wiki//shared2/sys/SYSCONF
+//
+// clang-format on
+
 #include "SC.hh"
 
 extern "C" {

@@ -1,3 +1,11 @@
+// clang-format off
+//
+// Resources:
+// - https://wiibrew.org/wiki//dev/fs
+// - https://github.com/dolphin-emu/dolphin/tree/2503a/Source/Core/Core/IOS/FS
+//
+// clang-format on
+
 #include "FS.hh"
 
 #include "cube/ios/File.hh"
