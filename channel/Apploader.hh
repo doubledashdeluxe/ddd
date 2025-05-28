@@ -26,7 +26,7 @@ private:
         char revision[0x10];
         ApploaderEntryFunc entry;
         u32 size;
-        u32 trailer;
+        u32 bs2Size;
         u8 _1c[0x20 - 0x1c];
     };
     size_assert(ApploaderHeader, 0x20);

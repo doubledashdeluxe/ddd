@@ -37,11 +37,11 @@ Apploader::GameEntryFunc Apploader::Run(ReadFunc read) {
     INFO("Successfully read apploader header.");
 
     if (!Read(read, reinterpret_cast<void *>(0x81200000),
-                AlignUp(header.size + header.trailer, 0x20), 0x2460, hashes)) {
+                AlignUp(header.size + header.bs2Size, 0x20), 0x2460, hashes)) {
         ERROR("Failed to read apploader.");
         return nullptr;
     }
-    ICache::Invalidate(reinterpret_cast<void *>(0x81200000), header.size + header.trailer);
+    ICache::Invalidate(reinterpret_cast<void *>(0x81200000), header.size + header.bs2Size);
     INFO("Successfully read apploader.");
 
     ApploaderInitFunc init;
