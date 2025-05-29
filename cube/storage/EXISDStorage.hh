@@ -59,6 +59,7 @@ private:
     static u16 ComputeCRC16(const u8 *buffer, u32 size);
 
     u32 m_channel;
+    bool m_wasDetached;
     bool m_isSDHC;
     struct OSMessageQueue *m_queue;
     struct OSMessageQueue *m_transferQueue;

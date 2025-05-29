@@ -46,10 +46,10 @@ void EXISDStorage::poll() {
             EXIDetach(m_channel);
         }
     } else {
-        if (m_channel != 2) {
-            EXIAttach(m_channel, HandleEXT);
+        m_wasDetached = false;
+        if (m_channel == 2 || EXIAttach(m_channel, HandleEXT)) {
+            pollAdd();
         }
-        pollAdd();
         if (!isContained() && m_channel != 2) {
             EXIDetach(m_channel);
         }
@@ -81,6 +81,7 @@ void *EXISDStorage::transfer() {
 }
 
 void EXISDStorage::handleEXT() {
+    m_wasDetached = true;
     OSSendMessage(m_queue, nullptr, OS_MESSAGE_NOBLOCK);
 }
 

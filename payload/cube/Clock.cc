@@ -41,7 +41,7 @@ void Clock::WaitTicks(s64 ticks) {
 }
 
 bool Clock::ReadRTC(u32 &rtc) {
-    EXI::Device device(0, 1, 3);
+    EXI::Device device(0, 1, 3, nullptr);
     if (!device.ok()) {
         return false;
     }

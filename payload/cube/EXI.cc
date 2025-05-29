@@ -1,18 +1,24 @@
 #include <cube/EXI.hh>
 
+#include <cube/Memory.hh>
 extern "C" {
 #include <dolphin/EXIBios.h>
 #include <dolphin/OSThread.h>
 }
 #include <payload/Lock.hh>
+#include <portable/Align.hh>
 
-EXI::Device::Device(u32 channel, u32 device, u32 frequency) : m_channel(channel), m_ok(false) {
-    {
-        Lock<NoInterrupts> lock;
+EXI::Device::Device(u32 channel, u32 device, u32 frequency, bool *wasDetached)
+    : m_channel(channel), m_ok(false) {
+    Lock<NoInterrupts> lock;
 
-        while (!EXILock(channel, device, HandleUnlock)) {
-            OSSleepThread(&s_queues[channel]);
-        }
+    while (!EXILock(channel, device, HandleUnlock)) {
+        OSSleepThread(&s_queues[channel]);
+    }
+
+    if (wasDetached && *wasDetached) {
+        EXIUnlock(channel);
+        return;
     }
 
     if (!EXISelect(channel, device, frequency)) {

@@ -47,7 +47,7 @@ void EXISDStorage::pollAdd() {
     }
 
     {
-        EXI::Device device(m_channel, 32, 5);
+        EXI::Device device(m_channel, 32, 5, &m_wasDetached);
         if (!device.ok()) {
             DEBUG("Failed to select device");
             return;
@@ -257,7 +257,7 @@ bool EXISDStorage::transferRead(u32 firstSector, u32 sectorCount, void *buffer) 
                 return false;
             }
 
-            EXI::Device device(m_channel, 0, 5);
+            EXI::Device device(m_channel, 0, 5, &m_wasDetached);
             if (!device.ok()) {
                 DEBUG("Failed to select device");
                 return false;
@@ -269,7 +269,7 @@ bool EXISDStorage::transferRead(u32 firstSector, u32 sectorCount, void *buffer) 
             }
         } while (token != 0xfe);
 
-        EXI::Device device(m_channel, 0, 5);
+        EXI::Device device(m_channel, 0, 5, &m_wasDetached);
         if (!device.ok()) {
             DEBUG("Failed to select device");
             return false;
@@ -303,7 +303,7 @@ bool EXISDStorage::transferRead(u32 firstSector, u32 sectorCount, void *buffer) 
     }
 
     {
-        EXI::Device device(m_channel, 0, 5);
+        EXI::Device device(m_channel, 0, 5, &m_wasDetached);
         if (!device.ok()) {
             DEBUG("Failed to select device");
             return false;
@@ -338,7 +338,7 @@ bool EXISDStorage::transferWrite(u32 firstSector, u32 sectorCount, void *buffer)
 
     while (sectorCount > 0) {
         {
-            EXI::Device device(m_channel, 0, 5);
+            EXI::Device device(m_channel, 0, 5, &m_wasDetached);
             if (!device.ok()) {
                 DEBUG("Failed to select device");
                 return false;
@@ -383,7 +383,7 @@ bool EXISDStorage::transferWrite(u32 firstSector, u32 sectorCount, void *buffer)
     }
 
     {
-        EXI::Device device(m_channel, 0, 5);
+        EXI::Device device(m_channel, 0, 5, &m_wasDetached);
         if (!device.ok()) {
             DEBUG("Failed to select device");
             return false;
@@ -444,7 +444,7 @@ bool EXISDStorage::sendCommandAndRecvR1(u8 command, u32 argument) {
 }
 
 bool EXISDStorage::sendCommand(u8 command, u32 argument) {
-    EXI::Device device(m_channel, 0, 5);
+    EXI::Device device(m_channel, 0, 5, &m_wasDetached);
     if (!device.ok()) {
         return false;
     }
@@ -456,7 +456,7 @@ bool EXISDStorage::sendCommand(u8 command, u32 argument) {
 }
 
 bool EXISDStorage::recvR1(u8 &r1) {
-    EXI::Device device(m_channel, 0, 5);
+    EXI::Device device(m_channel, 0, 5, &m_wasDetached);
     if (!device.ok()) {
         return false;
     }
@@ -464,7 +464,7 @@ bool EXISDStorage::recvR1(u8 &r1) {
 }
 
 bool EXISDStorage::recvR3(u8 &r1, u32 &ocr) {
-    EXI::Device device(m_channel, 0, 5);
+    EXI::Device device(m_channel, 0, 5, &m_wasDetached);
     if (!device.ok()) {
         return false;
     }
@@ -483,7 +483,7 @@ bool EXISDStorage::recvR3(u8 &r1, u32 &ocr) {
 }
 
 bool EXISDStorage::recvR7(u8 &r1, u8 &commandVersion, u8 &vhs, u8 &checkPattern) {
-    EXI::Device device(m_channel, 0, 5);
+    EXI::Device device(m_channel, 0, 5, &m_wasDetached);
     if (!device.ok()) {
         return false;
     }
@@ -520,7 +520,7 @@ bool EXISDStorage::recvR1(EXI::Device &device, u8 &r1) {
 bool EXISDStorage::waitReady(s64 duration) {
     s64 start = Clock::GetMonotonicTicks();
     do {
-        EXI::Device device(m_channel, 0, 5);
+        EXI::Device device(m_channel, 0, 5, &m_wasDetached);
         if (!device.ok()) {
             return false;
         }

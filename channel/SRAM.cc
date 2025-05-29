@@ -4,7 +4,7 @@
 #include <portable/Bytes.hh>
 
 SRAM::SRAM() : m_ok(false) {
-    EXI::Device device(0, 1, 3);
+    EXI::Device device(0, 1, 3, nullptr);
     if (!device.ok()) {
         return;
     }

@@ -17,7 +17,8 @@ size_assert(Channel, 0x14);
 
 extern "C" volatile Channel exi[3];
 
-EXI::Device::Device(u32 channel, u32 device, u32 frequency) : m_channel(channel), m_ok(true) {
+EXI::Device::Device(u32 channel, u32 device, u32 frequency, bool * /* wasDetached */)
+    : m_channel(channel), m_ok(true) {
     exi[channel].cpr = (1 << device) << 7 | frequency << 4;
 }
 
@@ -55,7 +56,7 @@ bool EXI::Device::immWrite(const void *buffer, u32 size) {
 }
 
 bool EXI::GetID(u32 channel, u32 device, u32 &id) {
-    Device exiDevice(channel, device, 0);
+    Device exiDevice(channel, device, 0, nullptr);
     if (!exiDevice.ok()) {
         return false;
     }
