@@ -63,7 +63,7 @@ void *LogFile::Run(void * /* param */) {
 
         Array<char, 256> path;
         s32 length = snprintf(path.values(), path.count(),
-                "main:/ddd/logs/%04d-%02d-%02d %02d:%02d:%02d.log", time.year, time.mon + 1,
+                "main:/ddd/logs/%04d-%02d-%02d-%02d-%02d-%02d.log", time.year, time.mon + 1,
                 time.mday, time.hour, time.min, time.sec);
         if (length < 0 || static_cast<size_t>(length) >= path.count()) {
             continue;
@@ -131,7 +131,7 @@ bool LogFile::IsValidLogFile(const Storage::NodeInfo &nodeInfo) {
         return false;
     }
 
-    const char *pattern = "DDDD-DD-DD DD:DD:DD.log";
+    const char *pattern = "DDDD-DD-DD-DD-DD-DD.log";
     if (strlen(nodeInfo.name.values()) != strlen(pattern)) {
         return false;
     }
