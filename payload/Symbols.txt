@@ -55,7 +55,10 @@
 800179a0 prepend__10JSUPtrListFP10JSUPtrLink
 80018ed4 print__10JUTConsoleFPCc
 80018df0 __dt__13J2DOrthoGraphFv
+8001a494 changeFrameBuffer__14JUTDirectPrintFPvUsUs
+8001a93c run__12JUTExceptionFv
 8001ab48 panic_f__12JUTExceptionFPCciPCce
+8001c724 printContext__12JUTExceptionFUsP9OSContextUlUl
 8001cda0 setPreUserCallback__12JUTExceptionFPFUsP9OSContextUlUl_v
 8001ee3c StartMotor__Q210JUTGamePad7CRumbleFl
 8001eee0 StopMotor__Q210JUTGamePad7CRumbleFlb
@@ -101,6 +104,8 @@
 
 800a1f20 DSPAddTask
 800a1f80 DSPAddPriorTask
+800a9600 PPCMfmsr
+800a9608 PPCMtmsr
 800a9d6c C_MTXLookAt
 800aaacc Read
 800aafb4 DVDLowReadDiskID
@@ -112,11 +117,14 @@
 800ad9fc DVDReadAbsAsyncPrio
 800ade98 DVDGetDriveStatus
 800ae2f8 DVDCheckDisk
+800aeeb0 VISetPreRetraceCallback
+800aeef4 VISetPostRetraceCallback
 800af1d8 VIInit
 800af688 VIWaitForRetrace
 800b0378 VIFlush
 800b04a8 VISetNextFrameBuffer
 800b0524 VISetBlack
+800b05a0 VIGetRetraceCount
 800b0780 VIGetTvFormat
 800b147c ARAlloc
 800b14e4 ARInit
@@ -475,6 +483,7 @@
 80346c20 LanguageNames__10KartLocale
 80347af8 __vt__7JKRAram
 80347e70 __vt__13JKRMemArchive
+80348318 s_queue__12JUTException
 8035192c OSExceptionLocations
 80355478 CharacterNames__20SceneCharacterSelect
 8035c638 s_gamePads__11KartGamePad
@@ -497,6 +506,7 @@
 
 803d3248 s_videoMode__10KartLocale
 803d324c s_videoFrameMode__10KartLocale
+803d3288 s_messages__12JUTException
 803d332c s_systemHeapSize__9JFWSystem
 803d3b08 s_scene__11SequenceApp
 803d3b0c s_nextScene__11SequenceApp

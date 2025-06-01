@@ -6,6 +6,8 @@ class JKRThread {
 public:
     JKRThread(u32 stackSize, s32 messageCount, s32 priority);
     virtual ~JKRThread();
+
+protected:
     virtual void *run();
 
 private:

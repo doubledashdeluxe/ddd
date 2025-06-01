@@ -3,25 +3,31 @@ extern "C" {
 }
 
 #include <cube/Console.hh>
+#include <cube/Memory.hh>
 #include <cube/VI.hh>
 #include <payload/Lock.hh>
 
 extern "C" volatile u16 visel;
 
-extern "C" void VIInit() {
+void VIInit() {
     REPLACED(VIInit)();
-    VISetNextFrameBuffer(VI::Instance()->getXFB());
+    REPLACED(VISetNextFrameBuffer)(VI::Instance()->getXFB());
     VISetBlack(false);
 }
 
-extern "C" void VISetBlack(BOOL black) {
+void VISetNextFrameBuffer(void *fb) {
+    fb = reinterpret_cast<void *>(Memory::CachedToPhysical(fb));
+    REPLACED(VISetNextFrameBuffer(fb));
+}
+
+void VISetBlack(BOOL black) {
     if (Console::Instance()->m_isActive) {
         black = false;
     }
     REPLACED(VISetBlack)(black);
 }
 
-extern "C" u32 VIGetDTVStatus() {
+u32 VIGetDTVStatus() {
     Lock<NoInterrupts> lock;
     return visel & 1;
 }
