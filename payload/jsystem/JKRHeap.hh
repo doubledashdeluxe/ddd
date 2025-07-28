@@ -11,6 +11,7 @@ public:
     void freeAll();
     s32 resize(void *ptr, u32 size);
     u32 getFreeSize();
+    u32 getMaxAllocatableSize(s32 align);
 
     void *getStartAddr() const;
     void *getEndAddr() const;

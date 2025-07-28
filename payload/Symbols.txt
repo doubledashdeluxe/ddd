@@ -42,6 +42,7 @@
 80014cb8 freeAll__7JKRHeapFv
 80014d10 resize__7JKRHeapFPvUl
 80014d3c getFreeSize__7JKRHeapFv
+80014da4 getMaxAllocatableSize__7JKRHeapFl
 80014e14 FindFromRoot__7JKRHeapFPv
 800155a8 __nw__FUl
 8001563c __nw__FUlP7JKRHeapl
@@ -52,6 +53,7 @@
 80016890 __ct__9JKRThreadFUlll
 80016df8 Create__7JKRTaskFllUlP7JKRHeap
 80017094 request__7JKRTaskFPFPv_vPvPv
+800172bc Create__13JKRAssertHeapFP7JKRHeap
 800179a0 prepend__10JSUPtrListFP10JSUPtrLink
 80018ed4 print__10JUTConsoleFPCc
 80018df0 __dt__13J2DOrthoGraphFv
@@ -449,6 +451,7 @@
 801dd3c4 processAutoIP__6BBAMgrFv
 801dd628 disconnecting__6BBAMgrFb
 801dd7cc getState__6BBAMgrFv
+801ddbdc __ct__8AwardAppFv
 801ddfd0 updateKartPadRecord__9GhostFileFRC13KartPadRecord
 801de664 changeNumberTexture__12Kart2DCommonFlPP10J2DPictureUcbb
 801de75c getAsciiTexture__12Kart2DCommonFc
@@ -486,9 +489,11 @@
 80348318 s_queue__12JUTException
 8035192c OSExceptionLocations
 80355478 CharacterNames__20SceneCharacterSelect
+8035c1f0 __vt__7GameApp
 8035c638 s_gamePads__11KartGamePad
 8035c648 s_kartPads__11KartGamePad
 8035cbc8 s_config__6BBAMgr
+8035cc88 __vt__8AwardApp
 
 80371e08 Ecb
 80379a60 LinkAlarm
@@ -568,6 +573,7 @@
 803d5c98 s_kartPadInput__6PadMgr
 803d5c9c s_instance__11PadRecorder
 803d5ca8 s_instance__6BBAMgr
+803d5cb0 s_instance__8AwardApp
 803d5cb8 s_instance__12Kart2DCommon
 803d5cd0 s_instance__14MenuBackground
 803d5cd8 s_instance__13MenuTitleLine
