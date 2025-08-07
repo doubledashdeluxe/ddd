@@ -13,6 +13,12 @@ import tempfile
 from vendor.ninja_syntax import Writer
 
 
+def get_llvm_tool(tool, args):
+    llvm_dir = args.llvm_dir
+    if llvm_dir is None:
+        return tool
+    return os.path.join(llvm_dir, 'bin', tool)
+
 def get_flags(tool, platform, target, format_code_dirs, args):
     flags = []
     if tool == 'c' or tool == 'cc':
@@ -165,6 +171,7 @@ def get_flags(tool, platform, target, format_code_dirs, args):
         if platform == 'native':
             if 'win' in sys.platform or 'msys' in sys.platform:
                 flags += [
+                    '-Wl,/opt:nolldtailmerge',
                     '-Wl,/opt:ref',
                 ]
             else:
@@ -188,6 +195,7 @@ for arg in sys.argv[1:]:
 parser = argparse.ArgumentParser()
 parser.add_argument('--dry', action='store_true')
 parser.add_argument('--ci', action='store_true')
+parser.add_argument('--llvm-dir')
 parser.add_argument('--dolphin-force-gamecube', action='store_true')
 args = parser.parse_args(our_argv)
 
@@ -284,39 +292,40 @@ n.rule(
 )
 n.newline()
 
+ld = get_llvm_tool('ld.lld', args)
 if 'win' in sys.platform or 'msys' in sys.platform:
-    ld_command = 'ld.lld.exe $flags $in -o $out'
-else:
-    ld_command = 'ld.lld $flags $in -o $out'
+    ld += '.exe'
 n.rule(
     'ld',
-    command = ld_command,
+    command = f'{ld} $flags $in -o $out',
     description = 'LD $out',
 )
 n.newline()
 
+mc = get_llvm_tool('clang', args)
 n.rule(
     'mc',
-    command = 'clang -MD -MT $out -MF $out.d $flags -c $in -o $out',
+    command = f'{mc} -MD -MT $out -MF $out.d $flags -c $in -o $out',
     depfile = '$out.d',
     deps = 'gcc',
     description = 'MC $out',
 )
 n.newline()
 
+mcc = get_llvm_tool('clang++', args)
 n.rule(
     'mcc',
-    command = 'clang++ -MD -MT $out -MF $out.d $flags -c $in -o $out',
+    command = f'{mcc} -MD -MT $out -MF $out.d $flags -c $in -o $out',
     depfile = '$out.d',
     deps = 'gcc',
     description = 'MCC $out',
 )
 n.newline()
 
-mld_command = 'clang++ $flags $in -o $out'
+mld = get_llvm_tool('clang++', args)
 n.rule(
     'mld',
-    command = mld_command,
+    command = f'{mld} $flags $in -o $out',
     description = 'MLD $out',
 )
 n.newline()
@@ -911,6 +920,24 @@ n.build(
     'phony',
     check_libraries,
 )
+n.newline()
+
+n.build(
+    'all',
+    'phony',
+    [
+        'ddd',
+        'tests',
+        'fuzzers',
+        'checks',
+    ]
+)
+n.newline()
+
+default = ['ddd', 'tests', 'fuzzers']
+if 'win' not in sys.platform and 'msys' not in sys.platform:
+    default += ['checks']
+n.default(default)
 
 if args.dry:
     with open('build.ninja', 'w') as out_file:

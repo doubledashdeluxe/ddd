@@ -2,26 +2,38 @@ name: Build DDD
 
 on: [push, pull_request]
 
+env:
+  llvm-version: 20.1.8
+
 defaults:
   run:
     shell: bash
 
 jobs:
-  build-linux:
-    name: Build on Linux
-    runs-on: ubuntu-24.04
+  build:
+    name: Build
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-24.04
+          - windows-2025
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Setup LLVM
+        uses: ./.github/actions/setup-llvm
+        with:
+          llvm-version: ${{ env.llvm-version }}
       - name: Install Wine
+        if: runner.os == 'Linux'
         run: |
           sudo dpkg --add-architecture i386
           sudo apt-get update
           sudo apt-get install wine32
           WINEARCH=win32 winecfg
-      - name: Install LLD
-        run: sudo update-alternatives --install /usr/bin/ld.lld ld.lld /usr/bin/ld.lld-18 18
       - name: Install Python
         uses: actions/setup-python@v5
         with:
@@ -38,63 +50,28 @@ jobs:
         if: steps.cache-cw.outputs.cache-hit != 'true'
         run: |
           mkdir cache && cd cache
-          wget "https://www.nxp.com/lgfiles/devsuites/PowerPC/CW55xx_v2_10_SE.exe"
+          curl -OJ https://www.nxp.com/lgfiles/devsuites/PowerPC/CW55xx_v2_10_SE.exe
           cd ..
       - name: Prepare tools
         run: bash tools/prepare.sh cache/CW55xx_v2_10_SE.exe
       - name: Build
-        run: python build.py --ci -- ddd
+        run: python build.py --ci --llvm-dir tools/llvm -- ddd
       - name: Upload result
         uses: actions/upload-artifact@v4
         with:
-          name: ddd-linux
-          path: out
-
-  build-windows:
-    name: Build on Windows
-    runs-on: windows-2022
-    timeout-minutes: 20
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Install Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      - name: Install pyelftools
-        run: pip install pyelftools
-      - name: Cache CodeWarrior
-        id: cache-cw
-        uses: actions/cache@v4
-        with:
-          path: cache
-          key: ${{ runner.os }}-cw-se-v2.10
-      - name: Download CodeWarrior
-        if: steps.cache-cw.outputs.cache-hit != 'true'
-        run: |
-          mkdir cache && cd cache
-          curl -OJ "https://www.nxp.com/lgfiles/devsuites/PowerPC/CW55xx_v2_10_SE.exe"
-          cd ..
-      - name: Prepare tools
-        run: bash tools/prepare.sh cache/CW55xx_v2_10_SE.exe
-      - name: Build
-        run: python build.py --ci -- ddd
-      - name: Upload result
-        uses: actions/upload-artifact@v4
-        with:
-          name: ddd-windows
+          name: ${{ runner.os }}-ddd
           path: out
 
   compare-results:
     name: Compare results
     runs-on: ubuntu-24.04
-    needs: [build-linux, build-windows]
+    needs: build
     timeout-minutes: 5
     steps:
       - name: Download results
         uses: actions/download-artifact@v4
       - name: Compare
-        run: cmp ddd-linux/boot.dol ddd-windows/boot.dol
+        run: cmp Linux-ddd/boot.dol Windows-ddd/boot.dol
 
   test:
     name: Test
@@ -103,19 +80,26 @@ jobs:
       matrix:
         os:
           - ubuntu-24.04
-          - windows-2022
+          - windows-2025
     runs-on: ${{ matrix.os }}
     timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Setup LLVM
+        uses: ./.github/actions/setup-llvm
+        with:
+          llvm-version: ${{ env.llvm-version }}
       - name: Install Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+      - name: Setup ASan
+        if: runner.os == 'Windows'
+        run: echo tools/llvm/lib/clang/20/lib/windows >> $GITHUB_PATH
       - name: Test
         run: |
-          python build.py --ci -- tests
+          python build.py --ci --llvm-dir tools/llvm -- tests
           out/tests
 
   fuzz:
@@ -125,41 +109,46 @@ jobs:
       matrix:
         os:
           - ubuntu-24.04
-          - windows-2022
+          - windows-2025
     runs-on: ${{ matrix.os }}
     timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Setup LLVM
+        uses: ./.github/actions/setup-llvm
+        with:
+          llvm-version: ${{ env.llvm-version }}
       - name: Install Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+      - name: Setup ASan
+        if: runner.os == 'Windows'
+        run: echo tools/llvm/lib/clang/20/lib/windows >> $GITHUB_PATH
       - name: Fuzz
         run: |
-          python build.py --ci -- fuzzers
+          python build.py --ci --llvm-dir tools/llvm -- fuzzers
           python fuzz.py data/fuzzers/inputs/*
           python fuzz.py -max_total_time=10
 
   check:
-    name: Check
-    strategy:
-      fail-fast: false
-      matrix:
-        os:
-          - ubuntu-24.04
-          - windows-2022
-    runs-on: ${{ matrix.os }}
+    name: Check on Linux
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Setup LLVM
+        uses: ./.github/actions/setup-llvm
+        with:
+          llvm-version: ${{ env.llvm-version }}
       - name: Install Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
       - name: Check
-        run: python build.py --ci -- checks
+        run: python build.py --ci --llvm-dir tools/llvm -- checks
 
   format:
     name: Format
@@ -168,15 +157,19 @@ jobs:
       matrix:
         os:
           - ubuntu-24.04
-          - windows-2022
+          - windows-2025
     runs-on: ${{ matrix.os }}
     timeout-minutes: 5
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Setup LLVM
+        uses: ./.github/actions/setup-llvm
+        with:
+          llvm-version: ${{ env.llvm-version }}
       - name: Install Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
       - name: Format
-        run: python format.py --ci
+        run: python format.py --ci --llvm-dir tools/llvm

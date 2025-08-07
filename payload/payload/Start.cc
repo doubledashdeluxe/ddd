@@ -16,11 +16,11 @@ extern "C" {
 #pragma section RX "first"
 #endif
 
-extern "C" void __init_registers(void);
-extern "C" void __init_hardware(void);
-extern "C" void __init_data(void);
-extern "C" void __init_user(void);
-extern "C" int main(void);
+extern "C" void __init_registers();
+extern "C" void __init_hardware();
+extern "C" void __init_data();
+extern "C" void __init_user();
+int main();
 
 extern "C" void RunPayload(Context *context) {
     void (**ctorsStart)() = static_cast<void (**)()>(PayloadBinary::CtorsSectionStart());

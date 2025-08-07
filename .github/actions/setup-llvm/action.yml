@@ -1,0 +1,30 @@
+name: Setup LLVM
+
+inputs:
+  llvm-version:
+    description: LLVM version
+
+runs:
+  using: composite
+  steps:
+    - name: Cache
+      id: cache
+      uses: actions/cache@v4
+      with:
+        path: tools/llvm
+        key: ${{ runner.os }}-llvm-${{ inputs.llvm-version }}
+    - name: Setup
+      if: steps.cache.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        version=${{ inputs.llvm-version }}
+        if [ $RUNNER_OS == Linux ]; then
+          file=LLVM-$version-Linux-X64.tar.xz
+        elif [ $RUNNER_OS == Windows ]; then
+          file=clang+llvm-$version-x86_64-pc-windows-msvc.tar.xz
+        else
+          exit 1
+        fi
+        curl -LOJ https://github.com/llvm/llvm-project/releases/download/llvmorg-$version/$file
+        mkdir -p tools/llvm
+        tar xf $file -C tools/llvm --strip-components=1

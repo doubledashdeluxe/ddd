@@ -10,7 +10,7 @@ jobs:
       matrix:
         os:
           - ubuntu-24.04
-          - windows-2022
+          - windows-2025
     runs-on: ${{ matrix.os }}
     env:
       RUSTFLAGS: -D warnings
@@ -35,7 +35,7 @@ jobs:
       matrix:
         os:
           - ubuntu-24.04
-          - windows-2022
+          - windows-2025
     runs-on: ${{ matrix.os }}
     env:
       RUSTFLAGS: -D warnings
@@ -53,7 +53,7 @@ jobs:
       matrix:
         os:
           - ubuntu-24.04
-          - windows-2022
+          - windows-2025
     runs-on: ${{ matrix.os }}
     timeout-minutes: 5
     steps:
