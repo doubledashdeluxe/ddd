@@ -37,7 +37,6 @@ RunInRealMode:
     li r5, 0x0
     isync
     mtdbatu 3, r5
-    mtibatu 3, r5
     isync
 
     lis r5, 0xc800
