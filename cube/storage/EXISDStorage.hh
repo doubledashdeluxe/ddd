@@ -34,6 +34,8 @@ private:
     void *run();
     void *transfer();
     void handleEXT();
+    bool attach();
+    void detach();
     void pollAdd();
     void pollRemove();
 

@@ -42,16 +42,14 @@ EXISDStorage::EXISDStorage(u32 channel)
 void EXISDStorage::poll() {
     if (isContained()) {
         pollRemove();
-        if (m_channel != 2) {
-            EXIDetach(m_channel);
-        }
+        detach();
     } else {
         m_wasDetached = false;
-        if (m_channel == 2 || EXIAttach(m_channel, HandleEXT)) {
+        if (attach()) {
             pollAdd();
-        }
-        if (!isContained() && m_channel != 2) {
-            EXIDetach(m_channel);
+            if (!isContained()) {
+                detach();
+            }
         }
     }
     OSSendMessage(m_queue, nullptr, OS_MESSAGE_NOBLOCK);
@@ -83,6 +81,20 @@ void *EXISDStorage::transfer() {
 void EXISDStorage::handleEXT() {
     m_wasDetached = true;
     OSSendMessage(m_queue, nullptr, OS_MESSAGE_NOBLOCK);
+}
+
+bool EXISDStorage::attach() {
+    if (m_channel == 2) {
+        return true;
+    }
+    return EXIAttach(m_channel, HandleEXT);
+}
+
+void EXISDStorage::detach() {
+    if (m_channel == 2) {
+        return;
+    }
+    EXIDetach(m_channel);
 }
 
 bool EXISDStorage::dispatch(struct Transfer *transfer) {
