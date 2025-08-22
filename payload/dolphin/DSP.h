@@ -12,6 +12,8 @@ typedef struct {
 } DSPTaskInfo;
 size_assert(DSPTaskInfo, 0x50);
 
+u32 DSPCheckMailToDSP(void);
+void DSPSendMailToDSP(u32 mail);
 DSPTaskInfo *REPLACED(DSPAddTask)(DSPTaskInfo *taskInfo);
 REPLACE DSPTaskInfo *DSPAddTask(DSPTaskInfo *taskInfo);
 void REPLACED(DSPAddPriorTask)(DSPTaskInfo *taskInfo);

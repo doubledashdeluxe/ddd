@@ -28,6 +28,8 @@ enum {
 #endif
 };
 
+#define container_of(ptr, type, member) \
+    ((type *)((char *)(1 ? (ptr) : &((type *)0)->member) - offsetof(type, member)))
 #ifdef __CWCC__
 #define alignas(alignment) __attribute__((aligned(alignment)))
 #define size_assert(type, size) \

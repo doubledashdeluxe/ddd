@@ -1,11 +1,47 @@
 extern "C" {
 #include "CARD.h"
+
+#include "dolphin/DSP.h"
 }
 
+#include <cube/DCache.hh>
+#include <cube/Memory.hh>
+#include <cube/Platform.hh>
 #include <payload/VirtualCard.hh>
+#include <portable/Bytes.hh>
+
+struct CARDControl {
+    u8 _000[0x030 - 0x000];
+    DSPTaskInfo taskInfo;
+    u8 *workArea;
+    u8 _084[0x110 - 0x084];
+};
+size_assert(CARDControl, 0x110);
 
 static Array<VirtualCard *, CARD_NUM_CHANS> s_virtualCards(nullptr);
 static Array<VirtualCard *, CARD_NUM_CHANS> s_nextVirtualCards(nullptr);
+
+extern "C" REPLACE void CARDInitCallback(DSPTaskInfo *taskInfo) {
+    CARDControl *card = container_of(taskInfo, CARDControl, taskInfo);
+    u8 *workArea = card->workArea;
+    if (!Platform::IsGameCube()) {
+        u32 inputAddr = Bytes::ReadBE<u32>(workArea, 0x00);
+        u32 aramAddr = Bytes::ReadBE<u32>(workArea, 0x08);
+        u32 outputAddr = Bytes::ReadBE<u32>(workArea, 0x0c);
+        inputAddr = Memory::CachedToPhysical(reinterpret_cast<void *>(inputAddr)) | 0x80000000;
+        aramAddr |= 0x10000000;
+        outputAddr = Memory::CachedToPhysical(reinterpret_cast<void *>(outputAddr)) | 0x80000000;
+        Bytes::WriteBE<u32>(workArea, 0x00, inputAddr);
+        Bytes::WriteBE<u32>(workArea, 0x08, aramAddr);
+        Bytes::WriteBE<u32>(workArea, 0x0c, outputAddr);
+        DCache::Flush(workArea, 0x10);
+    }
+
+    DSPSendMailToDSP(0xff000000);
+    while (DSPCheckMailToDSP()) {}
+    DSPSendMailToDSP(Memory::CachedToPhysical(workArea));
+    while (DSPCheckMailToDSP()) {}
+}
 
 extern "C" s32 CARDFreeBlocks(s32 chan, s32 *bytesNotUsed, s32 *filesNotUsed) {
     if (s_virtualCards[chan]) {
