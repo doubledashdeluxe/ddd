@@ -9,7 +9,7 @@
 class SceneModeSelect : public Scene {
 public:
     enum {
-        ModeCount = 4,
+        ModeCount = 5,
     };
 
     SceneModeSelect(JKRArchive *archive, JKRHeap *heap);

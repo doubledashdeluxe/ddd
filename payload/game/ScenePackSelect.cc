@@ -20,10 +20,6 @@
 #include <portable/Algorithm.hh>
 #include <portable/UTF8.hh>
 
-extern "C" {
-#include <stdio.h>
-}
-
 ScenePackSelect::ScenePackSelect(JKRArchive *archive, JKRHeap *heap) : Scene(archive, heap) {
     SceneFactory *sceneFactory = SceneFactory::Instance();
     JKRArchive *mapSelectArchive = sceneFactory->archive(SceneFactory::ArchiveType::MapSelect);
@@ -96,24 +92,10 @@ void ScenePackSelect::init() {
     J2DPicture *iconPicture = m_modeScreen.search("BtlPict")->downcast<J2DPicture>();
     J2DPicture *namePicture = m_modeScreen.search("SubM")->downcast<J2DPicture>();
     RaceInfo &raceInfo = RaceInfo::Instance();
-    switch (raceInfo.m_raceMode) {
-    case RaceMode::Balloon:
-        iconPicture->changeTexture("Cup_Pict_Balloon.bti", 0);
-        namePicture->changeTexture("Mozi_Battle1.bti", 0);
-        break;
-    case RaceMode::Bomb:
-        iconPicture->changeTexture("Cup_Pict_Bomb.bti", 0);
-        namePicture->changeTexture("Mozi_Battle3.bti", 0);
-        break;
-    case RaceMode::Escape:
-        iconPicture->changeTexture("Cup_Pict_Shine.bti", 0);
-        namePicture->changeTexture("Mozi_Battle2.bti", 0);
-        break;
-    default:
-        iconPicture->changeTexture("Cup_Pict_LAN.bti", 0);
-        namePicture->changeTexture("Entry_Versus.bti", 0);
-        break;
-    }
+    const char *iconTextureName = RaceMode::IconTextureName(raceInfo.m_raceMode);
+    iconPicture->changeTexture(iconTextureName, 0);
+    const char *nameTextureName = RaceMode::NameTextureName(raceInfo.m_raceMode);
+    namePicture->changeTexture(nameTextureName, 0);
     for (u32 i = 0; i < m_packScreens.count(); i++) {
         J2DPicture *picture = m_packScreens[i].search("CIcon")->downcast<J2DPicture>();
         if (RaceInfo::Instance().isRace()) {

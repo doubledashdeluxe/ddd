@@ -90,24 +90,10 @@ void SceneCoursePoll::init() {
     J2DPicture *iconPicture = m_mainScreen.search("BtlPict")->downcast<J2DPicture>();
     J2DPicture *namePicture = m_mainScreen.search("SubM")->downcast<J2DPicture>();
     RaceInfo &raceInfo = RaceInfo::Instance();
-    switch (raceInfo.m_raceMode) {
-    case RaceMode::Balloon:
-        iconPicture->changeTexture("Cup_Pict_Balloon.bti", 0);
-        namePicture->changeTexture("Mozi_Battle1.bti", 0);
-        break;
-    case RaceMode::Bomb:
-        iconPicture->changeTexture("Cup_Pict_Bomb.bti", 0);
-        namePicture->changeTexture("Mozi_Battle3.bti", 0);
-        break;
-    case RaceMode::Escape:
-        iconPicture->changeTexture("Cup_Pict_Shine.bti", 0);
-        namePicture->changeTexture("Mozi_Battle2.bti", 0);
-        break;
-    default:
-        iconPicture->changeTexture("Cup_Pict_LAN.bti", 0);
-        namePicture->changeTexture("Entry_Versus.bti", 0);
-        break;
-    }
+    const char *iconTextureName = RaceMode::IconTextureName(raceInfo.m_raceMode);
+    iconPicture->changeTexture(iconTextureName, 0);
+    const char *nameTextureName = RaceMode::NameTextureName(raceInfo.m_raceMode);
+    namePicture->changeTexture(nameTextureName, 0);
 
     SequenceInfo &sequenceInfo = SequenceInfo::Instance();
     CourseManager *courseManager = CourseManager::Instance();

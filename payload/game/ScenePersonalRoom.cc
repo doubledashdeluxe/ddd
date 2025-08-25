@@ -194,20 +194,8 @@ void ScenePersonalRoom::init() {
     for (u32 i = 0; i < m_entryScreens.count(); i++) {
         J2DPicture *iconPicture = m_entryScreens[i].search("Icon")->downcast<J2DPicture>();
         RaceInfo &raceInfo = RaceInfo::Instance();
-        switch (raceInfo.m_raceMode) {
-        case RaceMode::Balloon:
-            iconPicture->changeTexture("Cup_Pict_Balloon.bti", 0);
-            break;
-        case RaceMode::Bomb:
-            iconPicture->changeTexture("Cup_Pict_Bomb.bti", 0);
-            break;
-        case RaceMode::Escape:
-            iconPicture->changeTexture("Cup_Pict_Shine.bti", 0);
-            break;
-        default:
-            iconPicture->changeTexture("Cup_Pict_LAN.bti", 0);
-            break;
-        }
+        const char *iconTextureName = RaceMode::IconTextureName(raceInfo.m_raceMode);
+        iconPicture->changeTexture(iconTextureName, 0);
     }
     for (u32 i = 0; i < m_options.count(); i++) {
         m_mainScreen.search("Option%u", i)->m_isVisible = i < m_optionCount;
