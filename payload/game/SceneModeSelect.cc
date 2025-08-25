@@ -38,15 +38,11 @@ SceneModeSelect::SceneModeSelect(JKRArchive *archive, JKRHeap *heap) : Scene(arc
         m_mainScreen.search("MArrow%02u", i + 1)->m_isVisible = false;
     }
 
-    Array<const char *, ModeCount> iconNames;
-    iconNames[0] = "Cup_Pict_LAN.bti";
-    iconNames[1] = "Cup_Pict_Balloon.bti";
-    iconNames[2] = "Cup_Pict_Shine.bti";
-    iconNames[3] = "Cup_Pict_Bomb.bti";
     Kart2DCommon *kart2DCommon = Kart2DCommon::Instance();
     for (u32 i = 0; i < m_modeScreens.count(); i++) {
         J2DPicture *iconPicture = m_modeScreens[i].search("Icon")->downcast<J2DPicture>();
-        iconPicture->changeTexture(iconNames[i], 0);
+        const char *iconTextureName = RaceMode::IconTextureName(Modes[i]);
+        iconPicture->changeTexture(iconTextureName, 0);
         Array<char, 32> path;
         snprintf(path.values(), path.count(), "/modenames/%lu.txt", Modes[i]);
         char *name = static_cast<char *>(ResMgr::GetPtr(ResMgr::ArchiveID::MRAMLoc, path.values()));
@@ -235,4 +231,5 @@ const Array<u32, SceneModeSelect::ModeCount> SceneModeSelect::Modes((u32[ModeCou
         RaceMode::Balloon,
         RaceMode::Escape,
         RaceMode::Bomb,
+        RaceMode::TA,
 });

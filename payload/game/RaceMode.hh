@@ -1,5 +1,7 @@
 #pragma once
 
+#include <portable/Types.hh>
+
 class RaceMode {
 public:
     enum {
@@ -12,6 +14,9 @@ public:
         Escape = 0x7,
         Award = 0x8,
     };
+
+    static const char *IconTextureName(u32 raceMode);
+    static const char *NameTextureName(u32 raceMode);
 
 private:
     RaceMode();
