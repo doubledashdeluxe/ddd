@@ -16,7 +16,7 @@ void Storage::Init() {
     OSInitMessageQueue(&s_queue, messages->values(), messages->count());
     Array<u8, 4 * 1024> *stack = new (MEM1Arena::Instance(), 0x8) Array<u8, 4 * 1024>;
     OSThread *thread = new (MEM1Arena::Instance(), 0x4) OSThread;
-    OSCreateThread(thread, Poll, nullptr, stack->values() + stack->count(), stack->count(), 12, 0);
+    OSCreateThread(thread, Poll, nullptr, stack->values() + stack->count(), stack->count(), 29, 0);
     OSResumeThread(thread);
 }
 
