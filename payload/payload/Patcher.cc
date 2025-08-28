@@ -6,6 +6,7 @@
 extern "C" u32 Config24MB[];
 extern "C" u32 Config48MB[];
 extern "C" u32 RealMode[];
+extern "C" u32 __LCEnable[];
 
 void Patcher::Run() {
     for (size_t i = 0; i < PatchCount; i++) {
@@ -45,6 +46,13 @@ void Patcher::Run() {
     }
     for (u32 i = 0; i < 6; i++) {
         uintptr_t address = reinterpret_cast<uintptr_t>(&RealMode[i]);
+        u32 *inst = reinterpret_cast<u32 *>(address | 0x40000000);
+        *inst = 0x4e800020;
+        DCache::Flush(inst, sizeof(*inst));
+        ICache::Invalidate(inst, sizeof(*inst));
+    }
+    for (u32 i = 0; i < 50; i++) {
+        uintptr_t address = reinterpret_cast<uintptr_t>(&__LCEnable[i]);
         u32 *inst = reinterpret_cast<u32 *>(address | 0x40000000);
         *inst = 0x4e800020;
         DCache::Flush(inst, sizeof(*inst));

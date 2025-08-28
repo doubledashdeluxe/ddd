@@ -108,6 +108,7 @@
 800a1f80 DSPAddPriorTask
 800a9600 PPCMfmsr
 800a9608 PPCMtmsr
+800a96cc PPCMfhid2
 800a9d6c C_MTXLookAt
 800aaacc Read
 800aafb4 DVDLowReadDiskID
@@ -229,6 +230,11 @@
 800e7068 DCFlushRange
 800e7098 DCStoreRange
 800e714c ICInvalidateRange
+800e71a4 __LCEnable
+800e7270 LCEnable
+800e72a8 LCDisable
+800e72f4 LCStoreData
+800e73a0 LCQueueWait
 800e78f4 OSSetCurrentContext
 800e79dc OSLoadContext
 800e803c OSReport
@@ -276,6 +282,7 @@
 800edc60 PADControlMotor
 800eff6c SIProbe
 800f0744 DBInit
+800f7cf8 THPInit
 800fcf80 SSDPStop
 800fd10c SSDPGetState
 
@@ -386,6 +393,7 @@
 8018b3f0 settingForWaitDemo__8RaceInfoFb
 8019e54c resetCommon__12RaceDirectorFv
 801af940 Create__8MovieAppFv
+801b0084 Create__11MoviePlayerFP7JKRHeap
 801b0314 DrawDone__11MoviePlayerFv
 801b48f4 Create__10DriverDataFv
 801c9760 __ct__14SceneTitleLineFP10JKRArchiveP7JKRHeapPCc
@@ -500,6 +508,8 @@
 80371e08 Ecb
 80379a60 LinkAlarm
 80379ae0 IFDefault
+803802a0 __THPLCWork512
+803802ac __THPLCWork640
 
 803ae998 s_volumeList__13JKRFileLoader
 803b6db0 s_instance__6J3DSys

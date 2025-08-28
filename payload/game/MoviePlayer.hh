@@ -1,9 +1,12 @@
 #pragma once
 
-#include <portable/Types.hh>
+#include <jsystem/JKRHeap.hh>
+#include <payload/Replace.hh>
 
 class MoviePlayer {
 public:
+    static void REPLACED(Create)(JKRHeap *heap);
+    REPLACE static void Create(JKRHeap *heap);
     static MoviePlayer *Instance();
     static void DrawDone();
 
