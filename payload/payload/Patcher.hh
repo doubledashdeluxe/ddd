@@ -15,6 +15,8 @@ private:
 
     Patcher();
 
+    static void Wipe(u32 *insts, u32 instCount);
+
     static const size_t PatchCount;
     static const Patch Patches[];
 };

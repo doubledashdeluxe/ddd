@@ -30,29 +30,15 @@ void Patcher::Run() {
         ICache::Invalidate(patch.from, sizeof(branchInst));
     }
 
-    for (u32 i = 0; i < 32; i++) {
-        uintptr_t address = reinterpret_cast<uintptr_t>(&Config24MB[i]);
-        u32 *inst = reinterpret_cast<u32 *>(address | 0x40000000);
-        *inst = 0x4e800020;
-        DCache::Flush(inst, sizeof(*inst));
-        ICache::Invalidate(inst, sizeof(*inst));
-    }
-    for (u32 i = 0; i < 32; i++) {
-        uintptr_t address = reinterpret_cast<uintptr_t>(&Config48MB[i]);
-        u32 *inst = reinterpret_cast<u32 *>(address | 0x40000000);
-        *inst = 0x4e800020;
-        DCache::Flush(inst, sizeof(*inst));
-        ICache::Invalidate(inst, sizeof(*inst));
-    }
-    for (u32 i = 0; i < 6; i++) {
-        uintptr_t address = reinterpret_cast<uintptr_t>(&RealMode[i]);
-        u32 *inst = reinterpret_cast<u32 *>(address | 0x40000000);
-        *inst = 0x4e800020;
-        DCache::Flush(inst, sizeof(*inst));
-        ICache::Invalidate(inst, sizeof(*inst));
-    }
-    for (u32 i = 0; i < 50; i++) {
-        uintptr_t address = reinterpret_cast<uintptr_t>(&__LCEnable[i]);
+    Wipe(Config24MB, 32);
+    Wipe(Config48MB, 32);
+    Wipe(RealMode, 6);
+    Wipe(__LCEnable, 50);
+}
+
+void Patcher::Wipe(u32 *insts, u32 instCount) {
+    for (u32 i = 0; i < instCount; i++) {
+        uintptr_t address = reinterpret_cast<uintptr_t>(&insts[i]);
         u32 *inst = reinterpret_cast<u32 *>(address | 0x40000000);
         *inst = 0x4e800020;
         DCache::Flush(inst, sizeof(*inst));
