@@ -186,7 +186,7 @@ bool LogFile::ShouldRemoveLogFile(const Storage::NodeInfo &nodeInfo) {
 
 Array<u8, 8 * 1024> LogFile::s_stack;
 OSThread LogFile::s_thread;
-Array<Array<char, 0x4000>, 2> LogFile::s_buffers;
+alignas(0x20) Array<Array<char, 0x4000>, 2> LogFile::s_buffers;
 bool LogFile::s_startTimeIsValid = false;
 s64 LogFile::s_startTime;
 u8 LogFile::s_index = 0;

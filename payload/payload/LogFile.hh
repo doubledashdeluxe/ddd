@@ -25,7 +25,7 @@ private:
     static OSThread s_thread;
     static bool s_startTimeIsValid;
     static s64 s_startTime;
-    static Array<Array<char, 0x4000>, 2> s_buffers;
+    alignas(0x20) static Array<Array<char, 0x4000>, 2> s_buffers;
     static u8 s_index;
     static u16 s_offset;
 };
