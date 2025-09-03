@@ -68,6 +68,17 @@ s32 DVDGetDriveStatus() {
     return DVD_STATE_END;
 }
 
+BOOL DVDCancelAsync(DVDCommandBlock *block, DVDCBCallback callback) {
+    if (!VirtualDI::IsInit()) {
+        return REPLACED(DVDCancelAsync)(block, callback);
+    }
+
+    Lock<Mutex> lock(s_mutex);
+
+    callback(0, block);
+    return true;
+}
+
 BOOL DVDCheckDisk() {
     if (!VirtualDI::IsInit()) {
         return REPLACED(DVDCheckDisk)();
