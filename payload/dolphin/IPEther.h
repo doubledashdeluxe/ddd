@@ -5,7 +5,8 @@
 
 typedef struct {
     s32 mode;
-    u8 _04[0x38 - 0x04];
+    s32 linkState;
+    u8 _08[0x38 - 0x08];
     u8 macaddr[6];
     u8 _3e[0xa8 - 0x3e];
 } IPInterface;

@@ -13,6 +13,7 @@ extern "C" {
 
 extern "C" IPInterface IFDefault;
 extern "C" OSAlarm LinkAlarm;
+extern "C" s32 LinkState;
 
 extern "C" void LinkCheckHandler(OSAlarm *alarm, OSContext *context);
 
@@ -29,6 +30,8 @@ BOOL IFInit(s32 mode) {
 
     OSCancelAlarm(&LinkAlarm);
     if (ETHInit(mode) >= 0) {
+        LinkState = 0;
+        IFDefault.linkState = 0;
         IFDefault.mode = mode;
         ETHGetMACAddr(IFDefault.macaddr);
         static Array<u16, 4> protocols;

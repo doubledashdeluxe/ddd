@@ -544,6 +544,7 @@
 803d4e0c FstStart
 803d4e10 FstStringStart
 803d4e14 MaxEntryNum
+803d5068 LinkState
 803d5184 OSExceptionTable
 803d51c4 OSLastInterruptSrr0
 803d51c8 OSLastInterrupt
