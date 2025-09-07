@@ -8,18 +8,22 @@ JSUPtrLink *JSUPtrList::getLastLink() const {
     return m_tail;
 }
 
-void *JSUPtrLink::getObjectPtr() const {
-    return m_value;
+u32 JSUPtrList::getNumLinks() const {
+    return m_numLinks;
+}
+
+void *JSUPtrLink::getObject() const {
+    return m_object;
 }
 
 JSUPtrList *JSUPtrLink::getList() const {
     return m_list;
 }
 
-JSUPtrLink *JSUPtrLink::getNext() const {
-    return m_next;
-}
-
 JSUPtrLink *JSUPtrLink::getPrev() const {
     return m_prev;
+}
+
+JSUPtrLink *JSUPtrLink::getNext() const {
+    return m_next;
 }

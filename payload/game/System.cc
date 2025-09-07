@@ -21,6 +21,7 @@ extern "C" {
 #include <payload/CourseManager.hh>
 #include <payload/DOLBinary.hh>
 #include <payload/PayloadBinary.hh>
+#include <payload/PerfOverlay.hh>
 #include <payload/online/CubeServerManager.hh>
 #include <portable/Log.hh>
 
@@ -34,6 +35,8 @@ void System::Init() {
             s_defaultAspectRatio = 38.0f / 21.0f;
         }
     }
+
+    PerfOverlay::Init(s_appHeap);
 
     DEBUG("%p %p mainI.dol", DOLBinary::Start(), DOLBinary::TextSectionEnd());
     DEBUG("%p %p payloadI.bin", PayloadBinary::Start(), PayloadBinary::TextSectionEnd());
@@ -79,24 +82,32 @@ void System::Run() {
         }
 
         s_display->beginRender();
+        PerfOverlay *perfOverlay = PerfOverlay::Instance();
+        perfOverlay->beginFrame();
 
         NetGameMgr *netGameMgr = NetGameMgr::Instance();
         bool isNetGameActive = netGameMgr->isActive();
         netGameMgr->adjustFrame();
         GameClock::Move();
+        perfOverlay->beginDraw();
+        perfOverlay->beginRender();
         J3DSys::Instance().drawInit();
         if (isNetGameActive) {
             PadMgr::Framework();
         }
         netGameMgr->framework();
         AppMgr::Draw();
+        perfOverlay->endDraw();
 
+        perfOverlay->beginCalc();
         if (!isNetGameActive) {
             PadMgr::Framework();
         }
         AppMgr::Calc();
+        perfOverlay->endCalc();
 
         s_display->endRender();
+        perfOverlay->endRender();
         s_display->endFrame();
 
         if (MoviePlayer::Instance()) {

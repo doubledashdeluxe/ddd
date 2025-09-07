@@ -42,7 +42,7 @@ JKRArchive *JKRArchive::Mount(const char *path, u32 mountMode, JKRHeap *heap, u3
 JKRArchive *JKRArchive::Mount(s32 entrynum, u32 mountMode, JKRHeap *heap, u32 mountDirection,
         bool patchesAllowed) {
     for (JSUPtrLink *link = s_volumeList.getFirstLink(); link; link = link->getNext()) {
-        JKRArchive *volume = static_cast<JKRArchive *>(link->getObjectPtr());
+        JKRArchive *volume = static_cast<JKRArchive *>(link->getObject());
         if (volume->m_entrynum == entrynum) {
             volume->m_mountCount++;
             return volume;
@@ -115,7 +115,7 @@ JKRArchive *JKRArchive::Mount(Archive archive, u32 archiveSize, u32 mountMode, J
         u32 mountDirection, bool ownsMemory, bool patchesAllowed) {
     s32 entrynum = reinterpret_cast<intptr_t>(archive.get());
     for (JSUPtrLink *link = s_volumeList.getFirstLink(); link; link = link->getNext()) {
-        JKRArchive *volume = static_cast<JKRArchive *>(link->getObjectPtr());
+        JKRArchive *volume = static_cast<JKRArchive *>(link->getObject());
         if (volume->m_entrynum == entrynum) {
             volume->m_mountCount++;
             return volume;

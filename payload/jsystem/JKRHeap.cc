@@ -1,11 +1,19 @@
 #include "JKRHeap.hh"
 
+Mutex &JKRHeap::getMutex() {
+    return m_mutex;
+}
+
 void *JKRHeap::getStartAddr() const {
     return m_startAddr;
 }
 
 void *JKRHeap::getEndAddr() const {
     return m_endAddr;
+}
+
+const JSUTree<JKRHeap> &JKRHeap::getHeapTree() const {
+    return m_heapTree;
 }
 
 JKRHeap *JKRHeap::GetSystemHeap() {

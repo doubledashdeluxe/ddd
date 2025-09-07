@@ -2,9 +2,33 @@ extern "C" {
 #include "OSThread.h"
 }
 
+#include <cube/Panic.hh>
 #include <payload/Lock.hh>
+#include <payload/PerfOverlay.hh>
 
 extern OSThreadQueue threadQueue;
+
+static OSThread *thread;
+
+extern "C" REPLACE void DefaultSwitchThreadCallback(OSThread *prev, OSThread *next) {
+    PerfOverlay *perfOverlay = PerfOverlay::Instance();
+    if (perfOverlay) {
+        perfOverlay->handleSwitchThread(prev, next);
+    }
+
+    if (!prev) {
+        return;
+    }
+
+    u32 *stackTop = prev->stackTop;
+    u32 *sp = &prev->context.gprs[1];
+    if (*sp <= reinterpret_cast<uintptr_t>(stackTop) || *stackTop != 0xdeadbabe) {
+        if (prev != thread) {
+            thread = prev;
+            PANIC("Stack overflow detected!");
+        }
+    }
+}
 
 static bool IsThreadActive(OSThread *thread) {
     if (thread->state == OS_THREAD_STATE_EXITED) {

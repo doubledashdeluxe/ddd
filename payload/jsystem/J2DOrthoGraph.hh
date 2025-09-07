@@ -2,6 +2,10 @@
 
 #include "jsystem/J2DGraphContext.hh"
 
+extern "C" {
+#include <dolphin/GX.h>
+}
+
 class J2DOrthoGraph : public J2DGraphContext {
 public:
     J2DOrthoGraph(f32 x, f32 y, f32 w, f32 h, f32 far, f32 near);
@@ -13,3 +17,5 @@ private:
     u8 _cc[0xd4 - 0xcc];
 };
 size_assert(J2DOrthoGraph, 0xd4);
+
+void J2DFillBox(f32 x, f32 y, f32 w, f32 h, GXColor color);
