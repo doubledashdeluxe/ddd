@@ -46,13 +46,13 @@ private:
     bool transferWrite(u32 firstSector, u32 sectorCount, void *buffer);
     bool transferErase(u32 firstSector, u32 sectorCount, void *buffer);
 
-    bool sendCommandAndRecvR1(u8 command, u32 argument);
-    bool sendCommand(u8 command, u32 argument);
-    bool recvR1(u8 &r1);
-    bool recvR3(u8 &r1, u32 &ocr);
-    bool recvR7(u8 &r1, u8 &commandVersion, u8 &vhs, u8 &checkPattern);
+    bool sendCommandAndRecvR1(u8 command, u32 argument, u8 r1Mask = ~0);
+    bool sendCommandAndRecvR1(EXI::Device &device, u8 command, u32 argument, u8 r1Mask = ~0);
+    bool sendCommand(EXI::Device &device, u8 command, u32 argument);
     bool recvR1(EXI::Device &device, u8 &r1);
-    bool waitReady(s64 duration);
+    bool recvR3(EXI::Device &device, u8 &r1, u32 &ocr);
+    bool recvR7(EXI::Device &device, u8 &r1, u8 &commandVersion, u8 &vhs, u8 &checkPattern);
+    bool waitReady(EXI::Device &device);
 
     static void *Run(void *param);
     static void *Transfer(void *param);
