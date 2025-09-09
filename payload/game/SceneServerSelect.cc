@@ -14,10 +14,6 @@
 #include <payload/online/Client.hh>
 #include <payload/online/CubeServerManager.hh>
 
-extern "C" {
-#include <string.h>
-}
-
 SceneServerSelect::SceneServerSelect(JKRArchive *archive, JKRHeap *heap) : Scene(archive, heap) {
     m_mainScreen.set("GDIndexLayout.blo", 0x20000, m_archive);
     for (u32 i = 0; i < m_serverScreens.count(); i++) {
@@ -35,7 +31,6 @@ SceneServerSelect::SceneServerSelect(JKRArchive *archive, JKRHeap *heap) : Scene
     }
     m_mainScreen.search("NSaveGD")->m_isVisible = false;
     for (u32 i = 0; i < m_serverScreens.count(); i++) {
-        m_serverScreens[i].search("Desc41")->m_isVisible = false;
         m_serverScreens[i].search("CIcon")->m_isVisible = false;
         m_serverScreens[i].search("CCount")->m_isVisible = false;
     }
@@ -50,16 +45,17 @@ SceneServerSelect::SceneServerSelect(JKRArchive *archive, JKRHeap *heap) : Scene
         m_serverAnmTransforms[i] = J2DAnmLoaderDataBase::Load("Line.bck", m_archive);
         m_serverScreens[i].setAnimation(m_serverAnmTransforms[i]);
     }
-    m_descAnmTransform = J2DAnmLoaderDataBase::Load("Line.bck", m_archive);
-    for (u32 i = 0; i < m_serverScreens.count(); i++) {
-        m_serverScreens[i].search("Desc")->setAnimation(m_descAnmTransform);
+    for (u32 i = 0; i < m_descAnmTransforms.count(); i++) {
+        m_descAnmTransforms[i] = J2DAnmLoaderDataBase::Load("Line.bck", m_archive);
+        m_serverScreens[i].search("Desc")->setAnimation(m_descAnmTransforms[i]);
     }
 
     m_arrowAnmTransformFrame = 0;
     m_serverAnmTransformFrames.fill(0);
-    m_descAnmTransformFrame = 0;
+    m_descAnmTransformFrames.fill(0);
     m_arrowAlphas.fill(0);
     m_serverAlphas.fill(0);
+    m_descAlphas.fill(0);
 }
 
 SceneServerSelect::~SceneServerSelect() {}
@@ -94,6 +90,9 @@ void SceneServerSelect::calc() {
     OnlineBackground::Instance()->calc();
     MenuTitleLine::Instance()->calc();
 
+    m_descOffset += 5;
+    refreshServers();
+
     m_arrowAnmTransformFrame = (m_arrowAnmTransformFrame + 1) % 35;
     for (u32 i = 0; i < 6; i++) {
         u32 serverIndex = m_rowIndex + i;
@@ -113,7 +112,9 @@ void SceneServerSelect::calc() {
     for (u32 i = 0; i < m_serverAnmTransforms.count(); i++) {
         m_serverAnmTransforms[i]->m_frame = m_serverAnmTransformFrames[i];
     }
-    m_descAnmTransform->m_frame = m_descAnmTransformFrame;
+    for (u32 i = 0; i < m_descAnmTransforms.count(); i++) {
+        m_descAnmTransforms[i]->m_frame = m_descAnmTransformFrames[i];
+    }
 
     for (u32 i = 0; i < m_arrowAlphas.count(); i++) {
         m_mainScreen.search("MArrow%02u", i + 1)->setAlpha(m_arrowAlphas[i]);
@@ -124,8 +125,14 @@ void SceneServerSelect::calc() {
         for (u32 j = 0; j < 26; j++) {
             m_serverScreens[i].search("Name%u", j)->setAlpha(m_serverAlphas[i]);
         }
-        for (u32 j = 0; j < 41; j++) {
-            m_serverScreens[i].search("Desc%u", j)->setAlpha(m_serverAlphas[i]);
+        for (u32 j = 0; j < 42; j++) {
+            u8 alpha = m_serverAlphas[i];
+            if (j == 0) {
+                alpha = (alpha * (255 - m_descAlphas[i])) >> 8;
+            } else if (j == 41) {
+                alpha = (alpha * m_descAlphas[i]) >> 8;
+            }
+            m_serverScreens[i].search("Desc%u", j)->setAlpha(alpha);
         }
         m_serverScreens[i].search("PIcon")->setAlpha(m_serverAlphas[i]);
         for (u32 j = 1; j <= 3; j++) {
@@ -141,6 +148,27 @@ void SceneServerSelect::calc() {
     }
 
     client->writeStateServer();
+}
+
+SceneServerSelect::DescText::DescText(SceneServerSelect &scene, u32 descIndex)
+    : m_scene(scene), m_descIndex(descIndex) {}
+
+SceneServerSelect::DescText::~DescText() {}
+
+const char *SceneServerSelect::DescText::getPart(u32 /* partIndex */) {
+    u32 serverIndex = m_scene.m_rowIndex + m_descIndex;
+    if (serverIndex == 3) {
+        return "This server description is too long to be fully displayed";
+    }
+    return "Server description";
+}
+
+void SceneServerSelect::DescText::setAnmTransformFrame(u8 anmTransformFrame) {
+    m_scene.m_descAnmTransformFrames[m_descIndex] = anmTransformFrame;
+}
+
+void SceneServerSelect::DescText::setAlpha(u8 alpha) {
+    m_scene.m_descAlphas[m_descIndex] = alpha;
 }
 
 bool SceneServerSelect::clientStateIdle() {
@@ -166,6 +194,7 @@ void SceneServerSelect::slideIn() {
     }
     m_rowIndex = m_serverIndex;
     m_rowIndex = Min(m_rowIndex, m_serverIndex - Min<u32>(m_serverCount, 5));
+    m_descOffset = 0;
 
     MenuTitleLine::Instance()->drop("SelectServer.bti");
     m_mainAnmTransformFrame = 0;
@@ -177,7 +206,6 @@ void SceneServerSelect::slideIn() {
             m_serverAlphas[i] = 0;
         }
     }
-    refreshServers();
     m_state = &SceneServerSelect::stateSlideIn;
 }
 
@@ -197,7 +225,6 @@ void SceneServerSelect::scrollUp() {
     m_mainAnmTransformFrame = 46;
     m_serverAnmTransformFrames.rotateRight(1);
     m_serverAlphas.rotateRight(1);
-    refreshServers();
     m_state = &SceneServerSelect::stateScrollUp;
 }
 
@@ -288,7 +315,6 @@ void SceneServerSelect::stateScrollDown() {
         m_mainAnmTransformFrame = 39;
         m_serverAnmTransformFrames.rotateLeft(1);
         m_serverAlphas.rotateLeft(1);
-        refreshServers();
         idle();
     }
 }
@@ -312,11 +338,8 @@ void SceneServerSelect::refreshServers() {
         const ServerManager::Server &server = serverManager->server(serverIndex);
         J2DScreen &screen = m_serverScreens[i];
         kart2DCommon->changeUnicodeTexture(server.name(), 26, screen, "Name");
-        const char *desc = "Server description";
-        if (serverIndex == 3) {
-            desc = "This server description is too long to be fully displayed";
-        }
-        kart2DCommon->changeUnicodeTexture(desc, 41, screen, "Desc");
+        DescText descText(*this, i);
+        descText.refresh(m_descOffset, 1, 42, screen, "Desc");
         u16 playerCounts[] = {1, 23, 456};
         u16 playerCount = playerCounts[serverIndex % 3];
         kart2DCommon->changeNumberTexture(playerCount, 3, screen, "PCount");
