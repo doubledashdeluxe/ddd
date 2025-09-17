@@ -221,7 +221,8 @@ void SceneModeSelect::refreshModes() {
     for (u32 i = 0; i < ModeCount; i++) {
         J2DScreen &screen = m_modeScreens[i];
         DescText descText(*this, i);
-        descText.refresh(m_descOffset, 4, 42, screen, "Desc");
+        u64 descOffset = Max<u64>(m_descOffset, 300) - 300;
+        descText.refresh(descOffset, 4, 42, screen, "Desc");
         kart2DCommon->changeNumberTexture(567, 3, screen, "PCount");
     }
 }

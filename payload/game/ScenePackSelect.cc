@@ -434,13 +434,14 @@ void ScenePackSelect::refreshPacks() {
         } else {
             pack = &courseManager->battlePack(packIndex);
         }
-        J2DScreen &screen = m_packScreens[i];
         u32 namePictureCount = 26 - sequenceInfo.m_isOnline * 4;
+        J2DScreen &screen = m_packScreens[i];
         kart2DCommon->changeUnicodeTexture(pack->name(), namePictureCount, screen, "Name");
-        u32 courseCount = pack->courseIndices().count();
         DescText descText(*this, i);
+        u64 descOffset = Max<u64>(m_descOffset, 300) - 300;
+        u32 courseCount = pack->courseIndices().count();
         u32 descPictureCount = 42 - sequenceInfo.m_isOnline * 6;
-        descText.refresh(m_descOffset, courseCount, descPictureCount, screen, "Desc");
+        descText.refresh(descOffset, courseCount, descPictureCount, screen, "Desc");
         kart2DCommon->changeNumberTexture(courseCount, 3, screen, "CCount");
         kart2DCommon->changeNumberTexture(packIndex * 12, 3, screen, "PCount");
     }

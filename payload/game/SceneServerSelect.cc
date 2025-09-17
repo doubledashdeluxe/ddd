@@ -339,7 +339,8 @@ void SceneServerSelect::refreshServers() {
         J2DScreen &screen = m_serverScreens[i];
         kart2DCommon->changeUnicodeTexture(server.name(), 26, screen, "Name");
         DescText descText(*this, i);
-        descText.refresh(m_descOffset, 1, 42, screen, "Desc");
+        u64 descOffset = Max<u64>(m_descOffset, 300) - 300;
+        descText.refresh(descOffset, 1, 42, screen, "Desc");
         u16 playerCounts[] = {1, 23, 456};
         u16 playerCount = playerCounts[serverIndex % 3];
         kart2DCommon->changeNumberTexture(playerCount, 3, screen, "PCount");
