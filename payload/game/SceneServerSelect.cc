@@ -91,6 +91,10 @@ void SceneServerSelect::calc() {
     MenuTitleLine::Instance()->calc();
 
     m_descOffset += 5;
+    const JUTGamePad::CButton &button = KartGamePad::GamePad(0)->button();
+    if (button.level() & (PAD_TRIGGER_L | PAD_TRIGGER_R)) {
+        m_descOffset += 20;
+    }
     refreshServers();
 
     m_arrowAnmTransformFrame = (m_arrowAnmTransformFrame + 1) % 35;

@@ -89,6 +89,10 @@ void SceneModeSelect::calc() {
     MenuTitleLine::Instance()->calc();
 
     m_descOffset += 5;
+    const JUTGamePad::CButton &button = KartGamePad::GamePad(0)->button();
+    if (button.level() & (PAD_TRIGGER_L | PAD_TRIGGER_R)) {
+        m_descOffset += 20;
+    }
     refreshModes();
 
     for (u32 i = 0; i < ModeCount; i++) {
