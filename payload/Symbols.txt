@@ -173,6 +173,7 @@
 800c3c6c EXIDma
 800c3d58 EXISync
 800c3fa4 EXIClearInterrupts
+800c3fec EXISetExiCallback
 800c4068 __EXIProbe
 800c4310 EXIAttach
 800c441c EXIDetach

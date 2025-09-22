@@ -1,11 +1,11 @@
 #pragma once
 
-#include <portable/Types.hh>
+#include <portable/Array.hh>
 
-struct ECID {
-    static ECID Get();
+class ECID {
+public:
+    static Array<u32, 4> Get();
 
-    u32 u;
-    u32 m;
-    u32 l;
+private:
+    ECID();
 };

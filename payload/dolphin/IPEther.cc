@@ -3,7 +3,6 @@ extern "C" {
 
 #include "dolphin/ETH.h"
 #include "dolphin/IPIgmp.h"
-#include "dolphin/IPRoute.h"
 #include "dolphin/OSAlarm.h"
 #include "dolphin/OSTime.h"
 }

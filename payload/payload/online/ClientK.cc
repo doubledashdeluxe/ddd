@@ -30,11 +30,11 @@ void ClientK::Init() {
     assert(lo + blockCount * 1024 <= hi);
     void *blocks = reinterpret_cast<void *>(lo);
 
-    ECID ecid = ECID::Get();
-    Array<u8, 0xc> pass;
-    Bytes::WriteBE<u32>(pass.values(), 0, ecid.u);
-    Bytes::WriteBE<u32>(pass.values(), 4, ecid.m);
-    Bytes::WriteBE<u32>(pass.values(), 8, ecid.l);
+    Array<u32, 4> ecid = ECID::Get();
+    Array<u8, 0x10> pass;
+    for (u32 i = 0; i < ecid.count(); i++) {
+        Bytes::WriteBE<u32>(pass.values(), i * 4, ecid[i]);
+    }
 
     alignas(0x20) Array<u8, 32> key;
     CubeRandom *random = CubeRandom::Instance();
