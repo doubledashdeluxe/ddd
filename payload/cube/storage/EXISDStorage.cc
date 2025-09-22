@@ -74,7 +74,7 @@ void *EXISDStorage::transfer() {
                 reinterpret_cast<void **>(const_cast<struct Transfer **>(&transfer)),
                 OS_MESSAGE_BLOCK);
         uintptr_t result = execute(transfer);
-        OSSendMessage(transfer->queue, reinterpret_cast<void **>(&result), OS_MESSAGE_BLOCK);
+        OSSendMessage(transfer->queue, reinterpret_cast<void *>(result), OS_MESSAGE_BLOCK);
     }
 }
 
