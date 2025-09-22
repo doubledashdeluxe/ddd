@@ -1,5 +1,6 @@
 #include <cube/EXI.hh>
 
+#include <cube/DCache.hh>
 #include <cube/Memory.hh>
 extern "C" {
 #include <dolphin/EXIBios.h>
@@ -52,6 +53,7 @@ bool EXI::Device::dmaRead(void *buffer, u32 size) {
     if (Memory::IsMEM1(buffer) && Memory::IsAligned(buffer, 0x20)) {
         u32 alignedSize = AlignDown<u32>(size, 0x20);
         if (alignedSize != 0) {
+            DCache::Invalidate(buffer, alignedSize);
             if (!EXIDma(m_channel, buffer, alignedSize, EXI_READ, nullptr)) {
                 return false;
             }
@@ -70,6 +72,7 @@ bool EXI::Device::dmaWrite(const void *buffer, u32 size) {
     if (Memory::IsMEM1(buffer) && Memory::IsAligned(buffer, 0x20)) {
         u32 alignedSize = AlignDown<u32>(size, 0x20);
         if (alignedSize != 0) {
+            DCache::Flush(buffer, alignedSize);
             if (!EXIDma(m_channel, const_cast<void *>(buffer), alignedSize, EXI_WRITE, nullptr)) {
                 return false;
             }
