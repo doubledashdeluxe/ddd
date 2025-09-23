@@ -18,6 +18,12 @@ You need:
 
 The used compiler is [NXP 'CodeWarrior Special Edition' for MPC55xx/MPC56xx v2.10](https://www.nxp.com/lgfiles/devsuites/PowerPC/CW55xx_v2_10_SE.exe). You can run `tools/prepare.sh` which will extract the relevant files from the installer with 7-Zip, or do the same manually. To use the compiler on non-Windows platforms, a Wine installation is needed.
 
+If you already have the compiler installed, you can find the relevant files in `C:\Program Files (x86)\Freescale\CW for MPC55xx and MPC56xx 2.10` and manually move them.
+
+- `./license.dat` -> `tools/cw/license.dat`
+- `./bin/lmgr11.dll` -> `tools/cw/lmgr11.dll`
+- `./PowerPC_EABI_Tools/Command_Line_Tools/mwcceppc.exe` -> `tools/cw/mwcceppc.exe`
+
 You can then simply run `build.py` to build the project. The `out` directory will contain the generated binary.
 
 ## Running tests
