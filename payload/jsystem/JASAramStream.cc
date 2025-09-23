@@ -5,9 +5,9 @@
 
 extern "C" {
 #include <dolphin/DVD.h>
-#include <dolphin/OSTime.h>
 }
 #include <payload/Lock.hh>
+#include <payload/crypto/CubeRandom.hh>
 #include <portable/Bytes.hh>
 extern "C" {
 #include <stdio.h>
@@ -203,8 +203,9 @@ bool JASAramStream::openFile(s32 entrynum) {
     if (length >= 0 && static_cast<size_t>(length) < dirPath.count()) {
         Storage::DirHandle dir(dirPath.values());
         Storage::NodeInfo nodeInfo;
+        CubeRandom *random = CubeRandom::Instance();
         for (u32 bestScore = 0; dir.read(nodeInfo);) {
-            u32 score = OSGetTime() % 1024;
+            u32 score = random->get(1024);
             if (score >= bestScore) {
                 name = nodeInfo.name;
                 bestScore = score;

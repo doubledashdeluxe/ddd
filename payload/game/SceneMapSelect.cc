@@ -15,13 +15,11 @@
 #include "game/System.hh"
 #include "game/SystemRecord.hh"
 
-extern "C" {
-#include <dolphin/OSTime.h>
-}
 #include <jsystem/J2DAnmLoaderDataBase.hh>
 #include <jsystem/J2DPicture.hh>
 #include <payload/CourseManager.hh>
 #include <payload/Lock.hh>
+#include <payload/crypto/CubeRandom.hh>
 #include <portable/Algorithm.hh>
 
 SceneMapSelect::SceneMapSelect(JKRArchive *archive, JKRHeap *heap)
@@ -646,10 +644,11 @@ void SceneMapSelect::stateNextScene() {
 }
 
 void SceneMapSelect::refreshSpin() {
-    m_spinMapIndex = OSGetTime() % m_mapCount;
+    CubeRandom *random = CubeRandom::Instance();
+    m_spinMapIndex = random->get(m_mapCount);
     m_spinRowIndex = m_spinMapIndex / 3;
     if (m_spinRowIndex > 0) {
-        m_spinRowIndex -= OSGetTime() % 2;
+        m_spinRowIndex -= random->get(2);
     }
     if (m_rowCount >= 2 && m_spinRowIndex == m_rowCount - 1) {
         m_spinRowIndex--;

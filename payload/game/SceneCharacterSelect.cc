@@ -14,11 +14,11 @@
 
 extern "C" {
 #include <dolphin/GXTransform.h>
-#include <dolphin/OSTime.h>
 }
 #include <jsystem/J2DAnmLoaderDataBase.hh>
 #include <jsystem/J2DOrthoGraph.hh>
 #include <jsystem/JKRExpHeap.hh>
+#include <payload/crypto/CubeRandom.hh>
 #include <portable/Algorithm.hh>
 #include <portable/Align.hh>
 
@@ -773,9 +773,10 @@ void SceneCharacterSelect::stateSpin() {
 
     m_characterIndices.fill(CharacterID::Count);
     u32 flags = 0;
+    CubeRandom *random = CubeRandom::Instance();
     for (u32 i = 0; i < m_statusCount; i++) {
         for (u32 j = 0; j < 2; j++) {
-            u32 characterIndex = OSGetTime() % (CharacterID::Count - (i * 2 + j));
+            u32 characterIndex = random->get(CharacterID::Count - (i * 2 + j));
             for (u32 k = 0; k < CharacterID::Count && k <= characterIndex; k++) {
                 characterIndex += flags >> k & 1;
             }

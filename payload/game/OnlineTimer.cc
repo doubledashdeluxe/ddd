@@ -2,9 +2,7 @@
 
 #include "game/Kart2DCommon.hh"
 
-extern "C" {
-#include <dolphin/OSTime.h>
-}
+#include <payload/crypto/CubeRandom.hh>
 #include <portable/Array.hh>
 
 void OnlineTimer::init(u32 duration) {
@@ -20,7 +18,7 @@ void OnlineTimer::calc() {
     u32 milliseconds = m_frame * 1000 / 60;
     if (m_frame != 0 && m_frame != m_duration) {
         u32 nextMilliseconds = (m_frame + 1) * 1000 / 60;
-        milliseconds += OSGetTime() % (nextMilliseconds - milliseconds);
+        milliseconds += CubeRandom::Instance()->get(nextMilliseconds - milliseconds);
     }
     u32 seconds = milliseconds / 1000;
     milliseconds %= 1000;

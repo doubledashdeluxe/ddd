@@ -11,10 +11,8 @@
 #include "game/SequenceApp.hh"
 #include "game/System.hh"
 
-extern "C" {
-#include <dolphin/OSTime.h>
-}
 #include <jsystem/J2DAnmLoaderDataBase.hh>
+#include <payload/crypto/CubeRandom.hh>
 
 extern "C" {
 #include <stdio.h>
@@ -95,6 +93,7 @@ void ScenePlayerList::calc() {
 
 void ScenePlayerList::slideIn() {
     Kart2DCommon *kart2DCommon = Kart2DCommon::Instance();
+    CubeRandom *random = CubeRandom::Instance();
     for (u32 i = 0; i < m_playerScreens.count(); i++) {
         J2DScreen &screen = m_playerScreens[i];
         GXColor color = Race2D::GetPlayerNumberColor(i);
@@ -127,7 +126,7 @@ void ScenePlayerList::slideIn() {
         for (u32 j = 0; j < pictures.count(); j++) {
             pictures[j] = screen.search("MMR%u", j)->downcast<J2DPicture>();
         }
-        s32 mmr = OSGetTime() % 10000;
+        s32 mmr = random->get(10000);
         kart2DCommon->changeNumberTexture(mmr, pictures.values(), pictures.count(), false, false);
     }
 

@@ -14,13 +14,11 @@
 #include "game/System.hh"
 
 #include <cube/Console.hh>
-extern "C" {
-#include <dolphin/OSTime.h>
-}
 #include <jsystem/J2DAnmLoaderDataBase.hh>
 #include <jsystem/J2DPicture.hh>
 #include <payload/CourseManager.hh>
 #include <payload/MemoryProtection.hh>
+#include <payload/crypto/CubeRandom.hh>
 #include <payload/online/Client.hh>
 #include <payload/online/CubeServerManager.hh>
 
@@ -268,7 +266,7 @@ void SceneTitle::stateIdle() {
                 raceInfo.settingForWaitDemo(s_demoType == 3);
                 u32 packIndex = 0;
                 u32 courseCount = courseManager->raceCourseCount(packIndex);
-                u32 courseIndex = OSGetTime() % courseCount;
+                u32 courseIndex = CubeRandom::Instance()->get(courseCount);
                 const CourseManager::Course &course =
                         courseManager->raceCourse(packIndex, courseIndex);
                 u32 courseOrder = raceInfo.getConsoleCount() < 2 ? 2 : 1;

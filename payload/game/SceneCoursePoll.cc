@@ -11,12 +11,10 @@
 #include "game/SequenceInfo.hh"
 #include "game/System.hh"
 
-extern "C" {
-#include <dolphin/OSTime.h>
-}
 #include <jsystem/J2DAnmLoaderDataBase.hh>
 #include <payload/CourseManager.hh>
 #include <payload/Lock.hh>
+#include <payload/crypto/CubeRandom.hh>
 
 SceneCoursePoll::SceneCoursePoll(JKRArchive *archive, JKRHeap *heap)
     : Scene(archive, heap), m_heap(heap) {
@@ -124,10 +122,11 @@ void SceneCoursePoll::draw() {
 void SceneCoursePoll::calc() {
     Kart2DCommon *kart2DCommon = Kart2DCommon::Instance();
     if (m_nameCount < m_playerCount) {
-        if (OSGetTime() % 30 == m_nameCount % 30) {
+        CubeRandom *random = CubeRandom::Instance();
+        if (random->get(30) == m_nameCount % 30) {
             J2DScreen &screen = m_courseScreens[m_nameCount];
             kart2DCommon->changeUnicodeTexture("ABC", 3, screen, "PName0");
-            if (OSGetTime() / 30 % 2) {
+            if (random->get(2) == 0) {
                 kart2DCommon->changeUnicodeTexture("DEF", 3, screen, "PName1");
                 m_playerNameAnmTransformFrames[m_nameCount] = 0;
             } else {
@@ -143,7 +142,7 @@ void SceneCoursePoll::calc() {
             }
             if (m_nameCount == 1) {
                 Lock<Mutex> lock(m_mutex);
-                m_courseIndices[m_nameCount] = OSGetTime() % m_courseCount;
+                m_courseIndices[m_nameCount] = random->get(m_courseCount);
                 refreshCourses();
             }
             m_nameCount++;
@@ -151,7 +150,7 @@ void SceneCoursePoll::calc() {
                 Lock<Mutex> lock(m_mutex);
                 for (u32 i = 0; i < m_playerCount; i++) {
                     if (m_courseIndices[i] >= m_courseCount) {
-                        m_courseIndices[i] = OSGetTime() % m_courseCount;
+                        m_courseIndices[i] = random->get(m_courseCount);
                     }
                 }
                 refreshCourses();
@@ -359,7 +358,7 @@ void SceneCoursePoll::stateSpin() {
     m_spinFrame++;
     if (m_spinFrame < 180) {
         if (m_spinFrame % 5 == 0) {
-            m_playerIndex = OSGetTime() % m_playerCount;
+            m_playerIndex = CubeRandom::Instance()->get(m_playerCount);
             GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CURSOL);
         }
     } else {

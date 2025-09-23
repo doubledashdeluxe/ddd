@@ -12,11 +12,9 @@
 #include "game/SequenceApp.hh"
 #include "game/SequenceInfo.hh"
 
-extern "C" {
-#include <dolphin/OSTime.h>
-}
 #include <jsystem/J2DAnmLoaderDataBase.hh>
 #include <payload/CourseManager.hh>
+#include <payload/crypto/CubeRandom.hh>
 
 extern "C" {
 #include <stdio.h>
@@ -159,8 +157,9 @@ ScenePersonalRoom::~ScenePersonalRoom() {}
 
 void ScenePersonalRoom::init() {
     m_charCount = 20;
+    CubeRandom *random = CubeRandom::Instance();
     for (u32 i = 0; i < m_charCount; i++) {
-        m_chars[i] = OSGetTime() % 8;
+        m_chars[i] = random->get(8);
     }
     m_revealCode = false;
     m_optionCount = 0;
