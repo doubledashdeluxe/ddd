@@ -4,6 +4,7 @@
 import argparse
 import glob
 import io
+import itertools
 import json
 import os
 import subprocess
@@ -194,6 +195,7 @@ for arg in sys.argv[1:]:
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--dry', action='store_true')
+parser.add_argument('--clean', action='store_true')
 parser.add_argument('--ci', action='store_true')
 parser.add_argument('--llvm-dir')
 parser.add_argument('--dolphin-force-gamecube', action='store_true')
@@ -949,6 +951,10 @@ out_file = tempfile.NamedTemporaryFile('w+', delete=False)
 out_file.write(out_buf.getvalue())
 out_file.close()
 n.close()
+
+if args.clean:
+    if not ('-t', 'clean') in itertools.pairwise(ninja_argv):
+        ninja_argv.extend(['-t', 'clean'])
 
 try:
     proc = subprocess.run(('ninja', '-f', out_file.name, *ninja_argv))
