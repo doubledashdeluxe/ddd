@@ -5,7 +5,7 @@
 
 class EXISDStorage : private SDStorage {
 public:
-    EXISDStorage(u32 channel);
+    EXISDStorage(u32 index);
     ~EXISDStorage();
 
     static void Init();
@@ -57,14 +57,18 @@ private:
     static void *Run(void *param);
     static void *Transfer(void *param);
     static void HandleEXT(s32 chan, struct OSContext *context);
+    static u32 IndexToChannel(u32 index);
+    static u32 IndexToDevice(u32 index);
     static u8 ComputeCRC7(const u8 *buffer, u32 size);
     static u16 ComputeCRC16(const u8 *buffer, u32 size);
 
+    u32 m_index;
     u32 m_channel;
+    u32 m_device;
     bool m_wasDetached;
     bool m_isSDHC;
     struct OSMessageQueue *m_queue;
     struct OSMessageQueue *m_transferQueue;
 
-    static Array<EXISDStorage *, 3> s_instances;
+    static Array<EXISDStorage *, 4> s_instances;
 };

@@ -39,7 +39,12 @@ extern "C" EXIControl Ecb[];
 
 extern "C" volatile EXIChannel exi[3];
 
+extern "C" void SetExiInterruptMask(s32 chan, EXIControl *ecb);
 extern "C" BOOL __EXIProbe(s32 chan);
+
+void EXISetExiInterruptMask(s32 chan) {
+    SetExiInterruptMask(chan, &Ecb[chan]);
+}
 
 void EXIProbeReset(void) {
     exiProbeStartTimes[0] = 0;

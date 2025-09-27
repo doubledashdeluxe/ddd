@@ -1,7 +1,8 @@
 #include <cube/storage/EXISDStorage.hh>
 
-EXISDStorage::EXISDStorage(u32 channel)
-    : SDStorage(nullptr), m_channel(channel), m_wasDetached(false), m_queue(nullptr) {
+EXISDStorage::EXISDStorage(u32 index)
+    : SDStorage(nullptr), m_index(index), m_channel(IndexToChannel(index)),
+      m_device(IndexToDevice(index)), m_wasDetached(false), m_queue(nullptr) {
     notify();
 }
 

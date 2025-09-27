@@ -25,7 +25,10 @@ bool EXI::Device::acquire(u32 channel, u32 device, u32 frequency, bool * /* wasD
 }
 
 void EXI::Device::release() {
-    exi[m_channel].cpr = 0;
+    if (m_ok) {
+        exi[m_channel].cpr = 0;
+        m_ok = false;
+    }
 }
 
 bool EXI::Device::immRead(void *buffer, u32 size) {
