@@ -262,6 +262,7 @@ bool Channel::RunApploaderFromVirtualDI(bool enableEXISD, bool enableUSB, bool e
         EXISDStorage exiSDStorage0(0);
         EXISDStorage exiSDStorage1(1);
         EXISDStorage exiSDStorage2(2);
+        EXISDStorage exiSDStorage3(3);
 
         return RunApploaderFromVirtualDI(false, enableUSB, enableWiiSD);
     }

@@ -16,8 +16,9 @@ void EXISDStorage::Init() {
     }
 }
 
-EXISDStorage::EXISDStorage(u32 channel)
-    : SDStorage(new(MEM1Arena::Instance(), 0x4) Mutex), m_channel(channel),
+EXISDStorage::EXISDStorage(u32 index)
+    : SDStorage(new(MEM1Arena::Instance(), 0x4) Mutex), m_index(index),
+      m_channel(IndexToChannel(index)), m_device(IndexToDevice(index)),
       m_queue(new(MEM1Arena::Instance(), 0x4) OSMessageQueue),
       m_transferQueue(new(MEM1Arena::Instance(), 0x4) OSMessageQueue) {
     Array<OSMessage, 1> *transferMessages = new (MEM1Arena::Instance(), 0x4) Array<OSMessage, 1>;
@@ -32,7 +33,7 @@ EXISDStorage::EXISDStorage(u32 channel)
     OSInitMessageQueue(m_queue, messages->values(), messages->count());
     notify();
     OSReceiveMessage(m_queue, nullptr, OS_MESSAGE_BLOCK);
-    if (m_channel != 2) {
+    if (EXI::CanSwap(m_channel, m_device)) {
         stack = new (MEM1Arena::Instance(), 0x8) Array<u8, 4 * 1024>;
         thread = new (MEM1Arena::Instance(), 0x4) OSThread;
         OSCreateThread(thread, Run, param, stack->values() + stack->count(), stack->count(), 11, 0);
@@ -45,7 +46,6 @@ void EXISDStorage::poll() {
         pollRemove();
         detach();
     } else {
-        m_wasDetached = false;
         if (attach()) {
             pollAdd();
             if (!isContained()) {
@@ -85,20 +85,23 @@ void EXISDStorage::handleEXT() {
 }
 
 bool EXISDStorage::attach() {
-    if (m_channel == 2) {
+    Lock<NoInterrupts> lock;
+    m_wasDetached = false;
+    if (!EXI::CanSwap(m_channel, m_device)) {
         return true;
     }
     return EXIAttach(m_channel, HandleEXT);
 }
 
 void EXISDStorage::detach() {
-    if (m_channel == 2) {
+    Lock<NoInterrupts> lock;
+    if (m_wasDetached) {
         return;
     }
-    Lock<NoInterrupts> lock;
-    if (!m_wasDetached) {
+    if (EXI::CanSwap(m_channel, m_device)) {
         EXIDetach(m_channel);
     }
+    m_wasDetached = true;
 }
 
 bool EXISDStorage::dispatch(struct Transfer *transfer) {
@@ -124,4 +127,4 @@ void EXISDStorage::HandleEXT(s32 chan, struct OSContext * /* context */) {
     s_instances[chan]->handleEXT();
 }
 
-Array<EXISDStorage *, 3> EXISDStorage::s_instances;
+Array<EXISDStorage *, 4> EXISDStorage::s_instances;

@@ -152,7 +152,7 @@ void *VirtualETH::run() {
 bool VirtualETH::attach() {
     Lock<NoInterrupts> lock;
     m_wasDetached = false;
-    if (m_channel != 2 && m_device == 0) {
+    if (EXI::CanSwap(m_channel, m_device)) {
         if (!EXIAttach(m_channel, HandleEXT)) {
             return false;
         }
@@ -168,17 +168,18 @@ bool VirtualETH::attach() {
 
 void VirtualETH::detach() {
     Lock<NoInterrupts> lock;
-    if (!m_wasDetached) {
-        if (m_channel == 2) {
-            OSSetInterruptHandler(25, nullptr);
-        } else {
-            EXISetExiCallback(m_channel + m_device, nullptr);
-        }
-        if (m_channel != 2 && m_device == 0) {
-            EXIDetach(m_channel);
-        }
-        m_wasDetached = true;
+    if (m_wasDetached) {
+        return;
     }
+    if (m_channel == 2) {
+        OSSetInterruptHandler(25, nullptr);
+    } else {
+        EXISetExiCallback(m_channel + m_device, nullptr);
+    }
+    if (EXI::CanSwap(m_channel, m_device)) {
+        EXIDetach(m_channel);
+    }
+    m_wasDetached = true;
 }
 
 bool VirtualETH::handleInterrupt() {

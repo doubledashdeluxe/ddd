@@ -21,6 +21,7 @@ public:
         bool m_ok;
     };
 
+    static bool CanSwap(u32 channel, u32 device);
     static bool GetID(u32 channel, u32 device, u32 &id);
 
 private:

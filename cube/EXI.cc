@@ -11,3 +11,7 @@ EXI::Device::~Device() {
 bool EXI::Device::ok() const {
     return m_ok;
 }
+
+bool EXI::CanSwap(u32 channel, u32 device) {
+    return channel != 2 && device == 0;
+}
