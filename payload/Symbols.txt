@@ -168,6 +168,7 @@
 800c22fc GXSetScissor
 800c2374 GXGetScissor
 800c23bc GXSetScissorBoxOffset
+800c387c SetExiInterruptMask
 800c3970 EXIImm
 800c3bcc EXIImmEx
 800c3c6c EXIDma

@@ -15,6 +15,7 @@ typedef void (*EXICallback)(s32 chan, OSContext *context);
 
 BOOL EXISelect(s32 chan, u32 dev, u32 freq);
 BOOL EXIDeselect(s32 chan);
+void EXISetExiInterruptMask(s32 chan);
 EXICallback EXISetExiCallback(s32 chan, EXICallback exiCallback);
 void EXIProbeReset(void);
 BOOL EXIAttach(s32 chan, EXICallback extCallback);

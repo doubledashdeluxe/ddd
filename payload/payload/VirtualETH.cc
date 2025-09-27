@@ -44,6 +44,8 @@ extern "C" {
 #include <string.h>
 }
 
+extern "C" volatile u32 intsr;
+
 s32 VirtualETH::init(s32 /* mode */) {
     uintptr_t msg = false;
     OSSendMessage(&m_queue, reinterpret_cast<void *>(msg), OS_MESSAGE_BLOCK);
@@ -157,6 +159,7 @@ bool VirtualETH::attach() {
     }
     if (m_channel == 2) {
         OSSetInterruptHandler(25, HandleEXI);
+        EXISetExiInterruptMask(m_channel);
     } else {
         EXISetExiCallback(m_channel + m_device, HandleEXI);
     }
@@ -753,6 +756,7 @@ void VirtualETH::HandleEXI(s32 /* chan */, OSContext * /* context */) {
 }
 
 void VirtualETH::HandleEXI(s16 /* interrupt */, OSContext * /* context */) {
+    intsr = 1 << 12;
     s_instance->handleEXI();
 }
 
