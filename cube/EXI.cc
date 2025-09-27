@@ -1,5 +1,7 @@
 #include "EXI.hh"
 
+EXI::Device::Device() : m_ok(false) {}
+
 EXI::Device::Device(u32 channel, u32 device, u32 frequency, bool *wasDetached) {
     acquire(channel, device, frequency, wasDetached);
 }

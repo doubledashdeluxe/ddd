@@ -6,6 +6,7 @@ class EXI {
 public:
     class Device {
     public:
+        Device();
         Device(u32 channel, u32 device, u32 frequency, bool *wasDetached);
         ~Device();
         bool ok() const;

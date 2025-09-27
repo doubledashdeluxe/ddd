@@ -249,17 +249,31 @@ bool EXISDStorage::execute(const struct Transfer *transfer) {
 }
 
 bool EXISDStorage::transferRead(u32 firstSector, u32 sectorCount, void *buffer) {
-    for (u32 sector = firstSector; sector < firstSector + sectorCount;
-            sector++, buffer = static_cast<u8 *>(buffer) + SectorSize) {
-        EXI::Device device(m_channel, m_device, 5, &m_wasDetached);
-        if (!device.ok()) {
+    EXI::Device device;
+    if (m_channel != 0) {
+        if (!device.acquire(m_channel, m_device, 5, &m_wasDetached)) {
             DEBUG("Failed to select device");
             return false;
         }
 
-        u32 block = m_isSDHC ? sector : sector * SectorSize;
-        if (!sendCommandAndRecvR1(device, Command::ReadSingleBlock, block)) {
+        u32 firstBlock = m_isSDHC ? firstSector : firstSector * SectorSize;
+        if (!sendCommandAndRecvR1(device, Command::ReadMultipleBlock, firstBlock)) {
             return false;
+        }
+    }
+
+    for (u32 sector = firstSector; sector < firstSector + sectorCount;
+            sector++, buffer = static_cast<u8 *>(buffer) + SectorSize) {
+        if (m_channel == 0) {
+            if (!device.acquire(m_channel, m_device, 5, &m_wasDetached)) {
+                DEBUG("Failed to select device");
+                return false;
+            }
+
+            u32 block = m_isSDHC ? sector : sector * SectorSize;
+            if (!sendCommandAndRecvR1(device, Command::ReadSingleBlock, block)) {
+                return false;
+            }
         }
 
         u8 token;
@@ -286,9 +300,39 @@ bool EXISDStorage::transferRead(u32 firstSector, u32 sectorCount, void *buffer) 
             DEBUG("Mismatched CRC16");
             return false;
         }
+
+        if (m_channel == 0) {
+            device.release();
+        }
     }
 
-    return true;
+    if (m_channel == 0) {
+        return true;
+    }
+
+    if (!sendCommand(device, Command::StopTransmission, 0)) {
+        DEBUG("Failed to send CMD12");
+        return false;
+    }
+
+    u8 dummy;
+    if (!device.immRead(&dummy, sizeof(dummy))) {
+        DEBUG("Failed to read dummy for CMD12");
+        return false;
+    }
+
+    u8 r1;
+    if (!recvR1(device, r1)) {
+        DEBUG("Failed to receive R1 for CMD12");
+        return false;
+    }
+
+    if (r1) {
+        DEBUG("CMD12 error");
+        return false;
+    }
+
+    return waitReady(device);
 }
 
 bool EXISDStorage::transferWrite(u32 firstSector, u32 sectorCount, void *buffer) {
