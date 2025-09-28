@@ -15,20 +15,21 @@ public:
         Secret = 0x09,
         None = 0x0b,
         HowManyPlayers = 0x0d,  // Added
-        NameSelect = 0x0e,      // Added
-        TandemSelect = 0x0f,    // Added
-        ServerSelect = 0x10,    // Added
-        RoomTypeSelect = 0x11,  // Added
-        RoomCodeEnter = 0x12,   // Added
-        ModeSelect = 0x13,      // Added
-        FormatSelect = 0x14,    // Added
-        PersonalRoom = 0x15,    // Added
-        TeamSelect = 0x16,      // Added
-        PlayerList = 0x17,      // Added
-        CharacterSelect = 0x18, // Added
-        MapSelect = 0x19,       // Moved
-        CoursePoll = 0x1a,      // Added
-        Count = 0x1b,
+        ProfileSelect = 0x0e,   // Added
+        NameSelect = 0x0f,      // Added
+        TandemSelect = 0x10,    // Added
+        ServerSelect = 0x11,    // Added
+        RoomTypeSelect = 0x12,  // Added
+        RoomCodeEnter = 0x13,   // Added
+        ModeSelect = 0x14,      // Added
+        FormatSelect = 0x15,    // Added
+        PersonalRoom = 0x16,    // Added
+        TeamSelect = 0x17,      // Added
+        PlayerList = 0x18,      // Added
+        CharacterSelect = 0x19, // Added
+        MapSelect = 0x1a,       // Moved
+        CoursePoll = 0x1b,      // Added
+        Count = 0x1c,
     };
 
 private:

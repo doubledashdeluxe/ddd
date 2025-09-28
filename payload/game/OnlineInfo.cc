@@ -1,7 +1,6 @@
 #include "OnlineInfo.hh"
 
 void OnlineInfo::reset() {
-    m_hasNames = false;
     m_hasIDs = false;
 }
 

@@ -427,6 +427,7 @@ void SceneCharacterSelect::calc() {
                 if (m_characterIndices[j] == i) {
                     m_outlineAnmTevRegKeyFrames[i] = j + 1;
                     m_padAnmColorFrames[i] = j + 1;
+                    m_windowAnmColorFrames[i] = 5;
                 }
             }
         }
@@ -442,6 +443,7 @@ void SceneCharacterSelect::calc() {
                     } else if (m_characterIndices[pad] == CharacterID::Count) {
                         m_outlineAnmTevRegKeyFrames[i] = pad + 1;
                         m_padAnmColorFrames[i] = pad + 1;
+                        m_windowAnmColorFrames[i] = 5;
                     }
                 }
             }

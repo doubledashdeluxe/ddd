@@ -8,7 +8,7 @@ public:
 
     static OnlineInfo &Instance();
 
-    bool m_hasNames;
+    Array<u32, 4> m_profileIndices;
     u32 m_roomType;
     bool m_hasIDs;
     Array<Array<u32, 2>, 4> m_characterIDs;

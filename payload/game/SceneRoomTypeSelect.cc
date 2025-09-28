@@ -236,8 +236,8 @@ void SceneRoomTypeSelect::stateIdle() {
             OnlineInfo::Instance().m_roomType = RoomType::Duel;
             RaceInfo::Instance().m_raceMode = RaceMode::VS;
         } else {
-            OnlineInfo::Instance().m_roomType = RoomType::Personal;
             m_nextScene = SceneType::RoomCodeEnter;
+            OnlineInfo::Instance().m_roomType = RoomType::Personal;
         }
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE_LITTLE);
         slideOut();

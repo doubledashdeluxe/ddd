@@ -65,7 +65,7 @@ SceneNameSelect::SceneNameSelect(JKRArchive *archive, JKRHeap *heap) : Scene(arc
 SceneNameSelect::~SceneNameSelect() {}
 
 void SceneNameSelect::init() {
-    if (SequenceApp::Instance()->prevScene() == SceneType::HowManyPlayers) {
+    if (SequenceApp::Instance()->prevScene() == SceneType::ProfileSelect) {
         m_padCount = SequenceInfo::Instance().m_padCount;
 
         for (u32 i = 0; i < 4; i++) {
@@ -77,11 +77,7 @@ void SceneNameSelect::init() {
         snprintf(name.values(), name.count(), "Player%lu.bti", m_padCount);
         picture->changeTexture(name.values(), 0);
 
-        OnlineInfo &onlineInfo = OnlineInfo::Instance();
-        if (!onlineInfo.m_hasNames) {
-            readNames();
-            onlineInfo.m_hasNames = true;
-        }
+        readNames();
         SequenceApp::Instance()->ready(SceneType::ServerSelect);
 
         for (u32 i = 0; i < m_nameEntryHelpers.count(); i++) {
@@ -194,7 +190,7 @@ void SceneNameSelect::stateIdle() {
         for (u32 i = 0; i < m_padCount; i++) {
             m_nameEntryHelpers[i]->stopEdit();
         }
-        m_nextScene = SceneType::HowManyPlayers;
+        m_nextScene = SceneType::ProfileSelect;
         slideOut();
         return;
     }
@@ -253,12 +249,16 @@ void SceneNameSelect::stateNextScene() {
 }
 
 void SceneNameSelect::readNames() {
-    m_savedNames[0] = SystemRecord::Instance().m_name;
+    OnlineInfo &onlineInfo = OnlineInfo::Instance();
+    SystemRecord &systemRecord = SystemRecord::Instance();
     ExtendedSystemRecord &extendedSystemRecord = ExtendedSystemRecord::Instance();
-    for (u32 i = 0; i < extendedSystemRecord.m_names.count(); i++) {
-        m_savedNames[1 + i] = extendedSystemRecord.m_names[i];
-    }
-    for (u32 i = 0; i < m_savedNames.count(); i++) {
+    for (u32 i = 0; i < m_padCount; i++) {
+        u32 profileIndex = onlineInfo.m_profileIndices[i];
+        if (profileIndex == 0) {
+            m_savedNames[i] = systemRecord.m_name;
+        } else {
+            m_savedNames[i] = extendedSystemRecord.m_names[profileIndex - 1];
+        }
         m_savedNames[i][m_savedNames[i].count() - 1] = '\0';
     }
 
@@ -266,10 +266,16 @@ void SceneNameSelect::readNames() {
 }
 
 void SceneNameSelect::writeNames() {
-    SystemRecord::Instance().m_name = m_unsavedNames[0];
+    OnlineInfo &onlineInfo = OnlineInfo::Instance();
+    SystemRecord &systemRecord = SystemRecord::Instance();
     ExtendedSystemRecord &extendedSystemRecord = ExtendedSystemRecord::Instance();
-    for (u32 i = 0; i < extendedSystemRecord.m_names.count(); i++) {
-        extendedSystemRecord.m_names[i] = m_unsavedNames[1 + i];
+    for (u32 i = 0; i < m_padCount; i++) {
+        u32 profileIndex = onlineInfo.m_profileIndices[i];
+        if (profileIndex == 0) {
+            systemRecord.m_name = m_unsavedNames[i];
+        } else {
+            extendedSystemRecord.m_names[profileIndex - 1] = m_unsavedNames[i];
+        }
     }
 
     m_savedNames = m_unsavedNames;

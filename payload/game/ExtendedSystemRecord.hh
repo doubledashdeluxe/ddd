@@ -4,7 +4,7 @@
 
 class ExtendedSystemRecord {
 public:
-    Array<Array<char, 4>, 3> m_names;
+    Array<Array<char, 4>, 15> m_names;
 
     static ExtendedSystemRecord &Instance();
 

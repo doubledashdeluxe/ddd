@@ -157,7 +157,7 @@ void SceneHowManyPlayers::stateSlideOut() {
 void SceneHowManyPlayers::stateIdle() {
     const JUTGamePad::CButton &button = KartGamePad::GamePad(0)->button();
     if (button.risingEdge() & PAD_BUTTON_A) {
-        m_nextScene = SceneType::NameSelect;
+        m_nextScene = SceneType::ProfileSelect;
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE_LITTLE);
         SequenceInfo::Instance().m_padCount = m_padCount;
         if (m_padCount == 1) {
