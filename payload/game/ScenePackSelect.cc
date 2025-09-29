@@ -199,10 +199,8 @@ void ScenePackSelect::calc() {
         for (u32 j = 0; j < 2; j++) {
             u8 alpha = m_packAlphas[i];
             m_packScreens[i].search("%cIcon", "CP"[j])->setAlpha(alpha);
-            for (u32 k = 1; k <= 3; k++) {
-                for (u32 l = 0; l < k; l++) {
-                    m_packScreens[i].search("%cCount%u%u", "CP"[j], k, l)->setAlpha(alpha);
-                }
+            for (u32 k = 0; k < 3; k++) {
+                m_packScreens[i].search("%cCount%u", "CP"[j], k)->setAlpha(alpha);
             }
         }
     }
@@ -446,8 +444,8 @@ void ScenePackSelect::refreshPacks() {
         u32 courseCount = pack->courseIndices().count();
         u32 descPictureCount = 42 - sequenceInfo.m_isOnline * 6;
         descText.refresh(descOffset, courseCount, descPictureCount, screen, "Desc");
-        kart2DCommon->changeNumberTexture(courseCount, 3, screen, "CCount");
-        kart2DCommon->changeNumberTexture(packIndex * 12, 3, screen, "PCount");
+        kart2DCommon->changeNumberTexture<3>(courseCount, screen, "CCount", true);
+        kart2DCommon->changeNumberTexture<3>(packIndex * 12, screen, "PCount", true);
     }
 }
 

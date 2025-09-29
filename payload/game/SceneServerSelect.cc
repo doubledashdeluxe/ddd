@@ -139,10 +139,8 @@ void SceneServerSelect::calc() {
             m_serverScreens[i].search("Desc%u", j)->setAlpha(alpha);
         }
         m_serverScreens[i].search("PIcon")->setAlpha(m_serverAlphas[i]);
-        for (u32 j = 1; j <= 3; j++) {
-            for (u32 k = 0; k < j; k++) {
-                m_serverScreens[i].search("PCount%u%u", j, k)->setAlpha(m_serverAlphas[i]);
-            }
+        for (u32 j = 0; j < 3; j++) {
+            m_serverScreens[i].search("PCount%u", j)->setAlpha(m_serverAlphas[i]);
         }
     }
 
@@ -347,7 +345,7 @@ void SceneServerSelect::refreshServers() {
         descText.refresh(descOffset, 1, 42, screen, "Desc");
         u16 playerCounts[] = {1, 23, 456};
         u16 playerCount = playerCounts[serverIndex % 3];
-        kart2DCommon->changeNumberTexture(playerCount, 3, screen, "PCount");
+        kart2DCommon->changeNumberTexture<3>(playerCount, screen, "PCount", true);
     }
 }
 

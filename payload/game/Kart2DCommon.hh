@@ -4,6 +4,12 @@
 #include <jsystem/J2DScreen.hh>
 #include <jsystem/JKRHeap.hh>
 #include <payload/Replace.hh>
+#include <portable/Array.hh>
+
+extern "C" {
+#include <inttypes.h>
+#include <stdio.h>
+}
 
 class Kart2DCommon {
 public:
@@ -14,6 +20,15 @@ public:
     void changeNumberTexture(s32 number, J2DPicture **pictures, u8 pictureCount, bool padWithZeros,
             bool fillWithHyphens);
     void changeNumberTexture(u32 number, u32 maxDigits, J2DScreen &screen, const char *prefix);
+
+    template <size_t N>
+    void changeNumberTexture(u32 number, J2DScreen &screen, const char *prefix,
+            bool center = false) {
+        Array<char, N + 1> text;
+        snprintf(text.values(), text.count(), "%" PRIu32, number);
+        changeUnicodeTexture(text.values(), N, screen, prefix, center);
+    }
+
     ResTIMG *REPLACED(getAsciiTexture)(char c);
     REPLACE ResTIMG *getAsciiTexture(char c);
     ResTIMG *getUnicodeTexture(u32 cp);
