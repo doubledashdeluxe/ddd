@@ -5,13 +5,10 @@
 #include <portable/Algorithm.hh>
 #include <portable/UTF8.hh>
 
-extern "C" {
-#include <string.h>
-}
-
 void Kart2DCommon::changeUnicodeTexture(const char *text, u32 count, J2DScreen &screen,
-        const char *prefix, f32 *startX, f32 *endX) {
+        const char *prefix, bool center) {
     u32 length = UTF8::Length(text);
+    f32 startX, endX;
     for (u32 i = 0; i < count; i++) {
         J2DPicture *picture = screen.search("%s%u", prefix, i)->downcast<J2DPicture>();
         picture->m_isVisible = i < length;
@@ -19,12 +16,17 @@ void Kart2DCommon::changeUnicodeTexture(const char *text, u32 count, J2DScreen &
             u32 c = length > count && i + 3 >= count ? '.' : UTF8::Next(text);
             picture->changeTexture(getUnicodeTexture(c), 0);
         }
-        if (startX && i == 0) {
-            *startX = picture->m_offset.x;
+        if (i == 0) {
+            startX = picture->m_offset.x;
         }
-        if (endX && i + 1 == Max<u32>(length, 1)) {
-            *endX = picture->m_offset.x;
+        if (i + 1 == Max<u32>(length, 1)) {
+            endX = picture->m_offset.x;
         }
+    }
+    if (center) {
+        J2DPane *pane = screen.search("%sO", prefix);
+        pane->m_offset.x = -(startX + endX) / 2.0f;
+        pane->calcMtx();
     }
 }
 

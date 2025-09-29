@@ -158,11 +158,7 @@ void SceneTeamSelect::calc() {
         char *name = static_cast<char *>(ResMgr::GetPtr(ResMgr::ArchiveID::MRAMLoc, path.values()));
         u32 size = ResMgr::GetResSize(ResMgr::ArchiveID::MRAMLoc, name);
         name[size - 1] = '\0';
-        f32 startX, endX;
-        kart2DCommon->changeUnicodeTexture(name, 9, m_entryScreens[i], "Team", &startX, &endX);
-        J2DPane *pane = m_entryScreens[i].search("TeamO");
-        pane->m_offset.x = -(startX + endX) / 2.0f;
-        pane->calcMtx();
+        kart2DCommon->changeUnicodeTexture(name, 9, m_entryScreens[i], "Team", true);
         J2DPicture::CornerColors cornerColors = Race2D::GetCornerColors(m_teams[i]);
         for (u32 j = 0; j < 9; j++) {
             J2DPicture *picture = m_entryScreens[i].search("Team%u", j)->downcast<J2DPicture>();

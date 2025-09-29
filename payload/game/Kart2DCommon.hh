@@ -10,7 +10,7 @@ public:
     Kart2DCommon();
 
     void changeUnicodeTexture(const char *text, u32 count, J2DScreen &screen, const char *prefix,
-            f32 *startX = nullptr, f32 *endX = nullptr);
+            bool center = false);
     void changeNumberTexture(s32 number, J2DPicture **pictures, u8 pictureCount, bool padWithZeros,
             bool fillWithHyphens);
     void changeNumberTexture(u32 number, u32 maxDigits, J2DScreen &screen, const char *prefix);

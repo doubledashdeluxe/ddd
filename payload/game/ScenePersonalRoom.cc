@@ -234,11 +234,7 @@ void ScenePersonalRoom::calc() {
         char *name = static_cast<char *>(ResMgr::GetPtr(ResMgr::ArchiveID::MRAMLoc, path.values()));
         u32 size = ResMgr::GetResSize(ResMgr::ArchiveID::MRAMLoc, name);
         name[size - 1] = '\0';
-        f32 startX, endX;
-        kart2DCommon->changeUnicodeTexture(name, 16, m_entryScreens[i], "Value", &startX, &endX);
-        J2DPane *pane = m_entryScreens[i].search("ValueO");
-        pane->m_offset.x = -(startX + endX) / 2.0f;
-        pane->calcMtx();
+        kart2DCommon->changeUnicodeTexture(name, 16, m_entryScreens[i], "Value", true);
     }
     kart2DCommon->changeNumberTexture(123, 3, m_mainScreen, "SCount");
 
