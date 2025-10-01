@@ -134,9 +134,9 @@ void SceneTitle::calc() {
 }
 
 void SceneTitle::fadeIn() {
-    CourseManager::Instance()->unlock();
-    CubeServerManager::Instance()->unlock();
     Client::Instance()->reset();
+    CubeServerManager::Instance()->unlock();
+    CourseManager::Instance()->unlock();
     m_entryIndex = Entry::Count;
     m_lanIsEnabled = false;
     m_printMemoryCard.reset();

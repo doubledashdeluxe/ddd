@@ -18,6 +18,7 @@ public:
     void sendAsync(void *addr, s32 length, ETHCallback2 callback2);
     void addMulticastAddress(const u8 macaddr[6]);
     void clearMulticastAddresses();
+    const char *name();
 
     static void Init();
     static VirtualETH *Instance();

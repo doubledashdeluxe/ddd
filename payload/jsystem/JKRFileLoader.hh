@@ -8,7 +8,7 @@ public:
     virtual ~JKRFileLoader();
     virtual void vf_0c();
     virtual void vf_10() = 0;
-    virtual void vf_14() = 0;
+    virtual void *getResource(const char *path) = 0;
     virtual void vf_18() = 0;
     virtual void vf_1c() = 0;
     virtual void vf_20() = 0;

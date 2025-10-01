@@ -36,7 +36,7 @@ public:
     JKRArchive(s32 entrynum, u32 mountMode);
     ~JKRArchive();
     void vf_10() override;
-    void vf_14() override;
+    void *getResource(const char *path) override;
     void vf_18() override;
     void vf_1c() override;
     void vf_20() override;

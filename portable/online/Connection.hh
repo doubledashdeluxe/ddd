@@ -1,5 +1,6 @@
 #pragma once
 
+#include "portable/Optional.hh"
 #include "portable/UniquePtr.hh"
 #include "portable/network/Address.hh"
 #include "portable/online/ClientPlatform.hh"
@@ -7,8 +8,10 @@
 
 class Connection {
 public:
-    Connection(const ClientPlatform &clientPlatform, Array<u8, 32> serverPK, const char *name);
+    Connection(const ClientPlatform &clientPlatform, Array<u8, 32> serverPK,
+            const Array<char, 32> &name, u16 port);
     ~Connection();
+    Optional<Address> address() const;
     void reset();
     bool read(ServerStateReader &reader, u8 *buffer, u32 size, const Address &address);
     bool write(ClientStateWriter &writer, u8 *buffer, u32 &size, Address &address);

@@ -108,10 +108,17 @@ void CubeServerManager::addServer(const Array<char, 256> &path) {
     Array<char, 32> name;
     snprintf(name.values(), name.count(), "%s", nameField.values());
     Array<char, 32> address;
-    snprintf(address.values(), address.count(), "%s", addressField.values());
+    u16 port = 3549;
+    const char *tail = strrchr(addressField.values(), ':');
+    if (tail && sscanf(tail, ":%hu", &port) == 1) {
+        snprintf(address.values(), address.count(), "%.*s",
+                static_cast<int>(tail - addressField.values()), addressField.values());
+    } else {
+        snprintf(address.values(), address.count(), "%s", addressField.values());
+    }
 
     DEBUG("Adding server %s...", path.values());
-    Server server(name, address, publicKey);
+    Server server(name, address, port, publicKey);
     m_servers.pushBack(server);
 }
 
@@ -120,7 +127,7 @@ void CubeServerManager::sortServersByName() {
 }
 
 bool CubeServerManager::CompareServersByName(const Server &a, const Server &b) {
-    const char *na = a.name(), *nb = b.name();
+    const char *na = a.name().values(), *nb = b.name().values();
     return UTF8::CaseCompare(na, nb) <= 0;
 }
 

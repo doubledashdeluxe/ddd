@@ -3,9 +3,20 @@
 extern "C" {
 #include <dolphin/IPRoute.h>
 }
+#include <portable/Bytes.hh>
 
 bool CubeNetwork::isRunning() const {
     return SOIsRunning();
+}
+
+const char *CubeNetwork::name() const {
+    return SOName();
+}
+
+u32 CubeNetwork::address() const {
+    u8 addr[4];
+    IPGetAddr(nullptr, addr);
+    return Bytes::ReadBE<u32>(addr, 0);
 }
 
 void CubeNetwork::ensureStarted(SOConfig &config) {

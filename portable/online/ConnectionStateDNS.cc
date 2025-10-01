@@ -4,23 +4,17 @@
 
 extern "C" {
 #include <monocypher/monocypher.h>
-
-#include <stdio.h>
-#include <string.h>
 }
 
 ConnectionStateDNS::ConnectionStateDNS(const ClientPlatform &platform, Array<u8, 32> serverPK,
-        const char *name)
-    : ConnectionState(platform, serverPK), m_port(3549) {
-    const char *port = strrchr(name, ':');
-    if (port && sscanf(port, ":%hu", &m_port) == 1) {
-        snprintf(m_name.values(), m_name.count(), "%.*s", static_cast<int>(port - name), name);
-    } else {
-        snprintf(m_name.values(), m_name.count(), "%s", name);
-    }
-}
+        Array<char, 32> name, u16 port)
+    : ConnectionState(platform, serverPK), m_name(name), m_port(port) {}
 
 ConnectionStateDNS::~ConnectionStateDNS() {}
+
+Optional<Address> ConnectionStateDNS::address() const {
+    return Optional<Address>();
+}
 
 ConnectionState &ConnectionStateDNS::reset() {
     return *this;

@@ -83,6 +83,10 @@ void VirtualETH::addMulticastAddress(const u8 /* macaddr */[6]) {}
 
 void VirtualETH::clearMulticastAddresses() {}
 
+const char *VirtualETH::name() {
+    return "ENC28J60";
+}
+
 void VirtualETH::Init() {
     s_instance = new (MEM1Arena::Instance(), 0x4) VirtualETH;
 }

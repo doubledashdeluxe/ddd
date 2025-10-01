@@ -127,8 +127,8 @@ void SceneNameSelect::calc() {
 }
 
 void SceneNameSelect::slideIn() {
-    CubeServerManager::Instance()->unlock();
     Client::Instance()->reset();
+    CubeServerManager::Instance()->unlock();
     MenuTitleLine::Instance()->drop("SelectName.bti");
     m_mainAnmTransformFrame = 0;
     m_padCountAnmTransformFrame = 0;

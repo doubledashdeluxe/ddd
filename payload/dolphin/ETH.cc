@@ -78,3 +78,11 @@ void ETHClearMulticastAddresses() {
 
     REPLACED(ETHClearMulticastAddresses)();
 }
+
+const char *ETHName() {
+    if (s_virtualETH) {
+        return s_virtualETH->name();
+    }
+
+    return "BBA";
+}

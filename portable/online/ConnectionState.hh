@@ -1,6 +1,7 @@
 #pragma once
 
 #include "portable/Array.hh"
+#include "portable/Optional.hh"
 #include "portable/network/Address.hh"
 #include "portable/online/ClientPlatform.hh"
 
@@ -11,6 +12,7 @@ class ConnectionState {
 public:
     ConnectionState(const ClientPlatform &platform, Array<u8, 32> serverPK);
     virtual ~ConnectionState();
+    virtual Optional<Address> address() const = 0;
     virtual ConnectionState &reset() = 0;
     virtual ConnectionState &read(ServerStateReader &reader, u8 *buffer, u32 size,
             const Address &address, bool &ok) = 0;

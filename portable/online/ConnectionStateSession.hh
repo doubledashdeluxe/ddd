@@ -8,6 +8,7 @@ public:
     ConnectionStateSession(const ClientPlatform &platform, Array<u8, 32> serverPK, Address address,
             Session session);
     ~ConnectionStateSession() override;
+    Optional<Address> address() const override;
     ConnectionState &reset() override;
     ConnectionState &read(ServerStateReader &reader, u8 *buffer, u32 size, const Address &address,
             bool &ok) override;

@@ -30,7 +30,7 @@ private:
     typedef ClientState &(ClientState::*Writer)();
 
     bool clientStateIdle() override;
-    bool clientStateServer() override;
+    bool clientStateServer(const ClientStateServerInfo &info) override;
     void clientStateError() override;
 
     bool updateState(ClientState &nextState);

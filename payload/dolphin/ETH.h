@@ -32,3 +32,5 @@ void REPLACED(ETHAddMulticastAddress)(const u8 macaddr[6]);
 REPLACE void ETHAddMulticastAddress(const u8 macaddr[6]);
 void REPLACED(ETHClearMulticastAddresses)(void);
 REPLACE void ETHClearMulticastAddresses(void);
+
+const char *ETHName(void);

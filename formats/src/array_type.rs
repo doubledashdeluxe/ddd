@@ -28,10 +28,15 @@ impl<T: DataType> DataType for ArrayType<T> {
     }
 
     fn rs_read(&self, name: &str) -> String {
+        let len_check = if self.min_len == 0 {
+            format!("*{}_len > {}", name, self.max_len)
+        } else {
+            format!("*{}_len < {} || *{}_len > {}", name, self.min_len, name, self.max_len)
+        };
         format!(
             concat!(
                 "let ({}_len, buf) = buf.split_first().ok_or(())?;\n",
-                "if *{}_len < {} || *{}_len > {} {{\n",
+                "if {} {{\n",
                 "    return Err(());\n",
                 "}}\n",
                 "let mut {} = Vec::with_capacity(*{}_len as usize);\n",
@@ -42,10 +47,7 @@ impl<T: DataType> DataType for ArrayType<T> {
                 "}})?;",
             ),
             name,
-            name,
-            self.min_len,
-            name,
-            self.max_len,
+            len_check,
             name,
             name,
             name,
@@ -56,9 +58,14 @@ impl<T: DataType> DataType for ArrayType<T> {
     }
 
     fn rs_write(&self, name: &str) -> String {
+        let len_check = if self.min_len == 0 {
+            format!("{}.len() > {}", name, self.max_len)
+        } else {
+            format!("{}.len() < {} || {}.len() > {}", name, self.min_len, name, self.max_len)
+        };
         format!(
             concat!(
-                "if {}.len() < {} || {}.len() > {} {{\n",
+                "if {} {{\n",
                 "    return Err(());\n",
                 "}}\n",
                 "let ({}_len, buf) = buf.split_first_mut().ok_or(())?;\n",
@@ -68,10 +75,7 @@ impl<T: DataType> DataType for ArrayType<T> {
                 "    Ok(buf)\n",
                 "}})?;",
             ),
-            name,
-            self.min_len,
-            name,
-            self.max_len,
+            len_check,
             name,
             name,
             name,

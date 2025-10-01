@@ -2,10 +2,12 @@
 
 #include "game/Scene.hh"
 
+#include <jsystem/J2DPicture.hh>
 #include <jsystem/J2DScreen.hh>
 #include <payload/SlidingText.hh>
 #include <portable/Array.hh>
 #include <portable/online/ClientReadHandler.hh>
+#include <portable/online/ServerManager.hh>
 
 class SceneServerSelect
     : public Scene
@@ -35,7 +37,7 @@ private:
     typedef void (SceneServerSelect::*State)();
 
     bool clientStateIdle() override;
-    bool clientStateServer() override;
+    bool clientStateServer(const ClientStateServerInfo &info) override;
     void clientStateError() override;
 
     void wait();
@@ -59,13 +61,19 @@ private:
     void showArrows(s32 rowOffset);
     void hideArrows();
 
+    static const char *String(u32 index);
+
     State m_state;
     u32 m_serverCount;
     u32 m_serverIndex;
     u32 m_rowIndex;
-    u64 m_descOffset;
+    Array<Array<char, 100>, ServerManager::MaxServerCount> m_descs;
+    Array<u64, ServerManager::MaxServerCount> m_descOffsets;
+    Array<J2DPicture *, ServerManager::MaxServerCount> m_descColorPictures;
+    Array<Array<char, 4>, ServerManager::MaxServerCount> m_playerCounts;
     u32 m_nextScene;
     J2DScreen m_mainScreen;
+    J2DScreen m_colorScreen;
     Array<J2DScreen, 6> m_serverScreens;
     J2DAnmBase *m_mainAnmTransform;
     J2DAnmBase *m_arrowAnmTransform;

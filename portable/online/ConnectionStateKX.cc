@@ -15,6 +15,10 @@ ConnectionStateKX::ConnectionStateKX(const ClientPlatform &platform,
 
 ConnectionStateKX::~ConnectionStateKX() {}
 
+Optional<Address> ConnectionStateKX::address() const {
+    return m_address;
+}
+
 ConnectionState &ConnectionStateKX::reset() {
     return *this;
 }

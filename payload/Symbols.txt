@@ -21,7 +21,7 @@
 8000db44 Mount__10JKRArchiveFPCcUlP7JKRHeapUl
 8000db98 Mount__10JKRArchiveFPvP7JKRHeapUl
 8000de64 vf_10__10JKRArchiveFv
-8000e01c vf_14__10JKRArchiveFv
+8000e01c getResource__10JKRArchiveFPCc
 8000e09c vf_18__10JKRArchiveFv
 8000e1b8 vf_1c__10JKRArchiveFv
 8000e11c vf_20__10JKRArchiveFv

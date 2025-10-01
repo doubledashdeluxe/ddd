@@ -78,8 +78,10 @@ impl Server {
                 Ok(message_len) => message_len,
                 Err(_) => continue,
             };
-            let message = &mut message[..message_len];
-            self.socket.send_to(message, addr)?;
+            if let Some(message_len) = message_len {
+                let message = &mut message[..message_len];
+                self.socket.send_to(message, addr)?;
+            }
             connections.insert(addr, connection);
         }
         self.connections = connections;

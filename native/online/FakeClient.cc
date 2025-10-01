@@ -32,7 +32,7 @@ bool FakeClient::clientStateIdle() {
     return true;
 }
 
-bool FakeClient::clientStateServer() {
+bool FakeClient::clientStateServer(const ClientStateServerInfo & /* info */) {
     return true;
 }
 

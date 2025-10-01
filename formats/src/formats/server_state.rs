@@ -1,3 +1,4 @@
+use crate::array_type::ArrayType;
 use crate::complex_data_type::ComplexDataType;
 use crate::enum_type::EnumType;
 use crate::format::{Format, TypeList};
@@ -50,7 +51,12 @@ fn server_identity_unspecified() -> impl ComplexDataType {
 }
 
 fn server_identity_specified() -> impl ComplexDataType {
+    let motd_element: SimpleDataType<u8> = SimpleDataType::new();
+    let motd = ArrayType::new(motd_element, 0, 99);
+    let player_count: SimpleDataType<u16> = SimpleDataType::new();
     StructType::new("ServerIdentitySpecified")
+        .with_field("motd", motd)
+        .with_field("player_count", player_count)
 }
 
 fn server_state_room() -> impl ComplexDataType {

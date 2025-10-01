@@ -4,7 +4,7 @@ bool ClientReadHandler::clientStateIdle() {
     return false;
 }
 
-bool ClientReadHandler::clientStateServer() {
+bool ClientReadHandler::clientStateServer(const ClientStateServerInfo & /* info */) {
     return false;
 }
 

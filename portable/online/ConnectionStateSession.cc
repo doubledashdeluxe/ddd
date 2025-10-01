@@ -14,6 +14,10 @@ ConnectionStateSession::ConnectionStateSession(const ClientPlatform &platform,
 
 ConnectionStateSession::~ConnectionStateSession() {}
 
+Optional<Address> ConnectionStateSession::address() const {
+    return m_address;
+}
+
 ConnectionState &ConnectionStateSession::reset() {
     Array<u8, 32> clientEphemeralK;
     m_platform.random.get(clientEphemeralK.values(), clientEphemeralK.count());

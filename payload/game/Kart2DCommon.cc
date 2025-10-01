@@ -56,8 +56,17 @@ ResTIMG *Kart2DCommon::getAsciiTexture(char c) {
     case '\'':
         path = "timg/MarioFontApostrophe.bti";
         break;
+    case '(':
+        path = "timg/MarioFontLeftParen.bti";
+        break;
+    case ')':
+        path = "timg/MarioFontRightParen.bti";
+        break;
     case '/':
         path = "timg/MarioFontSlash.bti";
+        break;
+    case ':':
+        path = "timg/MarioFontColon.bti";
         break;
     default:
         return REPLACED(getAsciiTexture(c));
@@ -71,10 +80,13 @@ ResTIMG *Kart2DCommon::getUnicodeTexture(u32 cp) {
     case ' ':
     case '!':
     case '\'':
+    case '(':
+    case ')':
     case '+':
     case '-':
     case '.':
     case '/':
+    case ':':
     case '?':
         return getAsciiTexture(cp);
     case 0x00c0: // À

@@ -91,3 +91,4 @@ s32 SOSetInterfaceOpt(s32 optname, const void *optval, s32 optlen);
 
 bool SOIsRunning(void);
 bool SOIsVirtual(void);
+const char *SOName(void);

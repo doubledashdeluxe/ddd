@@ -8,6 +8,7 @@ public:
     ConnectionStateKX(const ClientPlatform &platform, const Array<u8, 32> &clientEphemeralK,
             Array<u8, 32> serverPK, Address address);
     ~ConnectionStateKX() override;
+    Optional<Address> address() const override;
     ConnectionState &reset() override;
     ConnectionState &read(ServerStateReader &reader, u8 *buffer, u32 size, const Address &address,
             bool &ok) override;

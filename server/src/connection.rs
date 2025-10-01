@@ -14,7 +14,7 @@ pub struct Connection {
     addr: SocketAddr,
     client_pk: [u8; 32],
     session: Session,
-    state: ConnectionState,
+    state: State,
 }
 
 impl Connection {
@@ -28,7 +28,7 @@ impl Connection {
         anyhow::ensure!(message.len() == kx::M1_SIZE);
         let mut m2 = [0u8; kx::M2_SIZE];
         let (client_pk, session) = kx::ik_2(server_k, &message, &mut m2)?;
-        let state = ConnectionState::Kx { m2 };
+        let state = State::Kx { m2 };
         let connection = Connection { expiration, addr, client_pk, session, state };
         Ok(connection)
     }
@@ -50,7 +50,7 @@ impl Connection {
             Err(_) => return Ok(()),
         }
         let client = match self.state {
-            ConnectionState::Kx { .. } => {
+            State::Kx { .. } => {
                 // Any MITM can trivially replay M1, thus we need to wait for a valid session
                 // message to consider the client to be authenticated.
                 let is_full = clients.len() >= 1000;
@@ -67,12 +67,10 @@ impl Connection {
                     _ => return Ok(()),
                 }
             }
-            ConnectionState::Session => {
-                clients.get_mut(&self.client_pk).context("Disconnected client")?
-            }
+            State::Session => clients.get_mut(&self.client_pk).context("Disconnected client")?,
         };
         self.expiration = now + Duration::from_secs(30);
-        self.state = ConnectionState::Session;
+        self.state = State::Session;
         client.read(now, self.addr, plaintext)
     }
 
@@ -81,29 +79,32 @@ impl Connection {
         now: Instant,
         message: &mut [u8],
         clients: &mut HashMap<[u8; 32], Client>,
-    ) -> Result<usize> {
+    ) -> Result<Option<usize>> {
         anyhow::ensure!(now < self.expiration);
         match self.state {
-            ConnectionState::Kx { m2 } => {
+            State::Kx { m2 } => {
                 let message = &mut message[..kx::M2_SIZE];
                 message.copy_from_slice(&m2);
-                Ok(kx::M2_SIZE)
+                Ok(Some(kx::M2_SIZE))
             }
-            ConnectionState::Session => {
+            State::Session => {
                 let client = clients.get_mut(&self.client_pk).context("Disconnected client")?;
                 let mut plaintext = [0u8; 512];
                 let plaintext_len = client.write(now, self.addr, &mut plaintext)?;
+                let Some(plaintext_len) = plaintext_len else {
+                    return Ok(None);
+                };
                 let plaintext = &plaintext[..plaintext_len];
                 let message_len = plaintext_len + Session::MAC_SIZE + Session::NONCE_SIZE;
                 let message = &mut message[..message_len];
                 self.session.encrypt(&plaintext, message);
-                Ok(message_len)
+                Ok(Some(message_len))
             }
         }
     }
 }
 
-enum ConnectionState {
+enum State {
     Kx { m2: [u8; kx::M2_SIZE] },
     Session,
 }

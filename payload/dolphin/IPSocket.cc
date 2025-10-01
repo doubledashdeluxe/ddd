@@ -406,3 +406,11 @@ bool SOIsRunning() {
 bool SOIsVirtual() {
     return s_isVirtual;
 }
+
+const char *SOName() {
+    if (!s_isVirtual) {
+        return ETHName();
+    }
+
+    return "Wii";
+}

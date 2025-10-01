@@ -11,16 +11,18 @@ public:
 
     class Server {
     public:
-        Server(Array<char, 32> name, Array<char, 32> address, Array<u8, 32> publicKey);
+        Server(Array<char, 32> name, Array<char, 32> address, u16 port, Array<u8, 32> publicKey);
         ~Server();
 
-        const char *name() const;
-        const char *address() const;
-        Array<u8, 32> publicKey() const;
+        const Array<char, 32> &name() const;
+        const Array<char, 32> &address() const;
+        u16 port() const;
+        const Array<u8, 32> &publicKey() const;
 
     private:
         Array<char, 32> m_name;
         Array<char, 32> m_address;
+        u16 m_port;
         Array<u8, 32> m_publicKey;
     };
 

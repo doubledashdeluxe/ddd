@@ -2,10 +2,15 @@
 
 #include "portable/online/ConnectionStateDNS.hh"
 
-Connection::Connection(const ClientPlatform &platform, Array<u8, 32> serverPK, const char *name)
-    : m_state(new(platform.allocator) ConnectionStateDNS(platform, serverPK, name)) {}
+Connection::Connection(const ClientPlatform &platform, Array<u8, 32> serverPK,
+        const Array<char, 32> &name, u16 port)
+    : m_state(new(platform.allocator) ConnectionStateDNS(platform, serverPK, name, port)) {}
 
 Connection::~Connection() {}
+
+Optional<Address> Connection::address() const {
+    return m_state->address();
+}
 
 void Connection::reset() {
     while (updateState(m_state->reset())) {}

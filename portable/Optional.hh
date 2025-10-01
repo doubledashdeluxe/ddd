@@ -19,6 +19,7 @@ public:
     }
 
     Optional &operator=(const T &value) {
+        reset();
         new (&m_buffer) T(value);
         m_hasValue = true;
         return *this;
@@ -32,11 +33,11 @@ public:
         return *get();
     }
 
-    T *operator->() {
+    T *operator->() const {
         return get();
     }
 
-    T *operator->() const {
+    T *operator->() {
         return get();
     }
 
@@ -56,9 +57,14 @@ public:
     }
 
     T &emplace() {
+        reset();
         new (&m_buffer) T;
         m_hasValue = true;
         return *reinterpret_cast<T *>(m_buffer);
+    }
+
+    T &getOrEmplace() {
+        return m_hasValue ? *get() : emplace();
     }
 
 private:

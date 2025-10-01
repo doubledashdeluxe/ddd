@@ -229,8 +229,8 @@ void SceneTandemSelect::calc() {
 }
 
 void SceneTandemSelect::slideIn() {
-    CubeServerManager::Instance()->unlock();
     Client::Instance()->reset();
+    CubeServerManager::Instance()->unlock();
     MenuTitleLine::Instance()->drop(MenuTitleLine::Title::SelectTandem);
     m_mainAnmTransformFrame = 0;
     m_padCountAnmTransformFrame = 0;

@@ -8,6 +8,8 @@ extern "C" {
 class CubeNetwork : public Network {
 public:
     bool isRunning() const override;
+    const char *name() const override;
+    u32 address() const override;
 
     void ensureStarted(SOConfig &config);
     void ensureStopped();

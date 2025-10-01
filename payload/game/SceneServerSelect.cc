@@ -7,6 +7,7 @@
 #include "game/MenuTitleLine.hh"
 #include "game/OnlineBackground.hh"
 #include "game/OnlineInfo.hh"
+#include "game/SceneFactory.hh"
 #include "game/SequenceApp.hh"
 #include "game/SequenceInfo.hh"
 
@@ -14,8 +15,18 @@
 #include <payload/online/Client.hh>
 #include <payload/online/CubeServerManager.hh>
 
+extern "C" {
+#include <inttypes.h>
+#include <stdio.h>
+#include <string.h>
+}
+
 SceneServerSelect::SceneServerSelect(JKRArchive *archive, JKRHeap *heap) : Scene(archive, heap) {
+    SceneFactory *sceneFactory = SceneFactory::Instance();
+    JKRArchive *lanEntryArchive = sceneFactory->archive(SceneFactory::ArchiveType::LanEntry);
+
     m_mainScreen.set("GDIndexLayout.blo", 0x20000, m_archive);
+    m_colorScreen.set("ServerColors.blo", 0x20000, lanEntryArchive);
     for (u32 i = 0; i < m_serverScreens.count(); i++) {
         m_serverScreens[i].set("Line.blo", 0x20000, m_archive);
     }
@@ -65,6 +76,20 @@ void SceneServerSelect::init() {
         Client::Instance()->reset();
     }
 
+    m_serverCount = 0;
+    for (u32 i = 0; i < m_descs.count(); i++) {
+        // Crashes MWCC:
+        // m_descs[i][0] = '\0';
+        snprintf(m_descs[i].values(), m_descs[i].count(), "");
+    }
+    m_descOffsets.fill(0);
+    m_descColorPictures.fill(nullptr);
+    for (u32 i = 0; i < m_playerCounts.count(); i++) {
+        // Crashes MWCC:
+        // m_playerCounts[i][0] = '\0';
+        snprintf(m_playerCounts[i].values(), m_playerCounts[i].count(), "");
+    }
+
     if (CubeServerManager::Instance()->lock()) {
         slideIn();
     } else {
@@ -90,10 +115,13 @@ void SceneServerSelect::calc() {
     OnlineBackground::Instance()->calc();
     MenuTitleLine::Instance()->calc();
 
-    m_descOffset += 5;
+    u32 increment = 5;
     const JUTGamePad::CButton &button = KartGamePad::GamePad(0)->button();
     if (button.level() & (PAD_TRIGGER_L | PAD_TRIGGER_R)) {
-        m_descOffset += 20;
+        increment += 20;
+    }
+    for (u32 i = 0; i < m_descOffsets.count(); i++) {
+        m_descOffsets[i] += increment;
     }
     refreshServers();
 
@@ -159,10 +187,7 @@ SceneServerSelect::DescText::~DescText() {}
 
 const char *SceneServerSelect::DescText::getPart(u32 /* partIndex */) {
     u32 serverIndex = m_scene.m_rowIndex + m_descIndex;
-    if (serverIndex == 3) {
-        return "This server description is too long to be fully displayed";
-    }
-    return "Server description";
+    return m_scene.m_descs[serverIndex].values();
 }
 
 void SceneServerSelect::DescText::setAnmTransformFrame(u8 anmTransformFrame) {
@@ -177,7 +202,64 @@ bool SceneServerSelect::clientStateIdle() {
     return true;
 }
 
-bool SceneServerSelect::clientStateServer() {
+bool SceneServerSelect::clientStateServer(const ClientStateServerInfo &info) {
+    bool networkIsRunning = info.networkIsRunning;
+    const char *networkName = info.networkName;
+    u32 networkAddress = info.networkAddress;
+    CubeServerManager *serverManager = CubeServerManager::Instance();
+    for (u32 i = 0; i < info.servers.count(); i++) {
+        const ServerManager::Server &server = serverManager->server(i);
+        const Array<char, 32> &name = server.address();
+        u16 port = server.port();
+        const ClientStateServerInfo::Server &serverInfo = info.servers[i];
+        const Address *address = serverInfo.address.get();
+        const u32 *protocolVersion = serverInfo.protocolVersion.get();
+        const Version *version = serverInfo.version.get();
+        const Array<char, 100> *motd = serverInfo.motd.get();
+        const u16 *uncappedPlayerCount = serverInfo.playerCount.get();
+        bool versionIsCompatible = serverInfo.versionIsCompatible;
+        Array<char, 100> prevDesc = m_descs[i];
+        Array<char, 100> &desc = m_descs[i];
+        if (motd) {
+            desc = *motd;
+        } else if (protocolVersion && version && !versionIsCompatible) {
+            snprintf(desc.values(), desc.count(), "v%u.%u.%u (%" PRIu32 ")", version->major,
+                    version->minor, version->patch, *protocolVersion);
+        } else if (protocolVersion && version) {
+            snprintf(desc.values(), desc.count(), "%s", String(7));
+        } else if (networkAddress && address) {
+            snprintf(desc.values(), desc.count(), "%s%s:%u%s", String(5), name.values(), port,
+                    String(6));
+        } else if (networkAddress) {
+            snprintf(desc.values(), desc.count(), "%s%s%s", String(3), server.address().values(),
+                    String(4));
+        } else if (networkIsRunning) {
+            snprintf(desc.values(), desc.count(), "%s", String(2));
+        } else {
+            snprintf(desc.values(), desc.count(), "%s%s%s", String(0), networkName, String(1));
+        }
+        if (strcmp(desc.values(), prevDesc.values())) {
+            m_descOffsets[i] = 0;
+        }
+        J2DPicture *&descColorPicture = m_descColorPictures[i];
+        if (motd) {
+            descColorPicture = m_colorScreen.search("Ok")->downcast<J2DPicture>();
+        } else if (protocolVersion && version && *protocolVersion != 1) {
+            descColorPicture = m_colorScreen.search("Error")->downcast<J2DPicture>();
+        } else {
+            descColorPicture = m_colorScreen.search("Wait")->downcast<J2DPicture>();
+        }
+        Array<char, 4> &playerCount = m_playerCounts[i];
+        if (uncappedPlayerCount) {
+            u16 cappedPlayerCount = Min<u16>(*uncappedPlayerCount, 999);
+            snprintf(playerCount.values(), playerCount.count(), "%u", cappedPlayerCount);
+        } else if (protocolVersion && *protocolVersion != 1) {
+            snprintf(playerCount.values(), playerCount.count(), "X");
+        } else {
+            snprintf(playerCount.values(), playerCount.count(), "...");
+        }
+    }
+
     return true;
 }
 
@@ -196,7 +278,6 @@ void SceneServerSelect::slideIn() {
     }
     m_rowIndex = m_serverIndex;
     m_rowIndex = Min(m_rowIndex, m_serverIndex - Min<u32>(m_serverCount, 5));
-    m_descOffset = 0;
 
     MenuTitleLine::Instance()->drop("SelectServer.bti");
     m_mainAnmTransformFrame = 0;
@@ -339,13 +420,18 @@ void SceneServerSelect::refreshServers() {
         }
         const ServerManager::Server &server = serverManager->server(serverIndex);
         J2DScreen &screen = m_serverScreens[i];
-        kart2DCommon->changeUnicodeTexture(server.name(), 26, screen, "Name");
+        kart2DCommon->changeUnicodeTexture(server.name().values(), 26, screen, "Name");
         DescText descText(*this, i);
-        u64 descOffset = Max<u64>(m_descOffset, 300) - 300;
+        u64 descOffset = Max<u64>(m_descOffsets[serverIndex], 300) - 300;
         descText.refresh(descOffset, 1, 42, screen, "Desc");
-        u16 playerCounts[] = {1, 23, 456};
-        u16 playerCount = playerCounts[serverIndex % 3];
-        kart2DCommon->changeNumberTexture<3>(playerCount, screen, "PCount", true);
+        J2DPicture *descColorPicture = m_descColorPictures[i];
+        if (descColorPicture) {
+            for (u32 j = 0; j < 42; j++) {
+                J2DPicture *descPicture = screen.search("Desc%u", j)->downcast<J2DPicture>();
+                descPicture->m_cornerColors = descColorPicture->m_cornerColors;
+            }
+        }
+        kart2DCommon->changeUnicodeTexture(m_playerCounts[i].values(), 3, screen, "PCount", true);
     }
 }
 
@@ -392,4 +478,15 @@ void SceneServerSelect::hideArrows() {
             m_arrowAlphas[i] -= 51;
         }
     }
+}
+
+const char *SceneServerSelect::String(u32 index) {
+    SceneFactory *sceneFactory = SceneFactory::Instance();
+    JKRArchive *lanEntryArchive = sceneFactory->archive(SceneFactory::ArchiveType::LanEntry);
+    Array<char, 32> path;
+    snprintf(path.values(), path.count(), "/strings/%" PRIu32 ".txt", index);
+    char *string = static_cast<char *>(lanEntryArchive->getResource(path.values()));
+    u32 size = lanEntryArchive->getResSize(string);
+    string[size - 1] = '\0';
+    return string;
 }
