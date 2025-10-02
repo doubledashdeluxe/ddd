@@ -185,6 +185,8 @@ private:
         Array<char, INIReader::FieldSize> defaultMusicName;
     };
 
+    typedef bool (&CourseIndexComparator)(const u32 &a, const u32 &b);
+
     CourseManager();
 
     OSThread &thread() override;
@@ -219,6 +221,8 @@ private:
             Ring<DefaultPack, DefaultPackCount> &packs, const char *base, const char *type);
     void sortRacePackCoursesByName();
     void sortBattlePackCoursesByName();
+    void sortPackCourses(Ring<DefaultPack, DefaultPackCount> &defaultPacks,
+            Ring<CustomPack, MaxCustomPackCount> &customPacks, CourseIndexComparator compare);
 
     bool findPrefix(ZIPFile &zipFile, const char *filePath, Array<char, 128> &prefix) const;
     bool hashFile(ZIPFile &zipFile, const char *filePath, Array<u8, 32> &hash) const;
