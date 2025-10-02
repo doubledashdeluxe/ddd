@@ -817,24 +817,22 @@ void CourseManager::addDefaultPacks(u32 defaultCourseCount, u32 customCourseCoun
 }
 
 void CourseManager::sortRacePackCoursesByName() {
-    for (u32 i = 0; i < m_defaultRacePacks.count(); i++) {
-        Ring<u8, MaxCourseCount> &courseIndices = m_defaultRacePacks[i].courseIndices();
-        Sort(courseIndices, courseIndices.count(), CompareRaceCourseIndicesByName);
-    }
-    for (u32 i = 0; i < m_customRacePacks.count(); i++) {
-        Ring<u8, MaxCourseCount> &courseIndices = m_customRacePacks[i].courseIndices();
-        Sort(courseIndices, courseIndices.count(), CompareRaceCourseIndicesByName);
-    }
+    sortPackCourses(m_defaultRacePacks, m_customRacePacks, CompareRaceCourseIndicesByName);
 }
 
 void CourseManager::sortBattlePackCoursesByName() {
-    for (u32 i = 0; i < m_defaultBattlePacks.count(); i++) {
-        Ring<u8, MaxCourseCount> &courseIndices = m_defaultBattlePacks[i].courseIndices();
-        Sort(courseIndices, courseIndices.count(), CompareBattleCourseIndicesByName);
+    sortPackCourses(m_defaultBattlePacks, m_customBattlePacks, CompareBattleCourseIndicesByName);
+}
+
+void CourseManager::sortPackCourses(Ring<DefaultPack, DefaultPackCount> &defaultPacks,
+        Ring<CustomPack, MaxCustomPackCount> &customPacks, CourseIndexComparator compare) {
+    for (u32 i = 0; i < defaultPacks.count(); i++) {
+        Ring<u8, MaxCourseCount> &courseIndices = defaultPacks[i].courseIndices();
+        Sort(courseIndices, courseIndices.count(), compare);
     }
-    for (u32 i = 0; i < m_customBattlePacks.count(); i++) {
-        Ring<u8, MaxCourseCount> &courseIndices = m_customBattlePacks[i].courseIndices();
-        Sort(courseIndices, courseIndices.count(), CompareBattleCourseIndicesByName);
+    for (u32 i = 0; i < customPacks.count(); i++) {
+        Ring<u8, MaxCourseCount> &courseIndices = customPacks[i].courseIndices();
+        Sort(courseIndices, courseIndices.count(), compare);
     }
 }
 
