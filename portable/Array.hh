@@ -86,3 +86,28 @@ template <typename T, size_t N>
 bool operator!=(const Array<T, N> &a, const Array<T, N> &b) {
     return !(a == b);
 }
+
+template <typename T, size_t N>
+bool operator<(const Array<T, N> &a, const Array<T, N> &b) {
+    for (size_t index = 0; index < N; index++) {
+        if (a[index] != b[index]) {
+            return a[index] < b[index];
+        }
+    }
+    return false;
+}
+
+template <typename T, size_t N>
+bool operator>(const Array<T, N> &a, const Array<T, N> &b) {
+    return b < a;
+}
+
+template <typename T, size_t N>
+bool operator<=(const Array<T, N> &a, const Array<T, N> &b) {
+    return !(b < a);
+}
+
+template <typename T, size_t N>
+bool operator>=(const Array<T, N> &a, const Array<T, N> &b) {
+    return !(a < b);
+}
