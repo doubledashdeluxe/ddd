@@ -36,6 +36,14 @@ Ring<u8, CourseManager::MaxCourseCount> &CourseManager::Pack::courseIndices() {
     return m_courseIndices;
 }
 
+const Array<u8, 32> &CourseManager::Pack::hash() const {
+    return m_hash;
+}
+
+Array<u8, 32> &CourseManager::Pack::hash() {
+    return m_hash;
+}
+
 CourseManager::Course::Course(Array<u8, 32> archiveHash) : m_archiveHash(archiveHash) {}
 
 CourseManager::Course::~Course() {}
@@ -343,6 +351,8 @@ void CourseManager::process() {
     sortCustomBattlePacksByName();
     addDefaultRacePacks();
     addDefaultBattlePacks();
+    hashRacePacks();
+    hashBattlePacks();
     sortRacePackCoursesByName();
     sortBattlePackCoursesByName();
 }
@@ -816,6 +826,40 @@ void CourseManager::addDefaultPacks(u32 defaultCourseCount, u32 customCourseCoun
     }
 }
 
+void CourseManager::hashRacePacks() {
+    hashPacks(m_defaultRacePacks, m_customRacePacks, CompareRaceCourseIndicesByHash,
+            &CourseManager::raceCourse);
+}
+
+void CourseManager::hashBattlePacks() {
+    hashPacks(m_defaultBattlePacks, m_customBattlePacks, CompareBattleCourseIndicesByHash,
+            &CourseManager::battleCourse);
+}
+
+void CourseManager::hashPacks(Ring<DefaultPack, DefaultPackCount> &defaultPacks,
+        Ring<CustomPack, MaxCustomPackCount> &customPacks, CourseIndexComparator compare,
+        CourseAccessor access) {
+    sortPackCourses(defaultPacks, customPacks, compare);
+    for (u32 i = 0; i < defaultPacks.count(); i++) {
+        hashPack(defaultPacks[i], access);
+    }
+    for (u32 i = 0; i < customPacks.count(); i++) {
+        hashPack(customPacks[i], access);
+    }
+}
+
+void CourseManager::hashPack(Pack &pack, CourseAccessor access) {
+    Array<u8, 32> &packHash = pack.hash();
+    crypto_blake2b_ctx ctx;
+    crypto_blake2b_init(&ctx, packHash.count());
+    const Ring<u8, MaxCourseCount> &courseIndices = pack.courseIndices();
+    for (u32 i = 0; i < courseIndices.count(); i++) {
+        const Array<u8, 32> &courseHash = (this->*access)(i).archiveHash();
+        crypto_blake2b_update(&ctx, courseHash.values(), courseHash.count());
+    }
+    crypto_blake2b_final(&ctx, packHash.values());
+}
+
 void CourseManager::sortRacePackCoursesByName() {
     sortPackCourses(m_defaultRacePacks, m_customRacePacks, CompareRaceCourseIndicesByName);
 }
@@ -1049,6 +1093,18 @@ void CourseManager::SortCustomPacksByName(Ring<CustomPack, MaxCustomPackCount> &
 bool CourseManager::ComparePacksByName(const Pack &a, const Pack &b) {
     const char *na = a.name(), *nb = b.name();
     return UTF8::CaseCompare(na, nb) <= 0;
+}
+
+bool CourseManager::CompareRaceCourseIndicesByHash(const u32 &a, const u32 &b) {
+    const Array<u8, 32> &ha = s_instance->raceCourse(a).archiveHash();
+    const Array<u8, 32> &hb = s_instance->raceCourse(b).archiveHash();
+    return ha <= hb;
+}
+
+bool CourseManager::CompareBattleCourseIndicesByHash(const u32 &a, const u32 &b) {
+    const Array<u8, 32> &ha = s_instance->battleCourse(a).archiveHash();
+    const Array<u8, 32> &hb = s_instance->battleCourse(b).archiveHash();
+    return ha <= hb;
 }
 
 bool CourseManager::CompareRaceCourseIndicesByName(const u32 &a, const u32 &b) {
