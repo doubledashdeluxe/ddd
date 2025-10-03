@@ -188,8 +188,17 @@ private:
         Array<char, INIReader::FieldSize> defaultMusicName;
     };
 
-    typedef const Course &(CourseManager::*CourseAccessor)(u32 index) const;
-    typedef bool (&CourseIndexComparator)(const u32 &a, const u32 &b);
+    struct CourseIndexComparator {
+        typedef const Course &(CourseManager::*Accessor)(u32 index) const;
+        typedef bool (
+                CourseManager::*Comparator)(const u32 &a, const u32 &b, Accessor access) const;
+
+        bool operator()(const u32 &a, const u32 &b) const;
+
+        const CourseManager &courseManager;
+        Accessor access;
+        Comparator compare;
+    };
 
     CourseManager();
 
@@ -226,13 +235,14 @@ private:
     void hashRacePacks();
     void hashBattlePacks();
     void hashPacks(Ring<DefaultPack, DefaultPackCount> &defaultPacks,
-            Ring<CustomPack, MaxCustomPackCount> &customPacks, CourseIndexComparator compare,
-            CourseAccessor access);
-    void hashPack(Pack &pack, CourseAccessor access);
+            Ring<CustomPack, MaxCustomPackCount> &customPacks,
+            CourseIndexComparator::Accessor access);
+    void hashPack(Pack &pack, CourseIndexComparator::Accessor access);
     void sortRacePackCoursesByName();
     void sortBattlePackCoursesByName();
     void sortPackCourses(Ring<DefaultPack, DefaultPackCount> &defaultPacks,
-            Ring<CustomPack, MaxCustomPackCount> &customPacks, CourseIndexComparator compare);
+            Ring<CustomPack, MaxCustomPackCount> &customPacks,
+            CourseIndexComparator::Accessor access, CourseIndexComparator::Comparator compare);
 
     bool findPrefix(ZIPFile &zipFile, const char *filePath, Array<char, 128> &prefix) const;
     bool hashFile(ZIPFile &zipFile, const char *filePath, Array<u8, 32> &hash) const;
@@ -252,14 +262,14 @@ private:
             u32 *size = nullptr) const;
     void *loadCourseFile(ZIPFile &zipFile, const char *filePath, JKRHeap *heap,
             u32 *size = nullptr) const;
+    bool compareCourseIndicesByHash(const u32 &a, const u32 &b,
+            CourseIndexComparator::Accessor access) const;
+    bool compareCourseIndicesByName(const u32 &a, const u32 &b,
+            CourseIndexComparator::Accessor access) const;
 
     static bool GetDefaultCourseID(const char *name, u32 &courseID);
     static void SortCustomPacksByName(Ring<CustomPack, MaxCustomPackCount> &packs);
     static bool ComparePacksByName(const Pack &a, const Pack &b);
-    static bool CompareRaceCourseIndicesByHash(const u32 &a, const u32 &b);
-    static bool CompareBattleCourseIndicesByHash(const u32 &a, const u32 &b);
-    static bool CompareRaceCourseIndicesByName(const u32 &a, const u32 &b);
-    static bool CompareBattleCourseIndicesByName(const u32 &a, const u32 &b);
 
     Array<u8, 64 * 1024> m_stack;
     OSThread m_thread;
