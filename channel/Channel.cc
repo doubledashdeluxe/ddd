@@ -79,7 +79,7 @@ Channel::PayloadEntryFunc Channel::Run(Context *context) {
 
     if (!Platform::IsGameCube()) {
         if (iosVersion >> 16 != 58 && iosVersion >> 16 != 59) {
-            ERROR("Double Dash Deluxes needs IOS58 (or IOS59).");
+            ERROR("Double Dash Deluxe needs IOS58 (or IOS59).");
             ERROR("Please perform a Wii System Update or use the IOS58 Installer to install");
             ERROR("IOS58.");
             return nullptr;
