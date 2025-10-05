@@ -6,6 +6,7 @@
 #include <cube/VI.hh>
 #include <cube/ios/File.hh>
 #include <cube/ios/KernelUID.hh>
+#include <formats/Version.hh>
 #include <portable/Algorithm.hh>
 #include <portable/Array.hh>
 #include <portable/Bytes.hh>
@@ -25,7 +26,7 @@ void Bootstrap::Run() {
     VI::Init();
     Console::Init(VI::Instance());
     CubeLogger::Init();
-    INFO("Double Dash Deluxe Bootstrap");
+    INFO("Double Dash Deluxe Bootstrap v%u.%u.%u", MajorVersion, MinorVersion, PatchVersion);
 
     if (iosVersion >> 16 != 58 && iosVersion >> 16 != 59) {
         ERROR("In order for Double Dash Deluxe to work, IOS58 (or IOS59) must be installed.");

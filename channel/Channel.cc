@@ -20,6 +20,7 @@
 #include <cube/storage/Storage.hh>
 #include <cube/storage/USBStorage.hh>
 #include <cube/storage/WiiSDStorage.hh>
+#include <formats/Version.hh>
 extern "C" {
 #include <miniz/miniz.h>
 }
@@ -74,7 +75,7 @@ Channel::PayloadEntryFunc Channel::Run(Context *context) {
     VI::Init();
     Console::Init(VI::Instance());
     CubeLogger::Init();
-    INFO("Double Dash Deluxe Channel");
+    INFO("Double Dash Deluxe Channel v%u.%u.%u", MajorVersion, MinorVersion, PatchVersion);
 
     if (!Platform::IsGameCube()) {
         if (iosVersion >> 16 != 58 && iosVersion >> 16 != 59) {
