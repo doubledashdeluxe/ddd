@@ -67,6 +67,7 @@ def get_flags(tool, platform, target, format_code_dirs, args):
         ]
     if tool == 'cc':
         flags += [
+            '-d', 'EXPLICIT=',
             '-d', 'override=',
         ]
         for code_dir in format_code_dirs:
@@ -98,6 +99,7 @@ def get_flags(tool, platform, target, format_code_dirs, args):
             ]
     if tool == 'mc' or tool == 'mcc':
         flags += [
+            '-D', 'EXPLICIT=explicit',
             '-fdata-sections',
             '-ffunction-sections',
             '-fno-sanitize-recover=all',

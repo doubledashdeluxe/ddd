@@ -212,11 +212,11 @@ bool SceneServerSelect::clientStateServer(const ClientStateServerInfo &info) {
         const Array<char, 32> &name = server.address();
         u16 port = server.port();
         const ClientStateServerInfo::Server &serverInfo = info.servers[i];
-        const Address *address = serverInfo.address.get();
-        const u32 *protocolVersion = serverInfo.protocolVersion.get();
-        const Version *version = serverInfo.version.get();
-        const Array<char, 100> *motd = serverInfo.motd.get();
-        const u16 *uncappedPlayerCount = serverInfo.playerCount.get();
+        const Optional<Address> &address = serverInfo.address;
+        const Optional<u32> &protocolVersion = serverInfo.protocolVersion;
+        const Optional<Version> &version = serverInfo.version;
+        const Optional<Array<char, 100>> &motd = serverInfo.motd;
+        const Optional<u16> &uncappedPlayerCount = serverInfo.playerCount;
         bool versionIsCompatible = serverInfo.versionIsCompatible;
         Array<char, 100> prevDesc = m_descs[i];
         Array<char, 100> &desc = m_descs[i];

@@ -25,28 +25,32 @@ public:
         return *this;
     }
 
-    T &operator*() const {
-        return *get();
+    EXPLICIT operator bool() const {
+        return m_hasValue;
+    }
+
+    const T &operator*() const {
+        return *value();
     }
 
     T &operator*() {
-        return *get();
+        return *value();
     }
 
-    T *operator->() const {
-        return get();
+    const T *operator->() const {
+        return value();
     }
 
     T *operator->() {
-        return get();
-    }
-
-    T *get() {
-        return m_hasValue ? reinterpret_cast<T *>(m_buffer) : static_cast<T *>(nullptr);
+        return value();
     }
 
     const T *get() const {
-        return m_hasValue ? reinterpret_cast<const T *>(m_buffer) : static_cast<T *>(nullptr);
+        return m_hasValue ? value() : Nothing();
+    }
+
+    T *get() {
+        return m_hasValue ? value() : Nothing();
     }
 
     void reset() {
@@ -64,13 +68,45 @@ public:
     }
 
     T &getOrEmplace() {
-        return m_hasValue ? *get() : emplace();
+        return m_hasValue ? *value() : emplace();
     }
 
 private:
+    const T *value() const {
+        return reinterpret_cast<const T *>(m_buffer);
+    }
+
+    T *value() {
+        return reinterpret_cast<T *>(m_buffer);
+    }
+
+    static T *Nothing() {
+        return nullptr;
+    }
+
     union {
         u8 m_buffer[sizeof(T)];
         Aligner<alignof(T)> m_aligner;
     };
     bool m_hasValue;
 };
+
+template <typename T>
+bool operator==(const Optional<T> &a, const Optional<T> &b) {
+    return (!a && !b) || (a && b && *a == *b);
+}
+
+template <typename T>
+bool operator!=(const Optional<T> &a, const Optional<T> &b) {
+    return !(a == b);
+}
+
+template <typename T, typename U>
+bool operator==(const Optional<T> &a, const U &b) {
+    return a && *a == b;
+}
+
+template <typename T, typename U>
+bool operator!=(const Optional<T> &a, const U &b) {
+    return !(a == b);
+}

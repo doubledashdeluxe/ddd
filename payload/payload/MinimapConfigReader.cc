@@ -54,21 +54,16 @@ Optional<MinimapConfig> MinimapConfigReader::read(ZIPFile &zip, const char *path
         }
     }
 
-    f32 *startX = m_startX.get();
-    f32 *startY = m_startY.get();
-    f32 *endX = m_endX.get();
-    f32 *endY = m_endY.get();
-    u32 *orientation = m_orientation.get();
-    if (!startX || !startY || !endX || !endY || !orientation) {
+    if (!m_startX || !m_startY || !m_endX || !m_endY || !m_orientation) {
         return minimapConfig;
     }
 
     minimapConfig.emplace();
-    minimapConfig->box.start.x = *startX;
-    minimapConfig->box.start.y = *startY;
-    minimapConfig->box.end.x = *endX;
-    minimapConfig->box.end.y = *endY;
-    minimapConfig->orientation = *orientation;
+    minimapConfig->box.start.x = *m_startX;
+    minimapConfig->box.start.y = *m_startY;
+    minimapConfig->box.end.x = *m_endX;
+    minimapConfig->box.end.y = *m_endY;
+    minimapConfig->orientation = *m_orientation;
     return minimapConfig;
 }
 

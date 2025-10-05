@@ -38,9 +38,7 @@ ClientState &ClientStateServer::read(ClientReadHandler &handler) {
                     m_readIndex = (m_readIndex + 1) % m_connections.count();
                     if (m_connections[m_readIndex]->read(*this, buffer.values(), result, address)) {
                         ClientStateServerInfo::Server &server = m_info.servers[m_readIndex];
-                        u32 *protocolVersion = server.protocolVersion.get();
-                        server.versionIsCompatible =
-                                protocolVersion && *protocolVersion == ProtocolVersion;
+                        server.versionIsCompatible = server.protocolVersion == ProtocolVersion;
                         break;
                     }
                 }

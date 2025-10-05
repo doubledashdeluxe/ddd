@@ -11,6 +11,10 @@ public:
         delete m_ptr;
     }
 
+    EXPLICIT operator bool() const {
+        return m_ptr;
+    }
+
     T &operator*() const {
         return *m_ptr;
     }
@@ -50,7 +54,7 @@ public:
         delete[] m_ptr;
     }
 
-    operator bool() const {
+    EXPLICIT operator bool() const {
         return m_ptr;
     }
 
