@@ -1,7 +1,9 @@
 #![allow(dead_code)]
 
+mod one_constant;
 mod one_field;
 mod one_variant;
+mod two_constants;
 mod two_fields;
 mod two_variants;
 
@@ -10,8 +12,28 @@ mod tests {
     use crate::array_type::ArrayType;
     use crate::enum_type::EnumType;
     use crate::format::Format;
+    use crate::simple_constant::SimpleConstant;
     use crate::simple_data_type::SimpleDataType;
     use crate::struct_type::StructType;
+
+    #[test]
+    fn test_one_constant() {
+        let first: SimpleConstant<u32> = SimpleConstant::new("FIRST", 1);
+        let one_constant = Format::new("OneConstant").with_constant(first);
+        assert_eq_multiline(&one_constant.rs(), include_str!("one_constant.rs"));
+        assert_eq_multiline(&one_constant.hh(), include_str!("OneConstant.hh"));
+        assert_eq_multiline(&one_constant.cc(), include_str!("OneConstant.cc"));
+    }
+
+    #[test]
+    fn test_two_constants() {
+        let first: SimpleConstant<u32> = SimpleConstant::new("FIRST", 1);
+        let second: SimpleConstant<u8> = SimpleConstant::new("SECOND", 2);
+        let two_constants = Format::new("TwoConstants").with_constant(first).with_constant(second);
+        assert_eq_multiline(&two_constants.rs(), include_str!("two_constants.rs"));
+        assert_eq_multiline(&two_constants.hh(), include_str!("TwoConstants.hh"));
+        assert_eq_multiline(&two_constants.cc(), include_str!("TwoConstants.cc"));
+    }
 
     #[test]
     fn test_one_variant() {

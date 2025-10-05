@@ -1,6 +1,5 @@
 [package]
 name = "ddd-formats"
-version = "0.0.0"
 edition = "2021"
 
 [dependencies]

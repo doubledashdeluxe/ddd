@@ -3,6 +3,8 @@
 #include "portable/Upcast.hh"
 #include "portable/online/ClientStateError.hh"
 
+#include <formats/Version.hh>
+
 ClientStateServer::ClientStateServer(const ClientPlatform &platform)
     : ClientState(platform), m_readIndex(0), m_writeIndex(0) {}
 
@@ -37,7 +39,8 @@ ClientState &ClientStateServer::read(ClientReadHandler &handler) {
                     if (m_connections[m_readIndex]->read(*this, buffer.values(), result, address)) {
                         ClientStateServerInfo::Server &server = m_info.servers[m_readIndex];
                         u32 *protocolVersion = server.protocolVersion.get();
-                        server.versionIsCompatible = protocolVersion && *protocolVersion == 1;
+                        server.versionIsCompatible =
+                                protocolVersion && *protocolVersion == ProtocolVersion;
                         break;
                     }
                 }
@@ -172,7 +175,7 @@ ClientStateServerWriter &ClientStateServer::serverWriter() {
 }
 
 u32 ClientStateServer::getProtocolVersion() {
-    return 1;
+    return ProtocolVersion;
 }
 
 ClientVersionWriter &ClientStateServer::clientVersionWriter() {
@@ -187,15 +190,15 @@ ClientIdentityWriter &ClientStateServer::clientIdentityWriter() {
 }
 
 u8 ClientStateServer::getMajor() {
-    return 2;
+    return MajorVersion;
 }
 
 u8 ClientStateServer::getMinor() {
-    return 3;
+    return MinorVersion;
 }
 
 u8 ClientStateServer::getPatch() {
-    return 4;
+    return PatchVersion;
 }
 
 ClientIdentityUnspecifiedWriter &ClientStateServer::unspecifiedWriter() {

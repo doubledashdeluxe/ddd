@@ -404,8 +404,11 @@ for arc_file in asset_arc_files:
     )
     n.newline()
 
-format_kc_names = ['client-state', 'server-state']
-format_implicit = sorted(glob.glob(os.path.join('formats', '**'), recursive=True))
+format_kc_names = ['client-state', 'server-state', 'version']
+format_implicit = [
+    *sorted(glob.glob(os.path.join('formats', '**'), recursive=True)),
+    os.path.join('version.txt'),
+]
 format_code_dirs = []
 format_hh_files = []
 format_cc_files = []

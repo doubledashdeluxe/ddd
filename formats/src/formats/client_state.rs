@@ -1,11 +1,11 @@
 use crate::array_type::ArrayType;
 use crate::complex_data_type::ComplexDataType;
 use crate::enum_type::EnumType;
-use crate::format::{Format, TypeList};
+use crate::format::{ConstantList, Format, TypeList};
 use crate::simple_data_type::SimpleDataType;
 use crate::struct_type::StructType;
 
-pub fn format() -> Format<impl TypeList> {
+pub fn format() -> Format<impl ConstantList, impl TypeList> {
     Format::new("ClientState")
         .with_type(client_version())
         .with_type(client_identity_unspecified())

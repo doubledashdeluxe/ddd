@@ -244,7 +244,7 @@ bool SceneServerSelect::clientStateServer(const ClientStateServerInfo &info) {
         J2DPicture *&descColorPicture = m_descColorPictures[i];
         if (motd) {
             descColorPicture = m_colorScreen.search("Ok")->downcast<J2DPicture>();
-        } else if (protocolVersion && version && *protocolVersion != 1) {
+        } else if (protocolVersion && version && !versionIsCompatible) {
             descColorPicture = m_colorScreen.search("Error")->downcast<J2DPicture>();
         } else {
             descColorPicture = m_colorScreen.search("Wait")->downcast<J2DPicture>();
@@ -253,7 +253,7 @@ bool SceneServerSelect::clientStateServer(const ClientStateServerInfo &info) {
         if (uncappedPlayerCount) {
             u16 cappedPlayerCount = Min<u16>(*uncappedPlayerCount, 999);
             snprintf(playerCount.values(), playerCount.count(), "%u", cappedPlayerCount);
-        } else if (protocolVersion && *protocolVersion != 1) {
+        } else if (protocolVersion && !versionIsCompatible) {
             snprintf(playerCount.values(), playerCount.count(), "X");
         } else {
             snprintf(playerCount.values(), playerCount.count(), "...");

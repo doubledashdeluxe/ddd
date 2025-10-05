@@ -14,6 +14,9 @@ fn main() -> Result<(), io::Error> {
         (Format::ServerState, Extension::Rs) => ddd_formats::server_state().rs(),
         (Format::ServerState, Extension::Hh) => ddd_formats::server_state().hh(),
         (Format::ServerState, Extension::Cc) => ddd_formats::server_state().cc(),
+        (Format::Version, Extension::Rs) => ddd_formats::version().rs(),
+        (Format::Version, Extension::Hh) => ddd_formats::version().hh(),
+        (Format::Version, Extension::Cc) => ddd_formats::version().cc(),
     };
     match options.output {
         Some(output) => fs::write(output, &format)?,
@@ -25,7 +28,8 @@ fn main() -> Result<(), io::Error> {
 fn options() -> OptionParser<Options> {
     let client_state = bpaf::long("client-state").req_flag(Format::ClientState);
     let server_state = bpaf::long("server-state").req_flag(Format::ServerState);
-    let format = bpaf::construct!([client_state, server_state]);
+    let version = bpaf::long("version").req_flag(Format::Version);
+    let format = bpaf::construct!([client_state, server_state, version]);
 
     let rs = bpaf::long("rs").req_flag(Extension::Rs);
     let hh = bpaf::long("hh").req_flag(Extension::Hh);
@@ -47,6 +51,7 @@ struct Options {
 enum Format {
     ClientState,
     ServerState,
+    Version,
 }
 
 #[derive(Clone)]

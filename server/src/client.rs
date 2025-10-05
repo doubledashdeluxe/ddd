@@ -8,6 +8,7 @@ use crate::formats::server_state::{
     ServerIdentity, ServerIdentitySpecified, ServerIdentityUnspecified, ServerState,
     ServerStateServer, ServerVersion,
 };
+use crate::formats::version;
 
 pub struct Client {
     expiration: Instant,
@@ -37,8 +38,7 @@ impl Client {
         match client_state {
             ClientState::Server(server) => {
                 if let ClientIdentity::Specified(_) = server.client_identity {
-                    let protocol_version = 1;
-                    anyhow::ensure!(server.protocol_version == protocol_version);
+                    anyhow::ensure!(server.protocol_version == version::PROTOCOL_VERSION);
                 }
                 self.state = State::Server { server };
             }
@@ -59,8 +59,12 @@ impl Client {
         let server_state = match &self.state {
             State::Idle => return Ok(None),
             State::Server { server } => {
-                let protocol_version = 1;
-                let server_version = ServerVersion { major: 2, minor: 3, patch: 4 };
+                let protocol_version = version::PROTOCOL_VERSION;
+                let server_version = ServerVersion {
+                    major: version::MAJOR_VERSION,
+                    minor: version::MINOR_VERSION,
+                    patch: version::PATCH_VERSION,
+                };
                 let server_identity = match server.client_identity {
                     ClientIdentity::Unspecified(_) => {
                         let server_identity_unspecified = ServerIdentityUnspecified {};
