@@ -2,6 +2,7 @@
 
 #include "portable/crypto/KX.hh"
 #include "portable/online/ConnectionState.hh"
+#include "portable/online/CookieSize.hh"
 
 class ConnectionStateKX : public ConnectionState {
 public:
@@ -17,5 +18,6 @@ public:
 
 private:
     Address m_address;
+    Array<u8, CookieSize> m_cookie;
     KX::ClientState m_clientState;
 };

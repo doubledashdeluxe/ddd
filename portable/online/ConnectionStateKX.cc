@@ -6,11 +6,12 @@ extern "C" {
 #include <monocypher/monocypher.h>
 
 #include <assert.h>
+#include <string.h>
 }
 
 ConnectionStateKX::ConnectionStateKX(const ClientPlatform &platform,
         const Array<u8, 32> &clientEphemeralK, Array<u8, 32> serverPK, Address address)
-    : ConnectionState(platform, serverPK), m_address(address),
+    : ConnectionState(platform, serverPK), m_address(address), m_cookie(0),
       m_clientState(platform.clientK, clientEphemeralK, serverPK) {}
 
 ConnectionStateKX::~ConnectionStateKX() {}
@@ -31,6 +32,11 @@ ConnectionState &ConnectionStateKX::read(ServerStateReader & /* reader */, u8 *b
         return *this;
     }
 
+    if (size == m_cookie.count()) {
+        memcpy(m_cookie.values(), buffer, m_cookie.count());
+        return *this;
+    }
+
     if (size != KX::M2Size) {
         return *this;
     }
@@ -41,7 +47,7 @@ ConnectionState &ConnectionStateKX::read(ServerStateReader & /* reader */, u8 *b
 
 ConnectionState &ConnectionStateKX::write(ClientStateWriter & /* writer */, u8 *buffer, u32 &size,
         Address &address, bool &ok) {
-    assert(size >= KX::M1Size);
+    assert(size >= m_cookie.count() + KX::M1Size);
 
     ok = false;
 
@@ -61,12 +67,13 @@ ConnectionState &ConnectionStateKX::write(ClientStateWriter & /* writer */, u8 *
                         ConnectionStateSession(m_platform, m_serverPK, m_address, *session));
     }
 
-    ok = m_clientState.getM1(buffer);
+    ok = m_clientState.getM1(buffer + m_cookie.count());
     if (!ok) {
         return *this;
     }
 
-    size = KX::M1Size;
+    memcpy(buffer, m_cookie.values(), m_cookie.count());
+    size = m_cookie.count() + KX::M1Size;
     address = m_address;
     return *this;
 }

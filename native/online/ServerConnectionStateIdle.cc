@@ -4,18 +4,28 @@
 
 extern "C" {
 #include <monocypher/monocypher.h>
+
+#include <string.h>
 }
 
 ServerConnectionStateIdle::ServerConnectionStateIdle(const ServerPlatform &platform)
-    : ServerConnectionState(platform) {}
+    : ServerConnectionState(platform) {
+    m_platform.random.get(m_cookie.data(), m_cookie.size());
+}
 
 ServerConnectionStateIdle::~ServerConnectionStateIdle() = default;
 
 ServerConnectionState &ServerConnectionStateIdle::transfer(const u8 *input, size_t inputSize,
-        std::vector<u8> & /* output */) {
-    if (inputSize != KX::M1Size) {
+        std::vector<u8> &output) {
+    if (inputSize != m_cookie.size() + KX::M1Size) {
         return *this;
     }
+
+    if (memcmp(input, m_cookie.data(), m_cookie.size())) {
+        output.insert(output.begin(), m_cookie.begin(), m_cookie.end());
+        return *this;
+    }
+    input += m_cookie.size();
 
     Array<u8, 32> serverEphemeralK;
     m_platform.random.get(serverEphemeralK.values(), serverEphemeralK.count());
