@@ -29,8 +29,9 @@ void Bootstrap::Run() {
     INFO("Double Dash Deluxe Bootstrap v%u.%u.%u", MajorVersion, MinorVersion, PatchVersion);
 
     if (iosVersion >> 16 != 58 && iosVersion >> 16 != 59) {
-        ERROR("In order for Double Dash Deluxe to work, IOS58 (or IOS59) must be installed.");
-        ERROR("Please perform a Wii System Update or use the IOS58 Installer to install IOS58.");
+        ERROR("Double Dash Deluxe needs IOS58 (or IOS59).");
+        ERROR("Please perform a Wii System Update or use the IOS58 Installer to install");
+        ERROR("IOS58.");
         return;
     }
 
