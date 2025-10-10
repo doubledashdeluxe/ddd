@@ -214,7 +214,7 @@ bool SceneServerSelect::clientStateServer(const ClientStateServerInfo &info) {
         const ClientStateServerInfo::Server &serverInfo = info.servers[i];
         const Optional<Address> &address = serverInfo.address;
         const Optional<u32> &protocolVersion = serverInfo.protocolVersion;
-        const Optional<Version> &version = serverInfo.version;
+        const Optional<Array<char, 20>> &version = serverInfo.version;
         const Optional<Array<char, 100>> &motd = serverInfo.motd;
         const Optional<u16> &uncappedPlayerCount = serverInfo.playerCount;
         bool versionIsCompatible = serverInfo.versionIsCompatible;
@@ -223,8 +223,8 @@ bool SceneServerSelect::clientStateServer(const ClientStateServerInfo &info) {
         if (motd) {
             desc = *motd;
         } else if (protocolVersion && version && !versionIsCompatible) {
-            snprintf(desc.values(), desc.count(), "v%u.%u.%u (%" PRIu32 ")", version->major,
-                    version->minor, version->patch, *protocolVersion);
+            snprintf(desc.values(), desc.count(), "%s%s (%" PRIu32 ")", String(8),
+                    version->values(), *protocolVersion);
         } else if (protocolVersion && version) {
             snprintf(desc.values(), desc.count(), "%s", String(7));
         } else if (networkAddress && address) {

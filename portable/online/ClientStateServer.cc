@@ -5,8 +5,16 @@
 
 #include <formats/Version.hh>
 
+extern "C" {
+#include <stdio.h>
+#include <string.h>
+}
+
 ClientStateServer::ClientStateServer(const ClientPlatform &platform)
-    : ClientState(platform), m_readIndex(0), m_writeIndex(0) {}
+    : ClientState(platform), m_readIndex(0), m_writeIndex(0) {
+    snprintf(m_version.values(), m_version.count(), "v%u.%u.%u", MajorVersion, MinorVersion,
+            PatchVersion);
+}
 
 ClientStateServer::~ClientStateServer() {}
 
@@ -101,36 +109,24 @@ void ClientStateServer::setProtocolVersion(u32 protocolVersion) {
     m_info.servers[m_readIndex].protocolVersion = protocolVersion;
 }
 
-ServerVersionReader *ClientStateServer::serverVersionReader() {
-    return this;
+bool ClientStateServer::isVersionCountValid(u32 /* versionCount */) {
+    return true;
+}
+
+void ClientStateServer::setVersionCount(u32 versionCount) {
+    m_info.servers[m_readIndex].version.getOrEmplace()[versionCount] = '\0';
+}
+
+bool ClientStateServer::isVersionElementValid(u32 /* i0 */, u8 versionElement) {
+    return versionElement != '\0';
+}
+
+void ClientStateServer::setVersionElement(u32 i0, u8 versionElement) {
+    m_info.servers[m_readIndex].version.getOrEmplace()[i0] = versionElement;
 }
 
 ServerIdentityReader *ClientStateServer::serverIdentityReader() {
     return this;
-}
-
-bool ClientStateServer::isMajorValid(u8 /* major */) {
-    return true;
-}
-
-void ClientStateServer::setMajor(u8 major) {
-    m_info.servers[m_readIndex].version.getOrEmplace().major = major;
-}
-
-bool ClientStateServer::isMinorValid(u8 /* minor */) {
-    return true;
-}
-
-void ClientStateServer::setMinor(u8 minor) {
-    m_info.servers[m_readIndex].version.getOrEmplace().minor = minor;
-}
-
-bool ClientStateServer::isPatchValid(u8 /* patch */) {
-    return true;
-}
-
-void ClientStateServer::setPatch(u8 patch) {
-    m_info.servers[m_readIndex].version.getOrEmplace().patch = patch;
 }
 
 ServerIdentityUnspecifiedReader *ClientStateServer::unspecifiedReader() {
@@ -176,8 +172,12 @@ u32 ClientStateServer::getProtocolVersion() {
     return ProtocolVersion;
 }
 
-ClientVersionWriter &ClientStateServer::clientVersionWriter() {
-    return *this;
+u32 ClientStateServer::getVersionCount() {
+    return strlen(m_version.values());
+}
+
+u8 ClientStateServer::getVersionElement(u32 i0) {
+    return m_version[i0];
 }
 
 ClientIdentityWriter &ClientStateServer::clientIdentityWriter() {
@@ -185,18 +185,6 @@ ClientIdentityWriter &ClientStateServer::clientIdentityWriter() {
         return Upcast<ClientIdentityWriter::Specified>(*this);
     }
     return Upcast<ClientIdentityWriter::Unspecified>(*this);
-}
-
-u8 ClientStateServer::getMajor() {
-    return MajorVersion;
-}
-
-u8 ClientStateServer::getMinor() {
-    return MinorVersion;
-}
-
-u8 ClientStateServer::getPatch() {
-    return PatchVersion;
 }
 
 ClientIdentityUnspecifiedWriter &ClientStateServer::unspecifiedWriter() {
