@@ -7,7 +7,6 @@ use crate::struct_type::StructType;
 
 pub fn format() -> Format<impl ConstantList, impl TypeList> {
     Format::new("ServerState")
-        .with_type(server_version())
         .with_type(server_identity_unspecified())
         .with_type(server_identity_specified())
         .with_type(server_identity())
@@ -24,20 +23,12 @@ fn server_state() -> impl ComplexDataType {
 
 fn server_state_server() -> impl ComplexDataType {
     let protocol_version: SimpleDataType<u32> = SimpleDataType::new();
+    let version_element: SimpleDataType<u8> = SimpleDataType::new();
+    let version = ArrayType::new(version_element, 0, 19);
     StructType::new("ServerStateServer")
         .with_field("protocol_version", protocol_version)
-        .with_field("server_version", server_version())
+        .with_field("version", version)
         .with_field("server_identity", server_identity())
-}
-
-fn server_version() -> impl ComplexDataType {
-    let major: SimpleDataType<u8> = SimpleDataType::new();
-    let minor: SimpleDataType<u8> = SimpleDataType::new();
-    let patch: SimpleDataType<u8> = SimpleDataType::new();
-    StructType::new("ServerVersion")
-        .with_field("major", major)
-        .with_field("minor", minor)
-        .with_field("patch", patch)
 }
 
 fn server_identity() -> impl ComplexDataType {

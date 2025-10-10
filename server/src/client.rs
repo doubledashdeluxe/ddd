@@ -6,7 +6,7 @@ use anyhow::Result;
 use crate::formats::client_state::{ClientIdentity, ClientState, ClientStateServer};
 use crate::formats::server_state::{
     ServerIdentity, ServerIdentitySpecified, ServerIdentityUnspecified, ServerState,
-    ServerStateServer, ServerVersion,
+    ServerStateServer,
 };
 use crate::formats::version;
 
@@ -60,11 +60,10 @@ impl Client {
             State::Idle => return Ok(None),
             State::Server { server } => {
                 let protocol_version = version::PROTOCOL_VERSION;
-                let server_version = ServerVersion {
-                    major: version::MAJOR_VERSION,
-                    minor: version::MINOR_VERSION,
-                    patch: version::PATCH_VERSION,
-                };
+                let major = version::MAJOR_VERSION;
+                let minor = version::MINOR_VERSION;
+                let patch = version::PATCH_VERSION;
+                let version = format!("v{major}.{minor}.{patch}").into();
                 let server_identity = match server.client_identity {
                     ClientIdentity::Unspecified(_) => {
                         let server_identity_unspecified = ServerIdentityUnspecified {};
@@ -79,7 +78,7 @@ impl Client {
                     }
                 };
                 let server_state_server =
-                    ServerStateServer { protocol_version, server_version, server_identity };
+                    ServerStateServer { protocol_version, version, server_identity };
                 ServerState::Server(server_state_server)
             }
         };

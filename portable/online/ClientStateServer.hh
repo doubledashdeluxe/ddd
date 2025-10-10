@@ -11,13 +11,11 @@ class ClientStateServer
     : public ClientState
     , private ServerStateReader
     , private ServerStateServerReader
-    , private ServerVersionReader
     , private ServerIdentityReader
     , private ServerIdentityUnspecifiedReader
     , private ServerIdentitySpecifiedReader
     , private ClientStateWriter::Server
     , private ClientStateServerWriter
-    , private ClientVersionWriter
     , private ClientIdentityWriter::Unspecified
     , private ClientIdentityUnspecifiedWriter
     , private ClientIdentityWriter::Specified
@@ -35,15 +33,11 @@ private:
 
     bool isProtocolVersionValid(u32 protocolVersion) override;
     void setProtocolVersion(u32 protocolVersion) override;
-    ServerVersionReader *serverVersionReader() override;
+    bool isVersionCountValid(u32 versionCount) override;
+    void setVersionCount(u32 versionCount) override;
+    bool isVersionElementValid(u32 i0, u8 versionElement) override;
+    void setVersionElement(u32 i0, u8 versionElement) override;
     ServerIdentityReader *serverIdentityReader() override;
-
-    bool isMajorValid(u8 major) override;
-    void setMajor(u8 major) override;
-    bool isMinorValid(u8 minor) override;
-    void setMinor(u8 minor) override;
-    bool isPatchValid(u8 patch) override;
-    void setPatch(u8 patch) override;
 
     ServerIdentityUnspecifiedReader *unspecifiedReader() override;
     ServerIdentitySpecifiedReader *specifiedReader() override;
@@ -58,12 +52,9 @@ private:
     ClientStateServerWriter &serverWriter() override;
 
     u32 getProtocolVersion() override;
-    ClientVersionWriter &clientVersionWriter() override;
+    u32 getVersionCount() override;
+    u8 getVersionElement(u32 i0) override;
     ClientIdentityWriter &clientIdentityWriter() override;
-
-    u8 getMajor() override;
-    u8 getMinor() override;
-    u8 getPatch() override;
 
     ClientIdentityUnspecifiedWriter &unspecifiedWriter() override;
     ClientIdentitySpecifiedWriter &specifiedWriter() override;
@@ -82,4 +73,5 @@ private:
     u32 m_readIndex;
     u32 m_writeIndex;
     ClientStateServerInfo m_info;
+    Array<char, 20> m_version;
 };
