@@ -36,6 +36,10 @@ private:
     void setPackIndex(u8 packIndex) override;
     bool isPlayerCountValid(u16 playerCount) override;
     void setPlayerCount(u16 playerCount) override;
+    bool isFormatPlayerCountsCountValid(u32 formatPlayerCountsCount) override;
+    void setFormatPlayerCountsCount(u32 formatPlayerCountsCount) override;
+    bool isFormatPlayerCountsElementValid(u32 i0, u16 formatPlayerCountsElement) override;
+    void setFormatPlayerCountsElement(u32 i0, u16 formatPlayerCountsElement) override;
 
     ClientStatePackWriter &packWriter() override;
 

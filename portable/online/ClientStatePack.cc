@@ -23,7 +23,7 @@ ClientState &ClientStatePack::read(ClientReadHandler &handler) {
         if (result < 0) {
             break;
         }
-        if (m_connection->read(*this, buffer.values(), result, address)) {
+        if (m_connection->read(*this, buffer.values(), result, address) && !m_writeInfo.packIndex) {
             m_packIndex = (m_packIndex + 1) % m_writeInfo.packCount;
         }
     }
@@ -41,8 +41,14 @@ ClientState &ClientStatePack::writeStateMode(const ClientStateModeWriteInfo &wri
     return *(new (m_platform.allocator) ClientStateMode(m_platform, connection, playerCount));
 }
 
-ClientState &ClientStatePack::writeStatePack(const WriteInfo & /* writeInfo */) {
+ClientState &ClientStatePack::writeStatePack(const WriteInfo &writeInfo) {
     checkSocket();
+
+    Optional<u32> packIndex = writeInfo.packIndex;
+    m_writeInfo.packIndex = packIndex;
+    if (packIndex) {
+        m_packIndex = *packIndex;
+    }
 
     Array<u8, 512> buffer;
     u32 size = buffer.count();
@@ -84,6 +90,21 @@ bool ClientStatePack::isPlayerCountValid(u16 /* playerCount */) {
 
 void ClientStatePack::setPlayerCount(u16 playerCount) {
     m_readInfo.packs[m_packIndex].emplace().playerCount = playerCount;
+}
+
+bool ClientStatePack::isFormatPlayerCountsCountValid(u32 /* formatPlayerCountsCount */) {
+    return true;
+}
+
+void ClientStatePack::setFormatPlayerCountsCount(u32 /* formatPlayerCountsCount */) {}
+
+bool ClientStatePack::isFormatPlayerCountsElementValid(u32 /* i0 */,
+        u16 /* formatPlayerCountsElement */) {
+    return true;
+}
+
+void ClientStatePack::setFormatPlayerCountsElement(u32 i0, u16 formatPlayerCountsElement) {
+    m_readInfo.packs[m_packIndex].emplace().formatPlayerCounts[i0] = formatPlayerCountsElement;
 }
 
 ClientStatePackWriter &ClientStatePack::packWriter() {

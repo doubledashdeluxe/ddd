@@ -320,6 +320,7 @@ void ScenePackSelect::slideIn() {
             }
             m_writeInfo.packs[i].hash = pack->hash();
         }
+        m_writeInfo.packIndex.reset();
     }
 
     MenuTitleLine::Instance()->drop("SelectPack.bti");

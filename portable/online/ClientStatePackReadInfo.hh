@@ -7,6 +7,7 @@
 struct ClientStatePackReadInfo {
     struct Pack {
         u16 playerCount;
+        Array<u16, 3> formatPlayerCounts;
     };
 
     Array<Optional<Pack>, MaxPackCount> packs;

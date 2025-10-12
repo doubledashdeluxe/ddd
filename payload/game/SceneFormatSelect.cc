@@ -1,5 +1,6 @@
 #include "SceneFormatSelect.hh"
 
+#include "game/ErrorViewApp.hh"
 #include "game/GameAudioMain.hh"
 #include "game/Kart2DCommon.hh"
 #include "game/KartGamePad.hh"
@@ -9,10 +10,13 @@
 #include "game/RaceMode.hh"
 #include "game/SceneFactory.hh"
 #include "game/SequenceApp.hh"
+#include "game/SequenceInfo.hh"
 #include "game/System.hh"
 
 #include <jsystem/J2DAnmLoaderDataBase.hh>
 #include <jsystem/J2DPicture.hh>
+#include <payload/online/Client.hh>
+#include <payload/payload/CourseManager.hh>
 
 SceneFormatSelect::SceneFormatSelect(JKRArchive *archive, JKRHeap *heap) : Scene(archive, heap) {
     SceneFactory *sceneFactory = SceneFactory::Instance();
@@ -71,12 +75,10 @@ SceneFormatSelect::SceneFormatSelect(JKRArchive *archive, JKRHeap *heap) : Scene
         m_playerCountAnmTevRegKeys[i] = J2DAnmLoaderDataBase::Load("PlayerCount.brk", m_archive);
         m_playerCountAnmTevRegKeys[i]->searchUpdateMaterialID(&m_playerCountScreens[i]);
         m_playerCountScreens[i].search("PIcon")->setAnimation(m_playerCountAnmTevRegKeys[i]);
-        for (u32 j = 1; j <= 3; j++) {
-            for (u32 k = 0; k < j; k++) {
-                m_playerCountScreens[i]
-                        .search("PCount%u%u", j, k)
-                        ->setAnimation(m_playerCountAnmTevRegKeys[i]);
-            }
+        for (u32 j = 0; j < 3; j++) {
+            m_playerCountScreens[i]
+                    .search("PCount%u", j)
+                    ->setAnimation(m_playerCountAnmTevRegKeys[i]);
         }
     }
 
@@ -114,6 +116,9 @@ void SceneFormatSelect::draw() {
 }
 
 void SceneFormatSelect::calc() {
+    Client *client = Client::Instance();
+    client->read(*this);
+
     (this->*m_state)();
 
     OnlineBackground::Instance()->calc();
@@ -172,10 +177,54 @@ void SceneFormatSelect::calc() {
     for (u32 i = 0; i < m_playerCountScreens.count(); i++) {
         m_playerCountScreens[i].animationMaterials();
     }
+
+    client->writeStatePack(m_writeInfo);
+}
+
+bool SceneFormatSelect::clientStateMode(const ClientStateModeReadInfo & /* readInfo */) {
+    return true;
+}
+
+bool SceneFormatSelect::clientStatePack(const ClientStatePackReadInfo &readInfo) {
+    const Optional<ClientStatePackReadInfo::Pack> &pack = readInfo.packs[m_packIndex];
+    if (pack) {
+        for (u32 i = 0; i < FormatCount; i++) {
+            Array<char, 4> &playerCount = m_playerCounts[i];
+            u32 uncappedPlayerCount = pack->formatPlayerCounts[i];
+            u16 cappedPlayerCount = Min<u16>(uncappedPlayerCount, 999);
+            snprintf(playerCount.values(), playerCount.count(), "%u", cappedPlayerCount);
+        }
+    }
+    return true;
+}
+
+void SceneFormatSelect::clientStateError() {
+    ErrorViewApp::Call(6);
 }
 
 void SceneFormatSelect::slideIn() {
+    m_packIndex = SequenceInfo::Instance().m_packIndex;
     m_formatIndex = 0;
+    for (u32 i = 0; i < m_playerCounts.count(); i++) {
+        snprintf(m_playerCounts[i].values(), m_playerCounts[i].count(), "...");
+    }
+
+    const CourseManager *courseManager = CourseManager::Instance();
+    u32 packCount;
+    if (RaceInfo::Instance().isRace()) {
+        packCount = courseManager->racePackCount();
+    } else {
+        packCount = courseManager->battlePackCount();
+    }
+    m_writeInfo.packCount = packCount;
+    const CourseManager::Pack *pack;
+    if (RaceInfo::Instance().isRace()) {
+        pack = &courseManager->racePack(m_packIndex);
+    } else {
+        pack = &courseManager->battlePack(m_packIndex);
+    }
+    m_writeInfo.packs[m_packIndex].hash = pack->hash();
+    m_writeInfo.packIndex = m_packIndex;
 
     MenuTitleLine::Instance()->drop("SelectFormat.bti");
     m_mainAnmTransformFrame = 0;
@@ -245,6 +294,6 @@ void SceneFormatSelect::refreshFormats() {
     Kart2DCommon *kart2DCommon = Kart2DCommon::Instance();
     for (u32 i = 0; i < FormatCount; i++) {
         J2DScreen &screen = m_playerCountScreens[i];
-        kart2DCommon->changeNumberTexture(i * 64, 3, screen, "PCount");
+        kart2DCommon->changeUnicodeTexture(m_playerCounts[i].values(), 3, screen, "PCount", true);
     }
 }

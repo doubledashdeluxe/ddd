@@ -4,8 +4,12 @@
 
 #include <jsystem/J2DScreen.hh>
 #include <portable/Array.hh>
+#include <portable/online/ClientReadHandler.hh>
+#include <portable/online/ClientStatePackWriteInfo.hh>
 
-class SceneFormatSelect : public Scene {
+class SceneFormatSelect
+    : public Scene
+    , private ClientReadHandler {
 public:
     SceneFormatSelect(JKRArchive *archive, JKRHeap *heap);
     ~SceneFormatSelect() override;
@@ -20,6 +24,10 @@ private:
 
     typedef void (SceneFormatSelect::*State)();
 
+    bool clientStateMode(const ClientStateModeReadInfo &readInfo) override;
+    bool clientStatePack(const ClientStatePackReadInfo &readInfo) override;
+    void clientStateError() override;
+
     void slideIn();
     void slideOut();
     void idle();
@@ -33,7 +41,10 @@ private:
     void refreshFormats();
 
     State m_state;
+    u32 m_packIndex;
     u32 m_formatIndex;
+    Array<Array<char, 4>, FormatCount> m_playerCounts;
+    ClientStatePackWriteInfo m_writeInfo;
     u32 m_nextScene;
     J2DScreen m_mainScreen;
     J2DScreen m_modeScreen;

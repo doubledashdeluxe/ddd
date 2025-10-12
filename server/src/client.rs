@@ -126,7 +126,9 @@ impl Client {
             State::Pack { pack, .. } => {
                 let ClientStatePack { mode_index, pack_index, .. } = *pack;
                 let player_count = pack_index as u16 * 137;
-                let pack = ServerStatePack { mode_index, pack_index, player_count };
+                let format_player_counts = (0..3).map(|i| i * 73).collect();
+                let pack =
+                    ServerStatePack { mode_index, pack_index, player_count, format_player_counts };
                 ServerState::Pack(pack)
             }
         };

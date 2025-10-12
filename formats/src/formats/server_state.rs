@@ -69,8 +69,11 @@ fn server_state_pack() -> impl ComplexDataType {
     let mode_index: SimpleDataType<u8> = SimpleDataType::new();
     let pack_index: SimpleDataType<u8> = SimpleDataType::new();
     let player_count: SimpleDataType<u16> = SimpleDataType::new();
+    let format_player_count: SimpleDataType<u16> = SimpleDataType::new();
+    let format_player_counts = ArrayType::new(format_player_count, 3, 3);
     StructType::new("ServerStatePack")
         .with_field("mode_index", mode_index)
         .with_field("pack_index", pack_index)
         .with_field("player_count", player_count)
+        .with_field("format_player_counts", format_player_counts)
 }
