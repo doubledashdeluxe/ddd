@@ -177,6 +177,10 @@ bool SceneRoomCodeEnter::clientStateMode(const ClientStateModeReadInfo & /* read
     return true;
 }
 
+bool SceneRoomCodeEnter::clientStatePack(const ClientStatePackReadInfo & /* readInfo */) {
+    return true;
+}
+
 void SceneRoomCodeEnter::clientStateError() {
     ErrorViewApp::Call(6);
 }

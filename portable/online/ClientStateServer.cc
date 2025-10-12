@@ -99,8 +99,8 @@ ClientState &ClientStateServer::writeStateServer(const WriteInfo &writeInfo) {
 
 ClientState &ClientStateServer::writeStateMode(const ClientStateModeWriteInfo &writeInfo) {
     Connection &connection = *m_connections[writeInfo.serverIndex].release();
-    return *(new (m_platform.allocator)
-                    ClientStateMode(m_platform, connection, writeInfo.playerCount));
+    u8 playerCount = writeInfo.playerCount;
+    return *(new (m_platform.allocator) ClientStateMode(m_platform, connection, playerCount));
 }
 
 ServerStateServerReader *ClientStateServer::serverReader() {
@@ -108,6 +108,10 @@ ServerStateServerReader *ClientStateServer::serverReader() {
 }
 
 ServerStateModeReader *ClientStateServer::modeReader() {
+    return nullptr;
+}
+
+ServerStatePackReader *ClientStateServer::packReader() {
     return nullptr;
 }
 

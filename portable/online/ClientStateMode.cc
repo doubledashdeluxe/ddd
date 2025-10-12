@@ -1,6 +1,7 @@
 #include "ClientStateMode.hh"
 
 #include "portable/online/ClientStateError.hh"
+#include "portable/online/ClientStatePack.hh"
 #include "portable/online/ClientStateServer.hh"
 
 ClientStateMode::ClientStateMode(const ClientPlatform &platform, Connection &connection,
@@ -50,12 +51,21 @@ ClientState &ClientStateMode::writeStateMode(const WriteInfo & /* writeInfo */) 
     return *this;
 }
 
+ClientState &ClientStateMode::writeStatePack(const ClientStatePackWriteInfo &writeInfo) {
+    Connection &connection = *m_connection.release();
+    return *(new (m_platform.allocator) ClientStatePack(m_platform, connection, writeInfo));
+}
+
 ServerStateServerReader *ClientStateMode::serverReader() {
     return nullptr;
 }
 
 ServerStateModeReader *ClientStateMode::modeReader() {
     return this;
+}
+
+ServerStatePackReader *ClientStateMode::packReader() {
+    return nullptr;
 }
 
 bool ClientStateMode::isModesCountValid(u32 /* modesCount */) {

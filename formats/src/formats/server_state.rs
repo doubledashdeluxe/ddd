@@ -13,6 +13,7 @@ pub fn format() -> Format<impl ConstantList, impl TypeList> {
         .with_type(server_state_server())
         .with_type(server_mode())
         .with_type(server_state_mode())
+        .with_type(server_state_pack())
         .with_type(server_state())
 }
 
@@ -20,6 +21,7 @@ fn server_state() -> impl ComplexDataType {
     EnumType::new("ServerState")
         .with_variant("Server", server_state_server())
         .with_variant("Mode", server_state_mode())
+        .with_variant("Pack", server_state_pack())
 }
 
 fn server_state_server() -> impl ComplexDataType {
@@ -61,4 +63,14 @@ fn server_mode() -> impl ComplexDataType {
     let mmrs = ArrayType::new(mmr, 1, 4);
     let player_count: SimpleDataType<u16> = SimpleDataType::new();
     StructType::new("ServerMode").with_field("mmrs", mmrs).with_field("player_count", player_count)
+}
+
+fn server_state_pack() -> impl ComplexDataType {
+    let mode_index: SimpleDataType<u8> = SimpleDataType::new();
+    let pack_index: SimpleDataType<u8> = SimpleDataType::new();
+    let player_count: SimpleDataType<u16> = SimpleDataType::new();
+    StructType::new("ServerStatePack")
+        .with_field("mode_index", mode_index)
+        .with_field("pack_index", pack_index)
+        .with_field("player_count", player_count)
 }

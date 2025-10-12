@@ -3,6 +3,7 @@
 #include "portable/online/ClientPlatform.hh"
 #include "portable/online/ClientReadHandler.hh"
 #include "portable/online/ClientStateModeWriteInfo.hh"
+#include "portable/online/ClientStatePackWriteInfo.hh"
 #include "portable/online/ClientStateServerWriteInfo.hh"
 
 class ClientState {
@@ -14,6 +15,7 @@ public:
     virtual ClientState &writeStateIdle();
     virtual ClientState &writeStateServer(const ClientStateServerWriteInfo &writeInfo);
     virtual ClientState &writeStateMode(const ClientStateModeWriteInfo &writeInfo);
+    virtual ClientState &writeStatePack(const ClientStatePackWriteInfo &writeInfo);
     virtual ClientState &writeStateError();
 
 protected:

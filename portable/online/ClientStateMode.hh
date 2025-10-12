@@ -21,6 +21,7 @@ public:
     ClientState &read(ClientReadHandler &handler) override;
     ClientState &writeStateServer(const ClientStateServerWriteInfo &writeInfo) override;
     ClientState &writeStateMode(const ClientStateModeWriteInfo &writeInfo) override;
+    ClientState &writeStatePack(const ClientStatePackWriteInfo &writeInfo) override;
 
 private:
     typedef ClientStateModeReadInfo ReadInfo;
@@ -28,6 +29,7 @@ private:
 
     ServerStateServerReader *serverReader() override;
     ServerStateModeReader *modeReader() override;
+    ServerStatePackReader *packReader() override;
 
     bool isModesCountValid(u32 modesCount) override;
     void setModesCount(u32 modesCount) override;

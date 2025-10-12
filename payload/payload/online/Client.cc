@@ -29,6 +29,10 @@ void Client::writeStateMode(const ClientStateModeWriteInfo &writeInfo) {
     while (updateState(m_state->writeStateMode(writeInfo))) {}
 }
 
+void Client::writeStatePack(const ClientStatePackWriteInfo &writeInfo) {
+    while (updateState(m_state->writeStatePack(writeInfo))) {}
+}
+
 void Client::writeStateError() {
     while (updateState(m_state->writeStateError())) {}
 }

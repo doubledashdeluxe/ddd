@@ -7,16 +7,12 @@
 #include <game/MinimapConfig.hh>
 #include <jsystem/JKRHeap.hh>
 #include <portable/Array.hh>
+#include <portable/Counts.hh>
 #include <portable/Optional.hh>
 #include <portable/Ring.hh>
 
 class CourseManager : public StorageScanner {
 public:
-    enum {
-        MaxCourseCount = 256,
-        MaxPackCount = 64,
-    };
-
     class Pack {
     public:
         Pack(Ring<u8, MaxCourseCount> courseIndices);

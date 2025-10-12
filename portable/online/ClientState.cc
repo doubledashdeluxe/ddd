@@ -18,6 +18,10 @@ ClientState &ClientState::writeStateMode(const ClientStateModeWriteInfo & /* wri
     return *(new (m_platform.allocator) ClientStateError(m_platform));
 }
 
+ClientState &ClientState::writeStatePack(const ClientStatePackWriteInfo & /* writeInfo */) {
+    return *(new (m_platform.allocator) ClientStateError(m_platform));
+}
+
 ClientState &ClientState::writeStateError() {
     return *(new (m_platform.allocator) ClientStateError(m_platform));
 }

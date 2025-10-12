@@ -13,6 +13,7 @@ pub fn format() -> Format<impl ConstantList, impl TypeList> {
         .with_type(client_identity())
         .with_type(client_state_server())
         .with_type(client_state_mode())
+        .with_type(client_state_pack())
         .with_type(client_state())
 }
 
@@ -20,6 +21,7 @@ fn client_state() -> impl ComplexDataType {
     EnumType::new("ClientState")
         .with_variant("Server", client_state_server())
         .with_variant("Mode", client_state_mode())
+        .with_variant("Pack", client_state_pack())
 }
 
 fn client_state_server() -> impl ComplexDataType {
@@ -56,4 +58,15 @@ fn client_player() -> impl ComplexDataType {
 
 fn client_state_mode() -> impl ComplexDataType {
     StructType::new("ClientStateMode")
+}
+
+fn client_state_pack() -> impl ComplexDataType {
+    let mode_index: SimpleDataType<u8> = SimpleDataType::new();
+    let pack_index: SimpleDataType<u8> = SimpleDataType::new();
+    let pack_hash_element: SimpleDataType<u8> = SimpleDataType::new();
+    let pack_hash = ArrayType::new(pack_hash_element, 32, 32);
+    StructType::new("ClientStatePack")
+        .with_field("mode_index", mode_index)
+        .with_field("pack_index", pack_index)
+        .with_field("pack_hash", pack_hash)
 }

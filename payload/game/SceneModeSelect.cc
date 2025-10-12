@@ -195,6 +195,10 @@ bool SceneModeSelect::clientStateMode(const ClientStateModeReadInfo &readInfo) {
     return true;
 }
 
+bool SceneModeSelect::clientStatePack(const ClientStatePackReadInfo & /* readInfo */) {
+    return true;
+}
+
 void SceneModeSelect::clientStateError() {
     ErrorViewApp::Call(6);
 }
@@ -257,6 +261,7 @@ void SceneModeSelect::stateIdle() {
     if (button.risingEdge() & PAD_BUTTON_A) {
         m_nextScene = SceneType::PackSelect;
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE_LITTLE);
+        OnlineInfo::Instance().m_modeIndex = m_modeIndex;
         RaceInfo::Instance().m_raceMode = Modes[m_modeIndex];
         slideOut();
     } else if (button.risingEdge() & PAD_BUTTON_B) {

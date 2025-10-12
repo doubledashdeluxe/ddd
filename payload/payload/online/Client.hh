@@ -18,6 +18,7 @@ public:
     void writeStateIdle();
     void writeStateServer(const ClientStateServerWriteInfo &writeInfo);
     void writeStateMode(const ClientStateModeWriteInfo &writeInfo);
+    void writeStatePack(const ClientStatePackWriteInfo &writeInfo);
     void writeStateError();
 
     static void Init(JKRHeap *parentHeap, SOConfig &config);

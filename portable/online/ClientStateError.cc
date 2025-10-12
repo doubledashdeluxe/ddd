@@ -28,6 +28,10 @@ ClientState &ClientStateError::writeStateMode(const ClientStateModeWriteInfo & /
     return *this;
 }
 
+ClientState &ClientStateError::writeStatePack(const ClientStatePackWriteInfo & /* writeInfo */) {
+    return *this;
+}
+
 ClientState &ClientStateError::writeStateError() {
     return *this;
 }

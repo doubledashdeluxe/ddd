@@ -1,5 +1,6 @@
 #include "ScenePackSelect.hh"
 
+#include "game/ErrorViewApp.hh"
 #include "game/GameAudioMain.hh"
 #include "game/Kart2DCommon.hh"
 #include "game/KartGamePad.hh"
@@ -17,6 +18,7 @@
 
 #include <jsystem/J2DAnmLoaderDataBase.hh>
 #include <payload/CourseManager.hh>
+#include <payload/online/Client.hh>
 #include <portable/Algorithm.hh>
 #include <portable/UTF8.hh>
 
@@ -83,7 +85,7 @@ ScenePackSelect::ScenePackSelect(JKRArchive *archive, JKRHeap *heap) : Scene(arc
 ScenePackSelect::~ScenePackSelect() {}
 
 void ScenePackSelect::init() {
-    SequenceInfo &sequenceInfo = SequenceInfo::Instance();
+    const SequenceInfo &sequenceInfo = SequenceInfo::Instance();
     for (u32 i = 0; i < m_packScreens.count(); i++) {
         m_packScreens[i].search("PIcon")->m_isVisible = sequenceInfo.m_isOnline;
         m_packScreens[i].search("PCount")->m_isVisible = sequenceInfo.m_isOnline;
@@ -106,6 +108,9 @@ void ScenePackSelect::init() {
     }
 
     m_packCount = 0;
+    for (u32 i = 0; i < m_playerCounts.count(); i++) {
+        snprintf(m_playerCounts[i].values(), m_playerCounts[i].count(), "...");
+    }
 
     if (CourseManager::Instance()->lock()) {
         slideIn();
@@ -129,9 +134,14 @@ void ScenePackSelect::draw() {
 }
 
 void ScenePackSelect::calc() {
+    const SequenceInfo &sequenceInfo = SequenceInfo::Instance();
+    Client *client = Client::Instance();
+    if (sequenceInfo.m_isOnline) {
+        client->read(*this);
+    }
+
     (this->*m_state)();
 
-    SequenceInfo &sequenceInfo = SequenceInfo::Instance();
     if (sequenceInfo.m_isOnline) {
         OnlineBackground::Instance()->calc();
     } else {
@@ -210,6 +220,17 @@ void ScenePackSelect::calc() {
     for (u32 i = 0; i < m_packScreens.count(); i++) {
         m_packScreens[i].animationMaterials();
     }
+
+    if (sequenceInfo.m_isOnline) {
+        if (m_packCount == 0) {
+            ClientStateModeWriteInfo writeInfo;
+            writeInfo.playerCount = sequenceInfo.m_padCount;
+            writeInfo.serverIndex = OnlineInfo::Instance().m_serverIndex;
+            client->writeStateMode(writeInfo);
+        } else {
+            client->writeStatePack(m_writeInfo);
+        }
+    }
 }
 
 ScenePackSelect::DescText::DescText(ScenePackSelect &scene, u32 descIndex)
@@ -237,19 +258,43 @@ void ScenePackSelect::DescText::setAlpha(u8 alpha) {
     m_scene.m_descAlphas[m_descIndex] = alpha;
 }
 
+bool ScenePackSelect::clientStateMode(const ClientStateModeReadInfo & /* readInfo */) {
+    return true;
+}
+
+bool ScenePackSelect::clientStatePack(const ClientStatePackReadInfo &readInfo) {
+    for (u32 i = 0; i < m_packCount; i++) {
+        const Optional<ClientStatePackReadInfo::Pack> &pack = readInfo.packs[i];
+        if (!pack) {
+            continue;
+        }
+        Array<char, 4> &playerCount = m_playerCounts[i];
+        u32 uncappedPlayerCount = pack->playerCount;
+        u16 cappedPlayerCount = Min<u16>(uncappedPlayerCount, 999);
+        snprintf(playerCount.values(), playerCount.count(), "%u", cappedPlayerCount);
+    }
+    return true;
+}
+
+void ScenePackSelect::clientStateError() {
+    ErrorViewApp::Call(6);
+}
+
 void ScenePackSelect::wait() {
     m_state = &ScenePackSelect::stateWait;
 }
 
 void ScenePackSelect::slideIn() {
+    const CourseManager *courseManager = CourseManager::Instance();
     if (RaceInfo::Instance().isRace()) {
-        m_packCount = CourseManager::Instance()->racePackCount();
+        m_packCount = courseManager->racePackCount();
     } else {
-        m_packCount = CourseManager::Instance()->battlePackCount();
+        m_packCount = courseManager->battlePackCount();
     }
     m_packIndex = 0;
     s32 prevScene = SequenceApp::Instance()->prevScene();
-    if (SequenceInfo::Instance().m_isOnline) {
+    const SequenceInfo &sequenceInfo = SequenceInfo::Instance();
+    if (sequenceInfo.m_isOnline) {
         if (prevScene != SceneType::RoomTypeSelect && prevScene != SceneType::ModeSelect) {
             m_packIndex = SequenceInfo::Instance().m_packIndex;
         }
@@ -262,6 +307,20 @@ void ScenePackSelect::slideIn() {
     m_rowIndex = m_packIndex;
     m_rowIndex = Min(m_rowIndex, m_packCount - Min<u32>(m_packCount, 5));
     m_descOffset = 0;
+
+    if (sequenceInfo.m_isOnline) {
+        m_writeInfo.modeIndex = OnlineInfo::Instance().m_modeIndex;
+        m_writeInfo.packCount = m_packCount;
+        for (u32 i = 0; i < m_packCount; i++) {
+            const CourseManager::Pack *pack;
+            if (RaceInfo::Instance().isRace()) {
+                pack = &courseManager->racePack(i);
+            } else {
+                pack = &courseManager->battlePack(i);
+            }
+            m_writeInfo.packs[i].hash = pack->hash();
+        }
+    }
 
     MenuTitleLine::Instance()->drop("SelectPack.bti");
     m_mainAnmTransformFrame = 0;
@@ -445,7 +504,7 @@ void ScenePackSelect::refreshPacks() {
         u32 descPictureCount = 42 - sequenceInfo.m_isOnline * 6;
         descText.refresh(descOffset, courseCount, descPictureCount, screen, "Desc");
         kart2DCommon->changeNumberTexture<3>(courseCount, screen, "CCount", true);
-        kart2DCommon->changeNumberTexture<3>(packIndex * 12, screen, "PCount", true);
+        kart2DCommon->changeUnicodeTexture(m_playerCounts[i].values(), 3, screen, "PCount", true);
     }
 }
 

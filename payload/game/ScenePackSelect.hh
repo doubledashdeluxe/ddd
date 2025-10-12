@@ -5,8 +5,12 @@
 #include <jsystem/J2DScreen.hh>
 #include <payload/SlidingText.hh>
 #include <portable/Array.hh>
+#include <portable/online/ClientReadHandler.hh>
+#include <portable/online/ClientStatePackWriteInfo.hh>
 
-class ScenePackSelect : public Scene {
+class ScenePackSelect
+    : public Scene
+    , private ClientReadHandler {
 public:
     ScenePackSelect(JKRArchive *archive, JKRHeap *heap);
     ~ScenePackSelect() override;
@@ -30,6 +34,10 @@ private:
     };
 
     typedef void (ScenePackSelect::*State)();
+
+    bool clientStateMode(const ClientStateModeReadInfo &readInfo) override;
+    bool clientStatePack(const ClientStatePackReadInfo &readInfo) override;
+    void clientStateError() override;
 
     void wait();
     void slideIn();
@@ -57,6 +65,8 @@ private:
     u32 m_packIndex;
     u32 m_rowIndex;
     u64 m_descOffset;
+    Array<Array<char, 4>, MaxPackCount> m_playerCounts;
+    ClientStatePackWriteInfo m_writeInfo;
     u32 m_nextScene;
     J2DScreen m_mainScreen;
     J2DScreen m_modeScreen;

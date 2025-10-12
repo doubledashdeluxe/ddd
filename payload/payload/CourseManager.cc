@@ -28,11 +28,11 @@ CourseManager::Pack::Pack(Ring<u8, MaxCourseCount> courseIndices)
 
 CourseManager::Pack::~Pack() {}
 
-const Ring<u8, CourseManager::MaxCourseCount> &CourseManager::Pack::courseIndices() const {
+const Ring<u8, MaxCourseCount> &CourseManager::Pack::courseIndices() const {
     return m_courseIndices;
 }
 
-Ring<u8, CourseManager::MaxCourseCount> &CourseManager::Pack::courseIndices() {
+Ring<u8, MaxCourseCount> &CourseManager::Pack::courseIndices() {
     return m_courseIndices;
 }
 

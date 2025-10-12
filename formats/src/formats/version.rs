@@ -19,7 +19,7 @@ pub fn format() -> Format<impl ConstantList, impl TypeList> {
 }
 
 fn protocol_version() -> impl Constant {
-    SimpleConstant::new("PROTOCOL_VERSION", 1u32)
+    SimpleConstant::new("PROTOCOL_VERSION", 2u32)
 }
 
 fn major_version(major: u8) -> impl Constant {

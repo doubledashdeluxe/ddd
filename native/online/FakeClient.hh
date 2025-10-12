@@ -32,10 +32,12 @@ private:
     bool clientStateIdle() override;
     bool clientStateServer(const ClientStateServerReadInfo &readInfo) override;
     bool clientStateMode(const ClientStateModeReadInfo &readInfo) override;
+    bool clientStatePack(const ClientStatePackReadInfo &readInfo) override;
     void clientStateError() override;
 
     ClientState &writeStateServer();
     ClientState &writeStateMode();
+    ClientState &writeStatePack();
 
     bool updateState(ClientState &nextState);
 

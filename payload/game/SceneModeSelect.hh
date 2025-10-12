@@ -40,6 +40,7 @@ private:
 
     bool clientStateServer(const ClientStateServerReadInfo &readInfo) override;
     bool clientStateMode(const ClientStateModeReadInfo &readInfo) override;
+    bool clientStatePack(const ClientStatePackReadInfo &readInfo) override;
     void clientStateError() override;
 
     void slideIn();

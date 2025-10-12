@@ -11,5 +11,6 @@ public:
     ClientState &writeStateIdle() override;
     ClientState &writeStateServer(const ClientStateServerWriteInfo &writeInfo) override;
     ClientState &writeStateMode(const ClientStateModeWriteInfo &writeInfo) override;
+    ClientState &writeStatePack(const ClientStatePackWriteInfo &writeInfo) override;
     ClientState &writeStateError() override;
 };

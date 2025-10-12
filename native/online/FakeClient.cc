@@ -41,6 +41,11 @@ bool FakeClient::clientStateServer(const ClientStateServerReadInfo &readInfo) {
 }
 
 bool FakeClient::clientStateMode(const ClientStateModeReadInfo & /* readInfo */) {
+    m_writer = &FakeClient::writeStatePack;
+    return true;
+}
+
+bool FakeClient::clientStatePack(const ClientStatePackReadInfo & /* readInfo */) {
     return true;
 }
 
@@ -61,6 +66,14 @@ ClientState &FakeClient::writeStateMode() {
     writeInfo.playerCount = 1;
     writeInfo.serverIndex = 0;
     return m_state->writeStateMode(writeInfo);
+}
+
+ClientState &FakeClient::writeStatePack() {
+    ClientStatePackWriteInfo writeInfo;
+    writeInfo.modeIndex = 0;
+    writeInfo.packCount = 1;
+    writeInfo.packs[0].hash.fill(0xff);
+    return m_state->writeStatePack(writeInfo);
 }
 
 bool FakeClient::updateState(ClientState &nextState) {
