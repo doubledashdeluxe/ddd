@@ -32,6 +32,8 @@ public:
 
     JKRArchive *archive(u32 archiveType);
 
+    const char *string(u32 archiveType, u32 index);
+
     void REPLACED(loadData)(s32 sceneType, JKRHeap *heap);
     REPLACE void loadData(s32 sceneType, JKRHeap *heap);
     Scene *REPLACED(createScene)(s32 sceneType, JKRHeap *heap);

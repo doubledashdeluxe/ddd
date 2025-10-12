@@ -2,6 +2,7 @@
 
 #include "portable/Upcast.hh"
 #include "portable/online/ClientStateError.hh"
+#include "portable/online/ClientStateMode.hh"
 
 #include <formats/Version.hh>
 
@@ -12,6 +13,7 @@ extern "C" {
 
 ClientStateServer::ClientStateServer(const ClientPlatform &platform)
     : ClientState(platform), m_readIndex(0), m_writeIndex(0) {
+    m_platform.socket.close();
     snprintf(m_version.values(), m_version.count(), "v%u.%u.%u", MajorVersion, MinorVersion,
             PatchVersion);
 }
@@ -30,8 +32,8 @@ ClientState &ClientStateServer::read(ClientReadHandler &handler) {
     checkConnections();
     checkServers();
 
-    m_info.networkIsRunning = m_platform.network.isRunning();
-    if (m_info.networkIsRunning) {
+    m_readInfo.networkIsRunning = m_platform.network.isRunning();
+    if (m_readInfo.networkIsRunning) {
         checkSocket();
 
         if (!m_connections.empty()) {
@@ -45,7 +47,7 @@ ClientState &ClientStateServer::read(ClientReadHandler &handler) {
                 for (u32 j = 0; j < m_connections.count(); j++) {
                     m_readIndex = (m_readIndex + 1) % m_connections.count();
                     if (m_connections[m_readIndex]->read(*this, buffer.values(), result, address)) {
-                        ClientStateServerInfo::Server &server = m_info.servers[m_readIndex];
+                        ReadInfo::Server &server = m_readInfo.servers[m_readIndex];
                         server.versionIsCompatible = server.protocolVersion == ProtocolVersion;
                         break;
                     }
@@ -54,20 +56,20 @@ ClientState &ClientStateServer::read(ClientReadHandler &handler) {
         }
     }
 
-    m_info.networkName = m_platform.network.name();
-    m_info.networkAddress = m_info.networkIsRunning ? m_platform.network.address() : 0;
+    m_readInfo.networkName = m_platform.network.name();
+    m_readInfo.networkAddress = m_readInfo.networkIsRunning ? m_platform.network.address() : 0;
     for (u32 i = 0; i < m_connections.count(); i++) {
-        m_info.servers[i].address = m_connections[i]->address();
+        m_readInfo.servers[i].address = m_connections[i]->address();
     }
 
-    if (!handler.clientStateServer(m_info)) {
+    if (!handler.clientStateServer(m_readInfo)) {
         return *(new (m_platform.allocator) ClientStateError(m_platform));
     }
 
     return *this;
 }
 
-ClientState &ClientStateServer::writeStateServer() {
+ClientState &ClientStateServer::writeStateServer(const WriteInfo &writeInfo) {
     if (!m_platform.serverManager.isLocked()) {
         return *this;
     }
@@ -75,9 +77,11 @@ ClientState &ClientStateServer::writeStateServer() {
     checkConnections();
     checkServers();
 
-    m_info.networkIsRunning = m_platform.network.isRunning();
-    if (m_info.networkIsRunning) {
+    m_readInfo.networkIsRunning = m_platform.network.isRunning();
+    if (m_readInfo.networkIsRunning) {
         checkSocket();
+
+        m_writeInfo = &writeInfo;
 
         if (!m_connections.empty()) {
             Array<u8, 512> buffer;
@@ -93,11 +97,17 @@ ClientState &ClientStateServer::writeStateServer() {
     return *this;
 }
 
+ClientState &ClientStateServer::writeStateMode(const ClientStateModeWriteInfo &writeInfo) {
+    Connection &connection = *m_connections[writeInfo.serverIndex].release();
+    return *(new (m_platform.allocator)
+                    ClientStateMode(m_platform, connection, writeInfo.playerCount));
+}
+
 ServerStateServerReader *ClientStateServer::serverReader() {
     return this;
 }
 
-ServerStateRoomReader *ClientStateServer::roomReader() {
+ServerStateModeReader *ClientStateServer::modeReader() {
     return nullptr;
 }
 
@@ -106,7 +116,7 @@ bool ClientStateServer::isProtocolVersionValid(u32 /* protocolVersion */) {
 }
 
 void ClientStateServer::setProtocolVersion(u32 protocolVersion) {
-    m_info.servers[m_readIndex].protocolVersion = protocolVersion;
+    m_readInfo.servers[m_readIndex].protocolVersion = protocolVersion;
 }
 
 bool ClientStateServer::isVersionCountValid(u32 /* versionCount */) {
@@ -114,7 +124,7 @@ bool ClientStateServer::isVersionCountValid(u32 /* versionCount */) {
 }
 
 void ClientStateServer::setVersionCount(u32 versionCount) {
-    m_info.servers[m_readIndex].version.getOrEmplace()[versionCount] = '\0';
+    m_readInfo.servers[m_readIndex].version.getOrEmplace()[versionCount] = '\0';
 }
 
 bool ClientStateServer::isVersionElementValid(u32 /* i0 */, u8 versionElement) {
@@ -122,7 +132,7 @@ bool ClientStateServer::isVersionElementValid(u32 /* i0 */, u8 versionElement) {
 }
 
 void ClientStateServer::setVersionElement(u32 i0, u8 versionElement) {
-    m_info.servers[m_readIndex].version.getOrEmplace()[i0] = versionElement;
+    m_readInfo.servers[m_readIndex].version.getOrEmplace()[i0] = versionElement;
 }
 
 ServerIdentityReader *ClientStateServer::serverIdentityReader() {
@@ -134,7 +144,7 @@ ServerIdentityUnspecifiedReader *ClientStateServer::unspecifiedReader() {
 }
 
 ServerIdentitySpecifiedReader *ClientStateServer::specifiedReader() {
-    if (m_info.servers[m_writeIndex].versionIsCompatible) {
+    if (m_readInfo.servers[m_writeIndex].versionIsCompatible) {
         return this;
     }
     return nullptr;
@@ -145,7 +155,7 @@ bool ClientStateServer::isMotdCountValid(u32 /* motdCount */) {
 }
 
 void ClientStateServer::setMotdCount(u32 motdCount) {
-    m_info.servers[m_readIndex].motd.getOrEmplace()[motdCount] = '\0';
+    m_readInfo.servers[m_readIndex].motd.getOrEmplace()[motdCount] = '\0';
 }
 
 bool ClientStateServer::isMotdElementValid(u32 /* i0 */, u8 motdElement) {
@@ -153,7 +163,7 @@ bool ClientStateServer::isMotdElementValid(u32 /* i0 */, u8 motdElement) {
 }
 
 void ClientStateServer::setMotdElement(u32 i0, u8 motdElement) {
-    m_info.servers[m_readIndex].motd.getOrEmplace()[i0] = motdElement;
+    m_readInfo.servers[m_readIndex].motd.getOrEmplace()[i0] = motdElement;
 }
 
 bool ClientStateServer::isPlayerCountValid(u16 /* playerCount */) {
@@ -161,7 +171,7 @@ bool ClientStateServer::isPlayerCountValid(u16 /* playerCount */) {
 }
 
 void ClientStateServer::setPlayerCount(u16 playerCount) {
-    m_info.servers[m_readIndex].playerCount = playerCount;
+    m_readInfo.servers[m_readIndex].playerCount = playerCount;
 }
 
 ClientStateServerWriter &ClientStateServer::serverWriter() {
@@ -181,7 +191,7 @@ u8 ClientStateServer::getVersionElement(u32 i0) {
 }
 
 ClientIdentityWriter &ClientStateServer::clientIdentityWriter() {
-    if (m_info.servers[m_writeIndex].versionIsCompatible) {
+    if (m_readInfo.servers[m_writeIndex].versionIsCompatible) {
         return Upcast<ClientIdentityWriter::Specified>(*this);
     }
     return Upcast<ClientIdentityWriter::Unspecified>(*this);
@@ -196,19 +206,24 @@ ClientIdentitySpecifiedWriter &ClientStateServer::specifiedWriter() {
 }
 
 u32 ClientStateServer::getPlayersCount() {
-    return 1;
+    return m_writeInfo->playerCount;
 }
 
-u32 ClientStateServer::getPlayersCount(u32 /* i0 */) {
-    return 1;
+ClientPlayerWriter &ClientStateServer::playersElementWriter(u32 i0) {
+    m_playerIndex = i0;
+    return *this;
 }
 
-u32 ClientStateServer::getPlayersCount(u32 /* i0 */, u32 /* i1 */) {
+u8 ClientStateServer::getProfile() {
+    return m_writeInfo->players[m_playerIndex].profile;
+}
+
+u32 ClientStateServer::getNameCount() {
     return 3;
 }
 
-u8 ClientStateServer::getPlayersElement(u32 /* i0 */, u32 /* i1 */, u32 /* i2 */) {
-    return 'A';
+u8 ClientStateServer::getNameElement(u32 i0) {
+    return m_writeInfo->players[m_playerIndex].name[i0];
 }
 
 void ClientStateServer::checkConnections() {
@@ -236,10 +251,10 @@ void ClientStateServer::checkSocket() {
 }
 
 void ClientStateServer::checkServers() {
-    if (m_info.servers.empty()) {
+    if (m_readInfo.servers.empty()) {
         for (u32 i = 0; i < m_platform.serverManager.serverCount(); i++) {
-            m_info.servers.pushBack();
-            m_info.servers[i].versionIsCompatible = false;
+            m_readInfo.servers.pushBack();
+            m_readInfo.servers[i].versionIsCompatible = false;
         }
     }
 }

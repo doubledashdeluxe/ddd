@@ -7,7 +7,7 @@ public:
     FakeServerManager(const Ring<Server, MaxServerCount> &servers);
     ~FakeServerManager();
 
-    virtual bool isLocked() override;
-    virtual bool lock() override;
-    virtual void unlock() override;
+    bool isLocked() override;
+    bool lock() override;
+    void unlock() override;
 };

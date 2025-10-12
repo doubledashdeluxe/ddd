@@ -34,18 +34,20 @@ impl<T: ComplexDataType> DataType for T {
 
     fn hh_read_delegate(&self, name: &str, array_indices: ArrayIndices) -> String {
         format!(
-            "    virtual {}Reader *{}Reader({}) = 0;\n",
+            "    virtual {}Reader *{}{}Reader({}) = 0;\n",
             self.name(),
             name.to_ascii_camel_case(),
+            array_indices.delegate_suffix(),
             array_indices.typed_args(false),
         )
     }
 
     fn hh_write_delegate(&self, name: &str, array_indices: ArrayIndices) -> String {
         format!(
-            "    virtual {}Writer &{}Writer({}) = 0;\n",
+            "    virtual {}Writer &{}{}Writer({}) = 0;\n",
             self.name(),
             name.to_ascii_camel_case(),
+            array_indices.delegate_suffix(),
             array_indices.typed_args(false),
         )
     }

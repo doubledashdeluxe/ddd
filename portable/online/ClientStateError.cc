@@ -19,11 +19,12 @@ ClientState &ClientStateError::writeStateIdle() {
     return *this;
 }
 
-ClientState &ClientStateError::writeStateServer() {
+ClientState &ClientStateError::writeStateServer(
+        const ClientStateServerWriteInfo & /* writeInfo */) {
     return *this;
 }
 
-ClientState &ClientStateError::writeStateRoom() {
+ClientState &ClientStateError::writeStateMode(const ClientStateModeWriteInfo & /* writeInfo */) {
     return *this;
 }
 

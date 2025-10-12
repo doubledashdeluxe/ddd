@@ -37,7 +37,9 @@ s32 CubeSocket::close() {
         return SO_SUCCESS;
     }
 
-    return SOClose(m_socket);
+    s32 result = SOClose(m_socket);
+    m_socket = SO_EINVAL;
+    return result;
 }
 
 bool CubeSocket::ok() {

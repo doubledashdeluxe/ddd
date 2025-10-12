@@ -1,5 +1,6 @@
 #include "SceneModeSelect.hh"
 
+#include "game/ErrorViewApp.hh"
 #include "game/GameAudioMain.hh"
 #include "game/Kart2DCommon.hh"
 #include "game/KartGamePad.hh"
@@ -10,9 +11,13 @@
 #include "game/RaceMode.hh"
 #include "game/ResMgr.hh"
 #include "game/RoomType.hh"
+#include "game/SceneFactory.hh"
 #include "game/SequenceApp.hh"
+#include "game/SequenceInfo.hh"
 
 #include <jsystem/J2DAnmLoaderDataBase.hh>
+#include <payload/online/Client.hh>
+#include <portable/Formatter.hh>
 
 extern "C" {
 #include <stdio.h>
@@ -83,15 +88,21 @@ void SceneModeSelect::draw() {
 }
 
 void SceneModeSelect::calc() {
+    Client *client = Client::Instance();
+    client->read(*this);
+
     (this->*m_state)();
 
     OnlineBackground::Instance()->calc();
     MenuTitleLine::Instance()->calc();
 
-    m_descOffset += 5;
+    u32 increment = 5;
     const JUTGamePad::CButton &button = KartGamePad::GamePad(0)->button();
     if (button.level() & (PAD_TRIGGER_L | PAD_TRIGGER_R)) {
-        m_descOffset += 20;
+        increment += 20;
+    }
+    for (u32 i = 0; i < m_descOffsets.count(); i++) {
+        m_descOffsets[i] += increment;
     }
     refreshModes();
 
@@ -116,14 +127,28 @@ void SceneModeSelect::calc() {
     }
 
     for (u32 i = 0; i < m_descAlphas.count(); i++) {
-        m_modeScreens[i].search("Desc0")->setAlpha(255 - m_descAlphas[i]);
-        m_modeScreens[i].search("Desc41")->setAlpha(m_descAlphas[i]);
+        for (s32 j = 0; j < 48; j++) {
+            u8 alpha = 255;
+            if (j == 0) {
+                alpha = 255 - m_descAlphas[i];
+            } else if (j == 47 - (m_roomType == RoomType::Worldwide) * 6) {
+                alpha = m_descAlphas[i];
+            } else if (j > 47 - (m_roomType == RoomType::Worldwide) * 6) {
+                alpha = 0;
+            }
+            m_modeScreens[i].search("Desc%u", j)->setAlpha(alpha);
+        }
     }
 
     m_mainScreen.animation();
     for (u32 i = 0; i < m_modeScreens.count(); i++) {
         m_modeScreens[i].animationMaterials();
     }
+
+    ClientStateModeWriteInfo writeInfo;
+    writeInfo.playerCount = SequenceInfo::Instance().m_padCount;
+    writeInfo.serverIndex = OnlineInfo::Instance().m_serverIndex;
+    client->writeStateMode(writeInfo);
 }
 
 SceneModeSelect::DescText::DescText(SceneModeSelect &scene, u32 descIndex)
@@ -132,7 +157,7 @@ SceneModeSelect::DescText::DescText(SceneModeSelect &scene, u32 descIndex)
 SceneModeSelect::DescText::~DescText() {}
 
 const char *SceneModeSelect::DescText::getPart(u32 /* partIndex */) {
-    return "ABC - 1234";
+    return m_scene.m_descs[m_descIndex].values();
 }
 
 void SceneModeSelect::DescText::setAnmTransformFrame(u8 anmTransformFrame) {
@@ -143,11 +168,54 @@ void SceneModeSelect::DescText::setAlpha(u8 alpha) {
     m_scene.m_descAlphas[m_descIndex] = alpha;
 }
 
+bool SceneModeSelect::clientStateServer(const ClientStateServerReadInfo & /* readInfo */) {
+    return true;
+}
+
+bool SceneModeSelect::clientStateMode(const ClientStateModeReadInfo &readInfo) {
+    if (readInfo.modes) {
+        const SequenceInfo &sequenceInfo = SequenceInfo::Instance();
+        const OnlineInfo &onlineInfo = OnlineInfo::Instance();
+        for (u32 i = 0; i < ModeCount; i++) {
+            const ClientStateModeReadInfo::Mode &mode = (*readInfo.modes)[i];
+            Array<char, 80> &desc = m_descs[i];
+            Formatter formatter(desc);
+            for (u32 j = 0; j < sequenceInfo.m_padCount; j++) {
+                if (j != 0) {
+                    formatter.printf(" / ");
+                }
+                formatter.printf("%s: %u MMR", onlineInfo.m_names[j], mode.mmrs[j]);
+            }
+            Array<char, 4> &playerCount = m_playerCounts[i];
+            u32 uncappedPlayerCount = mode.playerCount;
+            u16 cappedPlayerCount = Min<u16>(uncappedPlayerCount, 999);
+            snprintf(playerCount.values(), playerCount.count(), "%u", cappedPlayerCount);
+        }
+    }
+    return true;
+}
+
+void SceneModeSelect::clientStateError() {
+    ErrorViewApp::Call(6);
+}
+
 void SceneModeSelect::slideIn() {
     if (SequenceApp::Instance()->prevScene() != SceneType::PackSelect) {
+        m_roomType = OnlineInfo::Instance().m_roomType;
         m_modeIndex = 0;
     }
-    m_descOffset = 0;
+    for (u32 i = 0; i < m_descs.count(); i++) {
+        snprintf(m_descs[i].values(), m_descs[i].count(), "%s", String(9));
+    }
+    m_descOffsets.fill(0);
+    for (u32 i = 0; i < m_playerCounts.count(); i++) {
+        snprintf(m_playerCounts[i].values(), m_playerCounts[i].count(), "...");
+    }
+
+    for (u32 i = 0; i < m_modeScreens.count(); i++) {
+        m_modeScreens[i].search("PIcon")->m_isVisible = m_roomType == RoomType::Worldwide;
+        m_modeScreens[i].search("PCount")->m_isVisible = m_roomType == RoomType::Worldwide;
+    }
 
     MenuTitleLine::Instance()->drop(MenuTitleLine::Title::SelectMode);
     m_mainAnmTransformFrame = 0;
@@ -192,7 +260,7 @@ void SceneModeSelect::stateIdle() {
         RaceInfo::Instance().m_raceMode = Modes[m_modeIndex];
         slideOut();
     } else if (button.risingEdge() & PAD_BUTTON_B) {
-        if (OnlineInfo::Instance().m_roomType == RoomType::Worldwide) {
+        if (m_roomType == RoomType::Worldwide) {
             m_nextScene = SceneType::RoomTypeSelect;
         } else {
             m_nextScene = SceneType::RoomCodeEnter;
@@ -225,10 +293,15 @@ void SceneModeSelect::refreshModes() {
     for (u32 i = 0; i < ModeCount; i++) {
         J2DScreen &screen = m_modeScreens[i];
         DescText descText(*this, i);
-        u64 descOffset = Max<u64>(m_descOffset, 300) - 300;
-        descText.refresh(descOffset, 4, 42, screen, "Desc");
-        kart2DCommon->changeNumberTexture(567, 3, screen, "PCount");
+        u64 descOffset = Max<u64>(m_descOffsets[i], 300) - 300;
+        u32 descPictureCount = 48 - (m_roomType == RoomType::Worldwide) * 6;
+        descText.refresh(descOffset, 1, descPictureCount, screen, "Desc");
+        kart2DCommon->changeUnicodeTexture(m_playerCounts[i].values(), 3, screen, "PCount", true);
     }
+}
+
+const char *SceneModeSelect::String(u32 index) {
+    return SceneFactory::Instance()->string(SceneFactory::ArchiveType::LanEntry, index);
 }
 
 const Array<u32, SceneModeSelect::ModeCount> SceneModeSelect::Modes((u32[ModeCount]){

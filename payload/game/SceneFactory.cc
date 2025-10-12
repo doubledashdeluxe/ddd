@@ -21,8 +21,22 @@
 #include "game/SceneTitle.hh"
 #include "game/SysDebug.hh"
 
+extern "C" {
+#include <inttypes.h>
+}
+
 JKRArchive *SceneFactory::archive(u32 archiveType) {
     return m_archives[archiveType];
+}
+
+const char *SceneFactory::string(u32 archiveType, u32 index) {
+    JKRArchive *archive = m_archives[archiveType];
+    Array<char, 32> path;
+    snprintf(path.values(), path.count(), "/strings/%" PRIu32 ".txt", index);
+    char *string = static_cast<char *>(archive->getResource(path.values()));
+    u32 size = archive->getResSize(string);
+    string[size - 1] = '\0';
+    return string;
 }
 
 void SceneFactory::loadData(s32 sceneType, JKRHeap *heap) {

@@ -23,21 +23,44 @@ bool FakeClient::write() {
         return false;
     }
 
-    while (updateState(((*m_state).*m_writer)())) {}
+    while (updateState((this->*m_writer)())) {}
     return true;
 }
 
 bool FakeClient::clientStateIdle() {
-    m_writer = &ClientState::writeStateServer;
+    m_writer = &FakeClient::writeStateServer;
     return true;
 }
 
-bool FakeClient::clientStateServer(const ClientStateServerInfo & /* info */) {
+bool FakeClient::clientStateServer(const ClientStateServerReadInfo &readInfo) {
+    const ClientStateServerReadInfo::Server &server = readInfo.servers[0];
+    if (server.motd) {
+        m_writer = &FakeClient::writeStateMode;
+    }
+    return true;
+}
+
+bool FakeClient::clientStateMode(const ClientStateModeReadInfo & /* readInfo */) {
     return true;
 }
 
 void FakeClient::clientStateError() {
     m_writer = nullptr;
+}
+
+ClientState &FakeClient::writeStateServer() {
+    ClientStateServerWriteInfo writeInfo;
+    writeInfo.playerCount = 1;
+    writeInfo.players[0].profile = 0;
+    writeInfo.players[0].name = "AAA";
+    return m_state->writeStateServer(writeInfo);
+}
+
+ClientState &FakeClient::writeStateMode() {
+    ClientStateModeWriteInfo writeInfo;
+    writeInfo.playerCount = 1;
+    writeInfo.serverIndex = 0;
+    return m_state->writeStateMode(writeInfo);
 }
 
 bool FakeClient::updateState(ClientState &nextState) {

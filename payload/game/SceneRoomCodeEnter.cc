@@ -1,9 +1,11 @@
 #include "SceneRoomCodeEnter.hh"
 
+#include "game/ErrorViewApp.hh"
 #include "game/GameAudioMain.hh"
 #include "game/KartGamePad.hh"
 #include "game/MenuTitleLine.hh"
 #include "game/OnlineBackground.hh"
+#include "game/OnlineInfo.hh"
 #include "game/RaceInfo.hh"
 #include "game/RaceMode.hh"
 #include "game/SceneFactory.hh"
@@ -11,6 +13,7 @@
 #include "game/SequenceInfo.hh"
 
 #include <jsystem/J2DAnmLoaderDataBase.hh>
+#include <payload/online/Client.hh>
 #include <portable/Algorithm.hh>
 
 SceneRoomCodeEnter::SceneRoomCodeEnter(JKRArchive *archive, JKRHeap *heap) : Scene(archive, heap) {
@@ -103,6 +106,9 @@ void SceneRoomCodeEnter::draw() {
 }
 
 void SceneRoomCodeEnter::calc() {
+    Client *client = Client::Instance();
+    client->read(*this);
+
     (this->*m_state)();
 
     OnlineBackground::Instance()->calc();
@@ -156,6 +162,23 @@ void SceneRoomCodeEnter::calc() {
     for (u32 i = 0; i < m_charScreens.count(); i++) {
         m_charScreens[i].animationMaterials();
     }
+
+    ClientStateModeWriteInfo writeInfo;
+    writeInfo.playerCount = SequenceInfo::Instance().m_padCount;
+    writeInfo.serverIndex = OnlineInfo::Instance().m_serverIndex;
+    client->writeStateMode(writeInfo);
+}
+
+bool SceneRoomCodeEnter::clientStateServer(const ClientStateServerReadInfo & /* readInfo */) {
+    return true;
+}
+
+bool SceneRoomCodeEnter::clientStateMode(const ClientStateModeReadInfo & /* readInfo */) {
+    return true;
+}
+
+void SceneRoomCodeEnter::clientStateError() {
+    ErrorViewApp::Call(6);
 }
 
 void SceneRoomCodeEnter::slideIn() {

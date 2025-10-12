@@ -59,7 +59,7 @@ impl<L: VariantList> ComplexDataType for EnumType<L> {
                 "        }}\n",
                 "    }}\n",
                 "\n",
-                "    pub fn write(self, buf: &mut [u8]) -> Result<&mut [u8], ()> {{\n",
+                "    pub fn write<'a>(&self, buf: &'a mut [u8]) -> Result<&'a mut [u8], ()> {{\n",
                 "        let (discriminant, buf) = buf.split_first_mut().ok_or(())?;\n",
                 "        match self {{\n",
                 "{}",

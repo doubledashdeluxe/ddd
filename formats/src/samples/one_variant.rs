@@ -19,7 +19,7 @@ impl OneVariant {
         }
     }
 
-    pub fn write(self, buf: &mut [u8]) -> Result<&mut [u8], ()> {
+    pub fn write<'a>(&self, buf: &'a mut [u8]) -> Result<&'a mut [u8], ()> {
         let (discriminant, buf) = buf.split_first_mut().ok_or(())?;
         match self {
             OneVariant::First(first) => {

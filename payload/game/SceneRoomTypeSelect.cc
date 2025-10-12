@@ -1,5 +1,6 @@
 #include "SceneRoomTypeSelect.hh"
 
+#include "game/ErrorViewApp.hh"
 #include "game/GameAudioMain.hh"
 #include "game/KartGamePad.hh"
 #include "game/MenuTitleLine.hh"
@@ -13,6 +14,7 @@
 #include "game/SequenceInfo.hh"
 
 #include <jsystem/J2DAnmLoaderDataBase.hh>
+#include <payload/online/Client.hh>
 #include <portable/Algorithm.hh>
 
 SceneRoomTypeSelect::SceneRoomTypeSelect(JKRArchive *archive, JKRHeap *heap)
@@ -135,6 +137,9 @@ void SceneRoomTypeSelect::draw() {
 }
 
 void SceneRoomTypeSelect::calc() {
+    Client *client = Client::Instance();
+    client->read(*this);
+
     (this->*m_state)();
 
     OnlineBackground::Instance()->calc();
@@ -185,6 +190,23 @@ void SceneRoomTypeSelect::calc() {
 
     m_mainScreen.animation();
     m_tandemScreen.animation();
+
+    ClientStateModeWriteInfo writeInfo;
+    writeInfo.playerCount = SequenceInfo::Instance().m_padCount;
+    writeInfo.serverIndex = OnlineInfo::Instance().m_serverIndex;
+    client->writeStateMode(writeInfo);
+}
+
+bool SceneRoomTypeSelect::clientStateServer(const ClientStateServerReadInfo & /* readInfo */) {
+    return true;
+}
+
+bool SceneRoomTypeSelect::clientStateMode(const ClientStateModeReadInfo & /* readInfo */) {
+    return true;
+}
+
+void SceneRoomTypeSelect::clientStateError() {
+    ErrorViewApp::Call(6);
 }
 
 void SceneRoomTypeSelect::slideIn() {

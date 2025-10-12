@@ -70,7 +70,7 @@ impl<T: DataType> DataType for ArrayType<T> {
                 "}}\n",
                 "let ({}_len, buf) = buf.split_first_mut().ok_or(())?;\n",
                 "*{}_len = {}.len() as u8;\n",
-                "let buf = {}.into_iter().try_fold(buf, |buf, {}_element| {{\n",
+                "let buf = {}.iter().try_fold(buf, |buf, {}_element| {{\n",
                 "    {}\n",
                 "    Ok(buf)\n",
                 "}})?;",

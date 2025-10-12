@@ -25,6 +25,6 @@ ClientState &ClientStateIdle::writeStateIdle() {
     return *this;
 }
 
-ClientState &ClientStateIdle::writeStateServer() {
+ClientState &ClientStateIdle::writeStateServer(const ClientStateServerWriteInfo & /* writeInfo */) {
     return *(new (m_platform.allocator) ClientStateServer(m_platform));
 }

@@ -11,14 +11,15 @@ pub fn format() -> Format<impl ConstantList, impl TypeList> {
         .with_type(server_identity_specified())
         .with_type(server_identity())
         .with_type(server_state_server())
-        .with_type(server_state_room())
+        .with_type(server_mode())
+        .with_type(server_state_mode())
         .with_type(server_state())
 }
 
 fn server_state() -> impl ComplexDataType {
     EnumType::new("ServerState")
         .with_variant("Server", server_state_server())
-        .with_variant("Room", server_state_room())
+        .with_variant("Mode", server_state_mode())
 }
 
 fn server_state_server() -> impl ComplexDataType {
@@ -50,6 +51,14 @@ fn server_identity_specified() -> impl ComplexDataType {
         .with_field("player_count", player_count)
 }
 
-fn server_state_room() -> impl ComplexDataType {
-    StructType::new("ServerStateRoom")
+fn server_state_mode() -> impl ComplexDataType {
+    let modes = ArrayType::new(server_mode(), 5, 5);
+    StructType::new("ServerStateMode").with_field("modes", modes)
+}
+
+fn server_mode() -> impl ComplexDataType {
+    let mmr: SimpleDataType<u16> = SimpleDataType::new();
+    let mmrs = ArrayType::new(mmr, 1, 4);
+    let player_count: SimpleDataType<u16> = SimpleDataType::new();
+    StructType::new("ServerMode").with_field("mmrs", mmrs).with_field("player_count", player_count)
 }

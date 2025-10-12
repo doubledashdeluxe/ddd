@@ -90,6 +90,15 @@ void SceneServerSelect::init() {
         snprintf(m_playerCounts[i].values(), m_playerCounts[i].count(), "");
     }
 
+    u32 playerCount = SequenceInfo::Instance().m_padCount;
+    m_writeInfo.playerCount = playerCount;
+    const OnlineInfo &onlineInfo = OnlineInfo::Instance();
+    for (u32 i = 0; i < playerCount; i++) {
+        u32 profileIndex = onlineInfo.m_profileIndices[i];
+        m_writeInfo.players[i].profile = profileIndex;
+        m_writeInfo.players[i].name = onlineInfo.m_names[i];
+    }
+
     if (CubeServerManager::Instance()->lock()) {
         slideIn();
     } else {
@@ -177,7 +186,7 @@ void SceneServerSelect::calc() {
         m_serverScreens[i].animationMaterials();
     }
 
-    client->writeStateServer();
+    client->writeStateServer(m_writeInfo);
 }
 
 SceneServerSelect::DescText::DescText(SceneServerSelect &scene, u32 descIndex)
@@ -202,16 +211,16 @@ bool SceneServerSelect::clientStateIdle() {
     return true;
 }
 
-bool SceneServerSelect::clientStateServer(const ClientStateServerInfo &info) {
-    bool networkIsRunning = info.networkIsRunning;
-    const char *networkName = info.networkName;
-    u32 networkAddress = info.networkAddress;
-    CubeServerManager *serverManager = CubeServerManager::Instance();
-    for (u32 i = 0; i < info.servers.count(); i++) {
+bool SceneServerSelect::clientStateServer(const ClientStateServerReadInfo &readInfo) {
+    bool networkIsRunning = readInfo.networkIsRunning;
+    const char *networkName = readInfo.networkName;
+    u32 networkAddress = readInfo.networkAddress;
+    const CubeServerManager *serverManager = CubeServerManager::Instance();
+    for (u32 i = 0; i < readInfo.servers.count(); i++) {
         const ServerManager::Server &server = serverManager->server(i);
         const Array<char, 32> &name = server.address();
         u16 port = server.port();
-        const ClientStateServerInfo::Server &serverInfo = info.servers[i];
+        const ClientStateServerReadInfo::Server &serverInfo = readInfo.servers[i];
         const Optional<Address> &address = serverInfo.address;
         const Optional<u32> &protocolVersion = serverInfo.protocolVersion;
         const Optional<Array<char, 20>> &version = serverInfo.version;
@@ -259,7 +268,10 @@ bool SceneServerSelect::clientStateServer(const ClientStateServerInfo &info) {
             snprintf(playerCount.values(), playerCount.count(), "...");
         }
     }
+    return true;
+}
 
+bool SceneServerSelect::clientStateMode(const ClientStateModeReadInfo & /* readInfo */) {
     return true;
 }
 
@@ -277,7 +289,7 @@ void SceneServerSelect::slideIn() {
         m_serverIndex = 0;
     }
     m_rowIndex = m_serverIndex;
-    m_rowIndex = Min(m_rowIndex, m_serverIndex - Min<u32>(m_serverCount, 5));
+    m_rowIndex = Min(m_rowIndex, m_serverCount - Min<u32>(m_serverCount, 5));
 
     MenuTitleLine::Instance()->drop("SelectServer.bti");
     m_mainAnmTransformFrame = 0;
@@ -352,6 +364,7 @@ void SceneServerSelect::stateIdle() {
     if (button.risingEdge() & PAD_BUTTON_A) {
         m_nextScene = SceneType::RoomTypeSelect;
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE_LITTLE);
+        OnlineInfo::Instance().m_serverIndex = m_serverIndex;
         slideOut();
     } else if (button.risingEdge() & PAD_BUTTON_B) {
         u8 padCount = SequenceInfo::Instance().m_padCount;
@@ -481,12 +494,5 @@ void SceneServerSelect::hideArrows() {
 }
 
 const char *SceneServerSelect::String(u32 index) {
-    SceneFactory *sceneFactory = SceneFactory::Instance();
-    JKRArchive *lanEntryArchive = sceneFactory->archive(SceneFactory::ArchiveType::LanEntry);
-    Array<char, 32> path;
-    snprintf(path.values(), path.count(), "/strings/%" PRIu32 ".txt", index);
-    char *string = static_cast<char *>(lanEntryArchive->getResource(path.values()));
-    u32 size = lanEntryArchive->getResSize(string);
-    string[size - 1] = '\0';
-    return string;
+    return SceneFactory::Instance()->string(SceneFactory::ArchiveType::LanEntry, index);
 }

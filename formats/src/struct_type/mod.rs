@@ -61,7 +61,7 @@ impl<L: FieldList> ComplexDataType for StructType<L> {
                 "        Ok(({}, buf))\n",
                 "    }}\n",
                 "\n",
-                "    pub fn write(self, buf: &mut [u8]) -> Result<&mut [u8], ()> {{\n",
+                "    pub fn write<'a>(&self, buf: &'a mut [u8]) -> Result<&'a mut [u8], ()> {{\n",
                 "        #[rustfmt::skip]\n",
                 "        let {} {{\n",
                 "{}",

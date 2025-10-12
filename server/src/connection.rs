@@ -79,6 +79,7 @@ impl Connection {
         now: Instant,
         message: &mut [u8],
         clients: &mut HashMap<[u8; 32], Client>,
+        player_count: usize,
     ) -> Result<Option<usize>> {
         anyhow::ensure!(now < self.expiration);
         match self.state {
@@ -90,7 +91,7 @@ impl Connection {
             State::Session => {
                 let client = clients.get_mut(&self.client_pk).context("Disconnected client")?;
                 let mut plaintext = [0u8; 512];
-                let plaintext_len = client.write(now, self.addr, &mut plaintext)?;
+                let plaintext_len = client.write(self.addr, &mut plaintext, player_count)?;
                 let Some(plaintext_len) = plaintext_len else {
                     return Ok(None);
                 };

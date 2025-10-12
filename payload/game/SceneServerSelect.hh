@@ -7,6 +7,7 @@
 #include <payload/SlidingText.hh>
 #include <portable/Array.hh>
 #include <portable/online/ClientReadHandler.hh>
+#include <portable/online/ClientStateServerWriteInfo.hh>
 #include <portable/online/ServerManager.hh>
 
 class SceneServerSelect
@@ -37,7 +38,8 @@ private:
     typedef void (SceneServerSelect::*State)();
 
     bool clientStateIdle() override;
-    bool clientStateServer(const ClientStateServerInfo &info) override;
+    bool clientStateServer(const ClientStateServerReadInfo &readInfo) override;
+    bool clientStateMode(const ClientStateModeReadInfo &readInfo) override;
     void clientStateError() override;
 
     void wait();
@@ -71,6 +73,7 @@ private:
     Array<u64, ServerManager::MaxServerCount> m_descOffsets;
     Array<J2DPicture *, ServerManager::MaxServerCount> m_descColorPictures;
     Array<Array<char, 4>, ServerManager::MaxServerCount> m_playerCounts;
+    ClientStateServerWriteInfo m_writeInfo;
     u32 m_nextScene;
     J2DScreen m_mainScreen;
     J2DScreen m_colorScreen;

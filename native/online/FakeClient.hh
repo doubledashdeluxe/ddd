@@ -27,11 +27,15 @@ public:
     bool write();
 
 private:
-    typedef ClientState &(ClientState::*Writer)();
+    typedef ClientState &(FakeClient::*Writer)();
 
     bool clientStateIdle() override;
-    bool clientStateServer(const ClientStateServerInfo &info) override;
+    bool clientStateServer(const ClientStateServerReadInfo &readInfo) override;
+    bool clientStateMode(const ClientStateModeReadInfo &readInfo) override;
     void clientStateError() override;
+
+    ClientState &writeStateServer();
+    ClientState &writeStateMode();
 
     bool updateState(ClientState &nextState);
 
@@ -45,5 +49,5 @@ private:
     FakeServerManager m_serverManager;
     ClientPlatform m_platform;
     std::unique_ptr<ClientState> m_state;
-    Writer m_writer = &ClientState::writeStateServer;
+    Writer m_writer = &FakeClient::writeStateServer;
 };

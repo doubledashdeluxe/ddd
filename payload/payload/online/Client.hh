@@ -16,8 +16,8 @@ public:
     void reset();
     void read(ClientReadHandler &handler);
     void writeStateIdle();
-    void writeStateServer();
-    void writeStateRoom();
+    void writeStateServer(const ClientStateServerWriteInfo &writeInfo);
+    void writeStateMode(const ClientStateModeWriteInfo &writeInfo);
     void writeStateError();
 
     static void Init(JKRHeap *parentHeap, SOConfig &config);

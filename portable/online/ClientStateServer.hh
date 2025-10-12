@@ -3,9 +3,11 @@
 #include "portable/Ring.hh"
 #include "portable/UniquePtr.hh"
 #include "portable/online/ClientState.hh"
-#include "portable/online/ClientStateServerInfo.hh"
 #include "portable/online/Connection.hh"
 #include "portable/online/ServerManager.hh"
+
+#include <formats/ClientState.hh>
+#include <formats/ServerState.hh>
 
 class ClientStateServer
     : public ClientState
@@ -19,17 +21,22 @@ class ClientStateServer
     , private ClientIdentityWriter::Unspecified
     , private ClientIdentityUnspecifiedWriter
     , private ClientIdentityWriter::Specified
-    , private ClientIdentitySpecifiedWriter {
+    , private ClientIdentitySpecifiedWriter
+    , private ClientPlayerWriter {
 public:
     ClientStateServer(const ClientPlatform &platform);
     ~ClientStateServer() override;
     bool needsSockets() override;
     ClientState &read(ClientReadHandler &handler) override;
-    ClientState &writeStateServer() override;
+    ClientState &writeStateServer(const ClientStateServerWriteInfo &writeInfo) override;
+    ClientState &writeStateMode(const ClientStateModeWriteInfo &writeInfo) override;
 
 private:
+    typedef ClientStateServerReadInfo ReadInfo;
+    typedef ClientStateServerWriteInfo WriteInfo;
+
     ServerStateServerReader *serverReader() override;
-    ServerStateRoomReader *roomReader() override;
+    ServerStateModeReader *modeReader() override;
 
     bool isProtocolVersionValid(u32 protocolVersion) override;
     void setProtocolVersion(u32 protocolVersion) override;
@@ -60,18 +67,21 @@ private:
     ClientIdentitySpecifiedWriter &specifiedWriter() override;
 
     u32 getPlayersCount() override;
-    u32 getPlayersCount(u32 i0) override;
-    u32 getPlayersCount(u32 i0, u32 i1) override;
-    u8 getPlayersElement(u32 i0, u32 i1, u32 i2) override;
+    ClientPlayerWriter &playersElementWriter(u32 i0) override;
+
+    u8 getProfile() override;
+    u32 getNameCount() override;
+    u8 getNameElement(u32 i0) override;
 
     void checkConnections();
     void checkSocket();
     void checkServers();
 
-    UniquePtr<Array<u8, 512>> m_buffer;
     Ring<UniquePtr<Connection>, ServerManager::MaxServerCount> m_connections;
     u32 m_readIndex;
     u32 m_writeIndex;
-    ClientStateServerInfo m_info;
+    ReadInfo m_readInfo;
     Array<char, 20> m_version;
+    const WriteInfo *m_writeInfo;
+    u32 m_playerIndex;
 };

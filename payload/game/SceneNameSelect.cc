@@ -204,6 +204,7 @@ void SceneNameSelect::stateIdle() {
     }
     if (wasSelected) {
         m_nextScene = m_padCount == 1 ? SceneType::ServerSelect : SceneType::TandemSelect;
+        OnlineInfo::Instance().m_names = m_unsavedNames;
         bool hasChanged = false;
         for (u32 i = 0; i < 4; i++) {
             if (strcmp(m_unsavedNames[i].values(), m_savedNames[i].values())) {

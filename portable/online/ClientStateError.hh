@@ -9,7 +9,7 @@ public:
     bool needsSockets() override;
     ClientState &read(ClientReadHandler &handler) override;
     ClientState &writeStateIdle() override;
-    ClientState &writeStateServer() override;
-    ClientState &writeStateRoom() override;
+    ClientState &writeStateServer(const ClientStateServerWriteInfo &writeInfo) override;
+    ClientState &writeStateMode(const ClientStateModeWriteInfo &writeInfo) override;
     ClientState &writeStateError() override;
 };

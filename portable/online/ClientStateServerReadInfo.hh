@@ -5,7 +5,7 @@
 #include "portable/network/Address.hh"
 #include "portable/online/ServerManager.hh"
 
-struct ClientStateServerInfo {
+struct ClientStateServerReadInfo {
     struct Server {
         Optional<Address> address;
         Optional<u32> protocolVersion;

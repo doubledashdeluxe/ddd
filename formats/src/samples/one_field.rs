@@ -17,7 +17,7 @@ impl OneField {
         Ok((one_field, buf))
     }
 
-    pub fn write(self, buf: &mut [u8]) -> Result<&mut [u8], ()> {
+    pub fn write<'a>(&self, buf: &'a mut [u8]) -> Result<&'a mut [u8], ()> {
         #[rustfmt::skip]
         let OneField {
             first,

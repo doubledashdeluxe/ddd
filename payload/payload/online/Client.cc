@@ -21,12 +21,12 @@ void Client::writeStateIdle() {
     while (updateState(m_state->writeStateIdle())) {}
 }
 
-void Client::writeStateServer() {
-    while (updateState(m_state->writeStateServer())) {}
+void Client::writeStateServer(const ClientStateServerWriteInfo &writeInfo) {
+    while (updateState(m_state->writeStateServer(writeInfo))) {}
 }
 
-void Client::writeStateRoom() {
-    while (updateState(m_state->writeStateRoom())) {}
+void Client::writeStateMode(const ClientStateModeWriteInfo &writeInfo) {
+    while (updateState(m_state->writeStateMode(writeInfo))) {}
 }
 
 void Client::writeStateError() {

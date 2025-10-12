@@ -15,7 +15,7 @@ pub struct Server {
     server_k: Sensitive<[u8; 32]>,
     socket: UdpSocket,
     random_state: RandomState,
-    connections: HashMap<SocketAddr, Connection>,
+    connections: HashMap<SocketAddr, (bool, Connection)>,
     clients: HashMap<[u8; 32], Client>,
 }
 
@@ -58,7 +58,7 @@ impl Server {
         let is_full = self.connections.len() >= 1000;
         match self.connections.entry(addr) {
             Entry::Occupied(mut o) => {
-                let connection = o.get_mut();
+                let (_, connection) = o.get_mut();
                 if connection.read(now, message, &mut self.clients).is_err() {
                     o.remove();
                 }
@@ -76,7 +76,8 @@ impl Server {
 
                 let connection = Connection::try_new(self.server_k.clone(), now, addr, message);
                 if let Ok(connection) = connection {
-                    v.insert(connection);
+                    let retain = true;
+                    v.insert((retain, connection));
                 }
             }
             _ => (),
@@ -85,21 +86,22 @@ impl Server {
     }
 
     fn write(&mut self, now: Instant) -> Result<()> {
-        let mut connections = HashMap::with_capacity(self.connections.len());
-        for (addr, mut connection) in self.connections.drain() {
-            let mut message = [0u8; 512];
-            let message_len = match connection.write(now, &mut message, &mut self.clients) {
-                Ok(message_len) => message_len,
-                Err(_) => continue,
-            };
-            if let Some(message_len) = message_len {
-                let message = &mut message[..message_len];
-                self.socket.send_to(message, addr)?;
-            }
-            connections.insert(addr, connection);
-        }
-        self.connections = connections;
         self.clients.retain(|_, client| !client.has_expired(now));
+        let player_count = self.clients.values().map(|client| client.player_count()).sum();
+        for (addr, (retain, connection)) in &mut self.connections {
+            let mut message = [0u8; 512];
+            let message_len = connection.write(now, &mut message, &mut self.clients, player_count);
+            let Ok(message_len) = message_len else {
+                *retain = false;
+                continue;
+            };
+            let Some(message_len) = message_len else {
+                continue;
+            };
+            let message = &mut message[..message_len];
+            self.socket.send_to(message, addr)?;
+        }
+        self.connections.retain(|_, (retain, _)| *retain);
         Ok(())
     }
 }

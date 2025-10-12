@@ -5,8 +5,11 @@
 #include <jsystem/J2DScreen.hh>
 #include <payload/SlidingText.hh>
 #include <portable/Array.hh>
+#include <portable/online/ClientReadHandler.hh>
 
-class SceneModeSelect : public Scene {
+class SceneModeSelect
+    : public Scene
+    , private ClientReadHandler {
 public:
     enum {
         ModeCount = 5,
@@ -35,6 +38,10 @@ private:
 
     typedef void (SceneModeSelect::*State)();
 
+    bool clientStateServer(const ClientStateServerReadInfo &readInfo) override;
+    bool clientStateMode(const ClientStateModeReadInfo &readInfo) override;
+    void clientStateError() override;
+
     void slideIn();
     void slideOut();
     void idle();
@@ -47,9 +54,14 @@ private:
 
     void refreshModes();
 
+    static const char *String(u32 index);
+
     State m_state;
+    u32 m_roomType;
     u32 m_modeIndex;
-    u64 m_descOffset;
+    Array<Array<char, 80>, ModeCount> m_descs;
+    Array<u64, ModeCount> m_descOffsets;
+    Array<Array<char, 4>, ModeCount> m_playerCounts;
     u32 m_nextScene;
     J2DScreen m_mainScreen;
     Array<J2DScreen, ModeCount> m_modeScreens;

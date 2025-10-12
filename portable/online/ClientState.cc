@@ -10,11 +10,11 @@ ClientState &ClientState::writeStateIdle() {
     return *(new (m_platform.allocator) ClientStateError(m_platform));
 }
 
-ClientState &ClientState::writeStateServer() {
+ClientState &ClientState::writeStateServer(const ClientStateServerWriteInfo & /* writeInfo */) {
     return *(new (m_platform.allocator) ClientStateError(m_platform));
 }
 
-ClientState &ClientState::writeStateRoom() {
+ClientState &ClientState::writeStateMode(const ClientStateModeWriteInfo & /* writeInfo */) {
     return *(new (m_platform.allocator) ClientStateError(m_platform));
 }
 

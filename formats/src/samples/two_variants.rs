@@ -34,7 +34,7 @@ impl TwoVariants {
         }
     }
 
-    pub fn write(self, buf: &mut [u8]) -> Result<&mut [u8], ()> {
+    pub fn write<'a>(&self, buf: &'a mut [u8]) -> Result<&'a mut [u8], ()> {
         let (discriminant, buf) = buf.split_first_mut().ok_or(())?;
         match self {
             TwoVariants::First(first) => {
@@ -44,7 +44,7 @@ impl TwoVariants {
                 }
                 let (first_len, buf) = buf.split_first_mut().ok_or(())?;
                 *first_len = first.len() as u8;
-                let buf = first.into_iter().try_fold(buf, |buf, first_element| {
+                let buf = first.iter().try_fold(buf, |buf, first_element| {
                     let (first_element_buf, buf) = buf.split_first_chunk_mut().ok_or(())?;
                     *first_element_buf = first_element.to_be_bytes();
                     Ok(buf)

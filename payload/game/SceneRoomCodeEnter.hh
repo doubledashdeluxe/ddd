@@ -4,8 +4,11 @@
 
 #include <jsystem/J2DScreen.hh>
 #include <portable/Array.hh>
+#include <portable/online/ClientReadHandler.hh>
 
-class SceneRoomCodeEnter : public Scene {
+class SceneRoomCodeEnter
+    : public Scene
+    , private ClientReadHandler {
 public:
     SceneRoomCodeEnter(JKRArchive *archive, JKRHeap *heap);
     ~SceneRoomCodeEnter() override;
@@ -19,6 +22,10 @@ private:
     };
 
     typedef void (SceneRoomCodeEnter::*State)();
+
+    bool clientStateServer(const ClientStateServerReadInfo &readInfo) override;
+    bool clientStateMode(const ClientStateModeReadInfo &readInfo) override;
+    void clientStateError() override;
 
     void slideIn();
     void slideOut();

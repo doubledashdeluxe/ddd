@@ -4,8 +4,11 @@
 
 #include <jsystem/J2DScreen.hh>
 #include <portable/Array.hh>
+#include <portable/online/ClientReadHandler.hh>
 
-class SceneRoomTypeSelect : public Scene {
+class SceneRoomTypeSelect
+    : public Scene
+    , private ClientReadHandler {
 public:
     SceneRoomTypeSelect(JKRArchive *archive, JKRHeap *heap);
     ~SceneRoomTypeSelect() override;
@@ -19,6 +22,10 @@ private:
     };
 
     typedef void (SceneRoomTypeSelect::*State)();
+
+    bool clientStateServer(const ClientStateServerReadInfo &readInfo) override;
+    bool clientStateMode(const ClientStateModeReadInfo &readInfo) override;
+    void clientStateError() override;
 
     void slideIn();
     void slideOut();

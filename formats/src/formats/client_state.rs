@@ -8,17 +8,18 @@ use crate::struct_type::StructType;
 pub fn format() -> Format<impl ConstantList, impl TypeList> {
     Format::new("ClientState")
         .with_type(client_identity_unspecified())
+        .with_type(client_player())
         .with_type(client_identity_specified())
         .with_type(client_identity())
         .with_type(client_state_server())
-        .with_type(client_state_room())
+        .with_type(client_state_mode())
         .with_type(client_state())
 }
 
 fn client_state() -> impl ComplexDataType {
     EnumType::new("ClientState")
         .with_variant("Server", client_state_server())
-        .with_variant("Room", client_state_room())
+        .with_variant("Mode", client_state_mode())
 }
 
 fn client_state_server() -> impl ComplexDataType {
@@ -42,13 +43,17 @@ fn client_identity_unspecified() -> impl ComplexDataType {
 }
 
 fn client_identity_specified() -> impl ComplexDataType {
-    let player_element: SimpleDataType<u8> = SimpleDataType::new();
-    let player = ArrayType::new(player_element, 1, 3);
-    let players = ArrayType::new(player, 1, 2);
-    let players = ArrayType::new(players, 1, 4);
+    let players = ArrayType::new(client_player(), 1, 4);
     StructType::new("ClientIdentitySpecified").with_field("players", players)
 }
 
-fn client_state_room() -> impl ComplexDataType {
-    StructType::new("ClientStateRoom")
+fn client_player() -> impl ComplexDataType {
+    let profile: SimpleDataType<u8> = SimpleDataType::new();
+    let name_element: SimpleDataType<u8> = SimpleDataType::new();
+    let name = ArrayType::new(name_element, 3, 3);
+    StructType::new("ClientPlayer").with_field("profile", profile).with_field("name", name)
+}
+
+fn client_state_mode() -> impl ComplexDataType {
+    StructType::new("ClientStateMode")
 }
