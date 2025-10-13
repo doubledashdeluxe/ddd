@@ -1,6 +1,6 @@
 [package]
 name = "ddd-server"
-edition = "2021"
+edition = "2024"
 default-run = "ddd-server"
 
 [dependencies]

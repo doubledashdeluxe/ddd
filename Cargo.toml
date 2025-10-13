@@ -3,4 +3,4 @@ members = [
     "formats",
     "server",
 ]
-resolver = "2"
+resolver = "3"

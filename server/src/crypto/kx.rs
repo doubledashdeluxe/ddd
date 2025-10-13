@@ -72,7 +72,7 @@ struct ClientState {
 #[cfg(test)]
 mod tests {
     use anyhow::Result;
-    use noise_protocol::{U8Array, DH};
+    use noise_protocol::{DH, U8Array};
     use orion::util;
 
     use crate::crypto::kx;

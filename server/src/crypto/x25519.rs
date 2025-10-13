@@ -1,4 +1,4 @@
-use noise_protocol::{U8Array, DH};
+use noise_protocol::{DH, U8Array};
 use orion::hazardous::ecc::x25519::{self, PrivateKey, PublicKey};
 
 use crate::crypto::sensitive::Sensitive;

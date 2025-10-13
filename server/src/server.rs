@@ -50,7 +50,7 @@ impl Server {
         let mut message = [0u8; 512];
         let (message_len, addr) = match self.socket.recv_from(&mut message) {
             Err(e) if e.kind() == ErrorKind::WouldBlock || e.kind() == ErrorKind::TimedOut => {
-                return Ok(())
+                return Ok(());
             }
             r => r?,
         };
