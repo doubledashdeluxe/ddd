@@ -5,7 +5,11 @@ extern "C" {
 #include <stdio.h>
 }
 
-Formatter::Formatter(char *string, size_t size) : m_string(string), m_size(size) {}
+Formatter::Formatter(char *string, size_t size) : m_string(string), m_size(size) {
+    if (m_size > 0) {
+        string[0] = '\0';
+    }
+}
 
 Formatter::~Formatter() {}
 
