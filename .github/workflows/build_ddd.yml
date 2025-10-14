@@ -22,7 +22,7 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Setup LLVM
         uses: ./.github/actions/setup-llvm
         with:
@@ -35,7 +35,7 @@ jobs:
           sudo apt-get install wine32
           WINEARCH=win32 winecfg
       - name: Install Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11'
       - name: Install pyelftools
@@ -69,7 +69,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Download results
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
       - name: Compare
         run: cmp Linux-ddd/boot.dol Windows-ddd/boot.dol
 
@@ -85,13 +85,13 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Setup LLVM
         uses: ./.github/actions/setup-llvm
         with:
           llvm-version: ${{ env.llvm-version }}
       - name: Install Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11'
       - name: Setup ASan
@@ -114,13 +114,13 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Setup LLVM
         uses: ./.github/actions/setup-llvm
         with:
           llvm-version: ${{ env.llvm-version }}
       - name: Install Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11'
       - name: Setup ASan
@@ -138,13 +138,13 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Setup LLVM
         uses: ./.github/actions/setup-llvm
         with:
           llvm-version: ${{ env.llvm-version }}
       - name: Install Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11'
       - name: Check
@@ -162,13 +162,13 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Setup LLVM
         uses: ./.github/actions/setup-llvm
         with:
           llvm-version: ${{ env.llvm-version }}
       - name: Install Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11'
       - name: Format
