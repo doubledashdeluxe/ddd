@@ -2,6 +2,7 @@ use std::fs::File;
 use std::io::{Read, Write};
 
 use anyhow::Result;
+use log::info;
 use noise_protocol::{DH, U8Array};
 
 use crate::crypto::x25519::X25519;
@@ -11,9 +12,12 @@ mod client;
 mod connection;
 mod crypto;
 mod formats;
+mod logger;
 mod server;
 
 fn main() -> Result<()> {
+    logger::init()?;
+
     let server_k = match File::open("k.bin") {
         Ok(mut file) => {
             let mut server_k = <X25519 as DH>::Key::new();
@@ -28,12 +32,10 @@ fn main() -> Result<()> {
             server_k
         }
     };
+
     let server_pk = X25519::pubkey(&server_k);
-    eprint!("Server public key: ");
-    for byte in server_pk {
-        eprint!("{:02x?}", byte);
-    }
-    eprintln!();
+    let server_pk: String = server_pk.into_iter().map(|byte| format!("{byte:02x?}")).collect();
+    info!("Server public key: {}", server_pk);
 
     Server::try_new(server_k)?.run()
 }

@@ -5,6 +5,8 @@ default-run = "ddd-server"
 
 [dependencies]
 anyhow = "1.0.86"
+colored = "3.0.0"
+log = { version = "0.4.28", features = ["max_level_debug", "std"] }
 noise-protocol = "0.2.0"
 orion = "0.17.6"
 zeroize = "1.8.1"
