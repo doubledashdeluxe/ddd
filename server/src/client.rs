@@ -3,6 +3,7 @@ use std::net::SocketAddr;
 use std::time::{Duration, Instant};
 
 use anyhow::Result;
+use log::debug;
 
 use crate::formats::client_state::{
     ClientIdentity, ClientIdentitySpecified, ClientState, ClientStatePack,
@@ -22,6 +23,7 @@ pub struct Client {
 
 impl Client {
     pub fn new(now: Instant, addr: SocketAddr) -> Client {
+        debug!("-> {addr}");
         let expiration = now + Duration::from_secs(120);
         let state = State::Idle;
         let client_state = None;
@@ -33,6 +35,7 @@ impl Client {
     }
 
     pub fn set_addr(&mut self, addr: SocketAddr) {
+        debug!("<> {} {addr}", self.addr);
         self.addr = addr;
     }
 
@@ -134,6 +137,12 @@ impl Client {
         };
         let message_len = message.len() - server_state.write(message).unwrap().len();
         Ok(Some(message_len))
+    }
+}
+
+impl Drop for Client {
+    fn drop(&mut self) {
+        debug!("<- {}", self.addr);
     }
 }
 
