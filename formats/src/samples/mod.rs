@@ -14,6 +14,7 @@ mod tests {
     use crate::format::Format;
     use crate::simple_constant::SimpleConstant;
     use crate::simple_data_type::SimpleDataType;
+    use crate::string_constant::StringConstant;
     use crate::struct_type::StructType;
 
     #[test]
@@ -28,7 +29,7 @@ mod tests {
     #[test]
     fn test_two_constants() {
         let first: SimpleConstant<u32> = SimpleConstant::new("FIRST", 1);
-        let second: SimpleConstant<u8> = SimpleConstant::new("SECOND", 2);
+        let second = StringConstant::new("SECOND", "2");
         let two_constants = Format::new("TwoConstants").with_constant(first).with_constant(second);
         assert_eq_multiline(&two_constants.rs(), include_str!("two_constants.rs"));
         assert_eq_multiline(&two_constants.hh(), include_str!("TwoConstants.hh"));

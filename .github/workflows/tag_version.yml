@@ -1,0 +1,29 @@
+name: Tag version
+
+on:
+  push:
+    branches:
+      - '*'
+
+jobs:
+  tag-version:
+    name: Tag version
+    if: github.repository == 'doubledashdeluxe/ddd'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          token: ${{ secrets.PAT }}
+          fetch-depth: 0
+          fetch-tags: true
+      - name: Tag version
+        run: |
+          branch=$(git symbolic-ref --short HEAD)
+          tag=$(git tag -n0 --sort=v:refname $branch-alpha.* | tail -n 1)
+          number=${tag##*.}
+          number=$((number + 1)) || 1
+          tag=$branch-alpha.$number
+          git tag $tag
+          git push origin $tag

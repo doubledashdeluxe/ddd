@@ -97,10 +97,7 @@ impl Client {
             State::Idle => return Ok(None),
             State::Server { identity } => {
                 let protocol_version = version::PROTOCOL_VERSION;
-                let major = version::MAJOR_VERSION;
-                let minor = version::MINOR_VERSION;
-                let patch = version::PATCH_VERSION;
-                let version = format!("v{major}.{minor}.{patch}").into();
+                let version = version::VERSION.into();
                 let server_identity = if identity.is_some() {
                     let motd = "test motd".into();
                     let player_count = player_count as u16;

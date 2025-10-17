@@ -38,11 +38,13 @@ if makefile_path is not None:
     while makefile_in != '':
         if makefile_in.startswith('Z:'):
             path = makefile_in.split(None, 1)[0]
-            makefile_out += subprocess.check_output(
+            makefile_in = makefile_in.split(path, 1)[1]
+            path = subprocess.check_output(
                 ['winepath', '-u', path],
                 encoding = 'utf-8',
             ).rstrip('\n')
-            makefile_in = makefile_in.split(path, 1)[1]
+            path = os.path.relpath(path, os.getcwd())
+            makefile_out += path
         else:
             makefile_out += makefile_in[0]
             makefile_in = makefile_in[1:]

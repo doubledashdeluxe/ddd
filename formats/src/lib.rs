@@ -11,4 +11,5 @@ mod samples;
 mod simple_constant;
 mod simple_data_type;
 mod str_ext;
+mod string_constant;
 mod struct_type;

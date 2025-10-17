@@ -26,7 +26,7 @@ void Bootstrap::Run() {
     VI::Init();
     Console::Init(VI::Instance());
     CubeLogger::Init();
-    INFO("Double Dash Deluxe Bootstrap v%u.%u.%u", MajorVersion, MinorVersion, PatchVersion);
+    INFO("Double Dash Deluxe Bootstrap [%s]", Version);
 
     if (iosVersion >> 16 != 58 && iosVersion >> 16 != 59) {
         ERROR("Double Dash Deluxe needs IOS58 (or IOS59).");

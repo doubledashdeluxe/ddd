@@ -14,8 +14,7 @@ extern "C" {
 ClientStateServer::ClientStateServer(const ClientPlatform &platform)
     : ClientState(platform), m_readIndex(0), m_writeIndex(0) {
     m_platform.socket.close();
-    snprintf(m_version.values(), m_version.count(), "v%u.%u.%u", MajorVersion, MinorVersion,
-            PatchVersion);
+    snprintf(m_version.values(), m_version.count(), "%s", Version);
 }
 
 ClientStateServer::~ClientStateServer() {}

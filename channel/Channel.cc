@@ -75,7 +75,7 @@ Channel::PayloadEntryFunc Channel::Run(Context *context) {
     VI::Init();
     Console::Init(VI::Instance());
     CubeLogger::Init();
-    INFO("Double Dash Deluxe Channel v%u.%u.%u", MajorVersion, MinorVersion, PatchVersion);
+    INFO("Double Dash Deluxe Channel [%s]", Version);
 
     if (!Platform::IsGameCube()) {
         if (iosVersion >> 16 != 58 && iosVersion >> 16 != 59) {
