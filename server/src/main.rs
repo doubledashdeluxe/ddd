@@ -6,6 +6,7 @@ use log::info;
 use noise_protocol::{DH, U8Array};
 
 use crate::crypto::x25519::X25519;
+use crate::formats::version;
 use crate::server::Server;
 
 mod client;
@@ -17,6 +18,8 @@ mod server;
 
 fn main() -> Result<()> {
     logger::init()?;
+    let version = version::VERSION;
+    info!("Double Dash Deluxe Server [{version}]");
 
     let server_k = match File::open("k.bin") {
         Ok(mut file) => {
