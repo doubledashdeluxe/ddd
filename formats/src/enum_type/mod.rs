@@ -107,6 +107,7 @@ impl<L: VariantList> ComplexDataType for EnumType<L> {
     fn cc(&self) -> String {
         format!(
             concat!(
+                "\n",
                 "bool {}Reader::isValid(const u8 *buffer, u32 size, u32 &offset) {{\n",
                 "    if (offset + 1 > size) {{\n",
                 "        return false;\n",

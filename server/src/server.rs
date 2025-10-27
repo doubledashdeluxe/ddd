@@ -10,6 +10,7 @@ use noise_protocol::U8Array;
 use crate::client::Client;
 use crate::connection::Connection;
 use crate::crypto::sensitive::Sensitive;
+use crate::rooms::Rooms;
 
 pub struct Server {
     server_k: Sensitive<[u8; 32]>,
@@ -17,6 +18,7 @@ pub struct Server {
     random_state: RandomState,
     connections: HashMap<SocketAddr, (bool, Connection)>,
     clients: HashMap<[u8; 32], Client>,
+    rooms: Rooms,
 }
 
 impl Server {
@@ -25,7 +27,8 @@ impl Server {
         let random_state = RandomState::new();
         let connections = HashMap::new();
         let clients = HashMap::new();
-        let server = Server { server_k, random_state, socket, connections, clients };
+        let rooms = Rooms::new();
+        let server = Server { server_k, random_state, socket, connections, clients, rooms };
         Ok(server)
     }
 
@@ -86,11 +89,18 @@ impl Server {
     }
 
     fn write(&mut self, now: Instant) -> Result<()> {
-        self.clients.retain(|_, client| !client.has_expired(now));
+        self.clients.retain(|_, client| client.update(now, &mut self.rooms).is_ok());
+        self.rooms.update(&mut self.clients);
         let player_count = self.clients.values().map(|client| client.player_count()).sum();
         for (addr, (retain, connection)) in &mut self.connections {
             let mut message = [0u8; 512];
-            let message_len = connection.write(now, &mut message, &mut self.clients, player_count);
+            let message_len = connection.write(
+                now,
+                &mut message,
+                &mut self.clients,
+                player_count,
+                &mut self.rooms,
+            );
             let Ok(message_len) = message_len else {
                 *retain = false;
                 continue;

@@ -74,7 +74,9 @@ ScenePackSelect::ScenePackSelect(JKRArchive *archive, JKRHeap *heap) : Scene(arc
         m_packScreens[i].search("Desc")->setAnimation(m_descAnmTransforms[i]);
     }
 
+    m_mainAnmTransformFrame = 0;
     m_arrowAnmTransformFrame = 0;
+    m_modeAnmTransformFrame = 0;
     m_packAnmTransformFrames.fill(0);
     m_descAnmTransformFrames.fill(0);
     m_arrowAlphas.fill(0);
@@ -85,10 +87,17 @@ ScenePackSelect::ScenePackSelect(JKRArchive *archive, JKRHeap *heap) : Scene(arc
 ScenePackSelect::~ScenePackSelect() {}
 
 void ScenePackSelect::init() {
+    m_roomType = OnlineInfo::Instance().m_roomType;
     const SequenceInfo &sequenceInfo = SequenceInfo::Instance();
+    m_playerCountIsVisible = sequenceInfo.m_isOnline && m_roomType == RoomType::Worldwide;
+    m_packCount = 0;
+    for (u32 i = 0; i < m_playerCounts.count(); i++) {
+        snprintf(m_playerCounts[i].values(), m_playerCounts[i].count(), "...");
+    }
+
     for (u32 i = 0; i < m_packScreens.count(); i++) {
-        m_packScreens[i].search("PIcon")->m_isVisible = sequenceInfo.m_isOnline;
-        m_packScreens[i].search("PCount")->m_isVisible = sequenceInfo.m_isOnline;
+        m_packScreens[i].search("PIcon")->m_isVisible = m_playerCountIsVisible;
+        m_packScreens[i].search("PCount")->m_isVisible = m_playerCountIsVisible;
     }
 
     J2DPicture *iconPicture = m_modeScreen.search("BtlPict")->downcast<J2DPicture>();
@@ -105,11 +114,6 @@ void ScenePackSelect::init() {
         } else {
             picture->changeTexture("Arena.bti", 0);
         }
-    }
-
-    m_packCount = 0;
-    for (u32 i = 0; i < m_playerCounts.count(); i++) {
-        snprintf(m_playerCounts[i].values(), m_playerCounts[i].count(), "...");
     }
 
     if (CourseManager::Instance()->lock()) {
@@ -157,7 +161,7 @@ void ScenePackSelect::calc() {
     refreshPacks();
 
     m_arrowAnmTransformFrame = (m_arrowAnmTransformFrame + 1) % 35;
-    m_onlineAnmTransformFrame = sequenceInfo.m_isOnline * 12;
+    m_onlineAnmTransformFrame = m_playerCountIsVisible * 12;
     for (u32 i = 0; i < 6; i++) {
         u32 packIndex = m_rowIndex + i;
         if (packIndex == m_packIndex) {
@@ -190,7 +194,7 @@ void ScenePackSelect::calc() {
         m_packScreens[i].search("GDCurs1")->setAlpha(m_packAlphas[i]);
         for (s32 j = 0; j < 26; j++) {
             u8 alpha = m_packAlphas[i];
-            if (j > 25 - sequenceInfo.m_isOnline * 4) {
+            if (j > 25 - m_playerCountIsVisible * 4) {
                 alpha = 0;
             }
             m_packScreens[i].search("Name%u", j)->setAlpha(alpha);
@@ -199,9 +203,9 @@ void ScenePackSelect::calc() {
             u8 alpha = m_packAlphas[i];
             if (j == 0) {
                 alpha = (alpha * (255 - m_descAlphas[i])) >> 8;
-            } else if (j == 41 - sequenceInfo.m_isOnline * 6) {
+            } else if (j == 41 - m_playerCountIsVisible * 6) {
                 alpha = (alpha * m_descAlphas[i]) >> 8;
-            } else if (j > 41 - sequenceInfo.m_isOnline * 6) {
+            } else if (j > 41 - m_playerCountIsVisible * 6) {
                 alpha = 0;
             }
             m_packScreens[i].search("Desc%u", j)->setAlpha(alpha);
@@ -276,6 +280,10 @@ bool ScenePackSelect::clientStatePack(const ClientStatePackReadInfo &readInfo) {
     return true;
 }
 
+bool ScenePackSelect::clientStateRoom(const ClientStateRoomReadInfo & /* readInfo */) {
+    return true;
+}
+
 void ScenePackSelect::clientStateError() {
     ErrorViewApp::Call(6);
 }
@@ -324,8 +332,6 @@ void ScenePackSelect::slideIn() {
     }
 
     MenuTitleLine::Instance()->drop("SelectPack.bti");
-    m_mainAnmTransformFrame = 0;
-    m_modeAnmTransformFrame = 0;
     for (u32 i = 0; i < m_packAlphas.count(); i++) {
         u32 packIndex = m_rowIndex + i;
         if (i < 5 && packIndex < m_packCount) {
@@ -400,7 +406,7 @@ void ScenePackSelect::stateIdle() {
     const JUTGamePad::CButton &button = KartGamePad::GamePad(0)->button();
     if (button.risingEdge() & PAD_BUTTON_A) {
         if (sequenceInfo.m_isOnline) {
-            switch (onlineInfo.m_roomType) {
+            switch (m_roomType) {
             case RoomType::Worldwide:
                 m_nextScene = SceneType::FormatSelect;
                 break;
@@ -410,6 +416,7 @@ void ScenePackSelect::stateIdle() {
                 break;
             default:
                 m_nextScene = SceneType::PersonalRoom;
+                onlineInfo.m_isHost = true;
                 break;
             }
         } else {
@@ -420,7 +427,7 @@ void ScenePackSelect::stateIdle() {
         slideOut();
     } else if (button.risingEdge() & PAD_BUTTON_B) {
         if (sequenceInfo.m_isOnline) {
-            if (onlineInfo.m_roomType == RoomType::Duel) {
+            if (m_roomType == RoomType::Duel) {
                 m_nextScene = SceneType::RoomTypeSelect;
             } else {
                 m_nextScene = SceneType::ModeSelect;
@@ -484,7 +491,6 @@ void ScenePackSelect::stateNextScene() {
 void ScenePackSelect::refreshPacks() {
     Kart2DCommon *kart2DCommon = Kart2DCommon::Instance();
     CourseManager *courseManager = CourseManager::Instance();
-    SequenceInfo &sequenceInfo = SequenceInfo::Instance();
     for (u32 i = 0; i < 6; i++) {
         u32 packIndex = m_rowIndex + i;
         if (packIndex >= m_packCount) {
@@ -496,13 +502,13 @@ void ScenePackSelect::refreshPacks() {
         } else {
             pack = &courseManager->battlePack(packIndex);
         }
-        u32 namePictureCount = 26 - sequenceInfo.m_isOnline * 4;
+        u32 namePictureCount = 26 - m_playerCountIsVisible * 4;
         J2DScreen &screen = m_packScreens[i];
         kart2DCommon->changeUnicodeTexture(pack->name(), namePictureCount, screen, "Name");
         DescText descText(*this, i);
         u64 descOffset = Max<u64>(m_descOffset, 300) - 300;
         u32 courseCount = pack->courseIndices().count();
-        u32 descPictureCount = 42 - sequenceInfo.m_isOnline * 6;
+        u32 descPictureCount = 42 - m_playerCountIsVisible * 6;
         descText.refresh(descOffset, courseCount, descPictureCount, screen, "Desc");
         kart2DCommon->changeNumberTexture<3>(courseCount, screen, "CCount", true);
         kart2DCommon->changeUnicodeTexture(m_playerCounts[i].values(), 3, screen, "PCount", true);

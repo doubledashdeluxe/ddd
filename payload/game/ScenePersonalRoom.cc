@@ -1,10 +1,13 @@
 #include "ScenePersonalRoom.hh"
 
+#include "game/ErrorViewApp.hh"
 #include "game/GameAudioMain.hh"
 #include "game/Kart2DCommon.hh"
 #include "game/KartGamePad.hh"
 #include "game/MenuTitleLine.hh"
+#include "game/Modes.hh"
 #include "game/OnlineBackground.hh"
+#include "game/OnlineInfo.hh"
 #include "game/RaceInfo.hh"
 #include "game/RaceMode.hh"
 #include "game/ResMgr.hh"
@@ -15,6 +18,8 @@
 #include <jsystem/J2DAnmLoaderDataBase.hh>
 #include <payload/CourseManager.hh>
 #include <payload/crypto/CubeRandom.hh>
+#include <payload/online/Client.hh>
+#include <portable/Align.hh>
 
 extern "C" {
 #include <stdio.h>
@@ -48,13 +53,7 @@ ScenePersonalRoom::ScenePersonalRoom(JKRArchive *archive, JKRHeap *heap) : Scene
         m_mainScreen.search("Option%u", i)->appendChild(&m_entryScreens[i]);
     }
 
-    Kart2DCommon *kart2DCommon = Kart2DCommon::Instance();
     J2DScreen &okScreen = m_entryScreens[MaxEntryCount - 1];
-    const char *path = "/ok.txt";
-    char *ok = static_cast<char *>(ResMgr::GetPtr(ResMgr::ArchiveID::MRAMLoc, path));
-    u32 size = ResMgr::GetResSize(ResMgr::ArchiveID::MRAMLoc, ok);
-    ok[size - 1] = '\0';
-    kart2DCommon->changeUnicodeTexture(ok, 20, okScreen, "Name");
     okScreen.search("L0")->m_isVisible = false;
     okScreen.search("R0")->m_isVisible = false;
     okScreen.search("Value")->m_isVisible = false;
@@ -137,6 +136,7 @@ ScenePersonalRoom::ScenePersonalRoom(JKRArchive *archive, JKRHeap *heap) : Scene
         }
     }
 
+    m_mainAnmTransformFrame = 0;
     m_switchAnmTransformFrames.fill(16);
     m_switchAnmTexPatternFrames.fill(0);
     m_charAnmTextureSRTKeyFrames.fill(9);
@@ -156,60 +156,33 @@ ScenePersonalRoom::ScenePersonalRoom(JKRArchive *archive, JKRHeap *heap) : Scene
 ScenePersonalRoom::~ScenePersonalRoom() {}
 
 void ScenePersonalRoom::init() {
-    m_charCount = 20;
-    CubeRandom *random = CubeRandom::Instance();
-    for (u32 i = 0; i < m_charCount; i++) {
-        m_chars[i] = random->get(8);
-    }
+    OnlineInfo &onlineInfo = OnlineInfo::Instance();
+    m_isHost = onlineInfo.m_isHost;
+    m_canContinue = true;
+    m_charCount = 0;
     m_revealCode = false;
+    m_kartCount = 0;
     m_optionCount = 0;
-    m_options[m_optionCount++] = RoomOption::Code;
-    m_options[m_optionCount++] = RoomOption::Format;
-    if (RaceInfo::Instance().isRace()) {
-        m_options[m_optionCount++] = RoomOption::EngineSize;
-    }
-    m_options[m_optionCount++] = RoomOption::ItemMode;
-    if (RaceInfo::Instance().isRace()) {
-        m_options[m_optionCount++] = RoomOption::LapCount;
-        m_options[m_optionCount++] = RoomOption::RaceCount;
-        m_options[m_optionCount++] = RoomOption::CourseSelection;
-    } else {
-        m_options[m_optionCount++] = RoomOption::BattleCount;
-        m_options[m_optionCount++] = RoomOption::MapSelection;
-    }
-    m_values.fill(0);
     m_entryIndex = 0;
 
-    Kart2DCommon *kart2DCommon = Kart2DCommon::Instance();
-    CourseManager *courseManager = CourseManager::Instance();
-    SequenceInfo &sequenceInfo = SequenceInfo::Instance();
-    const CourseManager::Pack *pack;
-    if (RaceInfo::Instance().isRace()) {
-        pack = &courseManager->racePack(sequenceInfo.m_packIndex);
-    } else {
-        pack = &courseManager->battlePack(sequenceInfo.m_packIndex);
+    if (m_isHost) {
+        m_isRace = RaceInfo::Instance().isRace();
+        m_writeInfo.modeIndex = onlineInfo.m_modeIndex;
+        m_writeInfo.isRace = m_isRace;
+        SequenceInfo &sequenceInfo = SequenceInfo::Instance();
+        u32 packIndex = sequenceInfo.m_packIndex;
+        CourseManager *courseManager = CourseManager::Instance();
+        m_writeInfo.packHash = courseManager->pack(m_isRace, packIndex).hash();
     }
-    kart2DCommon->changeUnicodeTexture(pack->name(), 26, m_mainScreen, "Name");
-    for (u32 i = 0; i < m_entryScreens.count(); i++) {
-        J2DPicture *iconPicture = m_entryScreens[i].search("Icon")->downcast<J2DPicture>();
-        RaceInfo &raceInfo = RaceInfo::Instance();
-        const char *iconTextureName = RaceMode::IconTextureName(raceInfo.m_raceMode);
-        iconPicture->changeTexture(iconTextureName, 0);
+    m_writeInfo.isHost = m_isHost;
+    m_writeInfo.roomCounter = onlineInfo.m_roomCounter++;
+    if (!m_isHost) {
+        m_writeInfo.roomCode = onlineInfo.m_roomCode;
     }
-    for (u32 i = 0; i < m_options.count(); i++) {
-        m_mainScreen.search("Option%u", i)->m_isVisible = i < m_optionCount;
-        if (i < m_optionCount) {
-            Array<char, 32> path;
-            snprintf(path.values(), path.count(), "/optionnames/%u.txt", m_options[i]);
-            char *name =
-                    static_cast<char *>(ResMgr::GetPtr(ResMgr::ArchiveID::MRAMLoc, path.values()));
-            u32 size = ResMgr::GetResSize(ResMgr::ArchiveID::MRAMLoc, name);
-            name[size - 1] = '\0';
-            kart2DCommon->changeUnicodeTexture(name, 20, m_entryScreens[i], "Name");
-        }
-    }
+    m_writeInfo.spectatingCounter = 0;
+    m_writeInfo.spectating = false;
 
-    slideIn();
+    wait();
 }
 
 void ScenePersonalRoom::draw() {
@@ -222,33 +195,50 @@ void ScenePersonalRoom::draw() {
 }
 
 void ScenePersonalRoom::calc() {
+    Client *client = Client::Instance();
+    client->read(*this);
+
     (this->*m_state)();
 
     OnlineBackground::Instance()->calc();
     MenuTitleLine::Instance()->calc();
 
     Kart2DCommon *kart2DCommon = Kart2DCommon::Instance();
+    J2DScreen &okScreen = m_entryScreens[MaxEntryCount - 1];
+    if (m_kartCount >= 2) {
+        const char *path = "/ok.txt";
+        char *ok = static_cast<char *>(ResMgr::GetPtr(ResMgr::ArchiveID::MRAMLoc, path));
+        u32 size = ResMgr::GetResSize(ResMgr::ArchiveID::MRAMLoc, ok);
+        ok[size - 1] = '\0';
+        kart2DCommon->changeUnicodeTexture(ok, 20, okScreen, "Name");
+    } else {
+        kart2DCommon->changeUnicodeTexture("...", 20, okScreen, "Name");
+    }
     for (u32 i = 0; i < m_optionCount; i++) {
         Array<char, 32> path;
         snprintf(path.values(), path.count(), "/valuenames/%u/%u.txt", m_options[i], m_values[i]);
         char *name = static_cast<char *>(ResMgr::GetPtr(ResMgr::ArchiveID::MRAMLoc, path.values()));
-        u32 size = ResMgr::GetResSize(ResMgr::ArchiveID::MRAMLoc, name);
-        name[size - 1] = '\0';
-        kart2DCommon->changeUnicodeTexture(name, 16, m_entryScreens[i], "Value", true);
+        if (name) {
+            u32 size = ResMgr::GetResSize(ResMgr::ArchiveID::MRAMLoc, name);
+            name[size - 1] = '\0';
+            kart2DCommon->changeUnicodeTexture(name, 16, m_entryScreens[i], "Value", true);
+        } else {
+            kart2DCommon->changeNumberTexture<16>(m_values[i], m_entryScreens[i], "Value", true);
+        }
     }
-    kart2DCommon->changeNumberTexture(123, 3, m_mainScreen, "SCount");
 
     for (u32 i = 0; i < SwitchCount; i++) {
         if (m_switchAnmTransformFrames[i] < 16) {
-            m_switchAnmTransformFrames[i]++;
-            if (m_switchAnmTransformFrames[i] == 8) {
+            if (i == 0 && m_switchAnmTransformFrames[i] == 8) {
                 m_switchAnmTexPatternFrames[i] ^= 1;
             }
+            m_switchAnmTransformFrames[i]++;
         }
     }
-    for (u32 i = 0; i < m_charCount; i++) {
-        m_charAnmTextureSRTKeyFrames[i] = m_revealCode ? m_chars[i] : 9;
-        m_charAnmTexPatternFrames[i] = m_revealCode ? m_chars[i] : 9;
+    for (u32 i = 0; i < m_chars.count(); i++) {
+        u8 frame = i < m_charCount ? m_revealCode ? m_chars[i] : 9 : 10;
+        m_charAnmTextureSRTKeyFrames[i] = frame;
+        m_charAnmTexPatternFrames[i] = frame;
     }
     m_playerCircleAnmTransformFrame = (m_playerCircleAnmTransformFrame + 1) % 60;
     for (u32 i = 0; i < MaxEntryCount; i++) {
@@ -354,24 +344,170 @@ void ScenePersonalRoom::calc() {
     for (u32 i = 0; i < m_entryScreens.count(); i++) {
         m_entryScreens[i].animationMaterials();
     }
+
+    if (m_isHost) {
+        for (u32 i = 0; i < m_optionCount; i++) {
+            RoomOption::Write(m_options[i], m_writeInfo.options, m_values[i]);
+        }
+        m_writeInfo.entryIndex = m_entryIndex;
+    }
+    client->writeStateRoom(m_writeInfo);
+}
+
+bool ScenePersonalRoom::clientStateMode(const ClientStateModeReadInfo & /* readInfo */) {
+    return true;
+}
+
+bool ScenePersonalRoom::clientStatePack(const ClientStatePackReadInfo & /* readInfo */) {
+    return true;
+}
+
+bool ScenePersonalRoom::clientStateRoom(const ClientStateRoomReadInfo &readInfo) {
+    m_ok = m_ok && readInfo.ok;
+    const Optional<ClientStateRoomReadInfo::Info> &info = readInfo.info;
+    if (info) {
+        bool prevIsReady = m_isReady;
+        m_isReady = true;
+        Kart2DCommon *kart2DCommon = Kart2DCommon::Instance();
+        m_kartCount = info->kartCount;
+        for (u32 i = 0; i < m_playerScreens.count(); i++) {
+            const ClientStateRoomReadInfo::Kart &kart = info->karts[i];
+            J2DScreen &screen = m_playerScreens[i];
+            screen.m_isVisible = i < info->kartCount;
+            if (i >= info->kartCount) {
+                continue;
+            }
+            for (u32 j = 0; j < kart.players.count(); j++) {
+                Array<char, 4> name;
+                if (j < kart.playerCount) {
+                    name = kart.players[j].name;
+                } else {
+                    snprintf(name.values(), name.count(), "   ");
+                }
+                Array<char, 32> prefix;
+                snprintf(prefix.values(), prefix.count(), "PName%" PRIu32, j);
+                kart2DCommon->changeUnicodeTexture(name.values(), 3, screen, prefix.values());
+            }
+            if (kart.playerCount == 2) {
+                m_playerNameAnmTransformFrames[i] = 0;
+            } else {
+                m_playerNameAnmTransformFrames[i] = 4;
+            }
+        }
+        kart2DCommon->changeNumberTexture(info->spectatorCount, 3, m_mainScreen, "SCount");
+        RaceInfo &raceInfo = RaceInfo::Instance();
+        raceInfo.m_raceMode = Modes[info->modeIndex];
+        m_isRace = raceInfo.isRace();
+        for (u32 i = 0; i < m_entryScreens.count(); i++) {
+            J2DPicture *iconPicture = m_entryScreens[i].search("Icon")->downcast<J2DPicture>();
+            const char *iconTextureName = RaceMode::IconTextureName(raceInfo.m_raceMode);
+            iconPicture->changeTexture(iconTextureName, 0);
+        }
+        const CourseManager *courseManager = CourseManager::Instance();
+        const CourseManager::Pack *pack = courseManager->searchPack(m_isRace, info->packHash);
+        if (pack) {
+            kart2DCommon->changeUnicodeTexture(pack->name(), 26, m_mainScreen, "Name");
+        } else {
+            m_ok = false;
+        }
+        m_charCount = 1;
+        for (u32 i = 0; i < m_chars.count(); i++) {
+            m_chars[i] = info->roomCode >> (i * 3) & 7;
+            if (m_chars[i]) {
+                m_charCount = i + 2;
+            }
+        }
+        m_charCount = AlignUp(m_charCount, 5);
+        if (m_charCount < m_chars.count()) {
+            m_chars[m_charCount - 1] = 8;
+        } else {
+            m_charCount = m_chars.count();
+        }
+        if (!prevIsReady || m_switchAnmTransformFrames[1] == 8) {
+            if (info->spectatingCounter == m_writeInfo.spectatingCounter) {
+                m_writeInfo.spectating = info->spectating;
+                m_switchAnmTexPatternFrames[1] = info->spectating;
+            }
+        }
+        if (!prevIsReady) {
+            if (info->isRace == m_isRace) {
+                m_options[m_optionCount++] = RoomOption::CodeType;
+                m_options[m_optionCount++] = RoomOption::Format;
+                if (m_isRace) {
+                    m_options[m_optionCount++] = RoomOption::EngineSize;
+                }
+                m_options[m_optionCount++] = RoomOption::ItemMode;
+                if (m_isRace) {
+                    m_options[m_optionCount++] = RoomOption::LapCount;
+                    m_options[m_optionCount++] = RoomOption::RaceCount;
+                    m_options[m_optionCount++] = RoomOption::CourseSelection;
+                } else {
+                    m_options[m_optionCount++] = RoomOption::BattleCount;
+                    m_options[m_optionCount++] = RoomOption::StageSelection;
+                }
+                for (u32 i = 0; i < m_optionCount; i++) {
+                    m_values[i] = RoomOption::DefaultValue(m_options[i]);
+                }
+            } else {
+                m_ok = false;
+            }
+        }
+        if (m_isHost) {
+            m_canContinue = info->options == m_writeInfo.options;
+        } else {
+            for (u32 i = 0; i < m_optionCount; i++) {
+                u8 value = RoomOption::Read(m_options[i], info->options);
+                if (value != m_values[i]) {
+                    if (value < m_values[i]) {
+                        m_entryLeftAnmTransformFrames[i] = 1;
+                        m_entryLeftAnmTevRegKeyFrames[i] = 2;
+                    } else {
+                        m_entryRightAnmTransformFrames[i] = 1;
+                        m_entryRightAnmTevRegKeyFrames[i] = 2;
+                    }
+                    GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE_LITTLE2);
+                }
+                m_values[i] = value;
+            }
+            if (info->entryIndex != m_entryIndex) {
+                if (info->entryIndex < m_optionCount) {
+                    m_entryIndex = info->entryIndex;
+                } else {
+                    m_entryIndex = MaxEntryCount - 1;
+                }
+                GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CURSOL);
+            }
+        }
+    }
+    return true;
+}
+
+void ScenePersonalRoom::clientStateError() {
+    ErrorViewApp::Call(6);
+}
+
+void ScenePersonalRoom::wait() {
+    m_ok = true;
+    m_isReady = false;
+    m_state = &ScenePersonalRoom::stateWait;
 }
 
 void ScenePersonalRoom::slideIn() {
     Kart2DCommon *kart2DCommon = Kart2DCommon::Instance();
-    for (u32 i = 0; i < m_playerScreens.count(); i++) {
-        J2DScreen &screen = m_playerScreens[i];
-        kart2DCommon->changeUnicodeTexture("ABC", 3, screen, "PName0");
-        if (i % 2) {
-            kart2DCommon->changeUnicodeTexture("DEF", 3, screen, "PName1");
-            m_playerNameAnmTransformFrames[i] = 0;
-        } else {
-            kart2DCommon->changeUnicodeTexture("   ", 3, screen, "PName1");
-            m_playerNameAnmTransformFrames[i] = 4;
+    for (u32 i = 0; i < m_options.count(); i++) {
+        m_mainScreen.search("Option%u", i)->m_isVisible = i < m_optionCount;
+        if (i < m_optionCount) {
+            Array<char, 32> path;
+            snprintf(path.values(), path.count(), "/optionnames/%u.txt", m_options[i]);
+            char *name =
+                    static_cast<char *>(ResMgr::GetPtr(ResMgr::ArchiveID::MRAMLoc, path.values()));
+            u32 size = ResMgr::GetResSize(ResMgr::ArchiveID::MRAMLoc, name);
+            name[size - 1] = '\0';
+            kart2DCommon->changeUnicodeTexture(name, 20, m_entryScreens[i], "Name");
         }
     }
 
     MenuTitleLine::Instance()->drop("PersonalRoom.bti");
-    m_mainAnmTransformFrame = 0;
     m_state = &ScenePersonalRoom::stateSlideIn;
 }
 
@@ -386,6 +522,17 @@ void ScenePersonalRoom::idle() {
 
 void ScenePersonalRoom::nextScene() {
     m_state = &ScenePersonalRoom::stateNextScene;
+}
+
+void ScenePersonalRoom::stateWait() {
+    const JUTGamePad::CButton &button = KartGamePad::GamePad(0)->button();
+    if (button.risingEdge() & PAD_BUTTON_B || !m_ok) {
+        m_nextScene = m_writeInfo.isHost ? SceneType::PackSelect : SceneType::RoomCodeEnter;
+        GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CANCEL_LITTLE);
+        slideOut();
+    } else if (m_isReady) {
+        slideIn();
+    }
 }
 
 void ScenePersonalRoom::stateSlideIn() {
@@ -406,18 +553,20 @@ void ScenePersonalRoom::stateSlideOut() {
 
 void ScenePersonalRoom::stateIdle() {
     const JUTGamePad::CButton &button = KartGamePad::GamePad(0)->button();
-    if (button.risingEdge() & PAD_BUTTON_A) {
+    if (m_isHost && button.risingEdge() & PAD_BUTTON_A) {
         if (m_entryIndex + 1 == MaxEntryCount) {
             m_nextScene = SceneType::TeamSelect;
             GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE_LITTLE);
             slideOut();
         }
-    } else if (button.risingEdge() & PAD_BUTTON_B) {
+    } else if (button.risingEdge() & PAD_BUTTON_B || !m_ok) {
         m_nextScene = SceneType::RoomTypeSelect;
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CANCEL_LITTLE);
         slideOut();
     } else if (button.risingEdge() & (PAD_BUTTON_Y | PAD_BUTTON_X)) {
         if (m_switchAnmTransformFrames[1] == 16) {
+            m_writeInfo.spectatingCounter++;
+            m_writeInfo.spectating = !m_writeInfo.spectating;
             m_switchAnmTransformFrames[1] = 1;
             GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_ATTENTION);
         }
@@ -427,7 +576,7 @@ void ScenePersonalRoom::stateIdle() {
             m_switchAnmTransformFrames[0] = 1;
             GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_ATTENTION);
         }
-    } else if (button.repeat() & JUTGamePad::PAD_MSTICK_UP) {
+    } else if (m_isHost && button.repeat() & JUTGamePad::PAD_MSTICK_UP) {
         if (m_entryIndex >= 1) {
             if (m_entryIndex + 1 == MaxEntryCount) {
                 m_entryIndex = m_optionCount - 1;
@@ -436,7 +585,7 @@ void ScenePersonalRoom::stateIdle() {
             }
             GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CURSOL);
         }
-    } else if (button.repeat() & JUTGamePad::PAD_MSTICK_DOWN) {
+    } else if (m_isHost && button.repeat() & JUTGamePad::PAD_MSTICK_DOWN) {
         if (m_entryIndex + 1 < MaxEntryCount) {
             if (m_entryIndex + 1 == m_optionCount) {
                 m_entryIndex = MaxEntryCount - 1;
@@ -445,26 +594,22 @@ void ScenePersonalRoom::stateIdle() {
             }
             GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CURSOL);
         }
-    } else if (button.repeat() & JUTGamePad::PAD_MSTICK_LEFT) {
+    } else if (m_isHost && button.repeat() & JUTGamePad::PAD_MSTICK_LEFT) {
         if (m_entryIndex < m_optionCount) {
-            if (m_values[m_entryIndex] > 0) {
-                m_values[m_entryIndex]--;
-            } else {
-                u32 option = m_options[m_entryIndex];
-                m_values[m_entryIndex] = RoomOption::ValueCount(option) - 1;
-            }
+            u8 option = m_options[m_entryIndex];
+            u8 value = m_values[m_entryIndex];
+            value = RoomOption::PrevValue(option, value);
+            m_values[m_entryIndex] = value;
             m_entryLeftAnmTransformFrames[m_entryIndex] = 1;
             m_entryLeftAnmTevRegKeyFrames[m_entryIndex] = 2;
             GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE_LITTLE2);
         }
-    } else if (button.repeat() & JUTGamePad::PAD_MSTICK_RIGHT) {
+    } else if (m_isHost && button.repeat() & JUTGamePad::PAD_MSTICK_RIGHT) {
         if (m_entryIndex < m_optionCount) {
-            u32 option = m_options[m_entryIndex];
-            if (m_values[m_entryIndex] < RoomOption::ValueCount(option) - 1) {
-                m_values[m_entryIndex]++;
-            } else {
-                m_values[m_entryIndex] = 0;
-            }
+            u8 option = m_options[m_entryIndex];
+            u8 value = m_values[m_entryIndex];
+            value = RoomOption::NextValue(option, value);
+            m_values[m_entryIndex] = value;
             m_entryRightAnmTransformFrames[m_entryIndex] = 1;
             m_entryRightAnmTevRegKeyFrames[m_entryIndex] = 2;
             GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE_LITTLE2);

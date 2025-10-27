@@ -13,6 +13,9 @@ public:
     u32 m_serverIndex;
     u32 m_roomType;
     u32 m_modeIndex;
+    bool m_isHost;
+    u32 m_roomCounter;
+    u64 m_roomCode;
     bool m_hasIDs;
     Array<Array<u32, 2>, 4> m_characterIDs;
     Array<u32, 4> m_kartIDs;

@@ -117,6 +117,7 @@ impl<L: FieldList> ComplexDataType for StructType<L> {
     fn cc(&self) -> String {
         format!(
             concat!(
+                "\n",
                 "bool {}Reader::isValid(const u8 *buffer, u32 size, u32 &offset) {{\n",
                 "{}",
                 "    return true;\n",

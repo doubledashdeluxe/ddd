@@ -41,7 +41,7 @@ impl<CL: ConstantList, TL: TypeList> Format<CL, TL> {
     pub fn hh(&self) -> String {
         format!(
             concat!("#pragma once\n", "\n", "#include <portable/Types.hh>\n", "{}{}"),
-            self.constant_list.hh().trim_end(),
+            self.constant_list.hh(),
             self.type_list.hh(),
         )
     }

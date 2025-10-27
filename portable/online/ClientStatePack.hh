@@ -4,8 +4,7 @@
 #include "portable/online/ClientState.hh"
 #include "portable/online/Connection.hh"
 
-#include <formats/ClientState.hh>
-#include <formats/ServerState.hh>
+#include <formats/Online.hh>
 
 class ClientStatePack
     : public ClientState
@@ -21,6 +20,7 @@ public:
     ClientState &read(ClientReadHandler &handler) override;
     ClientState &writeStateMode(const ClientStateModeWriteInfo &writeInfo) override;
     ClientState &writeStatePack(const ClientStatePackWriteInfo &writeInfo) override;
+    ClientState &writeStateRoom(const ClientStateRoomWriteInfo &writeInfo) override;
 
 private:
     typedef ClientStatePackReadInfo ReadInfo;
@@ -29,6 +29,7 @@ private:
     ServerStateServerReader *serverReader() override;
     ServerStateModeReader *modeReader() override;
     ServerStatePackReader *packReader() override;
+    ServerStateRoomReader *roomReader() override;
 
     bool isModeIndexValid(u8 modeIndex) override;
     void setModeIndex(u8 modeIndex) override;

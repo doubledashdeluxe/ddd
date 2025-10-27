@@ -46,6 +46,11 @@ bool FakeClient::clientStateMode(const ClientStateModeReadInfo & /* readInfo */)
 }
 
 bool FakeClient::clientStatePack(const ClientStatePackReadInfo & /* readInfo */) {
+    m_writer = &FakeClient::writeStateRoom;
+    return true;
+}
+
+bool FakeClient::clientStateRoom(const ClientStateRoomReadInfo & /* readInfo */) {
     return true;
 }
 
@@ -58,6 +63,7 @@ ClientState &FakeClient::writeStateServer() {
     writeInfo.playerCount = 1;
     writeInfo.players[0].profile = 0;
     writeInfo.players[0].name = "AAA";
+    writeInfo.kartCount = 1;
     return m_state->writeStateServer(writeInfo);
 }
 
@@ -74,6 +80,26 @@ ClientState &FakeClient::writeStatePack() {
     writeInfo.packCount = 1;
     writeInfo.packs[0].hash.fill(0xff);
     return m_state->writeStatePack(writeInfo);
+}
+
+ClientState &FakeClient::writeStateRoom() {
+    ClientStateRoomWriteInfo writeInfo;
+    writeInfo.modeIndex = 0;
+    writeInfo.isRace = true;
+    writeInfo.packHash.fill(0xff);
+    writeInfo.isHost = true;
+    writeInfo.roomCounter = 0;
+    writeInfo.spectatingCounter = 0;
+    writeInfo.spectating = false;
+    writeInfo.options.codeType = 0;
+    writeInfo.options.format = 0;
+    writeInfo.options.engineSize = 2;
+    writeInfo.options.itemMode = 0;
+    writeInfo.options.lapCount = 0;
+    writeInfo.options.matchCount = 4;
+    writeInfo.options.courseSelection = 0;
+    writeInfo.entryIndex = 0;
+    return m_state->writeStateRoom(writeInfo);
 }
 
 bool FakeClient::updateState(ClientState &nextState) {

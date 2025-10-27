@@ -273,12 +273,20 @@ bool CourseManager::CustomCourse::isCustom() const {
     return true;
 }
 
+u32 CourseManager::packCount(bool isRace) const {
+    return isRace ? racePackCount() : battlePackCount();
+}
+
 u32 CourseManager::racePackCount() const {
     return m_defaultRacePacks.count() + m_customRacePacks.count();
 }
 
 u32 CourseManager::battlePackCount() const {
     return m_defaultBattlePacks.count() + m_customBattlePacks.count();
+}
+
+const CourseManager::Pack &CourseManager::pack(bool isRace, u32 index) const {
+    return isRace ? racePack(index) : battlePack(index);
 }
 
 const CourseManager::Pack &CourseManager::racePack(u32 index) const {
@@ -293,6 +301,17 @@ const CourseManager::Pack &CourseManager::battlePack(u32 index) const {
         return m_defaultBattlePacks[index];
     }
     return m_customBattlePacks[index - m_defaultBattlePacks.count()];
+}
+
+const CourseManager::Pack *CourseManager::searchPack(bool isRace, const Array<u8, 32> &hash) const {
+    u32 packCount = this->packCount(isRace);
+    for (u32 i = 0; i < packCount; i++) {
+        const Pack &pack = this->pack(isRace, i);
+        if (pack.hash() == hash) {
+            return &pack;
+        }
+    }
+    return nullptr;
 }
 
 u32 CourseManager::raceCourseCount(u32 packIndex) const {

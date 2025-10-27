@@ -4,8 +4,12 @@
 
 #include <jsystem/J2DScreen.hh>
 #include <portable/Array.hh>
+#include <portable/online/ClientReadHandler.hh>
+#include <portable/online/ClientStateRoomWriteInfo.hh>
 
-class ScenePersonalRoom : public Scene {
+class ScenePersonalRoom
+    : public Scene
+    , private ClientReadHandler {
 public:
     ScenePersonalRoom(JKRArchive *archive, JKRHeap *heap);
     ~ScenePersonalRoom() override;
@@ -24,24 +28,38 @@ private:
 
     typedef void (ScenePersonalRoom::*State)();
 
+    bool clientStateMode(const ClientStateModeReadInfo &readInfo) override;
+    bool clientStatePack(const ClientStatePackReadInfo &readInfo) override;
+    bool clientStateRoom(const ClientStateRoomReadInfo &readInfo) override;
+    void clientStateError() override;
+
+    void wait();
     void slideIn();
     void slideOut();
     void idle();
     void nextScene();
 
+    void stateWait();
     void stateSlideIn();
     void stateSlideOut();
     void stateIdle();
     void stateNextScene();
 
     State m_state;
+    bool m_ok;
+    bool m_isReady;
+    bool m_isHost;
+    bool m_isRace;
+    bool m_canContinue;
     u32 m_charCount;
     Array<u8, MaxCharCount> m_chars;
     bool m_revealCode;
+    u32 m_kartCount;
     u32 m_optionCount;
     Array<u8, MaxOptionCount> m_options;
     Array<u8, MaxOptionCount> m_values;
     u32 m_entryIndex;
+    ClientStateRoomWriteInfo m_writeInfo;
     u32 m_nextScene;
     J2DScreen m_mainScreen;
     Array<J2DScreen, MaxCharCount> m_charScreens;

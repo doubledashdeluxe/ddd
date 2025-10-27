@@ -11,7 +11,7 @@ impl ConstantList for () {
     }
 
     fn hh(&self) -> String {
-        "\n".to_owned()
+        "".to_owned()
     }
 }
 
@@ -21,6 +21,6 @@ impl<L: ConstantList, C: Constant> ConstantList for (L, C) {
     }
 
     fn hh(&self) -> String {
-        format!("{}{}", self.0.hh(), self.1.hh())
+        format!("{}\n{}", self.0.hh().trim_end(), self.1.hh())
     }
 }

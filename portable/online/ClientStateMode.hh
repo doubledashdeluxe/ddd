@@ -4,8 +4,7 @@
 #include "portable/online/ClientState.hh"
 #include "portable/online/Connection.hh"
 
-#include <formats/ClientState.hh>
-#include <formats/ServerState.hh>
+#include <formats/Online.hh>
 
 class ClientStateMode
     : public ClientState
@@ -22,6 +21,7 @@ public:
     ClientState &writeStateServer(const ClientStateServerWriteInfo &writeInfo) override;
     ClientState &writeStateMode(const ClientStateModeWriteInfo &writeInfo) override;
     ClientState &writeStatePack(const ClientStatePackWriteInfo &writeInfo) override;
+    ClientState &writeStateRoom(const ClientStateRoomWriteInfo &writeInfo) override;
 
 private:
     typedef ClientStateModeReadInfo ReadInfo;
@@ -30,6 +30,7 @@ private:
     ServerStateServerReader *serverReader() override;
     ServerStateModeReader *modeReader() override;
     ServerStatePackReader *packReader() override;
+    ServerStateRoomReader *roomReader() override;
 
     bool isModesCountValid(u32 modesCount) override;
     void setModesCount(u32 modesCount) override;

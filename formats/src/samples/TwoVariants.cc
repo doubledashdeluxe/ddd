@@ -13,14 +13,14 @@ bool TwoVariantsReader::isValid(const u8 *buffer, u32 size, u32 &offset) {
             if (offset + 1 > size) {
                 return false;
             }
-            u32 c0 = buffer[offset++];
-            if (c0 < 1 || c0 > 3) {
+            u32 firstCount0 = buffer[offset++];
+            if (firstCount0 < 1 || firstCount0 > 3) {
                 return false;
             }
-            if (!isFirstCountValid(c0)) {
+            if (!isFirstCountValid(firstCount0)) {
                 return false;
             }
-            for (u32 i0 = 0; i0 < c0; i0++) {
+            for (u32 i0 = 0; i0 < firstCount0; i0++) {
                 if (offset + 4 > size) {
                     return false;
                 }
@@ -52,9 +52,9 @@ void TwoVariantsReader::read(const u8 *buffer, u32 &offset) {
     switch (discriminant) {
     case 0:
         {
-            u32 c0 = buffer[offset++];
-            setFirstCount(c0);
-            for (u32 i0 = 0; i0 < c0; i0++) {
+            u32 firstCount0 = buffer[offset++];
+            setFirstCount(firstCount0);
+            for (u32 i0 = 0; i0 < firstCount0; i0++) {
                 setFirstElement(i0, Bytes::ReadBE<u32>(buffer, offset));
                 offset += 4;
             }
@@ -77,12 +77,12 @@ bool TwoVariantsWriter::First::write(u8 *buffer, u32 size, u32 &offset) {
     if (offset + 1 > size) {
         return false;
     }
-    u32 c0 = getFirstCount();
-    if (c0 < 1 || c0 > 3) {
+    u32 firstCount0 = getFirstCount();
+    if (firstCount0 < 1 || firstCount0 > 3) {
         return false;
     }
-    buffer[offset++] = c0;
-    for (u32 i0 = 0; i0 < c0; i0++) {
+    buffer[offset++] = firstCount0;
+    for (u32 i0 = 0; i0 < firstCount0; i0++) {
         if (offset + 4 > size) {
             return false;
         }

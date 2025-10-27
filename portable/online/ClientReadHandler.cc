@@ -15,3 +15,7 @@ bool ClientReadHandler::clientStateMode(const ClientStateModeReadInfo & /* readI
 bool ClientReadHandler::clientStatePack(const ClientStatePackReadInfo & /* readInfo */) {
     return false;
 }
+
+bool ClientReadHandler::clientStateRoom(const ClientStateRoomReadInfo & /* readInfo */) {
+    return false;
+}

@@ -2,6 +2,7 @@
 
 #include "portable/online/ClientStateError.hh"
 #include "portable/online/ClientStateMode.hh"
+#include "portable/online/ClientStateRoom.hh"
 
 ClientStatePack::ClientStatePack(const ClientPlatform &platform, Connection &connection,
         const ClientStatePackWriteInfo &writeInfo)
@@ -60,6 +61,11 @@ ClientState &ClientStatePack::writeStatePack(const WriteInfo &writeInfo) {
     return *this;
 }
 
+ClientState &ClientStatePack::writeStateRoom(const ClientStateRoomWriteInfo &writeInfo) {
+    Connection &connection = *m_connection.release();
+    return *(new (m_platform.allocator) ClientStateRoom(m_platform, connection, writeInfo));
+}
+
 ServerStateServerReader *ClientStatePack::serverReader() {
     return nullptr;
 }
@@ -70,6 +76,10 @@ ServerStateModeReader *ClientStatePack::modeReader() {
 
 ServerStatePackReader *ClientStatePack::packReader() {
     return this;
+}
+
+ServerStateRoomReader *ClientStatePack::roomReader() {
+    return nullptr;
 }
 
 bool ClientStatePack::isModeIndexValid(u8 modeIndex) {

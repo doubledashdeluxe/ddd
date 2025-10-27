@@ -26,6 +26,11 @@ void Swap(T &a, T &b) {
     b = tmp;
 }
 
+template <typename T, size_t N>
+size_t Count(const T (& /* a */)[N]) {
+    return N;
+}
+
 template <typename T>
 struct Less {
     bool operator()(const T &a, const T &b) {

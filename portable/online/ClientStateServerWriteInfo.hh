@@ -10,4 +10,5 @@ struct ClientStateServerWriteInfo {
 
     u8 playerCount;
     Array<Player, 4> players;
+    u8 kartCount;
 };

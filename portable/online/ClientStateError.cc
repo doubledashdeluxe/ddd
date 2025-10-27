@@ -32,6 +32,10 @@ ClientState &ClientStateError::writeStatePack(const ClientStatePackWriteInfo & /
     return *this;
 }
 
+ClientState &ClientStateError::writeStateRoom(const ClientStateRoomWriteInfo & /* writeInfo */) {
+    return *this;
+}
+
 ClientState &ClientStateError::writeStateError() {
     return *this;
 }

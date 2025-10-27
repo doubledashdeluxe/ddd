@@ -30,6 +30,6 @@ impl<L: TypeList, T: ComplexDataType> TypeList for (L, T) {
     }
 
     fn cc(&self) -> String {
-        format!("{}\n{}", self.0.cc(), self.1.cc())
+        format!("{}{}", self.0.cc(), self.1.cc())
     }
 }

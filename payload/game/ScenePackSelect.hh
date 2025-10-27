@@ -37,6 +37,7 @@ private:
 
     bool clientStateMode(const ClientStateModeReadInfo &readInfo) override;
     bool clientStatePack(const ClientStatePackReadInfo &readInfo) override;
+    bool clientStateRoom(const ClientStateRoomReadInfo &readInfo) override;
     void clientStateError() override;
 
     void wait();
@@ -61,6 +62,8 @@ private:
     void hideArrows();
 
     State m_state;
+    u32 m_roomType;
+    bool m_playerCountIsVisible;
     u32 m_packCount;
     u32 m_packIndex;
     u32 m_rowIndex;

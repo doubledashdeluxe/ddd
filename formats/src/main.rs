@@ -3,17 +3,12 @@ use std::io;
 
 use bpaf::{OptionParser, Parser};
 
-use ddd_formats;
-
 fn main() -> Result<(), io::Error> {
     let options = options().run();
     let format = match (options.format, options.extension) {
-        (Format::ClientState, Extension::Rs) => ddd_formats::client_state().rs(),
-        (Format::ClientState, Extension::Hh) => ddd_formats::client_state().hh(),
-        (Format::ClientState, Extension::Cc) => ddd_formats::client_state().cc(),
-        (Format::ServerState, Extension::Rs) => ddd_formats::server_state().rs(),
-        (Format::ServerState, Extension::Hh) => ddd_formats::server_state().hh(),
-        (Format::ServerState, Extension::Cc) => ddd_formats::server_state().cc(),
+        (Format::Online, Extension::Rs) => ddd_formats::online().rs(),
+        (Format::Online, Extension::Hh) => ddd_formats::online().hh(),
+        (Format::Online, Extension::Cc) => ddd_formats::online().cc(),
         (Format::Version, Extension::Rs) => ddd_formats::version().rs(),
         (Format::Version, Extension::Hh) => ddd_formats::version().hh(),
         (Format::Version, Extension::Cc) => ddd_formats::version().cc(),
@@ -26,10 +21,9 @@ fn main() -> Result<(), io::Error> {
 }
 
 fn options() -> OptionParser<Options> {
-    let client_state = bpaf::long("client-state").req_flag(Format::ClientState);
-    let server_state = bpaf::long("server-state").req_flag(Format::ServerState);
+    let online = bpaf::long("online").req_flag(Format::Online);
     let version = bpaf::long("version").req_flag(Format::Version);
-    let format = bpaf::construct!([client_state, server_state, version]);
+    let format = bpaf::construct!([online, version]);
 
     let rs = bpaf::long("rs").req_flag(Extension::Rs);
     let hh = bpaf::long("hh").req_flag(Extension::Hh);
@@ -49,8 +43,7 @@ struct Options {
 
 #[derive(Clone)]
 enum Format {
-    ClientState,
-    ServerState,
+    Online,
     Version,
 }
 

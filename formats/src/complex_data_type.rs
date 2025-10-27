@@ -9,28 +9,6 @@ pub trait ComplexDataType: DataType {
     fn rs(&self) -> String;
     fn hh(&self) -> String;
     fn cc(&self) -> String;
-}
-
-impl<T: ComplexDataType> DataType for T {
-    fn min_len(&self) -> usize {
-        ComplexDataType::min_len(self)
-    }
-
-    fn max_len(&self) -> usize {
-        ComplexDataType::max_len(self)
-    }
-
-    fn rs_name(&self) -> String {
-        self.name().to_owned()
-    }
-
-    fn rs_read(&self, name: &str) -> String {
-        format!("let ({}, buf) = {}::read(buf)?;", name, self.name())
-    }
-
-    fn rs_write(&self, name: &str) -> String {
-        format!("let buf = {}.write(buf)?;", name)
-    }
 
     fn hh_read_delegate(&self, name: &str, array_indices: ArrayIndices) -> String {
         format!(
@@ -88,5 +66,47 @@ impl<T: ComplexDataType> DataType for T {
             array_indices.delegate_suffix(),
             array_indices.untyped_args(false),
         )
+    }
+}
+
+impl<T: ComplexDataType> DataType for T {
+    fn min_len(&self) -> usize {
+        ComplexDataType::min_len(self)
+    }
+
+    fn max_len(&self) -> usize {
+        ComplexDataType::max_len(self)
+    }
+
+    fn rs_name(&self) -> String {
+        self.name().to_owned()
+    }
+
+    fn rs_read(&self, name: &str) -> String {
+        format!("let ({}, buf) = {}::read(buf)?;", name, self.name())
+    }
+
+    fn rs_write(&self, name: &str) -> String {
+        format!("let buf = {}.write(buf)?;", name)
+    }
+
+    fn hh_read_delegate(&self, name: &str, array_indices: ArrayIndices) -> String {
+        ComplexDataType::hh_read_delegate(self, name, array_indices)
+    }
+
+    fn hh_write_delegate(&self, name: &str, array_indices: ArrayIndices) -> String {
+        ComplexDataType::hh_write_delegate(self, name, array_indices)
+    }
+
+    fn cc_is_valid(&self, name: &str, array_indices: ArrayIndices) -> String {
+        ComplexDataType::cc_is_valid(self, name, array_indices)
+    }
+
+    fn cc_read(&self, name: &str, array_indices: ArrayIndices) -> String {
+        ComplexDataType::cc_read(self, name, array_indices)
+    }
+
+    fn cc_write(&self, name: &str, array_indices: ArrayIndices) -> String {
+        ComplexDataType::cc_write(self, name, array_indices)
     }
 }

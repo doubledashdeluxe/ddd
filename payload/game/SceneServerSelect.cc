@@ -7,6 +7,7 @@
 #include "game/MenuTitleLine.hh"
 #include "game/OnlineBackground.hh"
 #include "game/OnlineInfo.hh"
+#include "game/RaceInfo.hh"
 #include "game/SceneFactory.hh"
 #include "game/SequenceApp.hh"
 #include "game/SequenceInfo.hh"
@@ -61,6 +62,7 @@ SceneServerSelect::SceneServerSelect(JKRArchive *archive, JKRHeap *heap) : Scene
         m_serverScreens[i].search("Desc")->setAnimation(m_descAnmTransforms[i]);
     }
 
+    m_mainAnmTransformFrame = 0;
     m_arrowAnmTransformFrame = 0;
     m_serverAnmTransformFrames.fill(0);
     m_descAnmTransformFrames.fill(0);
@@ -98,6 +100,7 @@ void SceneServerSelect::init() {
         m_writeInfo.players[i].profile = profileIndex;
         m_writeInfo.players[i].name = onlineInfo.m_names[i];
     }
+    m_writeInfo.kartCount = RaceInfo::Instance().m_statusCount;
 
     if (CubeServerManager::Instance()->lock()) {
         slideIn();
@@ -292,7 +295,6 @@ void SceneServerSelect::slideIn() {
     m_rowIndex = Min(m_rowIndex, m_serverCount - Min<u32>(m_serverCount, 5));
 
     MenuTitleLine::Instance()->drop("SelectServer.bti");
-    m_mainAnmTransformFrame = 0;
     for (u32 i = 0; i < m_serverAlphas.count(); i++) {
         u32 serverIndex = m_rowIndex + i;
         if (i < 5 && serverIndex < m_serverCount) {

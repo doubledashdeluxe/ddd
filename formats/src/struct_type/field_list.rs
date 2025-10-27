@@ -106,7 +106,7 @@ impl<L: FieldList, T: DataType> FieldList for (L, Field<T>) {
         format!(
             concat!("{}", "{}"),
             self.0.hh_read_delegates(),
-            self.1.data_type().hh_read_delegate(&name, ArrayIndices::new()),
+            self.1.data_type().hh_read_delegate(&name, ArrayIndices::new(&name)),
         )
     }
 
@@ -115,7 +115,7 @@ impl<L: FieldList, T: DataType> FieldList for (L, Field<T>) {
         format!(
             concat!("{}", "{}"),
             self.0.hh_write_delegates(),
-            self.1.data_type().hh_write_delegate(&name, ArrayIndices::new()),
+            self.1.data_type().hh_write_delegate(&name, ArrayIndices::new(&name)),
         )
     }
 
@@ -124,7 +124,7 @@ impl<L: FieldList, T: DataType> FieldList for (L, Field<T>) {
         format!(
             concat!("{}", "{}\n"),
             self.0.cc_is_valid(),
-            self.1.data_type().cc_is_valid(&name, ArrayIndices::new()),
+            self.1.data_type().cc_is_valid(&name, ArrayIndices::new(&name)),
         )
     }
 
@@ -133,7 +133,7 @@ impl<L: FieldList, T: DataType> FieldList for (L, Field<T>) {
         format!(
             concat!("{}", "{}\n"),
             self.0.cc_read(),
-            self.1.data_type().cc_read(&name, ArrayIndices::new()),
+            self.1.data_type().cc_read(&name, ArrayIndices::new(&name)),
         )
     }
 
@@ -142,7 +142,7 @@ impl<L: FieldList, T: DataType> FieldList for (L, Field<T>) {
         format!(
             concat!("{}", "{}\n"),
             self.0.cc_write(),
-            self.1.data_type().cc_write(&name, ArrayIndices::new()),
+            self.1.data_type().cc_write(&name, ArrayIndices::new(&name)),
         )
     }
 }

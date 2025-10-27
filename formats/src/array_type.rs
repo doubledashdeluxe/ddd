@@ -197,13 +197,14 @@ impl<T: DataType> DataType for ArrayType<T> {
     }
 }
 
-pub struct ArrayIndices {
+pub struct ArrayIndices<'a> {
+    name: &'a str,
     count: usize,
 }
 
-impl ArrayIndices {
-    pub fn new() -> ArrayIndices {
-        ArrayIndices { count: 0 }
+impl<'a> ArrayIndices<'a> {
+    pub fn new(name: &'a str) -> ArrayIndices<'a> {
+        ArrayIndices { name, count: 0 }
     }
 
     pub fn delegate_suffix(&self) -> &'static str {
@@ -230,14 +231,14 @@ impl ArrayIndices {
     }
 
     fn count(&self) -> String {
-        format!("c{}", self.count)
+        format!("{}Count{}", self.name.to_ascii_camel_case(), self.count)
     }
 
     fn index(&self) -> String {
         format!("i{}", self.count)
     }
 
-    fn next(self) -> ArrayIndices {
-        ArrayIndices { count: self.count + 1 }
+    fn next(self) -> ArrayIndices<'a> {
+        ArrayIndices { name: self.name, count: self.count + 1 }
     }
 }

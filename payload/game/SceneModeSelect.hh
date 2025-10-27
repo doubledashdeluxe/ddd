@@ -1,5 +1,6 @@
 #pragma once
 
+#include "game/Modes.hh"
 #include "game/Scene.hh"
 
 #include <jsystem/J2DScreen.hh>
@@ -11,10 +12,6 @@ class SceneModeSelect
     : public Scene
     , private ClientReadHandler {
 public:
-    enum {
-        ModeCount = 5,
-    };
-
     SceneModeSelect(JKRArchive *archive, JKRHeap *heap);
     ~SceneModeSelect() override;
     void init() override;
@@ -59,6 +56,7 @@ private:
 
     State m_state;
     u32 m_roomType;
+    bool m_playerCountIsVisible;
     u32 m_modeIndex;
     Array<Array<char, 80>, ModeCount> m_descs;
     Array<u64, ModeCount> m_descOffsets;
@@ -73,6 +71,4 @@ private:
     Array<u8, ModeCount> m_modeAnmTransformFrames;
     Array<u8, ModeCount> m_descAnmTransformFrames;
     Array<u8, ModeCount> m_descAlphas;
-
-    static const Array<u32, ModeCount> Modes;
 };

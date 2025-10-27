@@ -114,6 +114,10 @@ ServerStatePackReader *ClientStateServer::packReader() {
     return nullptr;
 }
 
+ServerStateRoomReader *ClientStateServer::roomReader() {
+    return nullptr;
+}
+
 bool ClientStateServer::isProtocolVersionValid(u32 /* protocolVersion */) {
     return true;
 }
@@ -215,6 +219,10 @@ u32 ClientStateServer::getPlayersCount() {
 ClientPlayerWriter &ClientStateServer::playersElementWriter(u32 i0) {
     m_playerIndex = i0;
     return *this;
+}
+
+u8 ClientStateServer::getKartCount() {
+    return m_writeInfo->kartCount;
 }
 
 u8 ClientStateServer::getProfile() {

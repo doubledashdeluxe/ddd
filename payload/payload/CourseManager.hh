@@ -57,10 +57,13 @@ public:
         Array<u8, 32> m_archiveHash;
     };
 
+    u32 packCount(bool isRace) const;
     u32 racePackCount() const;
     u32 battlePackCount() const;
+    const Pack &pack(bool isRace, u32 index) const;
     const Pack &racePack(u32 index) const;
     const Pack &battlePack(u32 index) const;
+    const Pack *searchPack(bool isRace, const Array<u8, 32> &hash) const;
     u32 raceCourseCount(u32 packIndex) const;
     u32 battleCourseCount(u32 packIndex) const;
     const Course &raceCourse(u32 packIndex, u32 index) const;

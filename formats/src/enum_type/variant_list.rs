@@ -133,7 +133,7 @@ impl<L: VariantList, T: DataType> VariantList for (L, Variant<T>) {
         format!(
             concat!("{}", "{}"),
             self.0.hh_read_delegates(),
-            self.1.data_type().hh_read_delegate(self.1.name(), ArrayIndices::new()),
+            self.1.data_type().hh_read_delegate(self.1.name(), ArrayIndices::new(self.1.name())),
         )
     }
 
@@ -157,7 +157,7 @@ impl<L: VariantList, T: DataType> VariantList for (L, Variant<T>) {
             enum_name,
             self.1.name(),
             enum_name,
-            self.1.data_type().hh_write_delegate(self.1.name(), ArrayIndices::new()),
+            self.1.data_type().hh_write_delegate(self.1.name(), ArrayIndices::new(self.1.name())),
         )
     }
 
@@ -175,7 +175,7 @@ impl<L: VariantList, T: DataType> VariantList for (L, Variant<T>) {
             L::count(),
             self.1
                 .data_type()
-                .cc_is_valid(self.1.name(), ArrayIndices::new())
+                .cc_is_valid(self.1.name(), ArrayIndices::new(self.1.name()))
                 .replace("\n", "\n        "),
         )
     }
@@ -194,7 +194,7 @@ impl<L: VariantList, T: DataType> VariantList for (L, Variant<T>) {
             L::count(),
             self.1
                 .data_type()
-                .cc_read(self.1.name(), ArrayIndices::new())
+                .cc_read(self.1.name(), ArrayIndices::new(self.1.name()))
                 .replace("\n", "\n        "),
         )
     }
@@ -216,7 +216,7 @@ impl<L: VariantList, T: DataType> VariantList for (L, Variant<T>) {
             enum_name,
             self.1.name(),
             L::count(),
-            self.1.data_type().cc_write(self.1.name(), ArrayIndices::new()),
+            self.1.data_type().cc_write(self.1.name(), ArrayIndices::new(self.1.name())),
         )
     }
 }

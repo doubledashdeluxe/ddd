@@ -406,7 +406,7 @@ for arc_file in asset_arc_files:
     )
     n.newline()
 
-format_kc_names = ['client-state', 'server-state', 'version']
+format_kc_names = ['online', 'version']
 format_implicit = [
     *sorted(glob.glob(os.path.join('formats', '**'), recursive=True)),
     os.path.join('version.txt'),

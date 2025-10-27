@@ -8,6 +8,7 @@ use crate::client::Client;
 use crate::crypto::kx;
 use crate::crypto::sensitive::Sensitive;
 use crate::crypto::session::Session;
+use crate::rooms::Rooms;
 
 pub struct Connection {
     expiration: Instant,
@@ -61,7 +62,7 @@ impl Connection {
                         client
                     }
                     Entry::Vacant(v) if !is_full => {
-                        let client = Client::new(now, self.addr);
+                        let client = Client::new(now, self.addr, self.client_pk);
                         v.insert(client)
                     }
                     _ => return Ok(()),
@@ -80,6 +81,7 @@ impl Connection {
         message: &mut [u8],
         clients: &mut HashMap<[u8; 32], Client>,
         player_count: usize,
+        rooms: &mut Rooms,
     ) -> Result<Option<usize>> {
         anyhow::ensure!(now < self.expiration);
         match self.state {
@@ -89,9 +91,9 @@ impl Connection {
                 Ok(Some(kx::M2_SIZE))
             }
             State::Session => {
-                let client = clients.get_mut(&self.client_pk).context("Disconnected client")?;
+                let client = clients.get(&self.client_pk).context("Disconnected client")?;
                 let mut plaintext = [0u8; 512];
-                let plaintext_len = client.write(self.addr, &mut plaintext, player_count)?;
+                let plaintext_len = client.write(self.addr, &mut plaintext, player_count, rooms)?;
                 let Some(plaintext_len) = plaintext_len else {
                     return Ok(None);
                 };

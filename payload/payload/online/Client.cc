@@ -33,6 +33,10 @@ void Client::writeStatePack(const ClientStatePackWriteInfo &writeInfo) {
     while (updateState(m_state->writeStatePack(writeInfo))) {}
 }
 
+void Client::writeStateRoom(const ClientStateRoomWriteInfo &writeInfo) {
+    while (updateState(m_state->writeStateRoom(writeInfo))) {}
+}
+
 void Client::writeStateError() {
     while (updateState(m_state->writeStateError())) {}
 }

@@ -209,6 +209,10 @@ bool SceneRoomTypeSelect::clientStatePack(const ClientStatePackReadInfo & /* rea
     return true;
 }
 
+bool SceneRoomTypeSelect::clientStateRoom(const ClientStateRoomReadInfo & /* readInfo */) {
+    return true;
+}
+
 void SceneRoomTypeSelect::clientStateError() {
     ErrorViewApp::Call(6);
 }

@@ -5,8 +5,7 @@
 #include "portable/network/Address.hh"
 #include "portable/online/ClientPlatform.hh"
 
-#include <formats/ClientState.hh>
-#include <formats/ServerState.hh>
+#include <formats/Online.hh>
 
 class ConnectionState {
 public:

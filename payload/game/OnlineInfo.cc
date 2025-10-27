@@ -8,7 +8,7 @@ OnlineInfo &OnlineInfo::Instance() {
     return s_instance;
 }
 
-OnlineInfo::OnlineInfo() {
+OnlineInfo::OnlineInfo() : m_roomCounter(0) {
     reset();
 }
 

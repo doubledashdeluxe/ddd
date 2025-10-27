@@ -169,15 +169,15 @@ void SceneRoomCodeEnter::calc() {
     client->writeStateMode(writeInfo);
 }
 
-bool SceneRoomCodeEnter::clientStateServer(const ClientStateServerReadInfo & /* readInfo */) {
-    return true;
-}
-
 bool SceneRoomCodeEnter::clientStateMode(const ClientStateModeReadInfo & /* readInfo */) {
     return true;
 }
 
 bool SceneRoomCodeEnter::clientStatePack(const ClientStatePackReadInfo & /* readInfo */) {
+    return true;
+}
+
+bool SceneRoomCodeEnter::clientStateRoom(const ClientStateRoomReadInfo & /* readInfo */) {
     return true;
 }
 
@@ -304,6 +304,12 @@ void SceneRoomCodeEnter::stateSelect() {
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE_LITTLE);
         RaceInfo::Instance().m_raceMode = RaceMode::VS;
         SequenceInfo::Instance().m_packIndex = 0;
+        OnlineInfo &onlineInfo = OnlineInfo::Instance();
+        onlineInfo.m_isHost = false;
+        onlineInfo.m_roomCode = 0;
+        for (u32 i = 0; i < m_charCount; i++) {
+            onlineInfo.m_roomCode |= static_cast<u64>(m_chars[i] % 8) << i * 3;
+        }
         slideOut();
     } else if (button.risingEdge() & PAD_BUTTON_B) {
         m_charCount--;

@@ -6,8 +6,7 @@
 #include "portable/online/Connection.hh"
 #include "portable/online/ServerManager.hh"
 
-#include <formats/ClientState.hh>
-#include <formats/ServerState.hh>
+#include <formats/Online.hh>
 
 class ClientStateServer
     : public ClientState
@@ -38,6 +37,7 @@ private:
     ServerStateServerReader *serverReader() override;
     ServerStateModeReader *modeReader() override;
     ServerStatePackReader *packReader() override;
+    ServerStateRoomReader *roomReader() override;
 
     bool isProtocolVersionValid(u32 protocolVersion) override;
     void setProtocolVersion(u32 protocolVersion) override;
@@ -69,6 +69,7 @@ private:
 
     u32 getPlayersCount() override;
     ClientPlayerWriter &playersElementWriter(u32 i0) override;
+    u8 getKartCount() override;
 
     u8 getProfile() override;
     u32 getNameCount() override;
