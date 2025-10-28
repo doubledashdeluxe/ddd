@@ -70,7 +70,7 @@ impl Client {
                         anyhow::ensure!(server.protocol_version == PROTOCOL_VERSION);
                         let player_count = identity.players.len();
                         let kart_count = identity.kart_count as usize;
-                        anyhow::ensure!(kart_count >= (player_count + 1) / 2);
+                        anyhow::ensure!(kart_count >= player_count.div_ceil(2));
                         anyhow::ensure!(kart_count <= player_count);
                         Some(identity)
                     }

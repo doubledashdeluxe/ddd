@@ -18,11 +18,11 @@ impl DataType for UnitDataType {
     }
 
     fn rs_read(&self, name: &str) -> String {
-        format!("let {name} = ();",)
+        format!("let {name} = ();")
     }
 
     fn rs_write(&self, name: &str) -> String {
-        format!("let _ = {name};",)
+        format!("let _ = {name};")
     }
 
     fn hh_read_delegate(&self, name: &str, array_indices: ArrayIndices) -> String {
@@ -46,7 +46,7 @@ impl DataType for UnitDataType {
 
     fn cc_is_valid(&self, name: &str, array_indices: ArrayIndices) -> String {
         format!(
-            concat!("    if (!is{}{}Valid({})) {{\n", "        return false;\n", "    }}\n",),
+            concat!("    if (!is{}{}Valid({})) {{\n", "        return false;\n", "    }}\n"),
             name.to_ascii_camel_case().to_ascii_sentence_case(),
             array_indices.delegate_suffix(),
             array_indices.untyped_args(false),
@@ -55,7 +55,7 @@ impl DataType for UnitDataType {
 
     fn cc_read(&self, name: &str, array_indices: ArrayIndices) -> String {
         format!(
-            concat!("    set{}{}({});\n",),
+            "    set{}{}({});\n",
             name.to_ascii_camel_case().to_ascii_sentence_case(),
             array_indices.delegate_suffix(),
             array_indices.untyped_args(false),

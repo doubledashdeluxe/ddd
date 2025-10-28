@@ -14,7 +14,7 @@ impl StringConstant {
 
 impl Constant for StringConstant {
     fn rs(&self) -> String {
-        format!("pub const {}: &'static str = \"{}\";\n", self.name, self.value)
+        format!("pub const {}: &str = \"{}\";\n", self.name, self.value)
     }
 
     fn hh(&self) -> String {

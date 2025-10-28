@@ -46,7 +46,7 @@ impl<L: VariantList> VariantList for (L, Variant) {
 
     fn rs_read(&self, enum_name: &str) -> String {
         format!(
-            concat!("{}", "            {} => Ok(({}::{}, buf)),\n",),
+            concat!("{}", "            {} => Ok(({}::{}, buf)),\n"),
             self.0.rs_read(enum_name),
             L::count(),
             enum_name,
@@ -56,7 +56,7 @@ impl<L: VariantList> VariantList for (L, Variant) {
 
     fn rs_write(&self, enum_name: &str) -> String {
         format!(
-            concat!("{}", "            {}::{} => {},\n",),
+            concat!("{}", "            {}::{} => {},\n"),
             self.0.rs_write(enum_name),
             enum_name,
             self.1.name(),
@@ -69,6 +69,6 @@ impl<L: VariantList> VariantList for (L, Variant) {
     }
 
     fn cc_cases(&self) -> String {
-        format!(concat!("{}", "    case {}:\n",), self.0.cc_cases(), L::count())
+        format!(concat!("{}", "    case {}:\n"), self.0.cc_cases(), L::count())
     }
 }

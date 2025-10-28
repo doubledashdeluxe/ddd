@@ -28,7 +28,7 @@ impl Connection {
         let expiration = now + Duration::from_secs(2);
         anyhow::ensure!(message.len() == kx::M1_SIZE);
         let mut m2 = [0u8; kx::M2_SIZE];
-        let (client_pk, session) = kx::ik_2(server_k, &message, &mut m2)?;
+        let (client_pk, session) = kx::ik_2(server_k, message, &mut m2)?;
         let state = State::Kx { m2 };
         let connection = Connection { expiration, addr, client_pk, session, state };
         Ok(connection)
@@ -100,7 +100,7 @@ impl Connection {
                 let plaintext = &plaintext[..plaintext_len];
                 let message_len = plaintext_len + Session::MAC_SIZE + Session::NONCE_SIZE;
                 let message = &mut message[..message_len];
-                self.session.encrypt(&plaintext, message);
+                self.session.encrypt(plaintext, message);
                 Ok(Some(message_len))
             }
         }

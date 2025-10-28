@@ -4,3 +4,6 @@ edition = "2024"
 
 [dependencies]
 bpaf = "0.9.12"
+
+[lints]
+workspace = true

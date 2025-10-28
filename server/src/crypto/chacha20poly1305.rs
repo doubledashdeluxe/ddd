@@ -35,7 +35,7 @@ impl Cipher for ChaCha20Poly1305 {
         let mut full_nonce = [0u8; 12];
         full_nonce[4..].copy_from_slice(&nonce.to_le_bytes());
         let full_nonce = Nonce::from(full_nonce);
-        chacha20poly1305::open(&k, &full_nonce, &ciphertext, Some(ad), out).map_err(|_| ())
+        chacha20poly1305::open(&k, &full_nonce, ciphertext, Some(ad), out).map_err(|_| ())
     }
 
     fn decrypt_in_place(

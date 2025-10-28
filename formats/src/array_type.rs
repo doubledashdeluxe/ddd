@@ -30,6 +30,8 @@ impl<T: DataType> DataType for ArrayType<T> {
     fn rs_read(&self, name: &str) -> String {
         let len_check = if self.min_len == 0 {
             format!("*{}_len > {}", name, self.max_len)
+        } else if self.min_len == self.max_len {
+            format!("*{}_len != {}", name, self.min_len)
         } else {
             format!("*{}_len < {} || *{}_len > {}", name, self.min_len, name, self.max_len)
         };
@@ -60,6 +62,10 @@ impl<T: DataType> DataType for ArrayType<T> {
     fn rs_write(&self, name: &str) -> String {
         let len_check = if self.min_len == 0 {
             format!("{}.len() > {}", name, self.max_len)
+        } else if self.min_len == self.max_len {
+            format!("{}.len() != {}", name, self.min_len)
+        } else if self.min_len == 1 {
+            format!("{}.is_empty() || {}.len() > {}", name, name, self.max_len)
         } else {
             format!("{}.len() < {} || {}.len() > {}", name, self.min_len, name, self.max_len)
         };

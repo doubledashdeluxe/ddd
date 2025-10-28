@@ -39,7 +39,7 @@ impl TwoVariants {
         match self {
             TwoVariants::First(first) => {
                 *discriminant = 0;
-                if first.len() < 1 || first.len() > 3 {
+                if first.is_empty() || first.len() > 3 {
                     return Err(());
                 }
                 let (first_len, buf) = buf.split_first_mut().ok_or(())?;

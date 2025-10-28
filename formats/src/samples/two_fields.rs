@@ -36,7 +36,7 @@ impl TwoFields {
             first,
             second,
         } = self;
-        if first.len() < 1 || first.len() > 3 {
+        if first.is_empty() || first.len() > 3 {
             return Err(());
         }
         let (first_len, buf) = buf.split_first_mut().ok_or(())?;

@@ -133,17 +133,15 @@ impl Room {
         if spectating {
             let karts = self.karts.extract_if(.., |kart| kart.client_pk() == client_pk).collect();
             self.spectating_karts.insert(*client_pk, karts);
-        } else {
-            if let Entry::Occupied(o) = self.spectating_karts.entry(*client_pk) {
-                if o.get().len() + self.karts.len() > 8 {
-                    return true;
-                }
-                let karts = o.remove();
-                if client_pk == &self.host_pk {
-                    self.karts.splice(0..0, karts);
-                } else {
-                    self.karts.extend(karts);
-                }
+        } else if let Entry::Occupied(o) = self.spectating_karts.entry(*client_pk) {
+            if o.get().len() + self.karts.len() > 8 {
+                return true;
+            }
+            let karts = o.remove();
+            if client_pk == &self.host_pk {
+                self.karts.splice(0..0, karts);
+            } else {
+                self.karts.extend(karts);
             }
         }
         spectating
@@ -179,7 +177,7 @@ impl Room {
             clients.get(client_pk).map(|client| client.room_id() == Some(self.id)).unwrap_or(false)
         });
 
-        let has_host_kart = self.karts.get(0).map(|kart| kart.client_pk()) == Some(&self.host_pk);
+        let has_host_kart = self.karts.first().map(|kart| kart.client_pk()) == Some(&self.host_pk);
         let has_host_spectating_kart = self.spectating_karts.contains_key(&self.host_pk);
         anyhow::ensure!(has_host_kart || has_host_spectating_kart);
 
