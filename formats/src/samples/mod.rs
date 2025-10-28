@@ -14,6 +14,7 @@ mod tests {
     use crate::format::Format;
     use crate::simple_constant::SimpleConstant;
     use crate::simple_data_type::SimpleDataType;
+    use crate::simple_enum_type::SimpleEnumType;
     use crate::string_constant::StringConstant;
     use crate::struct_type::StructType;
     use crate::unit_type::UnitType;
@@ -39,9 +40,9 @@ mod tests {
 
     #[test]
     fn test_one_variant() {
-        let first: SimpleDataType<u32> = SimpleDataType::new();
-        let one_variant = EnumType::new("OneVariant").with_variant("First", first);
-        let one_variant = Format::new("OneVariant").with_type(one_variant);
+        let first = || SimpleEnumType::new("First").with_variant("A").with_variant("B");
+        let one_variant = EnumType::new("OneVariant").with_variant("First", first());
+        let one_variant = Format::new("OneVariant").with_type(first()).with_type(one_variant);
         assert_eq_multiline(&one_variant.rs(), include_str!("one_variant.rs"));
         assert_eq_multiline(&one_variant.hh(), include_str!("OneVariant.hh"));
         assert_eq_multiline(&one_variant.cc(), include_str!("OneVariant.cc"));
@@ -62,9 +63,9 @@ mod tests {
 
     #[test]
     fn test_one_field() {
-        let first: SimpleDataType<u32> = SimpleDataType::new();
-        let one_field = StructType::new("OneField").with_field("first", first);
-        let one_field = Format::new("OneField").with_type(one_field);
+        let first = || SimpleEnumType::new("First").with_variant("A").with_variant("B");
+        let one_field = StructType::new("OneField").with_field("first", first());
+        let one_field = Format::new("OneField").with_type(first()).with_type(one_field);
         assert_eq_multiline(&one_field.rs(), include_str!("one_field.rs"));
         assert_eq_multiline(&one_field.hh(), include_str!("OneField.hh"));
         assert_eq_multiline(&one_field.cc(), include_str!("OneField.cc"));

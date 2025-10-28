@@ -10,13 +10,20 @@ bool OneVariantReader::isValid(const u8 *buffer, u32 size, u32 &offset) {
     switch (discriminant) {
     case 0:
         {
-            if (offset + 4 > size) {
+            if (offset + 1 > size) {
                 return false;
             }
-            if (!isFirstValid(Bytes::ReadBE<u32>(buffer, offset))) {
+            u8 first = buffer[offset++];
+            switch (first) {
+            case 0:
+            case 1:
+                if (!isFirstValid(first)) {
+                    return false;
+                }
+                break;
+            default:
                 return false;
             }
-            offset += 4;
             return true;
         }
     default:
@@ -29,8 +36,8 @@ void OneVariantReader::read(const u8 *buffer, u32 &offset) {
     switch (discriminant) {
     case 0:
         {
-            setFirst(Bytes::ReadBE<u32>(buffer, offset));
-            offset += 4;
+            u8 first = buffer[offset++];
+            setFirst(first);
             break;
         }
     }
@@ -41,10 +48,17 @@ bool OneVariantWriter::First::write(u8 *buffer, u32 size, u32 &offset) {
         return false;
     }
     buffer[offset++] = 0;
-    if (offset + 4 > size) {
+    if (offset + 1 > size) {
         return false;
     }
-    Bytes::WriteBE<u32>(buffer, offset, getFirst());
-    offset += 4;
+    u8 first = getFirst();
+    switch (first) {
+    case 0:
+    case 1:
+        buffer[offset++] = first;
+        break;
+    default:
+        return false;
+    }
     return true;
 }

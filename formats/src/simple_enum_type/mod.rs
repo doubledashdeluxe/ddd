@@ -157,17 +157,8 @@ impl<L: VariantList> ComplexDataType for SimpleEnumType<L> {
 
     fn cc_read(&self, name: &str, array_indices: ArrayIndices) -> String {
         format!(
-            concat!(
-                "    u8 {} = buffer[offset++];\n",
-                "    switch ({}) {{\n",
-                "{}",
-                "        set{}{}({}{});\n",
-                "        break;\n",
-                "    }}",
-            ),
+            concat!("    u8 {} = buffer[offset++];\n", "    set{}{}({}{});",),
             name.to_ascii_camel_case(),
-            name.to_ascii_camel_case(),
-            self.list.cc_cases(),
             name.to_ascii_camel_case().to_ascii_sentence_case(),
             array_indices.delegate_suffix(),
             array_indices.untyped_args(true),
