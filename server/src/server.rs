@@ -10,6 +10,7 @@ use noise_protocol::U8Array;
 use crate::client::Client;
 use crate::connection::Connection;
 use crate::crypto::sensitive::Sensitive;
+use crate::formats::online::*;
 use crate::rooms::Rooms;
 
 pub struct Server {
@@ -23,7 +24,7 @@ pub struct Server {
 
 impl Server {
     pub fn try_new(server_k: Sensitive<[u8; 32]>) -> Result<Server> {
-        let socket = UdpSocket::bind("0.0.0.0:3549")?;
+        let socket = UdpSocket::bind(format!("0.0.0.0:{DEFAULT_PORT}"))?;
         let random_state = RandomState::new();
         let connections = HashMap::new();
         let clients = HashMap::new();

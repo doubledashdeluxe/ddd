@@ -3,6 +3,7 @@
 #include "payload/INIFileReader.hh"
 
 #include <cube/Arena.hh>
+#include <formats/Online.hh>
 #include <portable/Log.hh>
 #include <portable/UTF8.hh>
 
@@ -108,7 +109,7 @@ void CubeServerManager::addServer(const Array<char, 256> &path) {
     Array<char, 32> name;
     snprintf(name.values(), name.count(), "%s", nameField.values());
     Array<char, 32> address;
-    u16 port = 3549;
+    u16 port = DefaultPort;
     const char *tail = strrchr(addressField.values(), ':');
     if (tail && sscanf(tail, ":%hu", &port) == 1) {
         snprintf(address.values(), address.count(), "%.*s",

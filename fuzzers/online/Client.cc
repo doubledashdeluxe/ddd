@@ -1,3 +1,4 @@
+#include <formats/Online.hh>
 extern "C" {
 #include <monocypher/monocypher.h>
 }
@@ -20,7 +21,7 @@ extern "C" int LLVMFuzzerTestOneInput(const u8 *data, size_t size) {
     snprintf(name.values(), name.count(), "Test server");
     Array<char, 32> address;
     snprintf(address.values(), address.count(), "test.ddd.gg");
-    ServerManager::Server server(name, address, 3549, serverPK);
+    ServerManager::Server server(name, address, DefaultPort, serverPK);
     Ring<ServerManager::Server, ServerManager::MaxServerCount> servers;
     servers.pushBack(server);
 

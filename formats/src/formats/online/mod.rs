@@ -11,12 +11,14 @@ mod room_options;
 mod server_state;
 
 pub fn format() -> Format<impl ConstantList, impl TypeList> {
+    let default_port = SimpleConstant::new("DEFAULT_PORT", 3549u16);
     let protocol_version = SimpleConstant::new("PROTOCOL_VERSION", 4u32);
     let max_lap_count = SimpleConstant::new("MAX_LAP_COUNT", 9u8);
     let min_match_count = SimpleConstant::new("MIN_MATCH_COUNT", 1u8);
     let max_match_count = SimpleConstant::new("MAX_MATCH_COUNT", 96u8);
     let default_match_count = SimpleConstant::new("DEFAULT_MATCH_COUNT", 4u8);
     Format::new("Online")
+        .with_constant(default_port)
         .with_constant(protocol_version)
         .with_constant(max_lap_count)
         .with_constant(min_match_count)
