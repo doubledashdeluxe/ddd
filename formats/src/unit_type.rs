@@ -40,13 +40,18 @@ impl DataType for UnitType {
         )
     }
 
-    fn hh_write_delegate(&self, _: &str, _: ArrayIndices) -> String {
-        "".to_owned()
+    fn hh_write_delegate(&self, name: &str, array_indices: ArrayIndices) -> String {
+        format!(
+            "    virtual void get{}{}({}) = 0;\n",
+            name.to_ascii_camel_case().to_ascii_sentence_case(),
+            array_indices.delegate_suffix(),
+            array_indices.typed_args(false),
+        )
     }
 
     fn cc_is_valid(&self, name: &str, array_indices: ArrayIndices) -> String {
         format!(
-            concat!("    if (!is{}{}Valid({})) {{\n", "        return false;\n", "    }}\n"),
+            concat!("    if (!is{}{}Valid({})) {{\n", "        return false;\n", "    }}"),
             name.to_ascii_camel_case().to_ascii_sentence_case(),
             array_indices.delegate_suffix(),
             array_indices.untyped_args(false),
@@ -55,14 +60,19 @@ impl DataType for UnitType {
 
     fn cc_read(&self, name: &str, array_indices: ArrayIndices) -> String {
         format!(
-            "    set{}{}({});\n",
+            "    set{}{}({});",
             name.to_ascii_camel_case().to_ascii_sentence_case(),
             array_indices.delegate_suffix(),
             array_indices.untyped_args(false),
         )
     }
 
-    fn cc_write(&self, _: &str, _: ArrayIndices) -> String {
-        "".to_owned()
+    fn cc_write(&self, name: &str, array_indices: ArrayIndices) -> String {
+        format!(
+            "    get{}{}({});",
+            name.to_ascii_camel_case().to_ascii_sentence_case(),
+            array_indices.delegate_suffix(),
+            array_indices.untyped_args(false),
+        )
     }
 }

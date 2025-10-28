@@ -1,11 +1,11 @@
 #[derive(Clone, Debug)]
 pub enum TwoVariants {
     First(Vec<u32>),
-    Second(u8),
+    Second(()),
 }
 
 impl TwoVariants {
-    const MIN_LEN: usize = 2;
+    const MIN_LEN: usize = 1;
     const MAX_LEN: usize = 14;
 
     pub fn read(buf: &[u8]) -> Result<(Self, &[u8]), ()> {
@@ -26,8 +26,7 @@ impl TwoVariants {
                 Ok((TwoVariants::First(first), buf))
             }
             1 => {
-                let (second_buf, buf) = buf.split_first_chunk().ok_or(())?;
-                let second = u8::from_be_bytes(*second_buf);
+                let second = ();
                 Ok((TwoVariants::Second(second), buf))
             }
             _ => Err(()),
@@ -53,8 +52,7 @@ impl TwoVariants {
             }
             TwoVariants::Second(second) => {
                 *discriminant = 1;
-                let (second_buf, buf) = buf.split_first_chunk_mut().ok_or(())?;
-                *second_buf = second.to_be_bytes();
+                let _ = second;
                 Ok(buf)
             }
         }

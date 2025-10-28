@@ -388,6 +388,12 @@ RoomOptionsBattleWriter &ClientStateRoom::battleWriter() {
     return *this;
 }
 
+void ClientStateRoom::getNone() {}
+
+void ClientStateRoom::getRace() {}
+
+void ClientStateRoom::getBattle() {}
+
 u8 ClientStateRoom::getCodeType() {
     return m_writeInfo.options.codeType;
 }

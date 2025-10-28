@@ -22,13 +22,9 @@ bool TwoFieldsReader::isValid(const u8 *buffer, u32 size, u32 &offset) {
         }
         offset += 4;
     }
-    if (offset + 1 > size) {
+    if (!isSecondValid()) {
         return false;
     }
-    if (!isSecondValid(Bytes::ReadBE<u8>(buffer, offset))) {
-        return false;
-    }
-    offset += 1;
     return true;
 }
 
@@ -39,8 +35,7 @@ void TwoFieldsReader::read(const u8 *buffer, u32 &offset) {
         setFirstElement(i0, Bytes::ReadBE<u32>(buffer, offset));
         offset += 4;
     }
-    setSecond(Bytes::ReadBE<u8>(buffer, offset));
-    offset += 1;
+    setSecond();
 }
 
 bool TwoFieldsWriter::write(u8 *buffer, u32 size, u32 &offset) {
@@ -59,10 +54,6 @@ bool TwoFieldsWriter::write(u8 *buffer, u32 size, u32 &offset) {
         Bytes::WriteBE<u32>(buffer, offset, getFirstElement(i0));
         offset += 4;
     }
-    if (offset + 1 > size) {
-        return false;
-    }
-    Bytes::WriteBE<u8>(buffer, offset, getSecond());
-    offset += 1;
+    getSecond();
     return true;
 }

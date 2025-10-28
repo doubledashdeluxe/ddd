@@ -12,8 +12,8 @@ private:
     virtual void setFirstCount(u32 firstCount) = 0;
     virtual bool isFirstElementValid(u32 i0, u32 firstElement) = 0;
     virtual void setFirstElement(u32 i0, u32 firstElement) = 0;
-    virtual bool isSecondValid(u8 second) = 0;
-    virtual void setSecond(u8 second) = 0;
+    virtual bool isSecondValid() = 0;
+    virtual void setSecond() = 0;
 };
 
 class TwoFieldsWriter {
@@ -23,5 +23,5 @@ public:
 private:
     virtual u32 getFirstCount() = 0;
     virtual u32 getFirstElement(u32 i0) = 0;
-    virtual u8 getSecond() = 0;
+    virtual void getSecond() = 0;
 };

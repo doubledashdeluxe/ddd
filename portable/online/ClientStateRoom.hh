@@ -129,7 +129,10 @@ private:
 
     RoomOptionsRaceWriter &raceWriter() override;
     RoomOptionsBattleWriter &battleWriter() override;
+    void getNone() override;
 
+    void getRace() override;
+    void getBattle() override;
     u8 getCodeType() override;
     u8 getFormat() override;
     u8 getEngineSize() override;

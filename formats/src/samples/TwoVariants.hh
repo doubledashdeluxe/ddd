@@ -12,8 +12,8 @@ private:
     virtual void setFirstCount(u32 firstCount) = 0;
     virtual bool isFirstElementValid(u32 i0, u32 firstElement) = 0;
     virtual void setFirstElement(u32 i0, u32 firstElement) = 0;
-    virtual bool isSecondValid(u8 second) = 0;
-    virtual void setSecond(u8 second) = 0;
+    virtual bool isSecondValid() = 0;
+    virtual void setSecond() = 0;
 };
 
 class TwoVariantsWriter {
@@ -38,5 +38,5 @@ public:
     bool write(u8 *buffer, u32 size, u32 &offset) override;
 
 private:
-    virtual u8 getSecond() = 0;
+    virtual void getSecond() = 0;
 };

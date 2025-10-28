@@ -33,13 +33,9 @@ bool TwoVariantsReader::isValid(const u8 *buffer, u32 size, u32 &offset) {
         }
     case 1:
         {
-            if (offset + 1 > size) {
+            if (!isSecondValid()) {
                 return false;
             }
-            if (!isSecondValid(Bytes::ReadBE<u8>(buffer, offset))) {
-                return false;
-            }
-            offset += 1;
             return true;
         }
     default:
@@ -62,8 +58,7 @@ void TwoVariantsReader::read(const u8 *buffer, u32 &offset) {
         }
     case 1:
         {
-            setSecond(Bytes::ReadBE<u8>(buffer, offset));
-            offset += 1;
+            setSecond();
             break;
         }
     }
@@ -97,10 +92,6 @@ bool TwoVariantsWriter::Second::write(u8 *buffer, u32 size, u32 &offset) {
         return false;
     }
     buffer[offset++] = 1;
-    if (offset + 1 > size) {
-        return false;
-    }
-    Bytes::WriteBE<u8>(buffer, offset, getSecond());
-    offset += 1;
+    getSecond();
     return true;
 }

@@ -16,6 +16,7 @@ mod tests {
     use crate::simple_data_type::SimpleDataType;
     use crate::string_constant::StringConstant;
     use crate::struct_type::StructType;
+    use crate::unit_type::UnitType;
 
     #[test]
     fn test_one_constant() {
@@ -50,10 +51,9 @@ mod tests {
     fn test_two_variants() {
         let first_element: SimpleDataType<u32> = SimpleDataType::new();
         let first = ArrayType::new(first_element, 1, 3);
-        let second: SimpleDataType<u8> = SimpleDataType::new();
         let two_variants = EnumType::new("TwoVariants")
             .with_variant("First", first)
-            .with_variant("Second", second);
+            .with_variant("Second", UnitType);
         let two_variants = Format::new("TwoVariants").with_type(two_variants);
         assert_eq_multiline(&two_variants.rs(), include_str!("two_variants.rs"));
         assert_eq_multiline(&two_variants.hh(), include_str!("TwoVariants.hh"));
@@ -74,9 +74,8 @@ mod tests {
     fn test_two_fields() {
         let first_element: SimpleDataType<u32> = SimpleDataType::new();
         let first = ArrayType::new(first_element, 1, 3);
-        let second: SimpleDataType<u8> = SimpleDataType::new();
         let two_fields =
-            StructType::new("TwoFields").with_field("first", first).with_field("second", second);
+            StructType::new("TwoFields").with_field("first", first).with_field("second", UnitType);
         let two_fields = Format::new("TwoFields").with_type(two_fields);
         assert_eq_multiline(&two_fields.rs(), include_str!("two_fields.rs"));
         assert_eq_multiline(&two_fields.hh(), include_str!("TwoFields.hh"));

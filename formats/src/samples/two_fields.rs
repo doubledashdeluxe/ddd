@@ -1,12 +1,12 @@
 #[derive(Clone, Debug)]
 pub struct TwoFields {
     pub first: Vec<u32>,
-    pub second: u8,
+    pub second: (),
 }
 
 impl TwoFields {
-    const MIN_LEN: usize = 6;
-    const MAX_LEN: usize = 14;
+    const MIN_LEN: usize = 5;
+    const MAX_LEN: usize = 13;
 
     pub fn read(buf: &[u8]) -> Result<(Self, &[u8]), ()> {
         let (first_len, buf) = buf.split_first().ok_or(())?;
@@ -20,8 +20,7 @@ impl TwoFields {
             first.push(first_element);
             Ok(buf)
         })?;
-        let (second_buf, buf) = buf.split_first_chunk().ok_or(())?;
-        let second = u8::from_be_bytes(*second_buf);
+        let second = ();
         #[rustfmt::skip]
         let two_fields = TwoFields {
             first,
@@ -46,8 +45,7 @@ impl TwoFields {
             *first_element_buf = first_element.to_be_bytes();
             Ok(buf)
         })?;
-        let (second_buf, buf) = buf.split_first_chunk_mut().ok_or(())?;
-        *second_buf = second.to_be_bytes();
+        let _ = second;
         Ok(buf)
     }
 }
