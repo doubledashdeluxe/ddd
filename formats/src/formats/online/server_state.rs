@@ -5,7 +5,7 @@ use crate::formats::online::mode_index::*;
 use crate::formats::online::room_options::*;
 use crate::simple_data_type::SimpleDataType;
 use crate::struct_type::StructType;
-use crate::unit_data_type::UnitDataType;
+use crate::unit_type::UnitType;
 
 pub fn server_state() -> impl ComplexDataType {
     EnumType::new("ServerState")
@@ -75,7 +75,7 @@ pub fn server_state_room() -> impl ComplexDataType {
 pub fn server_room_state() -> impl ComplexDataType {
     EnumType::new("ServerRoomState")
         .with_variant("Main", server_room_state_main())
-        .with_variant("Error", UnitDataType)
+        .with_variant("Error", UnitType)
 }
 
 pub fn server_room_state_main() -> impl ComplexDataType {

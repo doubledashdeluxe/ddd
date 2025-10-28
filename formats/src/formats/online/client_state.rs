@@ -5,7 +5,7 @@ use crate::formats::online::mode_index::*;
 use crate::formats::online::room_options::*;
 use crate::simple_data_type::SimpleDataType;
 use crate::struct_type::StructType;
-use crate::unit_data_type::UnitDataType;
+use crate::unit_type::UnitType;
 
 pub fn client_state() -> impl ComplexDataType {
     EnumType::new("ClientState")
@@ -106,5 +106,5 @@ pub fn client_room_options() -> impl ComplexDataType {
     EnumType::new("ClientRoomOptions")
         .with_variant("Race", room_options_race())
         .with_variant("Battle", room_options_battle())
-        .with_variant("None", UnitDataType)
+        .with_variant("None", UnitType)
 }

@@ -2,9 +2,9 @@ use crate::array_type::ArrayIndices;
 use crate::data_type::DataType;
 use crate::str_ext::StrExt;
 
-pub struct UnitDataType;
+pub struct UnitType;
 
-impl DataType for UnitDataType {
+impl DataType for UnitType {
     fn min_len(&self) -> usize {
         0
     }

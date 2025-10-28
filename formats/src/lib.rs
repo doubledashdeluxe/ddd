@@ -14,4 +14,4 @@ mod simple_enum_type;
 mod str_ext;
 mod string_constant;
 mod struct_type;
-mod unit_data_type;
+mod unit_type;
