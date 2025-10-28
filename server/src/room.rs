@@ -174,10 +174,10 @@ impl Room {
     pub fn update(&mut self, clients: &HashMap<[u8; 32], Client>) -> Result<()> {
         self.karts.retain(|kart| {
             let client_pk = kart.client_pk();
-            clients.get(client_pk).map(|client| client.room_id() == Some(self.id)).unwrap_or(false)
+            clients.get(client_pk).is_some_and(|client| client.room_id() == Some(self.id))
         });
 
-        let has_host_kart = self.karts.first().map(|kart| kart.client_pk()) == Some(&self.host_pk);
+        let has_host_kart = self.karts.first().map(Kart::client_pk) == Some(&self.host_pk);
         let has_host_spectating_kart = self.spectating_karts.contains_key(&self.host_pk);
         anyhow::ensure!(has_host_kart || has_host_spectating_kart);
 

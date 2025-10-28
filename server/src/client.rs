@@ -128,7 +128,7 @@ impl Client {
                         rooms.get(&room_info.id).map(|_| room_info)
                     }
                     (ClientRoomState::Code(code), _) => {
-                        rooms.get_mut_by_code(&code.room_code).and_then(|room| {
+                        rooms.get_mut_by_code(code.room_code).and_then(|room| {
                             let counter = code.room_counter;
                             let id = room.id();
                             let spectating_counter = 0;
@@ -220,8 +220,7 @@ impl Client {
                         let Ok(room) = rooms.get(&room_info.id) else {
                             return Ok(None);
                         };
-                        let karts =
-                            room.karts().iter().map(|kart| kart.server_kart()).cloned().collect();
+                        let karts = room.karts().iter().map(Kart::server_kart).cloned().collect();
                         let spectator_count = room.spectator_count() as u16;
                         let mode_index = room.mode_index();
                         let pack_hash = room.pack_hash().to_vec();

@@ -41,7 +41,7 @@ fn main() -> Result<()> {
 
     let server_pk = X25519::pubkey(&server_k);
     let server_pk: String = server_pk.into_iter().map(|byte| format!("{byte:02x?}")).collect();
-    info!("Server public key: {}", server_pk);
+    info!("Server public key: {server_pk}");
 
     Server::try_new(server_k)?.run()
 }

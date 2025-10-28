@@ -28,7 +28,7 @@ impl Server {
         let connections = HashMap::new();
         let clients = HashMap::new();
         let rooms = Rooms::new();
-        let server = Server { server_k, random_state, socket, connections, clients, rooms };
+        let server = Server { server_k, socket, random_state, connections, clients, rooms };
         Ok(server)
     }
 
@@ -41,7 +41,7 @@ impl Server {
                 Some(duration) if !duration.is_zero() => self.read(now, duration, tick_counter)?,
                 _ => {
                     self.write(now)?;
-                    next_tick += Duration::from_nanos(16683333);
+                    next_tick += Duration::from_nanos(16_683_333);
                     tick_counter += 1;
                 }
             }
@@ -91,7 +91,7 @@ impl Server {
     fn write(&mut self, now: Instant) -> Result<()> {
         self.clients.retain(|_, client| client.update(now, &mut self.rooms).is_ok());
         self.rooms.update(&mut self.clients);
-        let player_count = self.clients.values().map(|client| client.player_count()).sum();
+        let player_count = self.clients.values().map(Client::player_count).sum();
         for (addr, (retain, connection)) in &mut self.connections {
             let mut message = [0u8; 512];
             let message_len = connection.write(

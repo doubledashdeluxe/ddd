@@ -34,16 +34,16 @@ impl Rooms {
         self.rooms.get_mut(id).context("Room not found")
     }
 
-    pub fn get_mut_by_code(&mut self, code: &u64) -> Result<&mut Room> {
+    pub fn get_mut_by_code(&mut self, code: u64) -> Result<&mut Room> {
         let id = self.get_id(code)?;
         let room = self.get_mut(&id)?;
-        anyhow::ensure!(room.code() == *code);
+        anyhow::ensure!(room.code() == code);
         Ok(room)
     }
 
-    fn get_id(&self, code: &u64) -> Result<u128> {
+    fn get_id(&self, code: u64) -> Result<u128> {
         let ids = if code >> (15 * 3) == 0 { &self.short_code_ids } else { &self.long_code_ids };
-        ids.get(code).copied().context("Room ID not found")
+        ids.get(&code).copied().context("Room ID not found")
     }
 
     pub fn insert(
