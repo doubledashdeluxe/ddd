@@ -69,10 +69,10 @@ private:
     u32 m_serverCount;
     u32 m_serverIndex;
     u32 m_rowIndex;
-    Array<Array<char, MaxMotdLength + 1>, ServerManager::MaxServerCount> m_descs;
-    Array<u64, ServerManager::MaxServerCount> m_descOffsets;
-    Array<J2DPicture *, ServerManager::MaxServerCount> m_descColorPictures;
-    Array<Array<char, 4>, ServerManager::MaxServerCount> m_playerCounts;
+    Array<Array<char, MaxMotdLength + 1>, MaxServerCount> m_descs;
+    Array<u64, MaxServerCount> m_descOffsets;
+    Array<J2DPicture *, MaxServerCount> m_descColorPictures;
+    Array<Array<char, 4>, MaxServerCount> m_playerCounts;
     ClientStateServerWriteInfo m_writeInfo;
     u32 m_nextScene;
     J2DScreen m_mainScreen;

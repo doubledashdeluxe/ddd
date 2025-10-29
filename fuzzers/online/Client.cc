@@ -22,7 +22,7 @@ extern "C" int LLVMFuzzerTestOneInput(const u8 *data, size_t size) {
     Array<char, 32> address;
     snprintf(address.values(), address.count(), "test.ddd.gg");
     ServerManager::Server server(name, address, DefaultPort, serverPK);
-    Ring<ServerManager::Server, ServerManager::MaxServerCount> servers;
+    Ring<ServerManager::Server, MaxServerCount> servers;
     servers.pushBack(server);
 
     std::vector<u8> chunk;

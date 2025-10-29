@@ -20,5 +20,5 @@ struct ClientStateServerReadInfo {
     bool networkIsRunning;
     const char *networkName;
     u32 networkAddress;
-    Ring<Server, ServerManager::MaxServerCount> servers;
+    Ring<Server, MaxServerCount> servers;
 };

@@ -79,7 +79,7 @@ private:
     void checkSocket();
     void checkServers();
 
-    Ring<UniquePtr<Connection>, ServerManager::MaxServerCount> m_connections;
+    Ring<UniquePtr<Connection>, MaxServerCount> m_connections;
     u32 m_readIndex;
     u32 m_writeIndex;
     ReadInfo m_readInfo;

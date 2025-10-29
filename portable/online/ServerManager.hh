@@ -3,12 +3,10 @@
 #include "portable/Array.hh"
 #include "portable/Ring.hh"
 
+const u32 MaxServerCount = 32;
+
 class ServerManager {
 public:
-    enum {
-        MaxServerCount = 32,
-    };
-
     class Server {
     public:
         Server(Array<char, 32> name, Array<char, 32> address, u16 port, Array<u8, 32> publicKey);
