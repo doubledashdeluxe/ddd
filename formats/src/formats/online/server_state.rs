@@ -37,7 +37,7 @@ pub fn server_identity_unspecified() -> impl ComplexDataType {
 
 pub fn server_identity_specified() -> impl ComplexDataType {
     let motd_element: SimpleDataType<u8> = SimpleDataType::new();
-    let motd = ArrayType::new(motd_element, 0, 99);
+    let motd = ArrayType::new(motd_element, 0, MAX_MOTD_LENGTH);
     let player_count: SimpleDataType<u16> = SimpleDataType::new();
     StructType::new("ServerIdentitySpecified")
         .with_field("motd", motd)
@@ -115,3 +115,5 @@ pub fn server_player() -> impl ComplexDataType {
     let name = ArrayType::new(name_element, 3, 3);
     StructType::new("ServerPlayer").with_field("name", name)
 }
+
+pub const MAX_MOTD_LENGTH: u8 = 99;

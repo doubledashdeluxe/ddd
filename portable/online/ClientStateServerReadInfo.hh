@@ -5,12 +5,14 @@
 #include "portable/network/Address.hh"
 #include "portable/online/ServerManager.hh"
 
+#include <formats/Online.hh>
+
 struct ClientStateServerReadInfo {
     struct Server {
         Optional<Address> address;
         Optional<u32> protocolVersion;
         Optional<Array<char, 20>> version;
-        Optional<Array<char, 100>> motd;
+        Optional<Array<char, MaxMotdLength + 1>> motd;
         Optional<u16> playerCount;
         bool versionIsCompatible;
     };

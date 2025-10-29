@@ -17,6 +17,7 @@ pub fn format() -> Format<impl ConstantList, impl TypeList> {
     let min_match_count = SimpleConstant::new("MIN_MATCH_COUNT", 1u8);
     let max_match_count = SimpleConstant::new("MAX_MATCH_COUNT", 96u8);
     let default_match_count = SimpleConstant::new("DEFAULT_MATCH_COUNT", 4u8);
+    let max_motd_length = SimpleConstant::new("MAX_MOTD_LENGTH", MAX_MOTD_LENGTH);
     Format::new("Online")
         .with_constant(default_port)
         .with_constant(protocol_version)
@@ -24,6 +25,7 @@ pub fn format() -> Format<impl ConstantList, impl TypeList> {
         .with_constant(min_match_count)
         .with_constant(max_match_count)
         .with_constant(default_match_count)
+        .with_constant(max_motd_length)
         .with_type(mode_index())
         .with_type(room_option_code_type())
         .with_type(room_option_format())

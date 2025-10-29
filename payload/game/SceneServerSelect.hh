@@ -69,7 +69,7 @@ private:
     u32 m_serverCount;
     u32 m_serverIndex;
     u32 m_rowIndex;
-    Array<Array<char, 100>, ServerManager::MaxServerCount> m_descs;
+    Array<Array<char, MaxMotdLength + 1>, ServerManager::MaxServerCount> m_descs;
     Array<u64, ServerManager::MaxServerCount> m_descOffsets;
     Array<J2DPicture *, ServerManager::MaxServerCount> m_descColorPictures;
     Array<Array<char, 4>, ServerManager::MaxServerCount> m_playerCounts;

@@ -227,11 +227,11 @@ bool SceneServerSelect::clientStateServer(const ClientStateServerReadInfo &readI
         const Optional<Address> &address = serverInfo.address;
         const Optional<u32> &protocolVersion = serverInfo.protocolVersion;
         const Optional<Array<char, 20>> &version = serverInfo.version;
-        const Optional<Array<char, 100>> &motd = serverInfo.motd;
+        const Optional<Array<char, MaxMotdLength + 1>> &motd = serverInfo.motd;
         const Optional<u16> &uncappedPlayerCount = serverInfo.playerCount;
         bool versionIsCompatible = serverInfo.versionIsCompatible;
-        Array<char, 100> prevDesc = m_descs[i];
-        Array<char, 100> &desc = m_descs[i];
+        Array<char, MaxMotdLength + 1> prevDesc = m_descs[i];
+        Array<char, MaxMotdLength + 1> &desc = m_descs[i];
         if (motd) {
             desc = *motd;
         } else if (protocolVersion && version && !versionIsCompatible) {
