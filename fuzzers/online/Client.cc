@@ -17,7 +17,7 @@ extern "C" int LLVMFuzzerTestOneInput(const u8 *data, size_t size) {
     random.get(serverK.values(), serverK.count());
     crypto_x25519_public_key(serverPK.values(), serverK.values());
 
-    Array<char, 32> name;
+    Array<char, MaxServerNameSize> name;
     snprintf(name.values(), name.count(), "Test server");
     Array<char, 32> address;
     snprintf(address.values(), address.count(), "test.ddd.gg");
