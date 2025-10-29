@@ -2,8 +2,9 @@
 
 #include "game/RaceMode.hh"
 
-const u32 ModeCount = 5;
-const u32 Modes[ModeCount] = {
+#include <formats/Online.hh>
+
+const u32 Modes[ModeIndex::Count] = {
         RaceMode::VS,
         RaceMode::Balloon,
         RaceMode::Escape,
