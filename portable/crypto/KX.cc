@@ -12,8 +12,8 @@ extern "C" {
 #include <string.h>
 }
 
-KX::ClientState::ClientState(const Array<u8, 32> &clientK, const Array<u8, 32> &clientEphemeralK,
-        const Array<u8, 32> &serverPK)
+KX::ClientState::ClientState(const Key &clientK, const Key &clientEphemeralK,
+        const PublicKey &serverPK)
     : m_hasM1(false), m_hasM2(false), m_hasClientSession(false),
       m_state(&ClientState::statePrologue), m_clientK(clientK),
       m_clientEphemeralK(clientEphemeralK), m_serverPK(serverPK) {}
@@ -81,7 +81,7 @@ void KX::ClientState::stateM1ES() {
 }
 
 void KX::ClientState::stateM1S() {
-    Array<u8, 32> clientPK;
+    PublicKey clientPK;
     crypto_x25519_public_key(clientPK.values(), m_clientK.values());
     m_symmetricState.encryptAndHash(clientPK.values(), clientPK.count(), m_m1.values() + 32);
     m_state = &ClientState::stateM1SS;
@@ -135,7 +135,7 @@ void KX::ClientState::stateSession() {
     m_state = static_cast<State>(nullptr);
 }
 
-KX::ServerState::ServerState(const Array<u8, 32> &serverK, const Array<u8, 32> &serverEphemeralK)
+KX::ServerState::ServerState(const Key &serverK, const Key &serverEphemeralK)
     : m_hasM1(false), m_hasM2(false), m_hasServerSession(false),
       m_state(&ServerState::statePrologue), m_serverK(serverK),
       m_serverEphemeralK(serverEphemeralK) {}
@@ -181,8 +181,8 @@ const Session *KX::ServerState::serverSession() const {
     return m_hasServerSession ? &m_serverSession : static_cast<Session *>(nullptr);
 }
 
-const Array<u8, 32> *KX::ServerState::clientPK() const {
-    return m_hasServerSession ? &m_clientPK : static_cast<Array<u8, 32> *>(nullptr);
+const PublicKey *KX::ServerState::clientPK() const {
+    return m_hasServerSession ? &m_clientPK : static_cast<PublicKey *>(nullptr);
 }
 
 void KX::ServerState::statePrologue() {
@@ -191,7 +191,7 @@ void KX::ServerState::statePrologue() {
 }
 
 void KX::ServerState::stateS() {
-    Array<u8, 32> serverPK;
+    PublicKey serverPK;
     crypto_x25519_public_key(serverPK.values(), m_serverK.values());
     m_symmetricState.mixHash(serverPK.values(), serverPK.count());
     m_state = &ServerState::stateM1E;

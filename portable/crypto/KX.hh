@@ -3,6 +3,7 @@
 #include "portable/Array.hh"
 #include "portable/crypto/Session.hh"
 #include "portable/crypto/SymmetricState.hh"
+#include "portable/crypto/Types.hh"
 
 class KX {
 public:
@@ -13,8 +14,7 @@ public:
 
     class ClientState {
     public:
-        ClientState(const Array<u8, 32> &clientK, const Array<u8, 32> &clientEphemeralK,
-                const Array<u8, 32> &serverPK);
+        ClientState(const Key &clientK, const Key &clientEphemeralK, const PublicKey &serverPK);
         ~ClientState();
         bool hasM1() const;
         bool hasM2() const;
@@ -47,15 +47,15 @@ public:
         Session m_clientSession;
         State m_state;
         SymmetricState m_symmetricState;
-        Array<u8, 32> m_clientK;
-        Array<u8, 32> m_clientEphemeralK;
-        Array<u8, 32> m_serverPK;
-        Array<u8, 32> m_serverEphemeralPK;
+        Key m_clientK;
+        Key m_clientEphemeralK;
+        PublicKey m_serverPK;
+        PublicKey m_serverEphemeralPK;
     };
 
     class ServerState {
     public:
-        ServerState(const Array<u8, 32> &serverK, const Array<u8, 32> &serverEphemeralK);
+        ServerState(const Key &serverK, const Key &serverEphemeralK);
         ~ServerState();
         bool hasM1() const;
         bool hasM2() const;
@@ -63,7 +63,7 @@ public:
         bool getM2(u8 m2[M2Size]) const;
         bool update();
         const Session *serverSession() const;
-        const Array<u8, 32> *clientPK() const;
+        const PublicKey *clientPK() const;
 
     private:
         typedef void (ServerState::*State)();
@@ -89,10 +89,10 @@ public:
         Session m_serverSession;
         State m_state;
         SymmetricState m_symmetricState;
-        Array<u8, 32> m_clientPK;
-        Array<u8, 32> m_clientEphemeralPK;
-        Array<u8, 32> m_serverK;
-        Array<u8, 32> m_serverEphemeralK;
+        PublicKey m_clientPK;
+        PublicKey m_clientEphemeralPK;
+        Key m_serverK;
+        Key m_serverEphemeralK;
     };
 
 private:

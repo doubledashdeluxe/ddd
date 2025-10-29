@@ -2,7 +2,7 @@
 
 #include "portable/online/ConnectionStateDNS.hh"
 
-Connection::Connection(const ClientPlatform &platform, Array<u8, 32> serverPK,
+Connection::Connection(const ClientPlatform &platform, PublicKey serverPK,
         const Array<char, 32> &name, u16 port)
     : m_state(new(platform.allocator) ConnectionStateDNS(platform, serverPK, name, port)) {}
 

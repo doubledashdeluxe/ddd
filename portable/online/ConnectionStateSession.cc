@@ -8,8 +8,8 @@ extern "C" {
 #include <assert.h>
 }
 
-ConnectionStateSession::ConnectionStateSession(const ClientPlatform &platform,
-        Array<u8, 32> serverPK, Address address, Session session)
+ConnectionStateSession::ConnectionStateSession(const ClientPlatform &platform, PublicKey serverPK,
+        Address address, Session session)
     : ConnectionState(platform, serverPK), m_address(address), m_session(session) {}
 
 ConnectionStateSession::~ConnectionStateSession() {}
@@ -19,7 +19,7 @@ Optional<Address> ConnectionStateSession::address() const {
 }
 
 ConnectionState &ConnectionStateSession::reset() {
-    Array<u8, 32> clientEphemeralK;
+    Key clientEphemeralK;
     m_platform.random.get(clientEphemeralK.values(), clientEphemeralK.count());
     ConnectionState &state = *(new (m_platform.allocator)
                     ConnectionStateKX(m_platform, clientEphemeralK, m_serverPK, m_address));

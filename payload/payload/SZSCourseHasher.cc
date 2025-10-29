@@ -1,6 +1,6 @@
 #include "SZSCourseHasher.hh"
 
-bool SZSCourseHasher::Hash(ZIPFile &zipFile, const char *filePath, Array<u8, 32> &hash) {
+bool SZSCourseHasher::Hash(ZIPFile &zipFile, const char *filePath, ::Hash &hash) {
     SZSCourseHasher hasher(zipFile, filePath);
     return hasher.hash(hash);
 }
@@ -10,7 +10,7 @@ SZSCourseHasher::SZSCourseHasher(ZIPFile &zipFile, const char *filePath)
 
 SZSCourseHasher::~SZSCourseHasher() {}
 
-bool SZSCourseHasher::hash(Array<u8, 32> &hash) {
+bool SZSCourseHasher::hash(::Hash &hash) {
     crypto_blake2b_init(&m_ctx, hash.count());
     if (!SZSReader::read()) {
         return false;

@@ -3,15 +3,15 @@ use noise_protocol::patterns;
 
 use crate::crypto::blake2b::Blake2b;
 use crate::crypto::chacha20poly1305::ChaCha20Poly1305;
-use crate::crypto::sensitive::Sensitive;
 use crate::crypto::session::Session;
 use crate::crypto::x25519::X25519;
+use crate::crypto::{Key, PublicKey};
 
 pub const M1_SIZE: usize = 96;
 pub const M2_SIZE: usize = 48;
 
 #[cfg(test)]
-fn ik_1(client_k: Sensitive<[u8; 32]>, server_pk: [u8; 32], m1: &mut [u8]) -> ClientState {
+fn ik_1(client_k: Key, server_pk: PublicKey, m1: &mut [u8]) -> ClientState {
     assert!(m1.len() == M1_SIZE);
     let pattern = patterns::noise_ik();
     let is_initiator = true;
@@ -25,11 +25,7 @@ fn ik_1(client_k: Sensitive<[u8; 32]>, server_pk: [u8; 32], m1: &mut [u8]) -> Cl
     ClientState { handshake_state }
 }
 
-pub fn ik_2(
-    server_k: Sensitive<[u8; 32]>,
-    m1: &[u8],
-    m2: &mut [u8],
-) -> Result<([u8; 32], Session)> {
+pub fn ik_2(server_k: Key, m1: &[u8], m2: &mut [u8]) -> Result<(PublicKey, Session)> {
     assert!(m1.len() == M1_SIZE);
     assert!(m2.len() == M2_SIZE);
     let pattern = patterns::noise_ik();

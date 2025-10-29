@@ -5,6 +5,7 @@ use std::time::{Duration, Instant};
 use anyhow::{Result, anyhow};
 use log::debug;
 
+use crate::crypto::PublicKey;
 use crate::formats::online::*;
 use crate::formats::version;
 use crate::kart::Kart;
@@ -13,13 +14,13 @@ use crate::rooms::Rooms;
 pub struct Client {
     expiration: Instant,
     addr: SocketAddr,
-    pk: [u8; 32],
+    pk: PublicKey,
     state: State,
     client_state: Option<ClientState>,
 }
 
 impl Client {
-    pub fn new(now: Instant, addr: SocketAddr, pk: [u8; 32]) -> Client {
+    pub fn new(now: Instant, addr: SocketAddr, pk: PublicKey) -> Client {
         debug!("-> {addr}");
         let expiration = now + Duration::from_secs(120);
         let state = State::Idle;

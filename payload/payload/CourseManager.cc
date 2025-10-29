@@ -36,19 +36,19 @@ Ring<u8, MaxCourseCount> &CourseManager::Pack::courseIndices() {
     return m_courseIndices;
 }
 
-const Array<u8, 32> &CourseManager::Pack::hash() const {
+const Hash &CourseManager::Pack::hash() const {
     return m_hash;
 }
 
-Array<u8, 32> &CourseManager::Pack::hash() {
+Hash &CourseManager::Pack::hash() {
     return m_hash;
 }
 
-CourseManager::Course::Course(Array<u8, 32> archiveHash) : m_archiveHash(archiveHash) {}
+CourseManager::Course::Course(Hash archiveHash) : m_archiveHash(archiveHash) {}
 
 CourseManager::Course::~Course() {}
 
-Array<u8, 32> CourseManager::Course::archiveHash() const {
+Hash CourseManager::Course::archiveHash() const {
     return m_archiveHash;
 }
 
@@ -93,8 +93,8 @@ const char *CourseManager::CustomPack::version() const {
     return m_version.values();
 }
 
-CourseManager::DefaultCourse::DefaultCourse(Array<u8, 32> archiveHash, u32 courseID,
-        const char *thumbnail, const char *nameImage)
+CourseManager::DefaultCourse::DefaultCourse(Hash archiveHash, u32 courseID, const char *thumbnail,
+        const char *nameImage)
     : Course(archiveHash), m_courseID(courseID), m_thumbnail(thumbnail), m_nameImage(nameImage) {}
 
 CourseManager::DefaultCourse::~DefaultCourse() {}
@@ -178,9 +178,9 @@ bool CourseManager::DefaultCourse::isCustom() const {
     return false;
 }
 
-CourseManager::CustomCourse::CustomCourse(Array<u8, 32> archiveHash, u32 musicID,
-        Array<char, 32> name, Array<char, 32> author, Array<char, 32> version,
-        Optional<MinimapConfig> minimapConfig, Array<char, 128> path, Array<char, 128> prefix)
+CourseManager::CustomCourse::CustomCourse(Hash archiveHash, u32 musicID, Array<char, 32> name,
+        Array<char, 32> author, Array<char, 32> version, Optional<MinimapConfig> minimapConfig,
+        Array<char, 128> path, Array<char, 128> prefix)
     : Course(archiveHash), m_musicID(musicID), m_name(name), m_author(author), m_version(version),
       m_minimapConfig(minimapConfig), m_path(path), m_prefix(prefix) {}
 
@@ -303,7 +303,7 @@ const CourseManager::Pack &CourseManager::battlePack(u32 index) const {
     return m_customBattlePacks[index - m_defaultBattlePacks.count()];
 }
 
-const CourseManager::Pack *CourseManager::searchPack(bool isRace, const Array<u8, 32> &hash) const {
+const CourseManager::Pack *CourseManager::searchPack(bool isRace, const Hash &hash) const {
     u32 packCount = this->packCount(isRace);
     for (u32 i = 0; i < packCount; i++) {
         const Pack &pack = this->pack(isRace, i);
@@ -403,7 +403,7 @@ const CourseManager::Course &CourseManager::battleCourse(u32 index) const {
 }
 
 void CourseManager::addDefaultRaceCourses() {
-    Array<Array<u8, 32>, DefaultRaceCourseCount> archiveHashes;
+    Array<Hash, DefaultRaceCourseCount> archiveHashes;
     Array<u32, DefaultRaceCourseCount> courseIDs;
     Array<const char *, DefaultRaceCourseCount> thumbnails;
     Array<const char *, DefaultRaceCourseCount> nameImages;
@@ -528,7 +528,7 @@ void CourseManager::addDefaultRaceCourses() {
 }
 
 void CourseManager::addDefaultBattleCourses() {
-    Array<Array<u8, 32>, DefaultBattleCourseCount> archiveHashes;
+    Array<Hash, DefaultBattleCourseCount> archiveHashes;
     Array<u32, DefaultBattleCourseCount> courseIDs;
     Array<const char *, DefaultBattleCourseCount> thumbnails;
     Array<const char *, DefaultBattleCourseCount> nameImages;
@@ -667,7 +667,7 @@ void CourseManager::addCustomCourse(const Array<char, 128> &path,
 
     Array<char, 256> archiveHashPath;
     snprintf(archiveHashPath.values(), archiveHashPath.count(), "/%shash.bin", prefix.values());
-    Array<u8, 32> archiveHash;
+    Hash archiveHash;
     if (!loadCourseHash(zipFile, archiveHashPath.values(), archiveHash)) {
         Array<char, 256> coursePath;
         snprintf(coursePath.values(), coursePath.count(), "/%strack.arc", prefix.values());
@@ -869,12 +869,12 @@ void CourseManager::hashPacks(Ring<DefaultPack, DefaultPackCount> &defaultPacks,
 }
 
 void CourseManager::hashPack(Pack &pack, CourseIndexComparator::Accessor access) {
-    Array<u8, 32> &packHash = pack.hash();
+    Hash &packHash = pack.hash();
     crypto_blake2b_ctx ctx;
     crypto_blake2b_init(&ctx, packHash.count());
     const Ring<u8, MaxCourseCount> &courseIndices = pack.courseIndices();
     for (u32 i = 0; i < courseIndices.count(); i++) {
-        const Array<u8, 32> &courseHash = (this->*access)(i).archiveHash();
+        const Hash &courseHash = (this->*access)(i).archiveHash();
         crypto_blake2b_update(&ctx, courseHash.values(), courseHash.count());
     }
     crypto_blake2b_final(&ctx, packHash.values());
@@ -917,7 +917,7 @@ bool CourseManager::findPrefix(ZIPFile &zipFile, const char *filePath,
     return true;
 }
 
-bool CourseManager::hashFile(ZIPFile &zipFile, const char *filePath, Array<u8, 32> &hash) const {
+bool CourseManager::hashFile(ZIPFile &zipFile, const char *filePath, Hash &hash) const {
     ZIPFile::Reader reader(zipFile, filePath);
     if (!reader.ok()) {
         return false;
@@ -937,8 +937,7 @@ bool CourseManager::hashFile(ZIPFile &zipFile, const char *filePath, Array<u8, 3
     return true;
 }
 
-bool CourseManager::hashCourseFile(ZIPFile &zipFile, const char *filePath,
-        Array<u8, 32> &hash) const {
+bool CourseManager::hashCourseFile(ZIPFile &zipFile, const char *filePath, Hash &hash) const {
     if (SZSCourseHasher::Hash(zipFile, filePath, hash)) {
         return true;
     }
@@ -946,8 +945,7 @@ bool CourseManager::hashCourseFile(ZIPFile &zipFile, const char *filePath,
     return hashFile(zipFile, filePath, hash);
 }
 
-bool CourseManager::loadCourseHash(ZIPFile &zipFile, const char *filePath,
-        Array<u8, 32> &hash) const {
+bool CourseManager::loadCourseHash(ZIPFile &zipFile, const char *filePath, Hash &hash) const {
     ZIPFile::Reader reader(zipFile, filePath);
     if (!reader.ok()) {
         return false;
@@ -1059,8 +1057,8 @@ void *CourseManager::loadCourseFile(ZIPFile &zipFile, const char *filePath, JKRH
 
 bool CourseManager::compareCourseIndicesByHash(const u32 &a, const u32 &b,
         CourseIndexComparator::Accessor access) const {
-    const Array<u8, 32> &ha = (this->*access)(a).archiveHash();
-    const Array<u8, 32> &hb = (this->*access)(b).archiveHash();
+    const Hash &ha = (this->*access)(a).archiveHash();
+    const Hash &hb = (this->*access)(b).archiveHash();
     return ha <= hb;
 }
 

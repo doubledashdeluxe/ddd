@@ -8,8 +8,8 @@ extern "C" {
 #include <array>
 
 TEST_CASE("Invalid server PK") {
-    Array<u8, 32> clientK, clientEphemeralK, serverK, serverEphemeralK, invalidServerK,
-            invalidServerPK;
+    Key clientK, clientEphemeralK, serverK, serverEphemeralK, invalidServerK;
+    PublicKey invalidServerPK;
     NativeRandom random;
     random.get(clientK.values(), clientK.count());
     random.get(serverK.values(), serverK.count());
@@ -30,7 +30,8 @@ TEST_CASE("Invalid server PK") {
 }
 
 TEST_CASE("Invalid m1") {
-    Array<u8, 32> clientK, clientEphemeralK, serverK, serverEphemeralK, serverPK;
+    Key clientK, clientEphemeralK, serverK, serverEphemeralK;
+    PublicKey serverPK;
     NativeRandom random;
     random.get(clientK.values(), clientK.count());
     random.get(serverK.values(), serverK.count());
@@ -51,7 +52,8 @@ TEST_CASE("Invalid m1") {
 }
 
 TEST_CASE("Invalid m2") {
-    Array<u8, 32> clientK, clientEphemeralK, serverK, serverPK;
+    Key clientK, clientEphemeralK, serverK;
+    PublicKey serverPK;
     NativeRandom random;
     random.get(clientK.values(), clientK.count());
     random.get(serverK.values(), serverK.count());
@@ -69,7 +71,8 @@ TEST_CASE("Invalid m2") {
 }
 
 TEST_CASE("Valid") {
-    Array<u8, 32> clientK, clientEphemeralK, serverK, serverEphemeralK, serverPK;
+    Key clientK, clientEphemeralK, serverK, serverEphemeralK;
+    PublicKey serverPK;
     NativeRandom random;
     random.get(clientK.values(), clientK.count());
     random.get(serverK.values(), serverK.count());
@@ -86,7 +89,7 @@ TEST_CASE("Valid") {
     while (serverState.update()) {}
     std::array<u8, KX::M2Size> m2;
     CHECK(serverState.getM2(m2.data()));
-    const Array<u8, 32> *clientPK = serverState.clientPK();
+    const auto *clientPK = serverState.clientPK();
     CHECK(clientPK);
     const Session *serverSession = serverState.serverSession();
     CHECK(serverSession);
@@ -95,7 +98,7 @@ TEST_CASE("Valid") {
     const Session *clientSession = clientState.clientSession();
     CHECK(clientSession);
 
-    Array<u8, 32> expectedClientPK;
+    PublicKey expectedClientPK;
     crypto_x25519_public_key(expectedClientPK.values(), clientK.values());
     CHECK(*clientPK == expectedClientPK);
     CHECK(serverSession->m_readK != serverSession->m_writeK);

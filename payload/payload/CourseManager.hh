@@ -10,6 +10,7 @@
 #include <portable/Counts.hh>
 #include <portable/Optional.hh>
 #include <portable/Ring.hh>
+#include <portable/crypto/Types.hh>
 
 class CourseManager : public StorageScanner {
 public:
@@ -20,8 +21,8 @@ public:
 
         const Ring<u8, MaxCourseCount> &courseIndices() const;
         Ring<u8, MaxCourseCount> &courseIndices();
-        const Array<u8, 32> &hash() const;
-        Array<u8, 32> &hash();
+        const Hash &hash() const;
+        Hash &hash();
 
         virtual const char *name() const = 0;
         virtual const char *author() const = 0;
@@ -29,15 +30,15 @@ public:
 
     protected:
         Ring<u8, MaxCourseCount> m_courseIndices;
-        Array<u8, 32> m_hash;
+        Hash m_hash;
     };
 
     class Course {
     public:
-        Course(Array<u8, 32> archiveHash);
+        Course(Hash archiveHash);
         virtual ~Course();
 
-        Array<u8, 32> archiveHash() const;
+        Hash archiveHash() const;
 
         virtual u32 musicID() const = 0;
         virtual const char *name() const = 0;
@@ -54,7 +55,7 @@ public:
         virtual bool isCustom() const = 0;
 
     protected:
-        Array<u8, 32> m_archiveHash;
+        Hash m_archiveHash;
     };
 
     u32 packCount(bool isRace) const;
@@ -63,7 +64,7 @@ public:
     const Pack &pack(bool isRace, u32 index) const;
     const Pack &racePack(u32 index) const;
     const Pack &battlePack(u32 index) const;
-    const Pack *searchPack(bool isRace, const Array<u8, 32> &hash) const;
+    const Pack *searchPack(bool isRace, const Hash &hash) const;
     u32 raceCourseCount(u32 packIndex) const;
     u32 battleCourseCount(u32 packIndex) const;
     const Course &raceCourse(u32 packIndex, u32 index) const;
@@ -112,8 +113,7 @@ private:
 
     class DefaultCourse : public Course {
     public:
-        DefaultCourse(Array<u8, 32> archiveHash, u32 courseID, const char *thumbnail,
-                const char *nameImage);
+        DefaultCourse(Hash archiveHash, u32 courseID, const char *thumbnail, const char *nameImage);
         ~DefaultCourse() override;
 
         u32 musicID() const override;
@@ -138,10 +138,9 @@ private:
 
     class CustomCourse : public Course {
     public:
-        CustomCourse(Array<u8, 32> archiveHash, u32 musicID, Array<char, 32> name,
-                Array<char, 32> author, Array<char, 32> version,
-                Optional<MinimapConfig> minimapConfig, Array<char, 128> path,
-                Array<char, 128> prefix);
+        CustomCourse(Hash archiveHash, u32 musicID, Array<char, 32> name, Array<char, 32> author,
+                Array<char, 32> version, Optional<MinimapConfig> minimapConfig,
+                Array<char, 128> path, Array<char, 128> prefix);
         ~CustomCourse() override;
 
         u32 musicID() const override;
@@ -244,9 +243,9 @@ private:
             CourseIndexComparator::Accessor access, CourseIndexComparator::Comparator compare);
 
     bool findPrefix(ZIPFile &zipFile, const char *filePath, Array<char, 128> &prefix) const;
-    bool hashFile(ZIPFile &zipFile, const char *filePath, Array<u8, 32> &hash) const;
-    bool hashCourseFile(ZIPFile &zipFile, const char *filePath, Array<u8, 32> &hash) const;
-    bool loadCourseHash(ZIPFile &zipFile, const char *filePath, Array<u8, 32> &hash) const;
+    bool hashFile(ZIPFile &zipFile, const char *filePath, Hash &hash) const;
+    bool hashCourseFile(ZIPFile &zipFile, const char *filePath, Hash &hash) const;
+    bool loadCourseHash(ZIPFile &zipFile, const char *filePath, Hash &hash) const;
     void *loadFile(const char *zipPath, const char *filePath, JKRHeap *heap,
             u32 *size = nullptr) const;
     void *loadFile(ZIPFile &zipFile, const char *filePath, JKRHeap *heap,

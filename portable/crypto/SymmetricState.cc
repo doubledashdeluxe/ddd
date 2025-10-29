@@ -31,7 +31,7 @@ SymmetricState::~SymmetricState() {
     crypto_wipe(m_k.values(), m_k.count());
 }
 
-void SymmetricState::mixDH(const Array<u8, 32> &k, const Array<u8, 32> &pk) {
+void SymmetricState::mixDH(const Key &k, const PublicKey &pk) {
     Array<u8, 32> sk;
     crypto_x25519(sk.values(), k.values(), pk.values());
     HKDFState hkdfState(m_ck, sk.values(), sk.count());
@@ -77,7 +77,7 @@ bool SymmetricState::decryptAndHash(const u8 *input, u8 *output, size_t outputSi
     return true;
 }
 
-void SymmetricState::computeSessionKeys(Array<u8, 32> &upstreamK, Array<u8, 32> &downstreamK) {
+void SymmetricState::computeSessionKeys(SessionKey &upstreamK, SessionKey &downstreamK) {
     HKDFState hkdfState(m_ck, nullptr, 0);
     hkdfState.update(upstreamK.values(), upstreamK.count());
     hkdfState.update(downstreamK.values(), downstreamK.count());

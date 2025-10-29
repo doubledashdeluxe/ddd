@@ -1,7 +1,7 @@
 #include "ServerManager.hh"
 
 ServerManager::Server::Server(Array<char, MaxServerNameSize> name, Array<char, 32> address,
-        u16 port, Array<u8, 32> publicKey)
+        u16 port, PublicKey publicKey)
     : m_name(name), m_address(address), m_port(port), m_publicKey(publicKey) {}
 
 ServerManager::Server::~Server() {}
@@ -18,7 +18,7 @@ u16 ServerManager::Server::port() const {
     return m_port;
 }
 
-const Array<u8, 32> &ServerManager::Server::publicKey() const {
+const PublicKey &ServerManager::Server::publicKey() const {
     return m_publicKey;
 }
 

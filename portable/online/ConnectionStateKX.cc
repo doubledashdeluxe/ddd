@@ -9,8 +9,8 @@ extern "C" {
 #include <string.h>
 }
 
-ConnectionStateKX::ConnectionStateKX(const ClientPlatform &platform,
-        const Array<u8, 32> &clientEphemeralK, Array<u8, 32> serverPK, Address address)
+ConnectionStateKX::ConnectionStateKX(const ClientPlatform &platform, const Key &clientEphemeralK,
+        PublicKey serverPK, Address address)
     : ConnectionState(platform, serverPK), m_address(address), m_cookie(0),
       m_clientState(platform.clientK, clientEphemeralK, serverPK) {}
 
@@ -55,7 +55,7 @@ ConnectionState &ConnectionStateKX::write(ClientStateWriter & /* writer */, u8 *
     if (!m_clientState.update()) {
         session = m_clientState.clientSession();
         if (!session) {
-            Array<u8, 32> clientEphemeralK;
+            Key clientEphemeralK;
             m_platform.random.get(clientEphemeralK.values(), clientEphemeralK.count());
             m_clientState = KX::ClientState(m_platform.clientK, clientEphemeralK, m_serverPK);
             crypto_wipe(clientEphemeralK.values(), clientEphemeralK.count());

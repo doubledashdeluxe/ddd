@@ -11,7 +11,8 @@ extern "C" int LLVMFuzzerTestOneInput(const u8 *data, size_t size) {
     std::map<std::vector<std::string>, u32> dnsServers;
     dnsServers[{"test", "ddd", "gg"}] = 192 << 24 | 0 << 16 | 2 << 8 | 0 << 0;
 
-    Array<u8, 32> clientK, serverK, serverPK;
+    Key clientK, serverK;
+    PublicKey serverPK;
     NativeRandom random;
     random.get(clientK.values(), clientK.count());
     random.get(serverK.values(), serverK.count());

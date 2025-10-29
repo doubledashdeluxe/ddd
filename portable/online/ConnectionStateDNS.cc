@@ -6,7 +6,7 @@ extern "C" {
 #include <monocypher/monocypher.h>
 }
 
-ConnectionStateDNS::ConnectionStateDNS(const ClientPlatform &platform, Array<u8, 32> serverPK,
+ConnectionStateDNS::ConnectionStateDNS(const ClientPlatform &platform, PublicKey serverPK,
         Array<char, 32> name, u16 port)
     : ConnectionState(platform, serverPK), m_name(name), m_port(port) {}
 
@@ -36,7 +36,7 @@ ConnectionState &ConnectionStateDNS::write(ClientStateWriter & /* writer */, u8 
         return *this;
     }
 
-    Array<u8, 32> clientEphemeralK;
+    Key clientEphemeralK;
     m_platform.random.get(clientEphemeralK.values(), clientEphemeralK.count());
     address.port = m_port;
     ConnectionState &state = *(new (m_platform.allocator)

@@ -6,8 +6,8 @@
 
 class ConnectionStateKX : public ConnectionState {
 public:
-    ConnectionStateKX(const ClientPlatform &platform, const Array<u8, 32> &clientEphemeralK,
-            Array<u8, 32> serverPK, Address address);
+    ConnectionStateKX(const ClientPlatform &platform, const Key &clientEphemeralK,
+            PublicKey serverPK, Address address);
     ~ConnectionStateKX() override;
     Optional<Address> address() const override;
     ConnectionState &reset() override;

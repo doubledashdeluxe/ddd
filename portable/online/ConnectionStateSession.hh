@@ -5,7 +5,7 @@
 
 class ConnectionStateSession : public ConnectionState {
 public:
-    ConnectionStateSession(const ClientPlatform &platform, Array<u8, 32> serverPK, Address address,
+    ConnectionStateSession(const ClientPlatform &platform, PublicKey serverPK, Address address,
             Session session);
     ~ConnectionStateSession() override;
     Optional<Address> address() const override;

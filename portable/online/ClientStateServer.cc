@@ -242,7 +242,7 @@ void ClientStateServer::checkConnections() {
         for (u32 i = 0; i < m_platform.serverManager.serverCount(); i++) {
             m_connections.pushBack();
             const ServerManager::Server &server = m_platform.serverManager.server(i);
-            const Array<u8, 32> &publicK = server.publicKey();
+            const PublicKey &publicK = server.publicKey();
             const Array<char, 32> &name = server.address();
             u16 port = server.port();
             Connection *connection =

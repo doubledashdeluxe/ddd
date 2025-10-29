@@ -1,6 +1,6 @@
 #pragma once
 
-#include "portable/Array.hh"
+#include "portable/crypto/Types.hh"
 
 class Session {
 public:
@@ -16,8 +16,8 @@ public:
     void write(u8 *buffer, u32 size, u8 mac[MACSize], u8 nonce[NonceSize]);
 
 public:
-    Array<u8, 32> m_readK;
-    Array<u8, 32> m_writeK;
+    SessionKey m_readK;
+    SessionKey m_writeK;
 
 private:
     u64 m_readNonce;

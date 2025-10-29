@@ -1,12 +1,12 @@
 use noise_protocol::Cipher;
 use orion::hazardous::aead::chacha20poly1305::{self, Nonce, SecretKey};
 
-use crate::crypto::sensitive::Sensitive;
+use crate::crypto;
 
 pub enum ChaCha20Poly1305 {}
 
 impl Cipher for ChaCha20Poly1305 {
-    type Key = Sensitive<[u8; 32]>;
+    type Key = crypto::Key;
 
     fn name() -> &'static str {
         "ChaChaPoly"

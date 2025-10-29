@@ -8,7 +8,7 @@
 
 class Connection {
 public:
-    Connection(const ClientPlatform &clientPlatform, Array<u8, 32> serverPK,
+    Connection(const ClientPlatform &clientPlatform, PublicKey serverPK,
             const Array<char, 32> &name, u16 port);
     ~Connection();
     Optional<Address> address() const;

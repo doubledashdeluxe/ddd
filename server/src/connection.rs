@@ -6,21 +6,21 @@ use anyhow::{Context, Result};
 
 use crate::client::Client;
 use crate::crypto::kx;
-use crate::crypto::sensitive::Sensitive;
 use crate::crypto::session::Session;
+use crate::crypto::{Key, PublicKey};
 use crate::rooms::Rooms;
 
 pub struct Connection {
     expiration: Instant,
     addr: SocketAddr,
-    client_pk: [u8; 32],
+    client_pk: PublicKey,
     session: Session,
     state: State,
 }
 
 impl Connection {
     pub fn try_new(
-        server_k: Sensitive<[u8; 32]>,
+        server_k: Key,
         now: Instant,
         addr: SocketAddr,
         message: &[u8],
@@ -38,7 +38,7 @@ impl Connection {
         &mut self,
         now: Instant,
         message: &[u8],
-        clients: &mut HashMap<[u8; 32], Client>,
+        clients: &mut HashMap<PublicKey, Client>,
     ) -> Result<()> {
         let plaintext_len = message
             .len()
@@ -79,7 +79,7 @@ impl Connection {
         &mut self,
         now: Instant,
         message: &mut [u8],
-        clients: &mut HashMap<[u8; 32], Client>,
+        clients: &mut HashMap<PublicKey, Client>,
         player_count: usize,
         rooms: &mut Rooms,
     ) -> Result<Option<usize>> {

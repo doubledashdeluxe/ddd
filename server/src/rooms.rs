@@ -5,6 +5,7 @@ use anyhow::{Context, Result};
 use orion::util;
 
 use crate::client::Client;
+use crate::crypto::PublicKey;
 use crate::formats::online::ModeIndex;
 use crate::kart::Kart;
 use crate::room::Room;
@@ -84,7 +85,7 @@ impl Rooms {
         Ok(id)
     }
 
-    pub fn update(&mut self, clients: &mut HashMap<[u8; 32], Client>) {
+    pub fn update(&mut self, clients: &mut HashMap<PublicKey, Client>) {
         self.rooms.retain(|_, room| room.update(clients).is_ok());
         self.long_code_ids.retain(|_, id| self.rooms.contains_key(id));
         let short_code_ids = self.short_code_ids.extract_if(|_, id| !self.rooms.contains_key(id));

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "portable/Array.hh"
 #include "portable/Optional.hh"
+#include "portable/crypto/Types.hh"
 #include "portable/network/Address.hh"
 #include "portable/online/ClientPlatform.hh"
 
@@ -9,7 +9,7 @@
 
 class ConnectionState {
 public:
-    ConnectionState(const ClientPlatform &platform, Array<u8, 32> serverPK);
+    ConnectionState(const ClientPlatform &platform, PublicKey serverPK);
     virtual ~ConnectionState();
     virtual Optional<Address> address() const = 0;
     virtual ConnectionState &reset() = 0;
@@ -20,5 +20,5 @@ public:
 
 protected:
     const ClientPlatform &m_platform;
-    Array<u8, 32> m_serverPK;
+    PublicKey m_serverPK;
 };

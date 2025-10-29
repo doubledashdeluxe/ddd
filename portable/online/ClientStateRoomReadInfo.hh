@@ -2,6 +2,7 @@
 
 #include "portable/Array.hh"
 #include "portable/Optional.hh"
+#include "portable/crypto/Types.hh"
 #include "portable/online/RoomOptions.hh"
 
 struct ClientStateRoomReadInfo {
@@ -19,7 +20,7 @@ struct ClientStateRoomReadInfo {
         Array<Kart, 8> karts;
         u16 spectatorCount;
         u8 modeIndex;
-        Array<u8, 32> packHash;
+        Hash packHash;
         u64 roomCode;
         u32 spectatingCounter;
         bool spectating;

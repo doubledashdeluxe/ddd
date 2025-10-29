@@ -4,13 +4,14 @@ use anyhow::Result;
 use log::debug;
 
 use crate::client::Client;
+use crate::crypto::PublicKey;
 use crate::formats::online::*;
 use crate::kart::Kart;
 
 pub struct Room {
-    host_pk: [u8; 32],
+    host_pk: PublicKey,
     karts: Vec<Kart>,
-    spectating_karts: HashMap<[u8; 32], Vec<Kart>>,
+    spectating_karts: HashMap<PublicKey, Vec<Kart>>,
     spectator_count: usize,
     mode_index: ModeIndex,
     is_race: bool,
@@ -129,7 +130,7 @@ impl Room {
         }
     }
 
-    pub fn set_spectating(&mut self, client_pk: &[u8; 32], spectating: bool) -> bool {
+    pub fn set_spectating(&mut self, client_pk: &PublicKey, spectating: bool) -> bool {
         if spectating {
             let karts = self.karts.extract_if(.., |kart| kart.client_pk() == client_pk).collect();
             self.spectating_karts.insert(*client_pk, karts);
@@ -147,7 +148,7 @@ impl Room {
         spectating
     }
 
-    pub fn set_options(&mut self, client_pk: &[u8; 32], options: ClientRoomOptions) -> Result<()> {
+    pub fn set_options(&mut self, client_pk: &PublicKey, options: ClientRoomOptions) -> Result<()> {
         match options {
             ClientRoomOptions::Race(options) => {
                 anyhow::ensure!(client_pk == &self.host_pk);
@@ -171,7 +172,7 @@ impl Room {
         Ok(())
     }
 
-    pub fn update(&mut self, clients: &HashMap<[u8; 32], Client>) -> Result<()> {
+    pub fn update(&mut self, clients: &HashMap<PublicKey, Client>) -> Result<()> {
         self.karts.retain(|kart| {
             let client_pk = kart.client_pk();
             clients.get(client_pk).is_some_and(|client| client.room_id() == Some(self.id))

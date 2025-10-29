@@ -17,10 +17,9 @@
 
 class FakeClient : private ClientReadHandler {
 public:
-    FakeClient(const std::map<std::vector<std::string>, u32> &dnsServers,
-            const Array<u8, 32> &serverK, const std::vector<u8> &data,
-            const Ring<ServerManager::Server, MaxServerCount> &servers,
-            const Array<u8, 32> &clientK);
+    FakeClient(const std::map<std::vector<std::string>, u32> &dnsServers, const Key &serverK,
+            const std::vector<u8> &data, const Ring<ServerManager::Server, MaxServerCount> &servers,
+            const Key &clientK);
     ~FakeClient();
 
     void read();

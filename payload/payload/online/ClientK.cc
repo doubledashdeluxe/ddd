@@ -20,7 +20,7 @@ extern "C" {
 }
 
 void ClientK::Init() {
-    s_instance = new (MEM1Arena::Instance(), 0x20) Array<u8, 32>;
+    s_instance = new (MEM1Arena::Instance(), 0x20) Key;
 
     u32 lo = reinterpret_cast<uintptr_t>(OSGetArenaLo());
     u32 hi = reinterpret_cast<uintptr_t>(OSGetArenaHi());
@@ -75,8 +75,8 @@ void ClientK::Init() {
     crypto_wipe(key.values(), key.count());
 }
 
-const Array<u8, 32> &ClientK::Get() {
+const Key &ClientK::Get() {
     return *s_instance;
 }
 
-Array<u8, 32> *ClientK::s_instance = nullptr;
+Key *ClientK::s_instance = nullptr;

@@ -27,7 +27,7 @@ ServerConnectionState &ServerConnectionStateIdle::transfer(const u8 *input, size
     }
     input += m_cookie.size();
 
-    Array<u8, 32> serverEphemeralK;
+    Key serverEphemeralK;
     m_platform.random.get(serverEphemeralK.values(), serverEphemeralK.count());
     KX::ServerState serverState(m_platform.serverK, serverEphemeralK);
     crypto_wipe(serverEphemeralK.values(), serverEphemeralK.count());

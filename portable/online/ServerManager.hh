@@ -2,6 +2,7 @@
 
 #include "portable/Array.hh"
 #include "portable/Ring.hh"
+#include "portable/crypto/Types.hh"
 
 const u32 MaxServerCount = 32;
 const u32 MaxServerNameSize = 32;
@@ -11,19 +12,19 @@ public:
     class Server {
     public:
         Server(Array<char, MaxServerNameSize> name, Array<char, 32> address, u16 port,
-                Array<u8, 32> publicKey);
+                PublicKey publicKey);
         ~Server();
 
         const Array<char, MaxServerNameSize> &name() const;
         const Array<char, 32> &address() const;
         u16 port() const;
-        const Array<u8, 32> &publicKey() const;
+        const PublicKey &publicKey() const;
 
     private:
         Array<char, MaxServerNameSize> m_name;
         Array<char, 32> m_address;
         u16 m_port;
-        Array<u8, 32> m_publicKey;
+        PublicKey m_publicKey;
     };
 
     virtual bool isLocked() = 0;

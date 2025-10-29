@@ -1,13 +1,13 @@
 use anyhow::Result;
 use noise_protocol::Cipher;
 
+use crate::crypto::Key;
 use crate::crypto::chacha20poly1305::ChaCha20Poly1305;
-use crate::crypto::sensitive::Sensitive;
 
 pub struct Session {
-    read_k: Sensitive<[u8; 32]>,
+    read_k: Key,
     read_nonce: u64,
-    write_k: Sensitive<[u8; 32]>,
+    write_k: Key,
     write_nonce: u64,
 }
 
@@ -15,19 +15,19 @@ impl Session {
     pub const MAC_SIZE: usize = 16;
     pub const NONCE_SIZE: usize = 8;
 
-    pub fn new(read_k: Sensitive<[u8; 32]>, write_k: Sensitive<[u8; 32]>) -> Session {
+    pub fn new(read_k: Key, write_k: Key) -> Session {
         let read_nonce = 0;
         let write_nonce = 0;
         Session { read_k, read_nonce, write_k, write_nonce }
     }
 
     #[cfg(test)]
-    pub fn read_k(&self) -> &Sensitive<[u8; 32]> {
+    pub fn read_k(&self) -> &Key {
         &self.read_k
     }
 
     #[cfg(test)]
-    pub fn write_k(&self) -> &Sensitive<[u8; 32]> {
+    pub fn write_k(&self) -> &Key {
         &self.write_k
     }
 

@@ -88,7 +88,7 @@ void CubeServerManager::addServer(const Array<char, 256> &path) {
         return;
     }
     Array<char, INIReader::FieldSize> &publicKeyField = serverINI.publicKey;
-    Array<u8, 32> publicKey(0x0);
+    PublicKey publicKey(0x00);
     if (strlen(publicKeyField.values()) != publicKey.count() * 2) {
         return;
     }

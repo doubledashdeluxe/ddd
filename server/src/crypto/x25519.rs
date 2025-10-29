@@ -1,13 +1,14 @@
 use noise_protocol::{DH, U8Array};
 use orion::hazardous::ecc::x25519::{self, PrivateKey, PublicKey};
 
+use crate::crypto;
 use crate::crypto::sensitive::Sensitive;
 
 pub enum X25519 {}
 
 impl DH for X25519 {
-    type Key = Sensitive<[u8; 32]>;
-    type Pubkey = [u8; 32];
+    type Key = crypto::Key;
+    type Pubkey = crypto::PublicKey;
     type Output = Sensitive<[u8; 32]>;
 
     fn name() -> &'static str {

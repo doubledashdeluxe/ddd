@@ -1,16 +1,17 @@
+use crate::crypto::PublicKey;
 use crate::formats::online::ServerKart;
 
 pub struct Kart {
-    client_pk: [u8; 32],
+    client_pk: PublicKey,
     server_kart: ServerKart,
 }
 
 impl Kart {
-    pub fn new(client_pk: [u8; 32], server_kart: ServerKart) -> Kart {
+    pub fn new(client_pk: PublicKey, server_kart: ServerKart) -> Kart {
         Kart { client_pk, server_kart }
     }
 
-    pub fn client_pk(&self) -> &[u8; 32] {
+    pub fn client_pk(&self) -> &PublicKey {
         &self.client_pk
     }
 

@@ -1,12 +1,12 @@
 #pragma once
 
-#include "portable/Array.hh"
+#include "portable/crypto/Types.hh"
 #include "portable/online/RoomOptions.hh"
 
 struct ClientStateRoomWriteInfo {
     u8 modeIndex;
     bool isRace;
-    Array<u8, 32> packHash;
+    Hash packHash;
     bool isHost;
     u32 roomCounter;
     u64 roomCode;

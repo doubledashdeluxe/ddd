@@ -1,10 +1,11 @@
 #pragma once
 
+#include "portable/crypto/Types.hh"
 #include "portable/online/ConnectionState.hh"
 
 class ConnectionStateDNS : public ConnectionState {
 public:
-    ConnectionStateDNS(const ClientPlatform &platform, Array<u8, 32> serverPK, Array<char, 32> name,
+    ConnectionStateDNS(const ClientPlatform &platform, PublicKey serverPK, Array<char, 32> name,
             u16 port);
     ~ConnectionStateDNS() override;
     Optional<Address> address() const override;
