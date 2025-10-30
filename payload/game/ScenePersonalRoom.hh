@@ -21,7 +21,6 @@ private:
     enum {
         SwitchCount = 2,
         MaxCharCount = 20,
-        MaxPlayerCount = 8,
         MaxOptionCount = 7,
         MaxEntryCount = MaxOptionCount + 1,
     };
@@ -63,15 +62,15 @@ private:
     u32 m_nextScene;
     J2DScreen m_mainScreen;
     Array<J2DScreen, MaxCharCount> m_charScreens;
-    Array<J2DScreen, MaxPlayerCount> m_playerScreens;
+    Array<J2DScreen, MaxRoomKartCount> m_playerScreens;
     Array<J2DScreen, MaxEntryCount> m_entryScreens;
     J2DAnmBase *m_mainAnmTransform;
     Array<J2DAnmBase *, SwitchCount> m_switchAnmTransforms;
     Array<J2DAnmBase *, SwitchCount> m_switchAnmTexPatterns;
     Array<J2DAnmBase *, MaxCharCount> m_charAnmTextureSRTKeys;
     Array<J2DAnmBase *, MaxCharCount> m_charAnmTexPatterns;
-    Array<J2DAnmBase *, MaxPlayerCount> m_playerAnmTransforms;
-    Array<J2DAnmBase *, MaxPlayerCount> m_playerNameAnmTransforms;
+    Array<J2DAnmBase *, MaxRoomKartCount> m_playerAnmTransforms;
+    Array<J2DAnmBase *, MaxRoomKartCount> m_playerNameAnmTransforms;
     J2DAnmBase *m_playerCircleAnmTransform;
     Array<J2DAnmBase *, MaxEntryCount> m_entryAnmTransforms;
     Array<J2DAnmBase *, MaxEntryCount> m_entryLeftAnmTransforms;
@@ -85,8 +84,8 @@ private:
     Array<u8, SwitchCount> m_switchAnmTexPatternFrames;
     Array<u8, MaxCharCount> m_charAnmTextureSRTKeyFrames;
     Array<u8, MaxCharCount> m_charAnmTexPatternFrames;
-    Array<u8, MaxPlayerCount> m_playerAnmTransformFrames;
-    Array<u8, MaxPlayerCount> m_playerNameAnmTransformFrames;
+    Array<u8, MaxRoomKartCount> m_playerAnmTransformFrames;
+    Array<u8, MaxRoomKartCount> m_playerNameAnmTransformFrames;
     u8 m_playerCircleAnmTransformFrame;
     Array<u8, MaxEntryCount> m_entryAnmTransformFrames;
     Array<u8, MaxEntryCount> m_entryLeftAnmTransformFrames;

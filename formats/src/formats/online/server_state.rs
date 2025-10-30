@@ -78,7 +78,7 @@ pub fn server_room_state() -> impl ComplexDataType {
 }
 
 pub fn server_room_state_main() -> impl ComplexDataType {
-    let karts = ArrayType::new(server_kart(), 0, 8);
+    let karts = ArrayType::new(server_kart(), 0, MAX_ROOM_KART_COUNT);
     let spectator_count: SimpleDataType<u16> = SimpleDataType::new();
     let pack_hash_element: SimpleDataType<u8> = SimpleDataType::new();
     let pack_hash = ArrayType::new(pack_hash_element, 32, 32);
@@ -116,3 +116,4 @@ pub fn server_player() -> impl ComplexDataType {
 }
 
 pub const MAX_MOTD_LENGTH: u8 = 99;
+pub const MAX_ROOM_KART_COUNT: u8 = 8;

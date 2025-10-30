@@ -91,7 +91,7 @@ ScenePersonalRoom::ScenePersonalRoom(JKRArchive *archive, JKRHeap *heap) : Scene
         }
     }
     m_playerCircleAnmTransform = J2DAnmLoaderDataBase::Load("PersonalRoomPlayer.bck", m_archive);
-    for (u32 i = 0; i < MaxPlayerCount; i++) {
+    for (u32 i = 0; i < MaxRoomKartCount; i++) {
         m_playerScreens[i].search("PCircle")->setAnimation(m_playerCircleAnmTransform);
     }
     for (u32 i = 0; i < m_entryAnmTransforms.count(); i++) {

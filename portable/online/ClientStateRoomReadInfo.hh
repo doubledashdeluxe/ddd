@@ -19,7 +19,7 @@ struct ClientStateRoomReadInfo {
 
     struct Info {
         u8 kartCount;
-        Array<Kart, 8> karts;
+        Array<Kart, MaxRoomKartCount> karts;
         u16 spectatorCount;
         u8 modeIndex;
         Hash packHash;

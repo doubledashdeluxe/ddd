@@ -23,6 +23,7 @@ pub fn format() -> Format<impl ConstantList, impl TypeList> {
     let player_name_length = SimpleConstant::new("PLAYER_NAME_LENGTH", PLAYER_NAME_LENGTH);
     let mode_index_count = SimpleConstant::new("MODE_INDEX_COUNT", MODE_INDEX_COUNT);
     let max_motd_length = SimpleConstant::new("MAX_MOTD_LENGTH", MAX_MOTD_LENGTH);
+    let max_room_kart_count = SimpleConstant::new("MAX_ROOM_KART_COUNT", MAX_ROOM_KART_COUNT);
     Format::new("Online")
         .with_constant(default_port)
         .with_constant(protocol_version)
@@ -36,6 +37,7 @@ pub fn format() -> Format<impl ConstantList, impl TypeList> {
         .with_constant(player_name_length)
         .with_constant(mode_index_count)
         .with_constant(max_motd_length)
+        .with_constant(max_room_kart_count)
         .with_type(mode_index())
         .with_type(room_option_code_type())
         .with_type(room_option_format())
