@@ -111,7 +111,7 @@ pub fn server_kart() -> impl ComplexDataType {
 
 pub fn server_player() -> impl ComplexDataType {
     let name_element: SimpleDataType<u8> = SimpleDataType::new();
-    let name = ArrayType::new(name_element, 3, 3);
+    let name = ArrayType::new(name_element, PLAYER_NAME_LENGTH, PLAYER_NAME_LENGTH);
     StructType::new("ServerPlayer").with_field("name", name)
 }
 

@@ -45,7 +45,7 @@ pub fn client_identity_specified() -> impl ComplexDataType {
 pub fn client_player() -> impl ComplexDataType {
     let profile: SimpleDataType<u8> = SimpleDataType::new();
     let name_element: SimpleDataType<u8> = SimpleDataType::new();
-    let name = ArrayType::new(name_element, 3, 3);
+    let name = ArrayType::new(name_element, PLAYER_NAME_LENGTH, PLAYER_NAME_LENGTH);
     StructType::new("ClientPlayer").with_field("profile", profile).with_field("name", name)
 }
 

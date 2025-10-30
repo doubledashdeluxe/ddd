@@ -7,7 +7,7 @@
 struct ClientStateServerWriteInfo {
     struct Player {
         u8 profile;
-        Array<char, 4> name;
+        Array<char, PlayerNameLength + 1> name;
     };
 
     u8 playerCount;

@@ -5,9 +5,11 @@
 #include "portable/crypto/Types.hh"
 #include "portable/online/RoomOptions.hh"
 
+#include <formats/Online.hh>
+
 struct ClientStateRoomReadInfo {
     struct Player {
-        Array<char, 4> name;
+        Array<char, PlayerNameLength + 1> name;
     };
 
     struct Kart {

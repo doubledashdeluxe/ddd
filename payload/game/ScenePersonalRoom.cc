@@ -378,7 +378,7 @@ bool ScenePersonalRoom::clientStateRoom(const ClientStateRoomReadInfo &readInfo)
                 continue;
             }
             for (u32 j = 0; j < kart.players.count(); j++) {
-                Array<char, 4> name;
+                Array<char, PlayerNameLength + 1> name;
                 if (j < kart.playerCount) {
                     name = kart.players[j].name;
                 } else {
