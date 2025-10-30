@@ -59,7 +59,7 @@ pub fn server_state_pack() -> impl ComplexDataType {
     let pack_index: SimpleDataType<u8> = SimpleDataType::new();
     let player_count: SimpleDataType<u16> = SimpleDataType::new();
     let format_player_count: SimpleDataType<u16> = SimpleDataType::new();
-    let format_player_counts = ArrayType::new(format_player_count, 3, 3);
+    let format_player_counts = ArrayType::new(format_player_count, FORMAT_COUNT, FORMAT_COUNT);
     StructType::new("ServerStatePack")
         .with_field("mode_index", mode_index())
         .with_field("pack_index", pack_index)
@@ -116,6 +116,7 @@ pub fn server_player() -> impl ComplexDataType {
 }
 
 pub const MAX_MOTD_LENGTH: u8 = 99;
+pub const FORMAT_COUNT: u8 = 3;
 pub const MAX_ROOM_KART_COUNT: u8 = 8;
 pub const MIN_KART_PLAYER_COUNT: u8 = 1;
 pub const MAX_KART_PLAYER_COUNT: u8 = 2;

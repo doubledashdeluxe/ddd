@@ -4,10 +4,12 @@
 #include "portable/Counts.hh"
 #include "portable/Optional.hh"
 
+#include <formats/Online.hh>
+
 struct ClientStatePackReadInfo {
     struct Pack {
         u16 playerCount;
-        Array<u16, 3> formatPlayerCounts;
+        Array<u16, FormatCount> formatPlayerCounts;
     };
 
     Array<Optional<Pack>, MaxPackCount> packs;

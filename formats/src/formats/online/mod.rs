@@ -23,6 +23,7 @@ pub fn format() -> Format<impl ConstantList, impl TypeList> {
     let player_name_length = SimpleConstant::new("PLAYER_NAME_LENGTH", PLAYER_NAME_LENGTH);
     let mode_index_count = SimpleConstant::new("MODE_INDEX_COUNT", MODE_INDEX_COUNT);
     let max_motd_length = SimpleConstant::new("MAX_MOTD_LENGTH", MAX_MOTD_LENGTH);
+    let format_count = SimpleConstant::new("FORMAT_COUNT", FORMAT_COUNT);
     let max_room_kart_count = SimpleConstant::new("MAX_ROOM_KART_COUNT", MAX_ROOM_KART_COUNT);
     let min_kart_player_count = SimpleConstant::new("MIN_KART_PLAYER_COUNT", MIN_KART_PLAYER_COUNT);
     let max_kart_player_count = SimpleConstant::new("MAX_KART_PLAYER_COUNT", MAX_KART_PLAYER_COUNT);
@@ -39,6 +40,7 @@ pub fn format() -> Format<impl ConstantList, impl TypeList> {
         .with_constant(player_name_length)
         .with_constant(mode_index_count)
         .with_constant(max_motd_length)
+        .with_constant(format_count)
         .with_constant(max_room_kart_count)
         .with_constant(min_kart_player_count)
         .with_constant(max_kart_player_count)
