@@ -14,7 +14,7 @@ struct ClientStateRoomReadInfo {
 
     struct Kart {
         u8 playerCount;
-        Array<Player, 2> players;
+        Array<Player, MaxKartPlayerCount> players;
     };
 
     struct Info {

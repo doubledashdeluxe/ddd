@@ -105,7 +105,7 @@ pub fn server_room_options() -> impl ComplexDataType {
 }
 
 pub fn server_kart() -> impl ComplexDataType {
-    let players = ArrayType::new(server_player(), 1, 2);
+    let players = ArrayType::new(server_player(), MIN_KART_PLAYER_COUNT, MAX_KART_PLAYER_COUNT);
     StructType::new("ServerKart").with_field("players", players)
 }
 
@@ -117,3 +117,5 @@ pub fn server_player() -> impl ComplexDataType {
 
 pub const MAX_MOTD_LENGTH: u8 = 99;
 pub const MAX_ROOM_KART_COUNT: u8 = 8;
+pub const MIN_KART_PLAYER_COUNT: u8 = 1;
+pub const MAX_KART_PLAYER_COUNT: u8 = 2;
