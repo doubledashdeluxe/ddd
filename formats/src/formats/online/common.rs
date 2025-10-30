@@ -4,6 +4,15 @@ use crate::simple_enum_type::SimpleEnumType;
 use crate::struct_type::StructType;
 use crate::unit_type::UnitType;
 
+pub fn mode_index() -> impl ComplexDataType {
+    SimpleEnumType::new("ModeIndex")
+        .with_variant("Versus")
+        .with_variant("Balloon")
+        .with_variant("Escape")
+        .with_variant("Bomb")
+        .with_variant("TimeAttack")
+}
+
 pub fn room_options_race() -> impl ComplexDataType {
     let lap_count: SimpleDataType<u8> = SimpleDataType::new();
     let match_count: SimpleDataType<u8> = SimpleDataType::new();
@@ -66,3 +75,5 @@ pub fn room_option_course_selection() -> impl ComplexDataType {
         .with_variant("Host")
         .with_variant("Random")
 }
+
+pub const MAX_VERSION_LENGTH: u8 = 19;

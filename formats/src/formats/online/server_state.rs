@@ -1,8 +1,7 @@
 use crate::array_type::ArrayType;
 use crate::complex_data_type::ComplexDataType;
 use crate::enum_type::EnumType;
-use crate::formats::online::mode_index::*;
-use crate::formats::online::room_options::*;
+use crate::formats::online::common::*;
 use crate::simple_data_type::SimpleDataType;
 use crate::struct_type::StructType;
 use crate::unit_type::UnitType;
@@ -18,7 +17,7 @@ pub fn server_state() -> impl ComplexDataType {
 pub fn server_state_server() -> impl ComplexDataType {
     let protocol_version: SimpleDataType<u32> = SimpleDataType::new();
     let version_element: SimpleDataType<u8> = SimpleDataType::new();
-    let version = ArrayType::new(version_element, 0, 19);
+    let version = ArrayType::new(version_element, 0, MAX_VERSION_LENGTH);
     StructType::new("ServerStateServer")
         .with_field("protocol_version", protocol_version)
         .with_field("version", version)

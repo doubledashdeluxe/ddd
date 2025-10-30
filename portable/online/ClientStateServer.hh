@@ -83,7 +83,7 @@ private:
     u32 m_readIndex;
     u32 m_writeIndex;
     ReadInfo m_readInfo;
-    Array<char, 20> m_version;
+    Array<char, MaxVersionLength + 1> m_version;
     const WriteInfo *m_writeInfo;
     u32 m_playerIndex;
 };

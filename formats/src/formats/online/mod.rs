@@ -1,13 +1,11 @@
 use crate::format::{ConstantList, Format, TypeList};
 use crate::formats::online::client_state::*;
-use crate::formats::online::mode_index::*;
-use crate::formats::online::room_options::*;
+use crate::formats::online::common::*;
 use crate::formats::online::server_state::*;
 use crate::simple_constant::SimpleConstant;
 
 mod client_state;
-mod mode_index;
-mod room_options;
+mod common;
 mod server_state;
 
 pub fn format() -> Format<impl ConstantList, impl TypeList> {
@@ -17,6 +15,7 @@ pub fn format() -> Format<impl ConstantList, impl TypeList> {
     let min_match_count = SimpleConstant::new("MIN_MATCH_COUNT", 1u8);
     let max_match_count = SimpleConstant::new("MAX_MATCH_COUNT", 96u8);
     let default_match_count = SimpleConstant::new("DEFAULT_MATCH_COUNT", 4u8);
+    let max_version_length = SimpleConstant::new("MAX_VERSION_LENGTH", MAX_VERSION_LENGTH);
     let max_motd_length = SimpleConstant::new("MAX_MOTD_LENGTH", MAX_MOTD_LENGTH);
     Format::new("Online")
         .with_constant(default_port)
@@ -25,6 +24,7 @@ pub fn format() -> Format<impl ConstantList, impl TypeList> {
         .with_constant(min_match_count)
         .with_constant(max_match_count)
         .with_constant(default_match_count)
+        .with_constant(max_version_length)
         .with_constant(max_motd_length)
         .with_type(mode_index())
         .with_type(room_option_code_type())
