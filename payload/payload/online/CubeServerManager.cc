@@ -106,7 +106,7 @@ void CubeServerManager::addServer(const Array<char, 256> &path) {
         }
     }
 
-    Array<char, MaxServerNameSize> name;
+    ServerName name;
     snprintf(name.values(), name.count(), "%s", nameField.values());
     Array<char, 32> address;
     u16 port = DefaultPort;

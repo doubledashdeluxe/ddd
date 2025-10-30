@@ -7,21 +7,22 @@
 const u32 MaxServerCount = 32;
 const u32 MaxServerNameSize = 32;
 
+typedef Array<char, MaxServerNameSize> ServerName;
+
 class ServerManager {
 public:
     class Server {
     public:
-        Server(Array<char, MaxServerNameSize> name, Array<char, 32> address, u16 port,
-                PublicKey publicKey);
+        Server(ServerName name, Array<char, 32> address, u16 port, PublicKey publicKey);
         ~Server();
 
-        const Array<char, MaxServerNameSize> &name() const;
+        const ServerName &name() const;
         const Array<char, 32> &address() const;
         u16 port() const;
         const PublicKey &publicKey() const;
 
     private:
-        Array<char, MaxServerNameSize> m_name;
+        ServerName m_name;
         Array<char, 32> m_address;
         u16 m_port;
         PublicKey m_publicKey;
