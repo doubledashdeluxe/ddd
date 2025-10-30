@@ -72,7 +72,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Download results
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
       - name: Compare
         run: cmp Linux-ddd/boot.dol Windows-ddd/boot.dol
 
