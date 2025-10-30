@@ -80,3 +80,4 @@ pub const MAX_VERSION_LENGTH: u8 = 19;
 pub const MIN_CLIENT_PLAYER_COUNT: u8 = 1;
 pub const MAX_CLIENT_PLAYER_COUNT: u8 = 4;
 pub const PLAYER_NAME_LENGTH: u8 = 3;
+pub const MODE_INDEX_COUNT: u8 = 5;

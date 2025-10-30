@@ -11,5 +11,5 @@ struct ClientStateModeReadInfo {
         u16 playerCount;
     };
 
-    Optional<Array<Mode, ModeIndex::Count>> modes;
+    Optional<Array<Mode, ModeIndexCount>> modes;
 };

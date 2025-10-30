@@ -44,7 +44,7 @@ pub fn server_identity_specified() -> impl ComplexDataType {
 }
 
 pub fn server_state_mode() -> impl ComplexDataType {
-    let modes = ArrayType::new(server_mode(), 5, 5);
+    let modes = ArrayType::new(server_mode(), MODE_INDEX_COUNT, MODE_INDEX_COUNT);
     StructType::new("ServerStateMode").with_field("modes", modes)
 }
 

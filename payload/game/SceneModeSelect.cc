@@ -106,7 +106,7 @@ void SceneModeSelect::calc() {
     }
     refreshModes();
 
-    for (u32 i = 0; i < ModeIndex::Count; i++) {
+    for (u32 i = 0; i < ModeIndexCount; i++) {
         if (i == m_modeIndex) {
             if (m_modeAnmTransformFrames[i] < 7) {
                 m_modeAnmTransformFrames[i]++;
@@ -176,7 +176,7 @@ bool SceneModeSelect::clientStateMode(const ClientStateModeReadInfo &readInfo) {
     if (readInfo.modes) {
         const SequenceInfo &sequenceInfo = SequenceInfo::Instance();
         const OnlineInfo &onlineInfo = OnlineInfo::Instance();
-        for (u32 i = 0; i < ModeIndex::Count; i++) {
+        for (u32 i = 0; i < ModeIndexCount; i++) {
             const ClientStateModeReadInfo::Mode &mode = (*readInfo.modes)[i];
             Array<char, 80> &desc = m_descs[i];
             Formatter formatter(desc);
@@ -279,7 +279,7 @@ void SceneModeSelect::stateIdle() {
             m_modeIndex--;
         }
     } else if (button.repeat() & JUTGamePad::PAD_MSTICK_DOWN) {
-        if (m_modeIndex + 1 < ModeIndex::Count) {
+        if (m_modeIndex + 1 < ModeIndexCount) {
             GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CURSOL);
             m_modeIndex++;
         }
@@ -296,7 +296,7 @@ void SceneModeSelect::stateNextScene() {
 
 void SceneModeSelect::refreshModes() {
     Kart2DCommon *kart2DCommon = Kart2DCommon::Instance();
-    for (u32 i = 0; i < ModeIndex::Count; i++) {
+    for (u32 i = 0; i < ModeIndexCount; i++) {
         J2DScreen &screen = m_modeScreens[i];
         DescText descText(*this, i);
         u64 descOffset = Max<u64>(m_descOffsets[i], 300) - 300;
