@@ -60,7 +60,7 @@ jobs:
       - name: Build
         run: python build.py --ci --llvm-dir tools/llvm -- ddd
       - name: Upload result
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ${{ runner.os }}-ddd
           path: out
