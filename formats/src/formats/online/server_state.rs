@@ -50,7 +50,7 @@ pub fn server_state_mode() -> impl ComplexDataType {
 
 pub fn server_mode() -> impl ComplexDataType {
     let mmr: SimpleDataType<u16> = SimpleDataType::new();
-    let mmrs = ArrayType::new(mmr, 1, 4);
+    let mmrs = ArrayType::new(mmr, MIN_CLIENT_PLAYER_COUNT, MAX_CLIENT_PLAYER_COUNT);
     let player_count: SimpleDataType<u16> = SimpleDataType::new();
     StructType::new("ServerMode").with_field("mmrs", mmrs).with_field("player_count", player_count)
 }

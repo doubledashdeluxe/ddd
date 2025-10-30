@@ -16,6 +16,10 @@ pub fn format() -> Format<impl ConstantList, impl TypeList> {
     let max_match_count = SimpleConstant::new("MAX_MATCH_COUNT", 96u8);
     let default_match_count = SimpleConstant::new("DEFAULT_MATCH_COUNT", 4u8);
     let max_version_length = SimpleConstant::new("MAX_VERSION_LENGTH", MAX_VERSION_LENGTH);
+    let min_client_player_count =
+        SimpleConstant::new("MIN_CLIENT_PLAYER_COUNT", MIN_CLIENT_PLAYER_COUNT);
+    let max_client_player_count =
+        SimpleConstant::new("MAX_CLIENT_PLAYER_COUNT", MAX_CLIENT_PLAYER_COUNT);
     let max_motd_length = SimpleConstant::new("MAX_MOTD_LENGTH", MAX_MOTD_LENGTH);
     Format::new("Online")
         .with_constant(default_port)
@@ -25,6 +29,8 @@ pub fn format() -> Format<impl ConstantList, impl TypeList> {
         .with_constant(max_match_count)
         .with_constant(default_match_count)
         .with_constant(max_version_length)
+        .with_constant(min_client_player_count)
+        .with_constant(max_client_player_count)
         .with_constant(max_motd_length)
         .with_type(mode_index())
         .with_type(room_option_code_type())

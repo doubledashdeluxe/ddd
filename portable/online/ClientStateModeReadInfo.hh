@@ -7,7 +7,7 @@
 
 struct ClientStateModeReadInfo {
     struct Mode {
-        Array<u16, 4> mmrs;
+        Array<u16, MaxClientPlayerCount> mmrs;
         u16 playerCount;
     };
 

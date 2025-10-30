@@ -2,6 +2,8 @@
 
 #include "portable/Array.hh"
 
+#include <formats/Online.hh>
+
 struct ClientStateServerWriteInfo {
     struct Player {
         u8 profile;
@@ -9,6 +11,6 @@ struct ClientStateServerWriteInfo {
     };
 
     u8 playerCount;
-    Array<Player, 4> players;
+    Array<Player, MaxClientPlayerCount> players;
     u8 kartCount;
 };

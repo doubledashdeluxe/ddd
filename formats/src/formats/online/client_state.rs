@@ -35,7 +35,7 @@ pub fn client_identity_unspecified() -> impl ComplexDataType {
 }
 
 pub fn client_identity_specified() -> impl ComplexDataType {
-    let players = ArrayType::new(client_player(), 1, 4);
+    let players = ArrayType::new(client_player(), MIN_CLIENT_PLAYER_COUNT, MAX_CLIENT_PLAYER_COUNT);
     let kart_count: SimpleDataType<u8> = SimpleDataType::new();
     StructType::new("ClientIdentitySpecified")
         .with_field("players", players)
