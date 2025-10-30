@@ -3,7 +3,7 @@
 #include "native/online/ServerConnectionStateIdle.hh"
 
 ServerConnection::ServerConnection(const ServerPlatform &platform)
-    : m_state(new(platform.allocator) ServerConnectionStateIdle(platform)) {}
+    : m_state(new (platform.allocator) ServerConnectionStateIdle(platform)) {}
 
 ServerConnection::~ServerConnection() = default;
 

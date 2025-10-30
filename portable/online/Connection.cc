@@ -4,7 +4,7 @@
 
 Connection::Connection(const ClientPlatform &platform, PublicKey serverPK,
         const Array<char, 32> &name, u16 port)
-    : m_state(new(platform.allocator) ConnectionStateDNS(platform, serverPK, name, port)) {}
+    : m_state(new (platform.allocator) ConnectionStateDNS(platform, serverPK, name, port)) {}
 
 Connection::~Connection() {}
 

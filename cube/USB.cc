@@ -55,7 +55,8 @@ void USB::Handler::pollAdd() {
     }
 }
 
-USB::Device::Device() : m_handler(nullptr), m_transfer(new(MEM2Arena::Instance(), 0x20) Transfer) {}
+USB::Device::Device()
+    : m_handler(nullptr), m_transfer(new (MEM2Arena::Instance(), 0x20) Transfer) {}
 
 USB::Device::~Device() {}
 
