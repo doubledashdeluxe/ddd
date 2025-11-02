@@ -78,6 +78,32 @@ void SceneServerSelect::init() {
         Client::Instance()->reset();
     }
 
+    u32 playerCount = SequenceInfo::Instance().m_padCount;
+    const RaceInfo &raceInfo = RaceInfo::Instance();
+    OnlineInfo &onlineInfo = OnlineInfo::Instance();
+    s16 tandemCount = playerCount - raceInfo.m_statusCount;
+    for (s16 i = 0; i < raceInfo.m_statusCount; i++) {
+        Kart &kart = onlineInfo.m_localKarts[i];
+        kart.local = true;
+        if (i < tandemCount) {
+            kart.playerCount = 2;
+            kart.players[0].index = i / 2 + 0;
+            kart.players[1].index = i / 2 + 1;
+        } else {
+            kart.playerCount = 1;
+            kart.players[0].index = i + tandemCount;
+        }
+        for (u32 j = 0; j < kart.players.count(); j++) {
+            Player &player = kart.players[j];
+            if (j < kart.playerCount) {
+                player.name = onlineInfo.m_names[player.index];
+            } else {
+                player.index = UINT8_MAX;
+                player.name = "   ";
+            }
+        }
+    }
+
     m_serverCount = 0;
     for (u32 i = 0; i < m_descs.count(); i++) {
         // Crashes MWCC:
@@ -92,15 +118,13 @@ void SceneServerSelect::init() {
         snprintf(m_playerCounts[i].values(), m_playerCounts[i].count(), "");
     }
 
-    u32 playerCount = SequenceInfo::Instance().m_padCount;
     m_writeInfo.playerCount = playerCount;
-    const OnlineInfo &onlineInfo = OnlineInfo::Instance();
     for (u32 i = 0; i < playerCount; i++) {
         u32 profileIndex = onlineInfo.m_profileIndices[i];
         m_writeInfo.players[i].profile = profileIndex;
         m_writeInfo.players[i].name = onlineInfo.m_names[i];
     }
-    m_writeInfo.kartCount = RaceInfo::Instance().m_statusCount;
+    m_writeInfo.kartCount = raceInfo.m_statusCount;
 
     if (CubeServerManager::Instance()->lock()) {
         slideIn();

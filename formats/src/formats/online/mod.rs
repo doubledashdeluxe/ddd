@@ -10,7 +10,7 @@ mod server_state;
 
 pub fn format() -> Format<impl ConstantList, impl TypeList> {
     let default_port = SimpleConstant::new("DEFAULT_PORT", 3549u16);
-    let protocol_version = SimpleConstant::new("PROTOCOL_VERSION", 4u32);
+    let protocol_version = SimpleConstant::new("PROTOCOL_VERSION", 5u32);
     let max_lap_count = SimpleConstant::new("MAX_LAP_COUNT", 9u8);
     let min_match_count = SimpleConstant::new("MIN_MATCH_COUNT", 1u8);
     let max_match_count = SimpleConstant::new("MAX_MATCH_COUNT", 96u8);
@@ -22,6 +22,7 @@ pub fn format() -> Format<impl ConstantList, impl TypeList> {
         SimpleConstant::new("MAX_CLIENT_PLAYER_COUNT", MAX_CLIENT_PLAYER_COUNT);
     let player_name_length = SimpleConstant::new("PLAYER_NAME_LENGTH", PLAYER_NAME_LENGTH);
     let mode_index_count = SimpleConstant::new("MODE_INDEX_COUNT", MODE_INDEX_COUNT);
+    let max_team_count = SimpleConstant::new("MAX_TEAM_COUNT", MAX_TEAM_COUNT);
     let max_motd_length = SimpleConstant::new("MAX_MOTD_LENGTH", MAX_MOTD_LENGTH);
     let format_count = SimpleConstant::new("FORMAT_COUNT", FORMAT_COUNT);
     let max_room_kart_count = SimpleConstant::new("MAX_ROOM_KART_COUNT", MAX_ROOM_KART_COUNT);
@@ -40,6 +41,7 @@ pub fn format() -> Format<impl ConstantList, impl TypeList> {
         .with_constant(player_name_length)
         .with_constant(mode_index_count)
         .with_constant(max_motd_length)
+        .with_constant(max_team_count)
         .with_constant(format_count)
         .with_constant(max_room_kart_count)
         .with_constant(min_kart_player_count)
@@ -65,6 +67,10 @@ pub fn format() -> Format<impl ConstantList, impl TypeList> {
         .with_type(client_room_state_main())
         .with_type(client_room_state())
         .with_type(client_state_room())
+        .with_type(client_team_state_host())
+        .with_type(client_team_state_guest())
+        .with_type(client_team_state())
+        .with_type(client_state_team())
         .with_type(client_state())
         .with_type(server_identity_unspecified())
         .with_type(server_identity_specified())
@@ -79,5 +85,8 @@ pub fn format() -> Format<impl ConstantList, impl TypeList> {
         .with_type(server_room_state_main())
         .with_type(server_room_state())
         .with_type(server_state_room())
+        .with_type(server_team_state_main())
+        .with_type(server_team_state())
+        .with_type(server_state_team())
         .with_type(server_state())
 }

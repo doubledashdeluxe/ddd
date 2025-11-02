@@ -214,7 +214,7 @@ void SceneModeSelect::slideIn() {
     }
     m_descOffsets.fill(0);
     for (u32 i = 0; i < m_playerCounts.count(); i++) {
-        snprintf(m_playerCounts[i].values(), m_playerCounts[i].count(), "...");
+        m_playerCounts[i] = "...";
     }
 
     for (u32 i = 0; i < m_modeScreens.count(); i++) {

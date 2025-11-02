@@ -26,6 +26,10 @@ ClientState &ClientState::writeStateRoom(const ClientStateRoomWriteInfo & /* wri
     return *(new (m_platform.allocator) ClientStateError(m_platform));
 }
 
+ClientState &ClientState::writeStateTeam(const ClientStateTeamWriteInfo & /* writeInfo */) {
+    return *(new (m_platform.allocator) ClientStateError(m_platform));
+}
+
 ClientState &ClientState::writeStateError() {
     return *(new (m_platform.allocator) ClientStateError(m_platform));
 }

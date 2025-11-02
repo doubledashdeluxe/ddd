@@ -43,7 +43,7 @@ impl<L: VariantList> ComplexDataType for EnumType<L> {
     fn rs(&self) -> String {
         format!(
             concat!(
-                "#[derive(Clone, Debug)]\n",
+                "#[derive(Clone, Debug, PartialEq)]\n",
                 "pub enum {} {{\n",
                 "{}}}\n",
                 "\n",

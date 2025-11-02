@@ -6,6 +6,7 @@
 #include "portable/online/ClientStatePackWriteInfo.hh"
 #include "portable/online/ClientStateRoomWriteInfo.hh"
 #include "portable/online/ClientStateServerWriteInfo.hh"
+#include "portable/online/ClientStateTeamWriteInfo.hh"
 
 class ClientState {
 public:
@@ -18,6 +19,7 @@ public:
     virtual ClientState &writeStateMode(const ClientStateModeWriteInfo &writeInfo);
     virtual ClientState &writeStatePack(const ClientStatePackWriteInfo &writeInfo);
     virtual ClientState &writeStateRoom(const ClientStateRoomWriteInfo &writeInfo);
+    virtual ClientState &writeStateTeam(const ClientStateTeamWriteInfo &writeInfo);
     virtual ClientState &writeStateError();
 
 protected:

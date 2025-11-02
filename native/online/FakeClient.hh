@@ -33,12 +33,14 @@ private:
     bool clientStateMode(const ClientStateModeReadInfo &readInfo) override;
     bool clientStatePack(const ClientStatePackReadInfo &readInfo) override;
     bool clientStateRoom(const ClientStateRoomReadInfo &readInfo) override;
+    bool clientStateTeam(const ClientStateTeamReadInfo &readInfo) override;
     void clientStateError() override;
 
     ClientState &writeStateServer();
     ClientState &writeStateMode();
     ClientState &writeStatePack();
     ClientState &writeStateRoom();
+    ClientState &writeStateTeam();
 
     bool updateState(ClientState &nextState);
 

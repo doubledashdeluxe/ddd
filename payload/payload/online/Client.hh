@@ -20,6 +20,7 @@ public:
     void writeStateMode(const ClientStateModeWriteInfo &writeInfo);
     void writeStatePack(const ClientStatePackWriteInfo &writeInfo);
     void writeStateRoom(const ClientStateRoomWriteInfo &writeInfo);
+    void writeStateTeam(const ClientStateTeamWriteInfo &writeInfo);
     void writeStateError();
 
     static void Init(JKRHeap *parentHeap, SOConfig &config);

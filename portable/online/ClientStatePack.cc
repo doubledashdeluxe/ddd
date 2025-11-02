@@ -82,6 +82,10 @@ ServerStateRoomReader *ClientStatePack::roomReader() {
     return nullptr;
 }
 
+ServerStateTeamReader *ClientStatePack::teamReader() {
+    return nullptr;
+}
+
 bool ClientStatePack::isModeIndexValid(u8 modeIndex) {
     return modeIndex == m_writeInfo.modeIndex;
 }

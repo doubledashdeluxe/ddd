@@ -34,7 +34,11 @@ public:
 
 private:
     u8 _01a[0x01c - 0x01a];
+
+public:
     s16 m_kartCount;
+
+private:
     u8 _01e[0x020 - 0x01e];
     s16 m_consoleCount;
 

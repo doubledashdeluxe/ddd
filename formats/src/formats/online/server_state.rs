@@ -12,6 +12,7 @@ pub fn server_state() -> impl ComplexDataType {
         .with_variant("Mode", server_state_mode())
         .with_variant("Pack", server_state_pack())
         .with_variant("Room", server_state_room())
+        .with_variant("Team", server_state_team())
 }
 
 pub fn server_state_server() -> impl ComplexDataType {
@@ -86,6 +87,7 @@ pub fn server_room_state_main() -> impl ComplexDataType {
     let room_code: SimpleDataType<u64> = SimpleDataType::new();
     let spectating_counter: SimpleDataType<u32> = SimpleDataType::new();
     let spectating: SimpleDataType<u8> = SimpleDataType::new();
+    let continuing: SimpleDataType<u8> = SimpleDataType::new();
     StructType::new("ServerRoomStateMain")
         .with_field("karts", karts)
         .with_field("spectator_count", spectator_count)
@@ -96,6 +98,7 @@ pub fn server_room_state_main() -> impl ComplexDataType {
         .with_field("spectating_counter", spectating_counter)
         .with_field("spectating", spectating)
         .with_field("options", server_room_options())
+        .with_field("continuing", continuing)
 }
 
 pub fn server_room_options() -> impl ComplexDataType {
@@ -105,18 +108,38 @@ pub fn server_room_options() -> impl ComplexDataType {
 }
 
 pub fn server_kart() -> impl ComplexDataType {
+    let local: SimpleDataType<u8> = SimpleDataType::new();
     let players = ArrayType::new(server_player(), MIN_KART_PLAYER_COUNT, MAX_KART_PLAYER_COUNT);
-    StructType::new("ServerKart").with_field("players", players)
+    StructType::new("ServerKart").with_field("local", local).with_field("players", players)
 }
 
 pub fn server_player() -> impl ComplexDataType {
+    let index: SimpleDataType<u8> = SimpleDataType::new();
     let name_element: SimpleDataType<u8> = SimpleDataType::new();
     let name = ArrayType::new(name_element, PLAYER_NAME_LENGTH, PLAYER_NAME_LENGTH);
-    StructType::new("ServerPlayer").with_field("name", name)
+    StructType::new("ServerPlayer").with_field("index", index).with_field("name", name)
+}
+
+pub fn server_state_team() -> impl ComplexDataType {
+    StructType::new("ServerStateTeam").with_field("server_team_state", server_team_state())
+}
+
+pub fn server_team_state() -> impl ComplexDataType {
+    EnumType::new("ServerTeamState")
+        .with_variant("Main", server_team_state_main())
+        .with_variant("Error", UnitType)
+}
+
+pub fn server_team_state_main() -> impl ComplexDataType {
+    let team: SimpleDataType<u8> = SimpleDataType::new();
+    let teams = ArrayType::new(team, 2, MAX_ROOM_KART_COUNT);
+    let entry_index: SimpleDataType<u8> = SimpleDataType::new();
+    StructType::new("ServerTeamStateMain")
+        .with_field("teams", teams)
+        .with_field("entry_index", entry_index)
 }
 
 pub const MAX_MOTD_LENGTH: u8 = 99;
 pub const FORMAT_COUNT: u8 = 3;
-pub const MAX_ROOM_KART_COUNT: u8 = 8;
 pub const MIN_KART_PLAYER_COUNT: u8 = 1;
 pub const MAX_KART_PLAYER_COUNT: u8 = 2;

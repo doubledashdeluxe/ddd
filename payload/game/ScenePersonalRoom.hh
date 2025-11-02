@@ -50,6 +50,7 @@ private:
     bool m_isHost;
     bool m_isRace;
     bool m_canContinue;
+    bool m_continuing;
     u32 m_charCount;
     Array<u8, MaxCharCount> m_chars;
     bool m_revealCode;

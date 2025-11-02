@@ -118,6 +118,10 @@ ServerStateRoomReader *ClientStateServer::roomReader() {
     return nullptr;
 }
 
+ServerStateTeamReader *ClientStateServer::teamReader() {
+    return nullptr;
+}
+
 bool ClientStateServer::isProtocolVersionValid(u32 /* protocolVersion */) {
     return true;
 }

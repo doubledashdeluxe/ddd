@@ -35,6 +35,20 @@ u32 RoomOption::NextValue(u32 roomOption, u32 value) {
     return option.values ? option.values[index] : index;
 }
 
+s32 RoomOption::Direction(u32 roomOption, u32 value, u32 targetValue) {
+    if (value == targetValue) {
+        return 0;
+    }
+    const Option &option = s_options[roomOption];
+    for (u32 i = 0; i < option.count / 2; i++) {
+        value = NextValue(roomOption, value);
+        if (value == targetValue) {
+            return 1;
+        }
+    }
+    return -1;
+}
+
 u32 RoomOption::Read(u32 roomOption, const RoomOptions &options) {
     return options.*s_options[roomOption].accessor;
 }

@@ -3,20 +3,12 @@
 #include "portable/Array.hh"
 #include "portable/Optional.hh"
 #include "portable/crypto/Types.hh"
+#include "portable/online/Kart.hh"
 #include "portable/online/RoomOptions.hh"
 
 #include <formats/Online.hh>
 
 struct ClientStateRoomReadInfo {
-    struct Player {
-        Array<char, PlayerNameLength + 1> name;
-    };
-
-    struct Kart {
-        u8 playerCount;
-        Array<Player, MaxKartPlayerCount> players;
-    };
-
     struct Info {
         u8 kartCount;
         Array<Kart, MaxRoomKartCount> karts;
@@ -29,6 +21,7 @@ struct ClientStateRoomReadInfo {
         bool isRace;
         RoomOptions options;
         u8 entryIndex;
+        bool continuing;
     };
 
     bool ok;

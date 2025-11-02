@@ -38,6 +38,7 @@ public:
     ClientState &writeStateMode(const ClientStateModeWriteInfo &writeInfo) override;
     ClientState &writeStatePack(const ClientStatePackWriteInfo &writeInfo) override;
     ClientState &writeStateRoom(const ClientStateRoomWriteInfo &writeInfo) override;
+    ClientState &writeStateTeam(const ClientStateTeamWriteInfo &writeInfo) override;
 
 private:
     typedef ClientStateRoomReadInfo ReadInfo;
@@ -47,6 +48,7 @@ private:
     ServerStateModeReader *modeReader() override;
     ServerStatePackReader *packReader() override;
     ServerStateRoomReader *roomReader() override;
+    ServerStateTeamReader *teamReader() override;
 
     ServerRoomStateReader *serverRoomStateReader() override;
 
@@ -74,11 +76,17 @@ private:
     bool isSpectatingValid(u8 spectating) override;
     void setSpectating(u8 spectating) override;
     ServerRoomOptionsReader *optionsReader() override;
+    bool isContinuingValid(u8 continuing) override;
+    void setContinuing(u8 continuing) override;
 
+    bool isLocalValid(u8 local) override;
+    void setLocal(u8 local) override;
     bool isPlayersCountValid(u32 playersCount) override;
     void setPlayersCount(u32 playersCount) override;
     ServerPlayerReader *playersElementReader(u32 i0) override;
 
+    bool isIndexValid(u8 index) override;
+    void setIndex(u8 index) override;
     bool isNameCountValid(u32 nameCount) override;
     void setNameCount(u32 nameCount) override;
     bool isNameElementValid(u32 i0, u8 nameElement) override;
@@ -126,6 +134,7 @@ private:
     u32 getSpectatingCounter() override;
     u8 getSpectating() override;
     ClientRoomOptionsWriter &optionsWriter() override;
+    u8 getContinuing() override;
 
     RoomOptionsRaceWriter &raceWriter() override;
     RoomOptionsBattleWriter &battleWriter() override;

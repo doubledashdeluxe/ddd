@@ -12,6 +12,7 @@ pub fn client_state() -> impl ComplexDataType {
         .with_variant("Mode", client_state_mode())
         .with_variant("Pack", client_state_pack())
         .with_variant("Room", client_state_room())
+        .with_variant("Team", client_state_team())
 }
 
 pub fn client_state_server() -> impl ComplexDataType {
@@ -95,10 +96,12 @@ pub fn client_room_state_code() -> impl ComplexDataType {
 pub fn client_room_state_main() -> impl ComplexDataType {
     let spectating_counter: SimpleDataType<u32> = SimpleDataType::new();
     let spectating: SimpleDataType<u8> = SimpleDataType::new();
+    let continuing: SimpleDataType<u8> = SimpleDataType::new();
     StructType::new("ClientRoomStateMain")
         .with_field("spectating_counter", spectating_counter)
         .with_field("spectating", spectating)
         .with_field("options", client_room_options())
+        .with_field("continuing", continuing)
 }
 
 pub fn client_room_options() -> impl ComplexDataType {
@@ -106,4 +109,27 @@ pub fn client_room_options() -> impl ComplexDataType {
         .with_variant("Race", room_options_race())
         .with_variant("Battle", room_options_battle())
         .with_variant("None", UnitType)
+}
+
+pub fn client_state_team() -> impl ComplexDataType {
+    StructType::new("ClientStateTeam").with_field("client_team_state", client_team_state())
+}
+
+pub fn client_team_state() -> impl ComplexDataType {
+    EnumType::new("ClientTeamState")
+        .with_variant("Host", client_team_state_host())
+        .with_variant("Guest", client_team_state_guest())
+}
+
+pub fn client_team_state_host() -> impl ComplexDataType {
+    let team: SimpleDataType<u8> = SimpleDataType::new();
+    let teams = ArrayType::new(team, 2, MAX_ROOM_KART_COUNT);
+    let entry_index: SimpleDataType<u8> = SimpleDataType::new();
+    StructType::new("ClientTeamStateHost")
+        .with_field("teams", teams)
+        .with_field("entry_index", entry_index)
+}
+
+pub fn client_team_state_guest() -> impl ComplexDataType {
+    StructType::new("ClientTeamStateGuest")
 }

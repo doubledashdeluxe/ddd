@@ -4,8 +4,11 @@
 
 #include <jsystem/J2DScreen.hh>
 #include <portable/Array.hh>
+#include <portable/online/ClientReadHandler.hh>
 
-class SceneTeamSelect : public Scene {
+class SceneTeamSelect
+    : public Scene
+    , private ClientReadHandler {
 public:
     SceneTeamSelect(JKRArchive *archive, JKRHeap *heap);
     ~SceneTeamSelect() override;
@@ -15,11 +18,14 @@ public:
 
 private:
     enum {
-        MaxPlayerCount = 8,
-        MaxEntryCount = MaxPlayerCount + 1,
+        MaxEntryCount = MaxRoomKartCount + 1,
     };
 
     typedef void (SceneTeamSelect::*State)();
+
+    bool clientStateRoom(const ClientStateRoomReadInfo &readInfo) override;
+    bool clientStateTeam(const ClientStateTeamReadInfo &readInfo) override;
+    void clientStateError() override;
 
     void slideIn();
     void slideOut();
@@ -34,8 +40,11 @@ private:
     void stateNextScene();
 
     State m_state;
-    u32 m_playerCount;
-    Array<u8, MaxPlayerCount> m_teams;
+    bool m_ok;
+    bool m_isHost;
+    bool m_canContinue;
+    u32 m_kartCount;
+    Array<u8, MaxRoomKartCount> m_teams;
     u32 m_entryIndex;
     u32 m_teamCount;
     u32 m_spinFrame;

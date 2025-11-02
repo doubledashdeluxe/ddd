@@ -206,7 +206,7 @@ void SceneFormatSelect::slideIn() {
     m_packIndex = SequenceInfo::Instance().m_packIndex;
     m_formatIndex = 0;
     for (u32 i = 0; i < m_playerCounts.count(); i++) {
-        snprintf(m_playerCounts[i].values(), m_playerCounts[i].count(), "...");
+        m_playerCounts[i] = "...";
     }
 
     const CourseManager *courseManager = CourseManager::Instance();

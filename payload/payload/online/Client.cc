@@ -37,6 +37,10 @@ void Client::writeStateRoom(const ClientStateRoomWriteInfo &writeInfo) {
     while (updateState(m_state->writeStateRoom(writeInfo))) {}
 }
 
+void Client::writeStateTeam(const ClientStateTeamWriteInfo &writeInfo) {
+    while (updateState(m_state->writeStateTeam(writeInfo))) {}
+}
+
 void Client::writeStateError() {
     while (updateState(m_state->writeStateError())) {}
 }

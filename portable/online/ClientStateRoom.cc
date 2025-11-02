@@ -4,6 +4,7 @@
 #include "portable/online/ClientStateError.hh"
 #include "portable/online/ClientStateMode.hh"
 #include "portable/online/ClientStatePack.hh"
+#include "portable/online/ClientStateTeam.hh"
 
 ClientStateRoom::ClientStateRoom(const ClientPlatform &platform, Connection &connection,
         const ClientStateRoomWriteInfo &writeInfo)
@@ -27,7 +28,20 @@ ClientState &ClientStateRoom::read(ClientReadHandler &handler) {
         if (result < 0) {
             break;
         }
-        m_connection->read(*this, buffer.values(), result, address);
+        if (!m_connection->read(*this, buffer.values(), result, address)) {
+            continue;
+        }
+        Optional<ReadInfo::Info> &info = m_readInfo.info;
+        if (info) {
+            for (u32 j = 0; j < info->kartCount; j++) {
+                Kart &kart = info->karts[j];
+                for (u32 k = kart.playerCount; k < kart.players.count(); k++) {
+                    Player &player = kart.players[k];
+                    player.index = UINT8_MAX;
+                    player.name = "   ";
+                }
+            }
+        }
     }
 
     if (!handler.clientStateRoom(m_readInfo)) {
@@ -55,6 +69,7 @@ ClientState &ClientStateRoom::writeStateRoom(const ClientStateRoomWriteInfo &wri
     m_writeInfo.spectating = writeInfo.spectating;
     m_writeInfo.options = writeInfo.options;
     m_writeInfo.entryIndex = writeInfo.entryIndex;
+    m_writeInfo.continuing = writeInfo.continuing;
 
     Array<u8, 512> buffer;
     u32 size = buffer.count();
@@ -64,6 +79,11 @@ ClientState &ClientStateRoom::writeStateRoom(const ClientStateRoomWriteInfo &wri
     }
 
     return *this;
+}
+
+ClientState &ClientStateRoom::writeStateTeam(const ClientStateTeamWriteInfo &writeInfo) {
+    Connection &connection = *m_connection.release();
+    return *(new (m_platform.allocator) ClientStateTeam(m_platform, connection, writeInfo));
 }
 
 ServerStateServerReader *ClientStateRoom::serverReader() {
@@ -82,6 +102,10 @@ ServerStateRoomReader *ClientStateRoom::roomReader() {
     return this;
 }
 
+ServerStateTeamReader *ClientStateRoom::teamReader() {
+    return nullptr;
+}
+
 ServerRoomStateReader *ClientStateRoom::serverRoomStateReader() {
     return this;
 }
@@ -98,8 +122,9 @@ void ClientStateRoom::setError() {
     m_readInfo.ok = false;
 }
 
-bool ClientStateRoom::isKartsCountValid(u32 /* kartsCount */) {
-    return true;
+bool ClientStateRoom::isKartsCountValid(u32 kartsCount) {
+    const Optional<ReadInfo::Info> &info = m_readInfo.info;
+    return !info || !info->continuing || kartsCount == info->kartCount;
 }
 
 void ClientStateRoom::setKartsCount(u32 kartsCount) {
@@ -173,8 +198,9 @@ void ClientStateRoom::setSpectatingCounter(u32 spectatingCounter) {
     m_readInfo.info.getOrEmplace().spectatingCounter = spectatingCounter;
 }
 
-bool ClientStateRoom::isSpectatingValid(u8 /* spectating */) {
-    return true;
+bool ClientStateRoom::isSpectatingValid(u8 spectating) {
+    const Optional<ReadInfo::Info> &info = m_readInfo.info;
+    return !info || !info->continuing || spectating == info->spectating;
 }
 
 void ClientStateRoom::setSpectating(u8 spectating) {
@@ -185,8 +211,27 @@ ServerRoomOptionsReader *ClientStateRoom::optionsReader() {
     return this;
 }
 
-bool ClientStateRoom::isPlayersCountValid(u32 /* playersCount */) {
-    return true;
+bool ClientStateRoom::isContinuingValid(u8 continuing) {
+    const Optional<ReadInfo::Info> &info = m_readInfo.info;
+    return !info || !info->continuing || continuing;
+}
+
+void ClientStateRoom::setContinuing(u8 continuing) {
+    m_readInfo.info.getOrEmplace().continuing = continuing;
+}
+
+bool ClientStateRoom::isLocalValid(u8 local) {
+    const Optional<ReadInfo::Info> &info = m_readInfo.info;
+    return !info || !info->continuing || local == info->karts[m_kartIndex].local;
+}
+
+void ClientStateRoom::setLocal(u8 local) {
+    m_readInfo.info.getOrEmplace().karts[m_kartIndex].local = local;
+}
+
+bool ClientStateRoom::isPlayersCountValid(u32 playersCount) {
+    const Optional<ReadInfo::Info> &info = m_readInfo.info;
+    return !info || !info->continuing || playersCount == info->karts[m_kartIndex].playerCount;
 }
 
 void ClientStateRoom::setPlayersCount(u32 playersCount) {
@@ -196,6 +241,14 @@ void ClientStateRoom::setPlayersCount(u32 playersCount) {
 ServerPlayerReader *ClientStateRoom::playersElementReader(u32 i0) {
     m_playerIndex = i0;
     return this;
+}
+
+bool ClientStateRoom::isIndexValid(u8 index) {
+    return index < MaxClientPlayerCount;
+}
+
+void ClientStateRoom::setIndex(u8 index) {
+    m_readInfo.info.getOrEmplace().karts[m_kartIndex].players[m_playerIndex].index = index;
 }
 
 bool ClientStateRoom::isNameCountValid(u32 /* nameCount */) {
@@ -248,32 +301,36 @@ void ClientStateRoom::setBattle() {
     m_readInfo.info.getOrEmplace().isRace = false;
 }
 
-bool ClientStateRoom::isCodeTypeValid(u8 /* codeType */) {
-    return true;
+bool ClientStateRoom::isCodeTypeValid(u8 codeType) {
+    const Optional<ReadInfo::Info> &info = m_readInfo.info;
+    return !info || !info->continuing || codeType == info->options.codeType;
 }
 
 void ClientStateRoom::setCodeType(u8 codeType) {
     m_readInfo.info.getOrEmplace().options.codeType = codeType;
 }
 
-bool ClientStateRoom::isFormatValid(u8 /* format */) {
-    return true;
+bool ClientStateRoom::isFormatValid(u8 format) {
+    const Optional<ReadInfo::Info> &info = m_readInfo.info;
+    return !info || !info->continuing || format == info->options.format;
 }
 
 void ClientStateRoom::setFormat(u8 format) {
     m_readInfo.info.getOrEmplace().options.format = format;
 }
 
-bool ClientStateRoom::isEngineSizeValid(u8 /* engineSize */) {
-    return true;
+bool ClientStateRoom::isEngineSizeValid(u8 engineSize) {
+    const Optional<ReadInfo::Info> &info = m_readInfo.info;
+    return !info || !info->continuing || engineSize == info->options.engineSize;
 }
 
 void ClientStateRoom::setEngineSize(u8 engineSize) {
     m_readInfo.info.getOrEmplace().options.engineSize = engineSize;
 }
 
-bool ClientStateRoom::isItemModeValid(u8 /* itemMode */) {
-    return true;
+bool ClientStateRoom::isItemModeValid(u8 itemMode) {
+    const Optional<ReadInfo::Info> &info = m_readInfo.info;
+    return !info || !info->continuing || itemMode == info->options.itemMode;
 }
 
 void ClientStateRoom::setItemMode(u8 itemMode) {
@@ -281,7 +338,12 @@ void ClientStateRoom::setItemMode(u8 itemMode) {
 }
 
 bool ClientStateRoom::isLapCountValid(u8 lapCount) {
-    return lapCount <= MaxLapCount;
+    const Optional<ReadInfo::Info> &info = m_readInfo.info;
+    if (info && info->continuing) {
+        return lapCount == info->options.lapCount;
+    } else {
+        return lapCount <= MaxLapCount;
+    }
 }
 
 void ClientStateRoom::setLapCount(u8 lapCount) {
@@ -289,23 +351,30 @@ void ClientStateRoom::setLapCount(u8 lapCount) {
 }
 
 bool ClientStateRoom::isMatchCountValid(u8 matchCount) {
-    return matchCount >= MinMatchCount && matchCount <= MaxMatchCount;
+    const Optional<ReadInfo::Info> &info = m_readInfo.info;
+    if (info && info->continuing) {
+        return matchCount == info->options.matchCount;
+    } else {
+        return matchCount >= MinMatchCount && matchCount <= MaxMatchCount;
+    }
 }
 
 void ClientStateRoom::setMatchCount(u8 matchCount) {
     m_readInfo.info.getOrEmplace().options.matchCount = matchCount;
 }
 
-bool ClientStateRoom::isCourseSelectionValid(u8 /* courseSelection */) {
-    return true;
+bool ClientStateRoom::isCourseSelectionValid(u8 courseSelection) {
+    const Optional<ReadInfo::Info> &info = m_readInfo.info;
+    return !info || !info->continuing || courseSelection == info->options.courseSelection;
 }
 
 void ClientStateRoom::setCourseSelection(u8 courseSelection) {
     m_readInfo.info.getOrEmplace().options.courseSelection = courseSelection;
 }
 
-bool ClientStateRoom::isEntryIndexValid(u8 /* entryIndex */) {
-    return true;
+bool ClientStateRoom::isEntryIndexValid(u8 entryIndex) {
+    const Optional<ReadInfo::Info> &info = m_readInfo.info;
+    return !info || !info->continuing || entryIndex == info->entryIndex;
 }
 
 void ClientStateRoom::setEntryIndex(u8 entryIndex) {
@@ -378,6 +447,10 @@ ClientRoomOptionsWriter &ClientStateRoom::optionsWriter() {
     } else {
         return Upcast<ClientRoomOptionsWriter::None>(*this);
     }
+}
+
+u8 ClientStateRoom::getContinuing() {
+    return m_writeInfo.continuing;
 }
 
 RoomOptionsRaceWriter &ClientStateRoom::raceWriter() {

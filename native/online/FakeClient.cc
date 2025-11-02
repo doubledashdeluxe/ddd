@@ -50,6 +50,11 @@ bool FakeClient::clientStatePack(const ClientStatePackReadInfo & /* readInfo */)
 }
 
 bool FakeClient::clientStateRoom(const ClientStateRoomReadInfo & /* readInfo */) {
+    m_writer = &FakeClient::writeStateTeam;
+    return true;
+}
+
+bool FakeClient::clientStateTeam(const ClientStateTeamReadInfo & /* readInfo */) {
     return true;
 }
 
@@ -98,7 +103,19 @@ ClientState &FakeClient::writeStateRoom() {
     writeInfo.options.matchCount = 4;
     writeInfo.options.courseSelection = 0;
     writeInfo.entryIndex = 0;
+    writeInfo.continuing = true;
     return m_state->writeStateRoom(writeInfo);
+}
+
+ClientState &FakeClient::writeStateTeam() {
+    ClientStateTeamWriteInfo writeInfo;
+    writeInfo.isHost = true;
+    writeInfo.kartCount = 2;
+    writeInfo.kartTeams[0] = 0;
+    writeInfo.kartTeams[1] = 1;
+    writeInfo.entryIndex = 0;
+    writeInfo.teamCount = 2;
+    return m_state->writeStateTeam(writeInfo);
 }
 
 bool FakeClient::updateState(ClientState &nextState) {

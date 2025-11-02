@@ -44,7 +44,7 @@ impl<L: FieldList> ComplexDataType for StructType<L> {
     fn rs(&self) -> String {
         format!(
             concat!(
-                "#[derive(Clone, Debug)]\n",
+                "#[derive(Clone, Debug, PartialEq)]\n",
                 "pub struct {} {{\n",
                 "{}}}\n",
                 "\n",

@@ -19,3 +19,7 @@ bool ClientReadHandler::clientStatePack(const ClientStatePackReadInfo & /* readI
 bool ClientReadHandler::clientStateRoom(const ClientStateRoomReadInfo & /* readInfo */) {
     return false;
 }
+
+bool ClientReadHandler::clientStateTeam(const ClientStateTeamReadInfo & /* readInfo */) {
+    return false;
+}

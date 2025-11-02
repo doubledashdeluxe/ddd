@@ -14,4 +14,5 @@ struct ClientStateRoomWriteInfo {
     bool spectating;
     RoomOptions options;
     u8 entryIndex;
+    bool continuing;
 };

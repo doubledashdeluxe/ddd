@@ -81,3 +81,5 @@ pub const MIN_CLIENT_PLAYER_COUNT: u8 = 1;
 pub const MAX_CLIENT_PLAYER_COUNT: u8 = 4;
 pub const PLAYER_NAME_LENGTH: u8 = 3;
 pub const MODE_INDEX_COUNT: u8 = 5;
+pub const MAX_ROOM_KART_COUNT: u8 = 8;
+pub const MAX_TEAM_COUNT: u8 = 4;

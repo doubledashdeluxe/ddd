@@ -1,10 +1,12 @@
 #include "SceneTeamSelect.hh"
 
+#include "game/ErrorViewApp.hh"
 #include "game/GameAudioMain.hh"
 #include "game/Kart2DCommon.hh"
 #include "game/KartGamePad.hh"
 #include "game/MenuTitleLine.hh"
 #include "game/OnlineBackground.hh"
+#include "game/OnlineInfo.hh"
 #include "game/OnlineTimer.hh"
 #include "game/Race2D.hh"
 #include "game/RaceInfo.hh"
@@ -16,6 +18,7 @@
 
 #include <jsystem/J2DAnmLoaderDataBase.hh>
 #include <payload/crypto/CubeRandom.hh>
+#include <payload/online/Client.hh>
 #include <portable/Algorithm.hh>
 
 extern "C" {
@@ -42,13 +45,7 @@ SceneTeamSelect::SceneTeamSelect(JKRArchive *archive, JKRHeap *heap) : Scene(arc
         m_mainScreen.search("Player%u", i)->appendChild(&m_entryScreens[i]);
     }
 
-    Kart2DCommon *kart2DCommon = Kart2DCommon::Instance();
     J2DScreen &okScreen = m_entryScreens[MaxEntryCount - 1];
-    const char *path = "/ok.txt";
-    char *ok = static_cast<char *>(ResMgr::GetPtr(ResMgr::ArchiveID::MRAMLoc, path));
-    u32 size = ResMgr::GetResSize(ResMgr::ArchiveID::MRAMLoc, ok);
-    ok[size - 1] = '\0';
-    kart2DCommon->changeUnicodeTexture(ok, 6, okScreen, "Ok");
     okScreen.search("L0")->m_isVisible = false;
     okScreen.search("R0")->m_isVisible = false;
     okScreen.search("Team")->m_isVisible = false;
@@ -117,14 +114,18 @@ SceneTeamSelect::SceneTeamSelect(JKRArchive *archive, JKRHeap *heap) : Scene(arc
 SceneTeamSelect::~SceneTeamSelect() {}
 
 void SceneTeamSelect::init() {
-    m_playerCount = 8;
+    const RaceInfo &raceInfo = RaceInfo::Instance();
+    const OnlineInfo &onlineInfo = OnlineInfo::Instance();
+    m_ok = true;
+    m_isHost = onlineInfo.m_isHost;
+    m_canContinue = true;
+    m_kartCount = raceInfo.m_kartCount;
     m_teams.fill(0);
     m_entryIndex = 0;
-    m_teamCount = 4;
+    m_teamCount = onlineInfo.m_teamCount;
 
     J2DPicture *iconPicture = m_modeScreen.search("BtlPict")->downcast<J2DPicture>();
     J2DPicture *namePicture = m_modeScreen.search("SubM")->downcast<J2DPicture>();
-    RaceInfo &raceInfo = RaceInfo::Instance();
     const char *iconTextureName = RaceMode::IconTextureName(raceInfo.m_raceMode);
     iconPicture->changeTexture(iconTextureName, 0);
     const char *nameTextureName = RaceMode::NameTextureName(raceInfo.m_raceMode);
@@ -146,13 +147,36 @@ void SceneTeamSelect::draw() {
 }
 
 void SceneTeamSelect::calc() {
+    Client *client = Client::Instance();
+    client->read(*this);
+
     (this->*m_state)();
 
     OnlineBackground::Instance()->calc();
     MenuTitleLine::Instance()->calc();
 
+    Array<u8, MaxTeamCount> teamSizes(0);
+    for (u32 i = 0; i < m_kartCount; i++) {
+        teamSizes[m_teams[i]]++;
+    }
+    const OnlineInfo &onlineInfo = OnlineInfo::Instance();
+    bool even = true;
+    for (u32 i = 0; i < teamSizes.count(); i++) {
+        even = even && teamSizes[i] <= onlineInfo.m_maxTeamSize;
+    }
+
     Kart2DCommon *kart2DCommon = Kart2DCommon::Instance();
-    for (u32 i = 0; i < m_playerCount; i++) {
+    J2DScreen &okScreen = m_entryScreens[MaxEntryCount - 1];
+    if (even) {
+        const char *path = "/ok.txt";
+        char *ok = static_cast<char *>(ResMgr::GetPtr(ResMgr::ArchiveID::MRAMLoc, path));
+        u32 size = ResMgr::GetResSize(ResMgr::ArchiveID::MRAMLoc, ok);
+        ok[size - 1] = '\0';
+        kart2DCommon->changeUnicodeTexture(ok, 6, okScreen, "Ok");
+    } else {
+        kart2DCommon->changeUnicodeTexture("...", 6, okScreen, "Ok");
+    }
+    for (u32 i = 0; i < m_kartCount; i++) {
         Array<char, 32> path;
         snprintf(path.values(), path.count(), "/teamnames/%u.txt", m_teams[i]);
         char *name = static_cast<char *>(ResMgr::GetPtr(ResMgr::ArchiveID::MRAMLoc, path.values()));
@@ -177,7 +201,7 @@ void SceneTeamSelect::calc() {
             }
         }
     }
-    for (u32 i = 0; i < m_playerCount; i++) {
+    for (u32 i = 0; i < m_kartCount; i++) {
         if (m_entryLeftAnmTransformFrames[i] > 0) {
             m_entryLeftAnmTransformFrames[i]++;
             if (m_entryLeftAnmTransformFrames[i] == 8) {
@@ -249,34 +273,89 @@ void SceneTeamSelect::calc() {
     }
 
     OnlineTimer::Instance()->calc();
+
+    ClientStateTeamWriteInfo writeInfo;
+    writeInfo.isHost = m_isHost;
+    writeInfo.kartCount = m_kartCount;
+    if (m_isHost) {
+        writeInfo.kartTeams = m_teams;
+        writeInfo.entryIndex = m_entryIndex;
+    }
+    writeInfo.teamCount = m_teamCount;
+    client->writeStateTeam(writeInfo);
+}
+
+bool SceneTeamSelect::clientStateRoom(const ClientStateRoomReadInfo & /* readInfo */) {
+    return true;
+}
+
+bool SceneTeamSelect::clientStateTeam(const ClientStateTeamReadInfo &readInfo) {
+    m_ok = m_ok && readInfo.ok;
+    const Optional<ClientStateTeamReadInfo::Info> &info = readInfo.info;
+    if (!info) {
+        return true;
+    }
+
+    if (m_isHost) {
+        m_canContinue = info->kartTeams == m_teams;
+    } else {
+        for (u32 i = 0; i < m_kartCount; i++) {
+            u8 team = info->kartTeams[i];
+            u32 distance = (m_teamCount + team - m_teams[i]) % m_teamCount;
+            if (distance != 0) {
+                if (distance <= m_teamCount / 2) {
+                    m_entryRightAnmTransformFrames[i] = 1;
+                    m_entryRightAnmTevRegKeyFrames[i] = 2;
+                } else {
+                    m_entryLeftAnmTransformFrames[i] = 1;
+                    m_entryLeftAnmTevRegKeyFrames[i] = 2;
+                }
+                GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE_LITTLE2);
+            }
+        }
+        m_teams = info->kartTeams;
+        if (info->entryIndex != m_entryIndex) {
+            if (info->entryIndex < m_kartCount) {
+                m_entryIndex = info->entryIndex;
+            } else {
+                m_entryIndex = MaxEntryCount - 1;
+            }
+            GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CURSOL);
+        }
+    }
+    return true;
+}
+
+void SceneTeamSelect::clientStateError() {
+    ErrorViewApp::Call(6);
 }
 
 void SceneTeamSelect::slideIn() {
+    const OnlineInfo &onlineInfo = OnlineInfo::Instance();
     Kart2DCommon *kart2DCommon = Kart2DCommon::Instance();
-    for (u32 i = 0; i < MaxPlayerCount; i++) {
-        m_mainScreen.search("Player%u", i)->m_isVisible = i < m_playerCount;
-        if (i < m_playerCount) {
-            J2DScreen &screen = m_entryScreens[i];
-            kart2DCommon->changeUnicodeTexture("ABC", 3, screen, "PName0");
-            if (i % 2) {
-                kart2DCommon->changeUnicodeTexture("   ", 3, screen, "PName1");
-            } else {
-                kart2DCommon->changeUnicodeTexture("DEF", 3, screen, "PName1");
-            }
-            for (u32 j = 0; j < 2; j++) {
-                for (u32 k = 0; k < 2; k++) {
-                    J2DPicture *picture =
-                            screen.search("P%c%u", "BN"[k], j)->downcast<J2DPicture>();
-                    picture->m_isVisible = j + i * 2 < 3;
-                    if (picture->m_isVisible) {
-                        picture->m_cornerColors = Race2D::GetCornerColors(j + i * 2);
-                    }
-                    if (k == 1) {
-                        Array<char, 32> name;
-                        snprintf(name.values(), name.count(), "PlayerNumberSimple_%luP.bti",
-                                j + i * 2 + 1);
-                        picture->changeTexture(name.values(), 0);
-                    }
+    for (u32 i = 0; i < MaxRoomKartCount; i++) {
+        m_mainScreen.search("Player%u", i)->m_isVisible = i < m_kartCount;
+        if (i >= m_kartCount) {
+            continue;
+        }
+        J2DScreen &screen = m_entryScreens[i];
+        for (u32 j = 0; j < 2; j++) {
+            Array<char, 32> prefix;
+            snprintf(prefix.values(), prefix.count(), "PName%" PRIu32, j);
+            const Kart &kart = onlineInfo.m_karts[i];
+            const Player &player = kart.players[j];
+            kart2DCommon->changeUnicodeTexture(player.name.values(), 3, screen, prefix.values());
+            for (u32 k = 0; k < 2; k++) {
+                J2DPicture *picture = screen.search("P%c%u", "BN"[k], j)->downcast<J2DPicture>();
+                picture->m_isVisible = kart.local && j < kart.playerCount;
+                if (picture->m_isVisible) {
+                    picture->m_cornerColors = Race2D::GetCornerColors(player.index);
+                }
+                if (k == 1) {
+                    Array<char, 32> name;
+                    snprintf(name.values(), name.count(), "PlayerNumberSimple_%uP.bti",
+                            player.index + 1);
+                    picture->changeTexture(name.values(), 0);
                 }
             }
         }
@@ -341,50 +420,50 @@ void SceneTeamSelect::stateIdle() {
     }
 
     const JUTGamePad::CButton &button = KartGamePad::GamePad(0)->button();
-    if (button.risingEdge() & PAD_BUTTON_A || OnlineTimer::Instance()->hasExpired()) {
+    if ((m_isHost && button.risingEdge() & PAD_BUTTON_A) || OnlineTimer::Instance()->hasExpired()) {
         if (m_entryIndex + 1 == MaxEntryCount) {
             m_nextScene = SceneType::PlayerList;
             GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE_LITTLE);
             System::GetDisplay()->startFadeOut(15);
             slideOut();
         }
-    } else if (button.risingEdge() & PAD_BUTTON_B) {
-        m_nextScene = SceneType::PersonalRoom;
+    } else if (button.risingEdge() & PAD_BUTTON_B || !m_ok) {
+        m_nextScene = SceneType::RoomTypeSelect;
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CANCEL_LITTLE);
         slideOut();
-    } else if (button.repeat() & JUTGamePad::PAD_MSTICK_UP) {
+    } else if (m_isHost && button.repeat() & JUTGamePad::PAD_MSTICK_UP) {
         if (m_entryIndex >= 1) {
             if (m_entryIndex + 1 == MaxEntryCount) {
-                m_entryIndex = m_playerCount - 1;
+                m_entryIndex = m_kartCount - 1;
             } else {
                 m_entryIndex--;
             }
             GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CURSOL);
         }
-    } else if (button.repeat() & JUTGamePad::PAD_MSTICK_DOWN) {
+    } else if (m_isHost && button.repeat() & JUTGamePad::PAD_MSTICK_DOWN) {
         if (m_entryIndex + 1 < MaxEntryCount) {
-            if (m_entryIndex + 1 == m_playerCount) {
+            if (m_entryIndex + 1 == m_kartCount) {
                 m_entryIndex = MaxEntryCount - 1;
             } else {
                 m_entryIndex++;
             }
             GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CURSOL);
         }
-    } else if (button.repeat() & JUTGamePad::PAD_MSTICK_LEFT) {
-        if (m_entryIndex < m_playerCount) {
+    } else if (m_isHost && button.repeat() & JUTGamePad::PAD_MSTICK_LEFT) {
+        if (m_entryIndex < m_kartCount) {
             m_teams[m_entryIndex] = (m_teams[m_entryIndex] + m_teamCount - 1) % m_teamCount;
             m_entryLeftAnmTransformFrames[m_entryIndex] = 1;
             m_entryLeftAnmTevRegKeyFrames[m_entryIndex] = 2;
             GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE_LITTLE2);
         }
-    } else if (button.repeat() & JUTGamePad::PAD_MSTICK_RIGHT) {
-        if (m_entryIndex < m_playerCount) {
+    } else if (m_isHost && button.repeat() & JUTGamePad::PAD_MSTICK_RIGHT) {
+        if (m_entryIndex < m_kartCount) {
             m_teams[m_entryIndex] = (m_teams[m_entryIndex] + m_teamCount + 1) % m_teamCount;
             m_entryRightAnmTransformFrames[m_entryIndex] = 1;
             m_entryRightAnmTevRegKeyFrames[m_entryIndex] = 2;
             GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE_LITTLE2);
         }
-    } else if ((button.level() & PAD_TRIGGER_R) && (button.level() & PAD_TRIGGER_L)) {
+    } else if (m_isHost && (button.level() & PAD_TRIGGER_R) && (button.level() & PAD_TRIGGER_L)) {
         spin();
     }
 }
@@ -401,15 +480,15 @@ void SceneTeamSelect::stateSpin() {
     }
     if (isSpinning) {
         if (m_spinFrame % 5 == 0) {
-            for (u32 i = 0; i < m_playerCount; i++) {
+            for (u32 i = 0; i < m_kartCount; i++) {
                 m_teams[i] = i % m_teamCount;
             }
             CubeRandom *random = CubeRandom::Instance();
-            for (u32 i = 0; i < m_playerCount - 1; i++) {
-                u32 j = i + random->get(m_playerCount - i);
+            for (u32 i = 0; i < m_kartCount - 1; i++) {
+                u32 j = i + random->get(m_kartCount - i);
                 Swap(m_teams[i], m_teams[j]);
             }
-            m_entryIndex = random->get(m_playerCount);
+            m_entryIndex = random->get(m_kartCount);
             GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE_LITTLE2);
         }
     } else {

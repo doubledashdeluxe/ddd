@@ -21,6 +21,7 @@ public:
     static u32 DefaultValue(u32 roomOption);
     static u32 PrevValue(u32 roomOption, u32 value);
     static u32 NextValue(u32 roomOption, u32 value);
+    static s32 Direction(u32 roomOption, u32 value, u32 targetValue);
     static u32 Read(u32 roomOption, const RoomOptions &options);
     static void Write(u32 roomOption, RoomOptions &options, u32 value);
 

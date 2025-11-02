@@ -213,6 +213,10 @@ bool SceneRoomTypeSelect::clientStateRoom(const ClientStateRoomReadInfo & /* rea
     return true;
 }
 
+bool SceneRoomTypeSelect::clientStateTeam(const ClientStateTeamReadInfo & /* readInfo */) {
+    return true;
+}
+
 void SceneRoomTypeSelect::clientStateError() {
     ErrorViewApp::Call(6);
 }
