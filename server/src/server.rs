@@ -7,9 +7,9 @@ use std::time::{Duration, Instant};
 use anyhow::Result;
 use noise_protocol::U8Array;
 
-use crate::client::Client;
+use crate::clients::Clients;
 use crate::connection::Connection;
-use crate::crypto::{Key, PublicKey};
+use crate::crypto::Key;
 use crate::formats::online::*;
 use crate::rooms::Rooms;
 
@@ -18,7 +18,7 @@ pub struct Server {
     socket: UdpSocket,
     random_state: RandomState,
     connections: HashMap<SocketAddr, (bool, Connection)>,
-    clients: HashMap<PublicKey, Client>,
+    clients: Clients,
     rooms: Rooms,
 }
 
@@ -27,7 +27,7 @@ impl Server {
         let socket = UdpSocket::bind(format!("0.0.0.0:{DEFAULT_PORT}"))?;
         let random_state = RandomState::new();
         let connections = HashMap::new();
-        let clients = HashMap::new();
+        let clients = Clients::new();
         let rooms = Rooms::new();
         let server = Server { server_k, socket, random_state, connections, clients, rooms };
         Ok(server)
@@ -90,9 +90,9 @@ impl Server {
     }
 
     fn write(&mut self, now: Instant) -> Result<()> {
-        self.clients.retain(|_, client| client.update(now, &mut self.rooms).is_ok());
+        self.clients.update(now, &mut self.rooms);
         self.rooms.update(&mut self.clients);
-        let player_count = self.clients.values().map(Client::player_count).sum();
+        let player_count = self.clients.player_count();
         for (addr, (retain, connection)) in &mut self.connections {
             let mut message = [0u8; 512];
             let message_len = connection.write(

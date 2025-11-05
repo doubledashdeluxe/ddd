@@ -10,6 +10,7 @@ use crate::formats::version;
 use crate::server::Server;
 
 mod client;
+mod clients;
 mod connection;
 mod crypto;
 mod formats;

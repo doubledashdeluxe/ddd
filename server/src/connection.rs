@@ -1,10 +1,9 @@
-use std::collections::hash_map::{Entry, HashMap};
 use std::net::SocketAddr;
 use std::time::{Duration, Instant};
 
 use anyhow::{Context, Result};
 
-use crate::client::Client;
+use crate::clients::Clients;
 use crate::crypto::kx;
 use crate::crypto::session::Session;
 use crate::crypto::{Key, PublicKey};
@@ -34,12 +33,7 @@ impl Connection {
         Ok(connection)
     }
 
-    pub fn read(
-        &mut self,
-        now: Instant,
-        message: &[u8],
-        clients: &mut HashMap<PublicKey, Client>,
-    ) -> Result<()> {
+    pub fn read(&mut self, now: Instant, message: &[u8], clients: &mut Clients) -> Result<()> {
         let plaintext_len = message
             .len()
             .checked_sub(Session::MAC_SIZE + Session::NONCE_SIZE)
@@ -54,22 +48,10 @@ impl Connection {
             State::Kx { .. } => {
                 // Any MITM can trivially replay M1, thus we need to wait for a valid session
                 // message to consider the client to be authenticated.
-                let is_full = clients.len() >= 1000;
-                match clients.entry(self.client_pk) {
-                    Entry::Occupied(o) => {
-                        let client = o.into_mut();
-                        client.set_addr(self.addr);
-                        client
-                    }
-                    Entry::Vacant(v) if !is_full => {
-                        let client = Client::new(now, self.addr, self.client_pk);
-                        v.insert(client)
-                    }
-                    _ => return Ok(()),
-                }
+                clients.insert(now, self.addr, self.client_pk)
             }
-            State::Session => clients.get_mut(&self.client_pk).context("Disconnected client")?,
-        };
+            State::Session => clients.get_mut(&self.client_pk),
+        }?;
         self.expiration = now + Duration::from_secs(30);
         self.state = State::Session;
         client.read(now, self.addr, plaintext)
@@ -79,7 +61,7 @@ impl Connection {
         &mut self,
         now: Instant,
         message: &mut [u8],
-        clients: &mut HashMap<PublicKey, Client>,
+        clients: &mut Clients,
         player_count: usize,
         rooms: &mut Rooms,
     ) -> Result<Option<usize>> {
@@ -91,7 +73,7 @@ impl Connection {
                 Ok(Some(kx::M2_SIZE))
             }
             State::Session => {
-                let client = clients.get(&self.client_pk).context("Disconnected client")?;
+                let client = clients.get(&self.client_pk)?;
                 let mut plaintext = [0u8; 512];
                 let plaintext_len = client.write(self.addr, &mut plaintext, player_count, rooms)?;
                 let Some(plaintext_len) = plaintext_len else {
