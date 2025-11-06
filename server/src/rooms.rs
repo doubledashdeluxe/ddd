@@ -1,8 +1,9 @@
-use std::collections::{HashSet, VecDeque};
+use std::collections::HashSet;
 use std::ops::{Deref, DerefMut};
 
 use anyhow::{Context, Result};
 use orion::util;
+use scc::Queue;
 use scc::hash_map::{Entry, HashMap, OccupiedEntry};
 
 use crate::clients::Clients;
@@ -14,7 +15,7 @@ pub struct Rooms {
     rooms: HashMap<u128, Room>,
     long_code_ids: HashMap<u64, u128>,
     short_code_ids: HashMap<u64, u128>,
-    short_codes: VecDeque<u64>,
+    short_codes: Queue<u64>,
 }
 
 impl Rooms {
@@ -48,7 +49,7 @@ impl Rooms {
     }
 
     pub fn insert(
-        &mut self,
+        &self,
         karts: Vec<Kart>,
         mode_index: ModeIndex,
         pack_hash: Vec<u8>,
@@ -77,7 +78,7 @@ impl Rooms {
 
         let id = *room_entry.key();
         let long_code = *long_code_id_entry.key();
-        let short_code = self.short_codes.pop_front().context("Reached capacity")?;
+        let short_code = **self.short_codes.pop().context("Reached capacity")?;
         let room = Room::new(karts, mode_index, pack_hash, id, long_code, short_code);
         room_entry.insert_entry(room);
         long_code_id_entry.insert_entry(id);
@@ -91,7 +92,7 @@ impl Rooms {
         self.short_code_ids.retain_sync(|short_code, id| {
             let retain = self.rooms.contains_sync(id);
             if !retain {
-                self.short_codes.push_back(*short_code);
+                self.short_codes.push(*short_code);
             }
             retain
         });
