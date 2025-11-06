@@ -33,7 +33,7 @@ impl Connection {
         Ok(connection)
     }
 
-    pub fn read(&mut self, now: Instant, message: &[u8], clients: &mut Clients) -> Result<()> {
+    pub fn read(&mut self, now: Instant, message: &[u8], clients: &Clients) -> Result<()> {
         let plaintext_len = message
             .len()
             .checked_sub(Session::MAC_SIZE + Session::NONCE_SIZE)
@@ -44,13 +44,13 @@ impl Connection {
             Ok(_) => (),
             Err(_) => return Ok(()),
         }
-        let client = match self.state {
+        let mut client = match self.state {
             State::Kx { .. } => {
                 // Any MITM can trivially replay M1, thus we need to wait for a valid session
                 // message to consider the client to be authenticated.
                 clients.insert(now, self.addr, self.client_pk)
             }
-            State::Session => clients.get_mut(&self.client_pk),
+            State::Session => clients.get(&self.client_pk),
         }?;
         self.expiration = now + Duration::from_secs(30);
         self.state = State::Session;
@@ -61,7 +61,7 @@ impl Connection {
         &mut self,
         now: Instant,
         message: &mut [u8],
-        clients: &mut Clients,
+        clients: &Clients,
         player_count: usize,
         rooms: &mut Rooms,
     ) -> Result<Option<usize>> {
@@ -73,9 +73,10 @@ impl Connection {
                 Ok(Some(kx::M2_SIZE))
             }
             State::Session => {
-                let client = clients.get(&self.client_pk)?;
                 let mut plaintext = [0u8; 512];
-                let plaintext_len = client.write(self.addr, &mut plaintext, player_count, rooms)?;
+                let plaintext_len = clients.read(&self.client_pk, |client| {
+                    client.write(self.addr, &mut plaintext, player_count, rooms)
+                })??;
                 let Some(plaintext_len) = plaintext_len else {
                     return Ok(None);
                 };

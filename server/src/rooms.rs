@@ -84,7 +84,7 @@ impl Rooms {
         Ok(id)
     }
 
-    pub fn update(&mut self, clients: &mut Clients) {
+    pub fn update(&mut self, clients: &Clients) {
         self.rooms.retain(|_, room| room.update(clients).is_ok());
         self.long_code_ids.retain(|_, id| self.rooms.contains_key(id));
         let short_code_ids = self.short_code_ids.extract_if(|_, id| !self.rooms.contains_key(id));

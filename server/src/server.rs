@@ -63,7 +63,7 @@ impl Server {
         match self.connections.entry(addr) {
             Entry::Occupied(mut o) => {
                 let (_, connection) = o.get_mut();
-                if connection.read(now, message, &mut self.clients).is_err() {
+                if connection.read(now, message, &self.clients).is_err() {
                     o.remove();
                 }
             }
@@ -91,17 +91,12 @@ impl Server {
 
     fn write(&mut self, now: Instant) -> Result<()> {
         self.clients.update(now, &mut self.rooms);
-        self.rooms.update(&mut self.clients);
+        self.rooms.update(&self.clients);
         let player_count = self.clients.player_count();
         for (addr, (retain, connection)) in &mut self.connections {
             let mut message = [0u8; 512];
-            let message_len = connection.write(
-                now,
-                &mut message,
-                &mut self.clients,
-                player_count,
-                &mut self.rooms,
-            );
+            let message_len =
+                connection.write(now, &mut message, &self.clients, player_count, &mut self.rooms);
             let Ok(message_len) = message_len else {
                 *retain = false;
                 continue;
