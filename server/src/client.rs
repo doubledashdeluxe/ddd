@@ -114,7 +114,8 @@ impl Client {
                     (ClientRoomState::New(new), Some(room_info))
                         if room_info.counter == new.room_counter =>
                     {
-                        rooms.get(&room_info.id).map(|_| room_info)
+                        let id = room_info.id;
+                        rooms.read(&id, |_| room_info)
                     }
                     (ClientRoomState::New(new), _) => {
                         let counter = new.room_counter;
@@ -131,10 +132,11 @@ impl Client {
                     (ClientRoomState::Code(code), Some(room_info))
                         if code.room_counter == room_info.counter =>
                     {
-                        rooms.get(&room_info.id).map(|_| room_info)
+                        let id = room_info.id;
+                        rooms.read(&id, |_| room_info)
                     }
                     (ClientRoomState::Code(code), _) => {
-                        rooms.get_mut_by_code(code.room_code).and_then(|room| {
+                        rooms.get_by_code(code.room_code).and_then(|mut room| {
                             let counter = code.room_counter;
                             let id = room.id();
                             let spectating_counter = 0;
@@ -145,7 +147,7 @@ impl Client {
                         })
                     }
                     (ClientRoomState::Main(main), Some(room_info)) => {
-                        rooms.get_mut(&room_info.id).and_then(|room| {
+                        rooms.get(&room_info.id).and_then(|mut room| {
                             let spectating_counter = main.spectating_counter;
                             let spectating = if spectating_counter == room_info.spectating_counter {
                                 room_info.spectating
@@ -165,7 +167,7 @@ impl Client {
             }
             (ClientState::Team(team), Some(identity), room_info) => {
                 let room_info = match room_info {
-                    Some(room_info) => rooms.get_mut(&room_info.id).and_then(|room| {
+                    Some(room_info) => rooms.get(&room_info.id).and_then(|mut room| {
                         room.set_team_state(&self.pk, team.client_team_state)?;
                         Ok(room_info)
                     }),
@@ -237,38 +239,40 @@ impl Client {
             State::Room { room_info, .. } => {
                 let server_room_state = match room_info {
                     Some(room_info) => {
-                        let Ok(room) = rooms.get(&room_info.id) else {
+                        let main = rooms.read(&room_info.id, |room| {
+                            let karts = room
+                                .karts()
+                                .iter()
+                                .map(|kart| {
+                                    let local = (kart.client_pk() == &self.pk).into();
+                                    let players = kart.players().to_vec();
+                                    ServerKart { local, players }
+                                })
+                                .collect();
+                            let spectator_count = room.spectator_count() as u16;
+                            let mode_index = room.mode_index();
+                            let pack_hash = room.pack_hash().to_vec();
+                            let room_counter = room_info.counter;
+                            let room_code = room.code();
+                            let spectating_counter = room_info.spectating_counter;
+                            let spectating = room_info.spectating.into();
+                            let options = room.options().clone();
+                            let continuing = room_info.continuing.into();
+                            ServerRoomStateMain {
+                                karts,
+                                spectator_count,
+                                mode_index,
+                                pack_hash,
+                                room_counter,
+                                room_code,
+                                spectating_counter,
+                                spectating,
+                                options,
+                                continuing,
+                            }
+                        });
+                        let Ok(main) = main else {
                             return Ok(None);
-                        };
-                        let karts = room
-                            .karts()
-                            .iter()
-                            .map(|kart| {
-                                let local = (kart.client_pk() == &self.pk).into();
-                                let players = kart.players().to_vec();
-                                ServerKart { local, players }
-                            })
-                            .collect();
-                        let spectator_count = room.spectator_count() as u16;
-                        let mode_index = room.mode_index();
-                        let pack_hash = room.pack_hash().to_vec();
-                        let room_counter = room_info.counter;
-                        let room_code = room.code();
-                        let spectating_counter = room_info.spectating_counter;
-                        let spectating = room_info.spectating.into();
-                        let options = room.options().clone();
-                        let continuing = room_info.continuing.into();
-                        let main = ServerRoomStateMain {
-                            karts,
-                            spectator_count,
-                            mode_index,
-                            pack_hash,
-                            room_counter,
-                            room_code,
-                            spectating_counter,
-                            spectating,
-                            options,
-                            continuing,
                         };
                         ServerRoomState::Main(main)
                     }
@@ -280,10 +284,11 @@ impl Client {
             State::Team { room_info, .. } => {
                 let server_team_state = match room_info {
                     Some(room_info) => {
-                        let Ok(room) = rooms.get(&room_info.id) else {
-                            return Ok(None);
-                        };
-                        let room::State::Team { main } = room.state() else {
+                        let main = rooms.read(&room_info.id, |room| match room.state() {
+                            room::State::Team { main } => Some(main.clone()),
+                            _ => None,
+                        });
+                        let Ok(Some(main)) = main else {
                             return Ok(None);
                         };
                         ServerTeamState::Main(main.clone())
