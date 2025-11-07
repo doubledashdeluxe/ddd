@@ -1,5 +1,6 @@
 use std::collections::HashSet;
 use std::ops::{Deref, DerefMut};
+use std::sync::Arc;
 
 use anyhow::{Context, Result};
 use orion::util;
@@ -11,20 +12,21 @@ use crate::formats::online::ModeIndex;
 use crate::kart::Kart;
 use crate::room::Room;
 
+#[derive(Clone)]
 pub struct Rooms {
-    rooms: HashMap<u128, Room>,
-    long_code_ids: HashMap<u64, u128>,
-    short_code_ids: HashMap<u64, u128>,
-    short_codes: Queue<u64>,
+    rooms: Arc<HashMap<u128, Room>>,
+    long_code_ids: Arc<HashMap<u64, u128>>,
+    short_code_ids: Arc<HashMap<u64, u128>>,
+    short_codes: Arc<Queue<u64>>,
 }
 
 impl Rooms {
     pub fn new() -> Rooms {
-        let rooms = HashMap::new();
-        let long_code_ids = HashMap::new();
-        let short_code_ids = HashMap::new();
+        let rooms = Arc::new(HashMap::new());
+        let long_code_ids = Arc::new(HashMap::new());
+        let short_code_ids = Arc::new(HashMap::new());
         let short_codes: HashSet<_> = (0..1000).collect();
-        let short_codes = short_codes.into_iter().collect();
+        let short_codes = Arc::new(short_codes.into_iter().collect());
         Rooms { rooms, long_code_ids, short_code_ids, short_codes }
     }
 
@@ -86,7 +88,7 @@ impl Rooms {
         Ok(id)
     }
 
-    pub fn update(&mut self, clients: &Clients) {
+    pub fn update(&self, clients: &Clients) {
         self.rooms.retain_sync(|_, room| room.update(clients).is_ok());
         self.long_code_ids.retain_sync(|_, id| self.rooms.contains_sync(id));
         self.short_code_ids.retain_sync(|short_code, id| {

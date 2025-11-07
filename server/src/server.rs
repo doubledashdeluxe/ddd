@@ -1,113 +1,88 @@
-use std::collections::hash_map::{Entry, HashMap};
-use std::hash::{BuildHasher, RandomState};
-use std::io::ErrorKind;
-use std::net::{SocketAddr, UdpSocket};
-use std::time::{Duration, Instant};
+use std::net::UdpSocket;
+use std::num::NonZero;
+use std::panic;
+use std::result;
+use std::sync::mpsc::{self, SyncSender};
+use std::thread::{self, JoinHandle};
 
 use anyhow::Result;
+use log::error;
 use noise_protocol::U8Array;
 
+use crate::buffer::Buffer;
 use crate::clients::Clients;
-use crate::connection::Connection;
 use crate::crypto::Key;
 use crate::formats::online::*;
+use crate::listener;
+use crate::message::Message;
 use crate::rooms::Rooms;
+use crate::shard;
+use crate::updater;
 
-pub struct Server {
-    server_k: Key,
-    socket: UdpSocket,
-    random_state: RandomState,
-    connections: HashMap<SocketAddr, (bool, Connection)>,
-    clients: Clients,
-    rooms: Rooms,
+pub fn run(server_k: Key) -> Result<()> {
+    let shard_count = thread::available_parallelism().map_or(1, NonZero::get);
+    let socket = UdpSocket::bind(format!("0.0.0.0:{DEFAULT_PORT}"))?;
+    let sockets: result::Result<_, _> = (0..shard_count).map(|_| socket.try_clone()).collect();
+    let sockets: Vec<_> = sockets?;
+    let (message_senders, message_receivers): (Vec<_>, Vec<_>) =
+        (0..shard_count).map(|_| mpsc::sync_channel(1000)).unzip();
+    let buffer_count = 1000 * shard_count;
+    let (buffer_sender, buffer_receiver) = mpsc::sync_channel(buffer_count);
+    for _ in 0..buffer_count {
+        buffer_sender.send(Buffer::new())?;
+    }
+    let clients = Clients::new();
+    let rooms = Rooms::new();
+
+    let mut handles: Vec<_> = sockets
+        .into_iter()
+        .zip(message_receivers)
+        .map(|(socket, message_receiver)| {
+            let server_k = server_k.clone();
+            let buffer_sender = buffer_sender.clone();
+            let clients = clients.clone();
+            let rooms = rooms.clone();
+            let run =
+                || shard::run(server_k, socket, message_receiver, buffer_sender, clients, rooms);
+            spawn(message_senders.clone(), run)
+        })
+        .collect();
+
+    let run = {
+        let message_senders = message_senders.clone();
+        || updater::run(message_senders, clients, rooms)
+    };
+    handles.push(spawn(message_senders.clone(), run));
+
+    let run = {
+        let message_senders = message_senders.clone();
+        || listener::run(socket, message_senders, buffer_receiver)
+    };
+    handles.push(spawn(message_senders.clone(), run));
+
+    let results: Vec<_> = handles
+        .into_iter()
+        .map(|handle| match handle.join() {
+            Ok(r) => r,
+            Err(e) => panic::resume_unwind(e),
+        })
+        .collect();
+    results.into_iter().collect()
 }
 
-impl Server {
-    pub fn try_new(server_k: Key) -> Result<Server> {
-        let socket = UdpSocket::bind(format!("0.0.0.0:{DEFAULT_PORT}"))?;
-        let random_state = RandomState::new();
-        let connections = HashMap::new();
-        let clients = Clients::new();
-        let rooms = Rooms::new();
-        let server = Server { server_k, socket, random_state, connections, clients, rooms };
-        Ok(server)
-    }
-
-    pub fn run(mut self) -> Result<()> {
-        let mut next_tick = Instant::now();
-        let mut tick_counter = 0;
-        loop {
-            let now = Instant::now();
-            match next_tick.checked_duration_since(now) {
-                Some(duration) if !duration.is_zero() => self.read(now, duration, tick_counter)?,
-                _ => {
-                    self.write(now)?;
-                    next_tick += Duration::from_nanos(16_683_333);
-                    tick_counter += 1;
-                }
-            }
+fn spawn(
+    message_senders: Vec<SyncSender<Message>>,
+    f: impl FnOnce() -> Result<()> + Send + 'static,
+) -> JoinHandle<Result<()>> {
+    thread::spawn(|| {
+        let r = f();
+        if let Err(e) = &r {
+            error!("{e}");
         }
-    }
-
-    fn read(&mut self, now: Instant, duration: Duration, tick_counter: u64) -> Result<()> {
-        self.socket.set_read_timeout(Some(duration))?;
-        let mut message = [0u8; 512];
-        let (message_len, addr) = match self.socket.recv_from(&mut message) {
-            Err(e) if e.kind() == ErrorKind::WouldBlock || e.kind() == ErrorKind::TimedOut => {
-                return Ok(());
-            }
-            r => r?,
-        };
-        let message = &mut message[..message_len];
-        let is_full = self.connections.len() >= 1000;
-        match self.connections.entry(addr) {
-            Entry::Occupied(mut o) => {
-                let (_, connection) = o.get_mut();
-                if connection.read(now, message, &self.clients).is_err() {
-                    o.remove();
-                }
-            }
-            Entry::Vacant(v) if !is_full => {
-                let Some((client_cookie, message)) = message.split_first_chunk() else {
-                    return Ok(());
-                };
-                let server_cookie = self.random_state.hash_one((tick_counter >> 12, addr));
-                let server_cookie = server_cookie.to_be_bytes();
-                if *client_cookie != server_cookie {
-                    self.socket.send_to(&server_cookie, addr)?;
-                    return Ok(());
-                }
-
-                let connection = Connection::try_new(self.server_k.clone(), now, addr, message);
-                if let Ok(connection) = connection {
-                    let retain = true;
-                    v.insert((retain, connection));
-                }
-            }
-            _ => (),
+        for message_sender in message_senders {
+            let message = Message::Stop;
+            let _ = message_sender.send(message);
         }
-        Ok(())
-    }
-
-    fn write(&mut self, now: Instant) -> Result<()> {
-        self.clients.update(now, &mut self.rooms);
-        self.rooms.update(&self.clients);
-        let player_count = self.clients.player_count();
-        for (addr, (retain, connection)) in &mut self.connections {
-            let mut message = [0u8; 512];
-            let message_len =
-                connection.write(now, &mut message, &self.clients, player_count, &mut self.rooms);
-            let Ok(message_len) = message_len else {
-                *retain = false;
-                continue;
-            };
-            let Some(message_len) = message_len else {
-                continue;
-            };
-            let message = &mut message[..message_len];
-            self.socket.send_to(message, addr)?;
-        }
-        self.connections.retain(|_, (retain, _)| *retain);
-        Ok(())
-    }
+        r
+    })
 }

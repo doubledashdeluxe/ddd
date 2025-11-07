@@ -52,7 +52,7 @@ impl Client {
         Some(room_info.id)
     }
 
-    pub fn update(&mut self, now: Instant, rooms: &mut Rooms) -> Result<()> {
+    pub fn update(&mut self, now: Instant, rooms: &Rooms) -> Result<()> {
         anyhow::ensure!(now < self.expiration);
         let client_state = self.client_state.take();
         let Some(client_state) = client_state else {

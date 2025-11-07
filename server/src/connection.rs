@@ -18,7 +18,7 @@ pub struct Connection {
 }
 
 impl Connection {
-    pub fn try_new(
+    pub fn new(
         server_k: Key,
         now: Instant,
         addr: SocketAddr,
@@ -63,7 +63,7 @@ impl Connection {
         message: &mut [u8],
         clients: &Clients,
         player_count: usize,
-        rooms: &mut Rooms,
+        rooms: &Rooms,
     ) -> Result<Option<usize>> {
         anyhow::ensure!(now < self.expiration);
         match self.state {

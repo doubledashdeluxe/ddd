@@ -7,18 +7,22 @@ use noise_protocol::{DH, U8Array};
 
 use crate::crypto::x25519::X25519;
 use crate::formats::version;
-use crate::server::Server;
 
+mod buffer;
 mod client;
 mod clients;
 mod connection;
 mod crypto;
 mod formats;
 mod kart;
+mod listener;
 mod logger;
+mod message;
 mod room;
 mod rooms;
 mod server;
+mod shard;
+mod updater;
 
 fn main() -> Result<()> {
     logger::init()?;
@@ -44,5 +48,5 @@ fn main() -> Result<()> {
     let server_pk: String = server_pk.into_iter().map(|byte| format!("{byte:02x?}")).collect();
     info!("Server public key: {server_pk}");
 
-    Server::try_new(server_k)?.run()
+    server::run(server_k)
 }

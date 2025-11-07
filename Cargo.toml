@@ -5,5 +5,11 @@ members = [
 ]
 resolver = "3"
 
+[profile.release]
+panic = "abort"
+
+[profile.dev]
+panic = "abort"
+
 [workspace.lints.clippy]
 identity_op = "allow"

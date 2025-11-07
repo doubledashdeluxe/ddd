@@ -1,5 +1,7 @@
 use std::net::SocketAddr;
 use std::ops::{Deref, DerefMut};
+use std::sync::Arc;
+use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::Instant;
 
 use anyhow::{Context, Result, anyhow};
@@ -9,19 +11,24 @@ use crate::client::Client;
 use crate::crypto::PublicKey;
 use crate::rooms::Rooms;
 
+#[derive(Clone, Default)]
 pub struct Clients {
-    clients: HashMap<PublicKey, Client>,
-    count: usize,
-    player_count: usize,
+    clients: Arc<HashMap<PublicKey, Client>>,
+    count: Arc<AtomicUsize>,
+    player_count: Arc<AtomicUsize>,
 }
 
 impl Clients {
     pub fn new() -> Clients {
-        Clients { clients: HashMap::new(), count: 0, player_count: 0 }
+        Clients {
+            clients: Arc::new(HashMap::new()),
+            count: Arc::new(AtomicUsize::new(0)),
+            player_count: Arc::new(AtomicUsize::new(0)),
+        }
     }
 
     pub fn player_count(&self) -> usize {
-        self.player_count
+        self.player_count.load(Ordering::Relaxed)
     }
 
     pub fn read<R>(&self, pk: &PublicKey, f: impl FnOnce(&Client) -> R) -> Result<R> {
@@ -33,7 +40,7 @@ impl Clients {
     }
 
     pub fn insert(&self, now: Instant, addr: SocketAddr, pk: PublicKey) -> Result<ClientRef<'_>> {
-        let is_full = self.count >= 1000;
+        let is_full = self.count.load(Ordering::Relaxed) >= 1000;
         let entry = match self.clients.entry_sync(pk) {
             Entry::Occupied(mut o) => {
                 o.get_mut().set_addr(addr);
@@ -48,17 +55,19 @@ impl Clients {
         Ok(ClientRef { entry })
     }
 
-    pub fn update(&mut self, now: Instant, rooms: &mut Rooms) {
-        self.count = 0;
-        self.player_count = 0;
+    pub fn update(&self, now: Instant, rooms: &Rooms) {
+        let mut count = 0;
+        let mut player_count = 0;
         self.clients.retain_sync(|_, client| {
             let retain = client.update(now, rooms).is_ok();
             if retain {
-                self.count += 1;
-                self.player_count += client.player_count();
+                count += 1;
+                player_count += client.player_count();
             }
             retain
         });
+        self.count.store(count, Ordering::Relaxed);
+        self.player_count.store(player_count, Ordering::Relaxed);
     }
 }
 
