@@ -1,0 +1,36 @@
+name: Create issue
+
+inputs:
+  title:
+    description: Issue title
+  type:
+    description: Issue type
+
+runs:
+  using: Composite
+  steps:
+    - name: Create
+      uses: actions/github-script@v8
+      env:
+        TITLE: ${{ inputs.title }}
+        TYPE: ${{ inputs.type }}
+      with:
+        script: |
+          const issues = await github
+            .paginate(github.rest.issues.listForRepo, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            })
+          const title = process.env.TITLE
+          for (const issue of issues) {
+            if (issue.title === title) {
+              return
+            }
+          }
+          const type = process.env.TYPE
+          await github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: title,
+            type: type,
+          })

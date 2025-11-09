@@ -1,0 +1,74 @@
+name: Dependency Version Checks
+
+on:
+  schedule:
+    - cron: '5 20 * * 1'
+
+permissions:
+  issues: write
+
+jobs:
+  check-ff:
+    name: Check FatFs
+    if: github.repository == 'doubledashdeluxe/ddd'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+      - name: Get version
+        id: get-version
+        run: |
+          version=$(curl https://elm-chan.org/fsw/ff/ | grep -oP "FatFs R(\K[\w.]*)")
+          echo "version=$version" >> $GITHUB_OUTPUT
+      - name: Create issue
+        uses: ./.github/actions/create-issue
+        with:
+          title: FatFs ${{ steps.get-version.outputs.version }}
+          type: Maintenance
+
+  check-github:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - owner: benhoyt
+            repo: inih
+          - owner: charlesnicholson
+            repo: nanoprintf
+          - owner: llvm
+            repo: llvm-project
+          - owner: LoupVaillant
+            repo: Monocypher
+          - owner: MaJerle
+            repo: lwjson
+          - owner: richgel999
+            repo: miniz
+          - owner: snitch-org
+            repo: snitch
+    name: Check ${{ matrix.repo }}
+    if: github.repository == 'doubledashdeluxe/ddd'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+      - name: Get version
+        id: get-version
+        uses: actions/github-script@v8
+        env:
+          OWNER: ${{ matrix.owner }}
+          REPO: ${{ matrix.repo }}
+        with:
+          result-encoding: string
+          script: |
+            const release = await octokit.rest.repos.getLatestRelease({
+              owner: process.env.OWNER,
+              repo: process.env.REPO,
+            })
+            return release.data.tag_name
+      - name: Create issue
+        uses: ./.github/actions/create-issue
+        with:
+          title: ${{ matrix.repo }} ${{ steps.get-version.outputs.result }}
+          type: Maintenance
