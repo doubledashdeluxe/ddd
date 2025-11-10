@@ -9,7 +9,7 @@ colored = "3.0.0"
 log = { version = "0.4.28", features = ["max_level_debug", "std"] }
 noise-protocol = "0.2.0"
 orion = "0.17.6"
-scc = "3.3.4"
+scc = "3.3.7"
 zeroize = "1.8.1"
 
 [build-dependencies]
