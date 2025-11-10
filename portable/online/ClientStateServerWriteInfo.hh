@@ -10,6 +10,7 @@ struct ClientStateServerWriteInfo {
         Array<char, PlayerNameLength + 1> name;
     };
 
+    u8 frameRate;
     u8 playerCount;
     Array<Player, MaxClientPlayerCount> players;
     u8 kartCount;

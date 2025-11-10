@@ -1,3 +1,4 @@
+use std::collections;
 use std::net::SocketAddr;
 use std::ops::{Deref, DerefMut};
 use std::sync::Arc;
@@ -55,14 +56,21 @@ impl Clients {
         Ok(ClientRef { entry })
     }
 
-    pub fn update(&self, now: Instant, rooms: &Rooms) {
+    pub fn update(
+        &self,
+        now: Instant,
+        client_room_ids: &mut collections::HashMap<PublicKey, Option<u128>>,
+        rooms: &Rooms,
+    ) {
+        client_room_ids.clear();
         let mut count = 0;
         let mut player_count = 0;
-        self.clients.retain_sync(|_, client| {
+        self.clients.retain_sync(|pk, client| {
             let retain = client.update(now, rooms).is_ok();
             if retain {
                 count += 1;
                 player_count += client.player_count();
+                client_room_ids.insert(*pk, client.room_id());
             }
             retain
         });

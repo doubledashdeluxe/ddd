@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::sync::mpsc::SyncSender;
 use std::thread;
 use std::time::{Duration, Instant};
@@ -5,6 +6,7 @@ use std::time::{Duration, Instant};
 use anyhow::Result;
 
 use crate::clients::Clients;
+use crate::formats::online::FrameRate;
 use crate::message::Message;
 use crate::rooms::Rooms;
 
@@ -12,20 +14,26 @@ pub fn run(
     message_senders: Vec<SyncSender<Message>>,
     clients: Clients,
     rooms: Rooms,
+    frame_rate: FrameRate,
 ) -> Result<()> {
     let mut next_tick = Instant::now();
+    let mut client_room_ids = HashMap::new();
     loop {
         let now = Instant::now();
         match next_tick.checked_duration_since(now) {
             Some(duration) if !duration.is_zero() => thread::sleep(duration),
             _ => {
-                clients.update(now, &rooms);
-                rooms.update(&clients);
+                clients.update(now, &mut client_room_ids, &rooms);
+                rooms.update(frame_rate, &client_room_ids);
                 for message_sender in &message_senders {
-                    let message = Message::Write;
+                    let message = Message::Write { frame_rate };
                     message_sender.send(message)?;
                 }
-                next_tick += Duration::from_nanos(16_683_333);
+                let tick_duration = match frame_rate {
+                    FrameRate::SixtyHz => 16_683_333,
+                    FrameRate::FiftyHz => 20_000_000,
+                };
+                next_tick += Duration::from_nanos(tick_duration);
             }
         }
     }

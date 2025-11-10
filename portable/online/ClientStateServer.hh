@@ -68,6 +68,7 @@ private:
     ClientIdentityUnspecifiedWriter &unspecifiedWriter() override;
     ClientIdentitySpecifiedWriter &specifiedWriter() override;
 
+    u8 getFrameRate() override;
     u32 getPlayersCount() override;
     ClientPlayerWriter &playersElementWriter(u32 i0) override;
     u8 getKartCount() override;

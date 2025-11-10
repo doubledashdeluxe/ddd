@@ -4,6 +4,10 @@ use crate::simple_enum_type::SimpleEnumType;
 use crate::struct_type::StructType;
 use crate::unit_type::UnitType;
 
+pub fn frame_rate() -> impl ComplexDataType {
+    SimpleEnumType::new("FrameRate").with_variant("SixtyHz").with_variant("FiftyHz")
+}
+
 pub fn mode_index() -> impl ComplexDataType {
     SimpleEnumType::new("ModeIndex")
         .with_variant("Versus")

@@ -118,6 +118,7 @@ void SceneServerSelect::init() {
         snprintf(m_playerCounts[i].values(), m_playerCounts[i].count(), "");
     }
 
+    m_writeInfo.frameRate = KartLocale::GetVideoFrameMode();
     m_writeInfo.playerCount = playerCount;
     for (u32 i = 0; i < playerCount; i++) {
         u32 profileIndex = onlineInfo.m_profileIndices[i];

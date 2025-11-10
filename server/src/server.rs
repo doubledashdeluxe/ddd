@@ -12,7 +12,7 @@ use noise_protocol::U8Array;
 use crate::buffer::Buffer;
 use crate::clients::Clients;
 use crate::crypto::Key;
-use crate::formats::online::*;
+use crate::formats::online::{DEFAULT_PORT, FrameRate};
 use crate::listener;
 use crate::message::Message;
 use crate::rooms::Rooms;
@@ -48,11 +48,15 @@ pub fn run(server_k: Key) -> Result<()> {
         })
         .collect();
 
-    let run = {
-        let message_senders = message_senders.clone();
-        || updater::run(message_senders, clients, rooms)
-    };
-    handles.push(spawn(message_senders.clone(), run));
+    for frame_rate in [FrameRate::SixtyHz, FrameRate::FiftyHz] {
+        let run = {
+            let message_senders = message_senders.clone();
+            let clients = clients.clone();
+            let rooms = rooms.clone();
+            move || updater::run(message_senders, clients, rooms, frame_rate)
+        };
+        handles.push(spawn(message_senders.clone(), run));
+    }
 
     let run = {
         let message_senders = message_senders.clone();

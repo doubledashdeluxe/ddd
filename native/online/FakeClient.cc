@@ -64,6 +64,7 @@ void FakeClient::clientStateError() {
 
 ClientState &FakeClient::writeStateServer() {
     ClientStateServerWriteInfo writeInfo;
+    writeInfo.frameRate = 0;
     writeInfo.playerCount = 1;
     writeInfo.players[0].profile = 0;
     writeInfo.players[0].name = "AAA";

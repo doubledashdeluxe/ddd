@@ -11,6 +11,7 @@ use crate::buffer::Buffer;
 use crate::clients::Clients;
 use crate::connection::Connection;
 use crate::crypto::Key;
+use crate::formats::online::FrameRate;
 use crate::message::Message;
 use crate::rooms::Rooms;
 
@@ -57,8 +58,8 @@ impl Shard {
                     self.read(now, tick_counter, addr, buffer.as_slice())?;
                     self.buffer_sender.send(buffer)?;
                 }
-                Message::Write => {
-                    self.write(now)?;
+                Message::Write { frame_rate } => {
+                    self.write(now, frame_rate)?;
                     tick_counter += 1;
                 }
                 Message::Stop => break,
@@ -104,12 +105,18 @@ impl Shard {
         Ok(())
     }
 
-    fn write(&mut self, now: Instant) -> Result<()> {
+    fn write(&mut self, now: Instant, frame_rate: FrameRate) -> Result<()> {
         let player_count = self.clients.player_count();
         for (addr, (retain, connection)) in &mut self.connections {
             let mut message = [0u8; 512];
-            let message_len =
-                connection.write(now, &mut message, &self.clients, player_count, &self.rooms);
+            let message_len = connection.write(
+                now,
+                frame_rate,
+                &mut message,
+                &self.clients,
+                player_count,
+                &self.rooms,
+            );
             let Ok(message_len) = message_len else {
                 *retain = false;
                 continue;

@@ -1,4 +1,5 @@
-use std::collections::HashSet;
+use std::array;
+use std::collections::{self, HashSet};
 use std::ops::{Deref, DerefMut};
 use std::sync::Arc;
 
@@ -7,14 +8,14 @@ use orion::util;
 use scc::Queue;
 use scc::hash_map::{Entry, HashMap, OccupiedEntry};
 
-use crate::clients::Clients;
-use crate::formats::online::ModeIndex;
+use crate::crypto::PublicKey;
+use crate::formats::online::{FrameRate, ModeIndex};
 use crate::kart::Kart;
 use crate::room::Room;
 
 #[derive(Clone)]
 pub struct Rooms {
-    rooms: Arc<HashMap<u128, Room>>,
+    rooms: [Arc<HashMap<u128, Room>>; 2],
     long_code_ids: Arc<HashMap<u64, u128>>,
     short_code_ids: Arc<HashMap<u64, u128>>,
     short_codes: Arc<Queue<u64>>,
@@ -22,7 +23,7 @@ pub struct Rooms {
 
 impl Rooms {
     pub fn new() -> Rooms {
-        let rooms = Arc::new(HashMap::new());
+        let rooms = array::from_fn(|_| Arc::new(HashMap::new()));
         let long_code_ids = Arc::new(HashMap::new());
         let short_code_ids = Arc::new(HashMap::new());
         let short_codes: HashSet<_> = (0..1000).collect();
@@ -31,16 +32,23 @@ impl Rooms {
     }
 
     pub fn read<R>(&self, id: &u128, f: impl FnOnce(&Room) -> R) -> Result<R> {
-        self.rooms.read_sync(id, |_, room| f(room)).context("Room not found")
+        let rooms = self.rooms_by_id(id);
+        rooms.read_sync(id, |_, room| f(room)).context("Room not found")
     }
 
     pub fn get(&self, id: &u128) -> Result<RoomRef<'_>> {
-        self.rooms.get_sync(id).map(RoomRef::new).context("Room not found")
+        let rooms = self.rooms_by_id(id);
+        get(rooms, id)
     }
 
-    pub fn get_by_code(&self, code: u64) -> Result<RoomRef<'_>> {
+    pub fn get_by_frame_rate_and_code(
+        &self,
+        frame_rate: FrameRate,
+        code: u64,
+    ) -> Result<RoomRef<'_>> {
+        let rooms = self.rooms_by_frame_rate(frame_rate);
         let id = self.get_id(code)?;
-        let room = self.get(&id)?;
+        let room = get(rooms, &id)?;
         anyhow::ensure!(room.code() == code);
         Ok(room)
     }
@@ -52,15 +60,19 @@ impl Rooms {
 
     pub fn insert(
         &self,
+        frame_rate: FrameRate,
         karts: Vec<Kart>,
         mode_index: ModeIndex,
         pack_hash: Vec<u8>,
     ) -> Result<u128> {
         let room_entry = loop {
+            let rooms = self.rooms_by_frame_rate(frame_rate);
             let mut id = [0; 16];
             util::secure_rand_bytes(&mut id)?;
-            let id = u128::from_ne_bytes(id);
-            if let Entry::Vacant(v) = self.rooms.entry_sync(id) {
+            let mut id = u128::from_ne_bytes(id);
+            id &= !1;
+            id |= frame_rate as u128;
+            if let Entry::Vacant(v) = rooms.entry_sync(id) {
                 break v;
             }
         };
@@ -88,17 +100,35 @@ impl Rooms {
         Ok(id)
     }
 
-    pub fn update(&self, clients: &Clients) {
-        self.rooms.retain_sync(|_, room| room.update(clients).is_ok());
-        self.long_code_ids.retain_sync(|_, id| self.rooms.contains_sync(id));
+    pub fn update(
+        &self,
+        frame_rate: FrameRate,
+        client_room_ids: &collections::HashMap<PublicKey, Option<u128>>,
+    ) {
+        let rooms = self.rooms_by_frame_rate(frame_rate);
+        rooms.retain_sync(|_, room| room.update(client_room_ids).is_ok());
+        let retain = |id: &u128| (*id % 2 != frame_rate as u128) || rooms.contains_sync(id);
+        self.long_code_ids.retain_sync(|_, id| retain(id));
         self.short_code_ids.retain_sync(|short_code, id| {
-            let retain = self.rooms.contains_sync(id);
+            let retain = retain(id);
             if !retain {
                 self.short_codes.push(*short_code);
             }
             retain
         });
     }
+
+    fn rooms_by_frame_rate(&self, frame_rate: FrameRate) -> &Arc<HashMap<u128, Room>> {
+        &self.rooms[frame_rate as usize]
+    }
+
+    fn rooms_by_id(&self, id: &u128) -> &Arc<HashMap<u128, Room>> {
+        &self.rooms[(id % 2) as usize]
+    }
+}
+
+fn get<'a>(rooms: &'a Arc<HashMap<u128, Room>>, id: &u128) -> Result<RoomRef<'a>> {
+    rooms.get_sync(id).map(RoomRef::new).context("Room not found")
 }
 
 pub struct RoomRef<'a> {

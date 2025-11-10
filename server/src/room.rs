@@ -3,7 +3,6 @@ use std::collections::hash_map::{Entry, HashMap};
 use anyhow::Result;
 use log::debug;
 
-use crate::clients::Clients;
 use crate::crypto::PublicKey;
 use crate::formats::online::*;
 use crate::kart::Kart;
@@ -268,9 +267,9 @@ impl Room {
         Ok(())
     }
 
-    pub fn update(&mut self, clients: &Clients) -> Result<()> {
+    pub fn update(&mut self, client_room_ids: &HashMap<PublicKey, Option<u128>>) -> Result<()> {
         let present = |client_pk: &PublicKey| {
-            clients.get(client_pk).is_ok_and(|client| client.room_id() == Some(self.id))
+            client_room_ids.get(client_pk).is_some_and(|room_id| *room_id == Some(self.id))
         };
 
         if !self.has_room_lock() {

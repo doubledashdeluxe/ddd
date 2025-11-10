@@ -34,10 +34,24 @@ impl Client {
         self.addr = addr;
     }
 
+    fn frame_rate(&self) -> Option<FrameRate> {
+        let identity = match &self.state {
+            State::Server { identity: Some(identity) } => identity,
+            State::Mode { identity } => identity,
+            State::Pack { identity, .. } => identity,
+            State::Room { identity, .. } => identity,
+            State::Team { identity, .. } => identity,
+            _ => return None,
+        };
+        Some(identity.frame_rate)
+    }
+
     pub fn player_count(&self) -> usize {
         let identity = match &self.state {
             State::Mode { identity } => identity,
             State::Pack { identity, .. } => identity,
+            State::Room { identity, .. } => identity,
+            State::Team { identity, .. } => identity,
             _ => return 0,
         };
         identity.players.len()
@@ -119,10 +133,12 @@ impl Client {
                     }
                     (ClientRoomState::New(new), _) => {
                         let counter = new.room_counter;
+                        let frame_rate = identity.frame_rate;
                         let karts = karts();
                         let mode_index = new.mode_index;
                         let pack_hash = new.pack_hash;
-                        rooms.insert(karts, mode_index, pack_hash).map(|id| {
+                        let room = rooms.insert(frame_rate, karts, mode_index, pack_hash);
+                        room.map(|id| {
                             let spectating_counter = 0;
                             let spectating = false;
                             let continuing = false;
@@ -136,7 +152,9 @@ impl Client {
                         rooms.read(&id, |_| room_info)
                     }
                     (ClientRoomState::Code(code), _) => {
-                        rooms.get_by_code(code.room_code).and_then(|mut room| {
+                        let frame_rate = identity.frame_rate;
+                        let room = rooms.get_by_frame_rate_and_code(frame_rate, code.room_code);
+                        room.and_then(|mut room| {
                             let counter = code.room_counter;
                             let id = room.id();
                             let spectating_counter = 0;
@@ -192,12 +210,16 @@ impl Client {
 
     pub fn write(
         &self,
+        frame_rate: FrameRate,
         addr: SocketAddr,
         message: &mut [u8],
         player_count: usize,
         rooms: &Rooms,
     ) -> Result<Option<usize>> {
         anyhow::ensure!(addr == self.addr);
+        if frame_rate != self.frame_rate().unwrap_or(FrameRate::SixtyHz) {
+            return Ok(None);
+        }
         let server_state = match &self.state {
             State::Idle => return Ok(None),
             State::Server { identity } => {

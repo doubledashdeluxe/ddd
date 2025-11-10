@@ -7,6 +7,7 @@ use crate::clients::Clients;
 use crate::crypto::kx;
 use crate::crypto::session::Session;
 use crate::crypto::{Key, PublicKey};
+use crate::formats::online::FrameRate;
 use crate::rooms::Rooms;
 
 pub struct Connection {
@@ -60,6 +61,7 @@ impl Connection {
     pub fn write(
         &mut self,
         now: Instant,
+        frame_rate: FrameRate,
         message: &mut [u8],
         clients: &Clients,
         player_count: usize,
@@ -67,15 +69,18 @@ impl Connection {
     ) -> Result<Option<usize>> {
         anyhow::ensure!(now < self.expiration);
         match self.state {
-            State::Kx { m2 } => {
-                let message = &mut message[..kx::M2_SIZE];
-                message.copy_from_slice(&m2);
-                Ok(Some(kx::M2_SIZE))
-            }
+            State::Kx { m2 } => match frame_rate {
+                FrameRate::SixtyHz => {
+                    let message = &mut message[..kx::M2_SIZE];
+                    message.copy_from_slice(&m2);
+                    Ok(Some(kx::M2_SIZE))
+                }
+                FrameRate::FiftyHz => Ok(None),
+            },
             State::Session => {
                 let mut plaintext = [0u8; 512];
                 let plaintext_len = clients.read(&self.client_pk, |client| {
-                    client.write(self.addr, &mut plaintext, player_count, rooms)
+                    client.write(frame_rate, self.addr, &mut plaintext, player_count, rooms)
                 })??;
                 let Some(plaintext_len) = plaintext_len else {
                     return Ok(None);

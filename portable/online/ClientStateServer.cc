@@ -216,6 +216,10 @@ ClientIdentitySpecifiedWriter &ClientStateServer::specifiedWriter() {
     return *this;
 }
 
+u8 ClientStateServer::getFrameRate() {
+    return m_writeInfo->frameRate;
+}
+
 u32 ClientStateServer::getPlayersCount() {
     return m_writeInfo->playerCount;
 }
