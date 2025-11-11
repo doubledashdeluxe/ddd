@@ -13,6 +13,16 @@ typedef unsigned long long uint64_t;
 typedef long intptr_t;
 typedef unsigned long uintptr_t;
 
+typedef signed long int_fast8_t;
+typedef signed long int_fast16_t;
+typedef signed long int_fast32_t;
+typedef signed long long int_fast64_t;
+
+typedef unsigned long uint_fast8_t;
+typedef unsigned long uint_fast16_t;
+typedef unsigned long uint_fast32_t;
+typedef unsigned long long uint_fast64_t;
+
 #define INT8_MAX 0x7f
 #define INT16_MAX 0x7fff
 #define INT32_MAX 0x7fffffff
