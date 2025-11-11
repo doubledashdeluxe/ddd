@@ -3,7 +3,7 @@ name: Build DDD
 on: [push, pull_request]
 
 env:
-  llvm-version: 21.1.4
+  llvm-version: 21.1.5
 
 defaults:
   run:
