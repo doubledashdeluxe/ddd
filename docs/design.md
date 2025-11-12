@@ -1,4 +1,4 @@
-# DDD Design
+# DDD design
 
 ## Server location
 
