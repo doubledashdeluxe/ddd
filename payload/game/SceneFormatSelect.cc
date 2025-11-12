@@ -15,7 +15,7 @@
 
 #include <jsystem/J2DAnmLoaderDataBase.hh>
 #include <jsystem/J2DPicture.hh>
-#include <payload/online/Client.hh>
+#include <payload/online/CubeClient.hh>
 #include <payload/payload/CourseManager.hh>
 
 SceneFormatSelect::SceneFormatSelect(JKRArchive *archive, JKRHeap *heap) : Scene(archive, heap) {
@@ -116,7 +116,7 @@ void SceneFormatSelect::draw() {
 }
 
 void SceneFormatSelect::calc() {
-    Client *client = Client::Instance();
+    CubeClient *client = CubeClient::Instance();
     client->read(*this);
 
     (this->*m_state)();

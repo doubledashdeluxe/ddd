@@ -1,4 +1,4 @@
-#include "Client.hh"
+#include "CubeClient.hh"
 
 #include "payload/crypto/CubeRandom.hh"
 #include "payload/network/CubeDNS.hh"
@@ -9,59 +9,59 @@
 #include <jsystem/JKRExpHeap.hh>
 #include <portable/online/ClientStateIdle.hh>
 
-void Client::reset() {
+void CubeClient::reset() {
     updateState(*(new (m_platform.allocator) ClientStateIdle(m_platform)));
 }
 
-void Client::read(ClientReadHandler &handler) {
+void CubeClient::read(ClientReadHandler &handler) {
     while (updateState(m_state->read(handler))) {}
 }
 
-void Client::writeStateIdle() {
+void CubeClient::writeStateIdle() {
     while (updateState(m_state->writeStateIdle())) {}
 }
 
-void Client::writeStateServer(const ClientStateServerWriteInfo &writeInfo) {
+void CubeClient::writeStateServer(const ClientStateServerWriteInfo &writeInfo) {
     while (updateState(m_state->writeStateServer(writeInfo))) {}
 }
 
-void Client::writeStateMode(const ClientStateModeWriteInfo &writeInfo) {
+void CubeClient::writeStateMode(const ClientStateModeWriteInfo &writeInfo) {
     while (updateState(m_state->writeStateMode(writeInfo))) {}
 }
 
-void Client::writeStatePack(const ClientStatePackWriteInfo &writeInfo) {
+void CubeClient::writeStatePack(const ClientStatePackWriteInfo &writeInfo) {
     while (updateState(m_state->writeStatePack(writeInfo))) {}
 }
 
-void Client::writeStateRoom(const ClientStateRoomWriteInfo &writeInfo) {
+void CubeClient::writeStateRoom(const ClientStateRoomWriteInfo &writeInfo) {
     while (updateState(m_state->writeStateRoom(writeInfo))) {}
 }
 
-void Client::writeStateTeam(const ClientStateTeamWriteInfo &writeInfo) {
+void CubeClient::writeStateTeam(const ClientStateTeamWriteInfo &writeInfo) {
     while (updateState(m_state->writeStateTeam(writeInfo))) {}
 }
 
-void Client::writeStateError() {
+void CubeClient::writeStateError() {
     while (updateState(m_state->writeStateError())) {}
 }
 
-void Client::Init(JKRHeap *parentHeap, SOConfig &config) {
+void CubeClient::Init(JKRHeap *parentHeap, SOConfig &config) {
     JKRHeap *heap = JKRExpHeap::Create(16 * 1024, parentHeap, false);
-    s_instance = new (heap, 0x4) Client(config, heap);
+    s_instance = new (heap, 0x4) CubeClient(config, heap);
 }
 
-Client *Client::Instance() {
+CubeClient *CubeClient::Instance() {
     return s_instance;
 }
 
-Client::Client(SOConfig &config, JKRHeap *heap)
+CubeClient::CubeClient(SOConfig &config, JKRHeap *heap)
     : m_config(config), m_allocator(heap),
       m_platform(m_allocator, *CubeRandom::Instance(), CubeNetwork::Instance(),
               *CubeDNS::Instance(), m_socket, *CubeServerManager::Instance(), ClientK::Get()) {
     reset();
 }
 
-bool Client::updateState(ClientState &nextState) {
+bool CubeClient::updateState(ClientState &nextState) {
     bool hasChanged = &nextState != m_state.get();
     if (hasChanged) {
         m_state.reset(&nextState);
@@ -77,4 +77,4 @@ bool Client::updateState(ClientState &nextState) {
     return hasChanged;
 }
 
-Client *Client::s_instance = nullptr;
+CubeClient *CubeClient::s_instance = nullptr;

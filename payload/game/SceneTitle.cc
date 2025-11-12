@@ -19,7 +19,7 @@
 #include <payload/CourseManager.hh>
 #include <payload/MemoryProtection.hh>
 #include <payload/crypto/CubeRandom.hh>
-#include <payload/online/Client.hh>
+#include <payload/online/CubeClient.hh>
 #include <payload/online/CubeServerManager.hh>
 
 SceneTitle::SceneTitle(JKRArchive *archive, JKRHeap *heap)
@@ -134,7 +134,7 @@ void SceneTitle::calc() {
 }
 
 void SceneTitle::fadeIn() {
-    Client::Instance()->reset();
+    CubeClient::Instance()->reset();
     CubeServerManager::Instance()->unlock();
     CourseManager::Instance()->unlock();
     m_entryIndex = Entry::Count;

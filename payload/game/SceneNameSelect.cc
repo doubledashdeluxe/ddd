@@ -13,7 +13,7 @@
 #include "game/SystemRecord.hh"
 
 #include <jsystem/J2DAnmLoaderDataBase.hh>
-#include <payload/online/Client.hh>
+#include <payload/online/CubeClient.hh>
 #include <payload/online/CubeServerManager.hh>
 
 extern "C" {
@@ -127,7 +127,7 @@ void SceneNameSelect::calc() {
 }
 
 void SceneNameSelect::slideIn() {
-    Client::Instance()->reset();
+    CubeClient::Instance()->reset();
     CubeServerManager::Instance()->unlock();
     MenuTitleLine::Instance()->drop("SelectName.bti");
     m_mainAnmTransformFrame = 0;

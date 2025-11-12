@@ -18,7 +18,7 @@
 
 #include <jsystem/J2DAnmLoaderDataBase.hh>
 #include <payload/CourseManager.hh>
-#include <payload/online/Client.hh>
+#include <payload/online/CubeClient.hh>
 #include <portable/Algorithm.hh>
 #include <portable/UTF8.hh>
 
@@ -139,7 +139,7 @@ void ScenePackSelect::draw() {
 
 void ScenePackSelect::calc() {
     const SequenceInfo &sequenceInfo = SequenceInfo::Instance();
-    Client *client = Client::Instance();
+    CubeClient *client = CubeClient::Instance();
     if (sequenceInfo.m_isOnline) {
         client->read(*this);
     }

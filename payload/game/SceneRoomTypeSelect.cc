@@ -14,7 +14,7 @@
 #include "game/SequenceInfo.hh"
 
 #include <jsystem/J2DAnmLoaderDataBase.hh>
-#include <payload/online/Client.hh>
+#include <payload/online/CubeClient.hh>
 #include <portable/Algorithm.hh>
 
 SceneRoomTypeSelect::SceneRoomTypeSelect(JKRArchive *archive, JKRHeap *heap)
@@ -137,7 +137,7 @@ void SceneRoomTypeSelect::draw() {
 }
 
 void SceneRoomTypeSelect::calc() {
-    Client *client = Client::Instance();
+    CubeClient *client = CubeClient::Instance();
     client->read(*this);
 
     (this->*m_state)();

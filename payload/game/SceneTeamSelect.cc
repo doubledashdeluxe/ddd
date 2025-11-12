@@ -18,7 +18,7 @@
 
 #include <jsystem/J2DAnmLoaderDataBase.hh>
 #include <payload/crypto/CubeRandom.hh>
-#include <payload/online/Client.hh>
+#include <payload/online/CubeClient.hh>
 #include <portable/Algorithm.hh>
 
 extern "C" {
@@ -154,7 +154,7 @@ void SceneTeamSelect::draw() {
 }
 
 void SceneTeamSelect::calc() {
-    Client *client = Client::Instance();
+    CubeClient *client = CubeClient::Instance();
     client->read(*this);
 
     calcBalanced();

@@ -13,7 +13,7 @@
 #include "game/SequenceInfo.hh"
 
 #include <jsystem/J2DAnmLoaderDataBase.hh>
-#include <payload/online/Client.hh>
+#include <payload/online/CubeClient.hh>
 #include <payload/online/CubeServerManager.hh>
 
 extern "C" {
@@ -75,7 +75,7 @@ SceneServerSelect::~SceneServerSelect() {}
 
 void SceneServerSelect::init() {
     if (SequenceApp::Instance()->prevScene() != SceneType::RoomTypeSelect) {
-        Client::Instance()->reset();
+        CubeClient::Instance()->reset();
     }
 
     u32 playerCount = SequenceInfo::Instance().m_padCount;
@@ -144,7 +144,7 @@ void SceneServerSelect::draw() {
 }
 
 void SceneServerSelect::calc() {
-    Client *client = Client::Instance();
+    CubeClient *client = CubeClient::Instance();
     client->read(*this);
 
     (this->*m_state)();

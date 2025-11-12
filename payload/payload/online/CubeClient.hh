@@ -11,7 +11,7 @@ extern "C" {
 #include <portable/online/ClientPlatform.hh>
 #include <portable/online/ClientState.hh>
 
-class Client {
+class CubeClient {
 public:
     void reset();
     void read(ClientReadHandler &handler);
@@ -24,10 +24,10 @@ public:
     void writeStateError();
 
     static void Init(JKRHeap *parentHeap, SOConfig &config);
-    static Client *Instance();
+    static CubeClient *Instance();
 
 private:
-    Client(SOConfig &config, JKRHeap *heap);
+    CubeClient(SOConfig &config, JKRHeap *heap);
 
     bool updateState(ClientState &nextState);
 
@@ -37,5 +37,5 @@ private:
     ClientPlatform m_platform;
     UniquePtr<ClientState> m_state;
 
-    static Client *s_instance;
+    static CubeClient *s_instance;
 };

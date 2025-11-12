@@ -18,7 +18,7 @@
 #include <jsystem/J2DAnmLoaderDataBase.hh>
 #include <payload/CourseManager.hh>
 #include <payload/crypto/CubeRandom.hh>
-#include <payload/online/Client.hh>
+#include <payload/online/CubeClient.hh>
 #include <portable/Align.hh>
 
 extern "C" {
@@ -197,7 +197,7 @@ void ScenePersonalRoom::draw() {
 }
 
 void ScenePersonalRoom::calc() {
-    Client *client = Client::Instance();
+    CubeClient *client = CubeClient::Instance();
     client->read(*this);
 
     (this->*m_state)();

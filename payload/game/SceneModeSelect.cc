@@ -16,7 +16,7 @@
 #include "game/SequenceInfo.hh"
 
 #include <jsystem/J2DAnmLoaderDataBase.hh>
-#include <payload/online/Client.hh>
+#include <payload/online/CubeClient.hh>
 #include <portable/Formatter.hh>
 
 extern "C" {
@@ -88,7 +88,7 @@ void SceneModeSelect::draw() {
 }
 
 void SceneModeSelect::calc() {
-    Client *client = Client::Instance();
+    CubeClient *client = CubeClient::Instance();
     client->read(*this);
 
     (this->*m_state)();

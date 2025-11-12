@@ -13,7 +13,7 @@
 #include "game/SequenceInfo.hh"
 
 #include <jsystem/J2DAnmLoaderDataBase.hh>
-#include <payload/online/Client.hh>
+#include <payload/online/CubeClient.hh>
 #include <portable/Algorithm.hh>
 
 SceneRoomCodeEnter::SceneRoomCodeEnter(JKRArchive *archive, JKRHeap *heap) : Scene(archive, heap) {
@@ -106,7 +106,7 @@ void SceneRoomCodeEnter::draw() {
 }
 
 void SceneRoomCodeEnter::calc() {
-    Client *client = Client::Instance();
+    CubeClient *client = CubeClient::Instance();
     client->read(*this);
 
     (this->*m_state)();
