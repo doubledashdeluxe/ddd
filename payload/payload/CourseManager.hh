@@ -65,8 +65,10 @@ public:
     const Pack &racePack(u32 index) const;
     const Pack &battlePack(u32 index) const;
     const Pack *searchPack(bool isRace, const Hash &hash) const;
+    u32 courseCount(bool isRace, u32 packIndex) const;
     u32 raceCourseCount(u32 packIndex) const;
     u32 battleCourseCount(u32 packIndex) const;
+    const Course &course(bool isRace, u32 packIndex, u32 index) const;
     const Course &raceCourse(u32 packIndex, u32 index) const;
     const Course &battleCourse(u32 packIndex, u32 index) const;
 

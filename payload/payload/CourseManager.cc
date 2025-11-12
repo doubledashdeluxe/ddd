@@ -314,12 +314,20 @@ const CourseManager::Pack *CourseManager::searchPack(bool isRace, const Hash &ha
     return nullptr;
 }
 
+u32 CourseManager::courseCount(bool isRace, u32 packIndex) const {
+    return isRace ? raceCourseCount(packIndex) : battleCourseCount(packIndex);
+}
+
 u32 CourseManager::raceCourseCount(u32 packIndex) const {
     return racePack(packIndex).courseIndices().count();
 }
 
 u32 CourseManager::battleCourseCount(u32 packIndex) const {
     return battlePack(packIndex).courseIndices().count();
+}
+
+const CourseManager::Course &CourseManager::course(bool isRace, u32 packIndex, u32 index) const {
+    return isRace ? raceCourse(packIndex, index) : battleCourse(packIndex, index);
 }
 
 const CourseManager::Course &CourseManager::raceCourse(u32 packIndex, u32 index) const {

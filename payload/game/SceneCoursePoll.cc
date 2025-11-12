@@ -95,11 +95,7 @@ void SceneCoursePoll::init() {
 
     SequenceInfo &sequenceInfo = SequenceInfo::Instance();
     CourseManager *courseManager = CourseManager::Instance();
-    if (raceInfo.isRace()) {
-        m_courseCount = courseManager->raceCourseCount(sequenceInfo.m_packIndex);
-    } else {
-        m_courseCount = courseManager->battleCourseCount(sequenceInfo.m_packIndex);
-    }
+    m_courseCount = courseManager->courseCount(raceInfo.isRace(), sequenceInfo.m_packIndex);
     m_playerCount = 8;
     m_playerIndex = UINT32_MAX;
     m_nameCount = 0;
@@ -424,8 +420,9 @@ void *SceneCoursePoll::load() {
 }
 
 bool SceneCoursePoll::load(const Array<u32, MaxPlayerCount> &courseIndices) {
-    SequenceInfo &sequenceInfo = SequenceInfo::Instance();
-    CourseManager *courseManager = CourseManager::Instance();
+    const CourseManager *courseManager = CourseManager::Instance();
+    const RaceInfo &raceInfo = RaceInfo::Instance();
+    const SequenceInfo &sequenceInfo = SequenceInfo::Instance();
     for (u32 i = 0; i < courseIndices.count(); i++) {
         u32 courseIndex = courseIndices[i];
         if (courseIndex >= m_courseCount) {
@@ -443,14 +440,10 @@ bool SceneCoursePoll::load(const Array<u32, MaxPlayerCount> &courseIndices) {
                 nameImage = &m_nameImages[j];
             }
         }
-        const CourseManager::Course *course;
-        if (RaceInfo::Instance().isRace()) {
-            course = &courseManager->raceCourse(sequenceInfo.m_packIndex, courseIndex);
-        } else {
-            course = &courseManager->battleCourse(sequenceInfo.m_packIndex, courseIndex);
-        }
+        const CourseManager::Course &course =
+                courseManager->course(raceInfo.isRace(), sequenceInfo.m_packIndex, courseIndex);
         if (!thumbnail->get()) {
-            void *texture = course->loadThumbnail(m_heap);
+            void *texture = course.loadThumbnail(m_heap);
             {
                 Lock<Mutex> lock(m_mutex);
                 thumbnail->reset(static_cast<ResTIMG *>(texture));
@@ -458,7 +451,7 @@ bool SceneCoursePoll::load(const Array<u32, MaxPlayerCount> &courseIndices) {
             return false;
         }
         if (!nameImage->get()) {
-            void *texture = course->loadNameImage(m_heap);
+            void *texture = course.loadNameImage(m_heap);
             {
                 Lock<Mutex> lock(m_mutex);
                 nameImage->reset(static_cast<ResTIMG *>(texture));

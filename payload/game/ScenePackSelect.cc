@@ -243,15 +243,12 @@ ScenePackSelect::DescText::DescText(ScenePackSelect &scene, u32 descIndex)
 ScenePackSelect::DescText::~DescText() {}
 
 const char *ScenePackSelect::DescText::getPart(u32 partIndex) {
-    CourseManager *courseManager = CourseManager::Instance();
+    const CourseManager *courseManager = CourseManager::Instance();
+    const RaceInfo &raceInfo = RaceInfo::Instance();
     u32 packIndex = m_scene.m_rowIndex + m_descIndex;
-    const CourseManager::Course *course;
-    if (RaceInfo::Instance().isRace()) {
-        course = &courseManager->raceCourse(packIndex, partIndex);
-    } else {
-        course = &courseManager->battleCourse(packIndex, partIndex);
-    }
-    return course->name();
+    const CourseManager::Course &course =
+            courseManager->course(raceInfo.isRace(), packIndex, partIndex);
+    return course.name();
 }
 
 void ScenePackSelect::DescText::setAnmTransformFrame(u8 anmTransformFrame) {

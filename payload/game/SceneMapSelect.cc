@@ -118,11 +118,7 @@ void SceneMapSelect::init() {
 
     SequenceInfo &sequenceInfo = SequenceInfo::Instance();
     CourseManager *courseManager = CourseManager::Instance();
-    if (raceInfo.isRace()) {
-        m_mapCount = courseManager->raceCourseCount(sequenceInfo.m_packIndex);
-    } else {
-        m_mapCount = courseManager->battleCourseCount(sequenceInfo.m_packIndex);
-    }
+    m_mapCount = courseManager->courseCount(raceInfo.isRace(), sequenceInfo.m_packIndex);
     m_mapIndex = 0;
     if (sequenceInfo.m_fromPause) {
         m_mapIndex = sequenceInfo.m_mapIndex;
@@ -608,7 +604,6 @@ void SceneMapSelect::stateSelectOut() {
 
 void SceneMapSelect::stateSelect() {
     SequenceInfo &sequenceInfo = SequenceInfo::Instance();
-    CourseManager *courseManager = CourseManager::Instance();
     const JUTGamePad::CButton &button = KartGamePad::GamePad(0)->button();
     if (button.risingEdge() & PAD_BUTTON_A ||
             (sequenceInfo.m_isOnline && OnlineTimer::Instance()->hasExpired())) {
@@ -619,14 +614,12 @@ void SceneMapSelect::stateSelect() {
             m_nextScene = SceneType::None;
             GameAudio::Main::Instance()->fadeOutAll(15);
             System::GetDisplay()->startFadeOut(15);
-            const CourseManager::Course *course;
-            if (RaceInfo::Instance().isRace()) {
-                course = &courseManager->raceCourse(sequenceInfo.m_packIndex, m_mapIndex);
-            } else {
-                course = &courseManager->battleCourse(sequenceInfo.m_packIndex, m_mapIndex);
-            }
-            ResMgr::LoadExtendedCourseData(course, 2);
-            SequenceInfo::Instance().m_mapIndex = m_mapIndex;
+            const CourseManager *courseManager = CourseManager::Instance();
+            const RaceInfo &raceInfo = RaceInfo::Instance();
+            const CourseManager::Course &course =
+                    courseManager->course(raceInfo.isRace(), sequenceInfo.m_packIndex, m_mapIndex);
+            ResMgr::LoadExtendedCourseData(&course, 2);
+            sequenceInfo.m_mapIndex = m_mapIndex;
         }
         slideOut();
     } else if (button.risingEdge() & PAD_BUTTON_B) {
@@ -764,22 +757,19 @@ void *SceneMapSelect::load() {
 }
 
 bool SceneMapSelect::load(const Array<u32, 12> &nextMapIndices) {
-    SequenceInfo &sequenceInfo = SequenceInfo::Instance();
-    CourseManager *courseManager = CourseManager::Instance();
+    const SequenceInfo &sequenceInfo = SequenceInfo::Instance();
+    const CourseManager *courseManager = CourseManager::Instance();
+    const RaceInfo &raceInfo = RaceInfo::Instance();
     for (u32 i = 0; i < nextMapIndices.count(); i++) {
         u32 mapIndex = nextMapIndices[i];
         if (mapIndex >= m_mapCount) {
             continue;
         }
-        const CourseManager::Course *course;
-        if (RaceInfo::Instance().isRace()) {
-            course = &courseManager->raceCourse(sequenceInfo.m_packIndex, mapIndex);
-        } else {
-            course = &courseManager->battleCourse(sequenceInfo.m_packIndex, mapIndex);
-        }
+        const CourseManager::Course &course =
+                courseManager->course(raceInfo.isRace(), sequenceInfo.m_packIndex, mapIndex);
         UniquePtr<ResTIMG> &thumbnail = findTexture(m_thumbnails, nextMapIndices, mapIndex);
         if (!thumbnail.get()) {
-            void *texture = course->loadThumbnail(m_heap);
+            void *texture = course.loadThumbnail(m_heap);
             {
                 Lock<Mutex> lock(m_mutex);
                 thumbnail.reset(static_cast<ResTIMG *>(texture));
@@ -788,7 +778,7 @@ bool SceneMapSelect::load(const Array<u32, 12> &nextMapIndices) {
         }
         UniquePtr<ResTIMG> &nameImage = findTexture(m_nameImages, nextMapIndices, mapIndex);
         if (!nameImage.get()) {
-            void *texture = course->loadNameImage(m_heap);
+            void *texture = course.loadNameImage(m_heap);
             {
                 Lock<Mutex> lock(m_mutex);
                 nameImage.reset(static_cast<ResTIMG *>(texture));
