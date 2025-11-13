@@ -5,14 +5,15 @@
 #include "game/KartGamePad.hh"
 #include "game/MenuTitleLine.hh"
 #include "game/OnlineBackground.hh"
+#include "game/OnlineInfo.hh"
 #include "game/OnlineTimer.hh"
 #include "game/Race2D.hh"
+#include "game/RaceInfo.hh"
 #include "game/SceneFactory.hh"
 #include "game/SequenceApp.hh"
 #include "game/System.hh"
 
 #include <jsystem/J2DAnmLoaderDataBase.hh>
-#include <payload/crypto/CubeRandom.hh>
 
 extern "C" {
 #include <stdio.h>
@@ -26,20 +27,20 @@ ScenePlayerList::ScenePlayerList(JKRArchive *archive, JKRHeap *heap) : Scene(arc
     MenuTitleLine::Create(titleLineArchive, heap);
 
     m_mainScreen.set("PlayerList.blo", 0x0, m_archive);
-    for (u32 i = 0; i < m_playerScreens.count(); i++) {
-        m_playerScreens[i].set("PlayerListPlayer.blo", 0x0, m_archive);
+    for (u32 i = 0; i < m_kartScreens.count(); i++) {
+        m_kartScreens[i].set("PlayerListPlayer.blo", 0x0, m_archive);
     }
 
-    for (u32 i = 0; i < m_playerScreens.count(); i++) {
+    for (u32 i = 0; i < m_kartScreens.count(); i++) {
         for (u32 j = 1; j <= 3; j++) {
-            m_playerScreens[i].search("RCurs%02u", j)->setHasARTrans(false, true);
-            m_playerScreens[i].search("RCurs%02u", j)->setHasARShift(false, true);
-            m_playerScreens[i].search("RCurs%02u", j)->setHasARScale(false, true);
+            m_kartScreens[i].search("RCurs%02u", j)->setHasARTrans(false, true);
+            m_kartScreens[i].search("RCurs%02u", j)->setHasARShift(false, true);
+            m_kartScreens[i].search("RCurs%02u", j)->setHasARScale(false, true);
         }
     }
 
-    for (u32 i = 0; i < m_playerScreens.count(); i++) {
-        m_mainScreen.search("Player%u", i)->appendChild(&m_playerScreens[i]);
+    for (u32 i = 0; i < m_kartScreens.count(); i++) {
+        m_mainScreen.search("Player%u", i)->appendChild(&m_kartScreens[i]);
     }
 
     m_mainAnmTransform = J2DAnmLoaderDataBase::Load("PlayerList.bck", m_archive);
@@ -84,40 +85,49 @@ void ScenePlayerList::calc() {
     m_mainAnmTransform->m_frame = m_mainAnmTransformFrame;
 
     m_mainScreen.animation();
-    for (u32 i = 0; i < m_playerScreens.count(); i++) {
-        m_playerScreens[i].animationMaterials();
+    for (u32 i = 0; i < m_kartScreens.count(); i++) {
+        m_kartScreens[i].animationMaterials();
     }
 
     OnlineTimer::Instance()->calc();
 }
 
 void ScenePlayerList::slideIn() {
+    const OnlineInfo &onlineInfo = OnlineInfo::Instance();
+    const RaceInfo &raceInfo = RaceInfo::Instance();
     Kart2DCommon *kart2DCommon = Kart2DCommon::Instance();
-    CubeRandom *random = CubeRandom::Instance();
-    for (u32 i = 0; i < m_playerScreens.count(); i++) {
-        J2DScreen &screen = m_playerScreens[i];
-        GXColor color = Race2D::GetPlayerNumberColor(i);
+    u32 kartCount = raceInfo.m_kartCount;
+    for (u32 i = 0; i < m_kartScreens.count(); i++) {
+        m_mainScreen.search("Player%u", i)->m_isVisible = i < kartCount;
+        if (i >= kartCount) {
+            continue;
+        }
+        J2DScreen &screen = m_kartScreens[i];
+        u32 colorIndex = i;
+        if (!onlineInfo.m_isFFA) {
+            colorIndex = onlineInfo.m_teams[i];
+        }
+        GXColor color = Race2D::GetPlayerNumberColor(colorIndex);
         for (u32 j = 1; j <= 3; j++) {
             J2DPicture *picture = screen.search("RCurs%02u", j)->downcast<J2DPicture>();
             picture->setWhite(color);
         }
-        kart2DCommon->changeUnicodeTexture("ABC", 3, screen, "PName0");
-        if (i % 2) {
-            kart2DCommon->changeUnicodeTexture("   ", 3, screen, "PName1");
-        } else {
-            kart2DCommon->changeUnicodeTexture("DEF", 3, screen, "PName1");
-        }
+        const Kart &kart = onlineInfo.m_karts[i];
         for (u32 j = 0; j < 2; j++) {
+            Array<char, 32> prefix;
+            snprintf(prefix.values(), prefix.count(), "PName%" PRIu32, j);
+            const Player &player = kart.players[j];
+            kart2DCommon->changeUnicodeTexture(player.name.values(), 3, screen, prefix.values());
             for (u32 k = 0; k < 2; k++) {
                 J2DPicture *picture = screen.search("P%c%u", "BN"[k], j)->downcast<J2DPicture>();
-                picture->m_isVisible = j + i * 2 < 3;
+                picture->m_isVisible = kart.local && j < kart.playerCount;
                 if (picture->m_isVisible) {
-                    picture->m_cornerColors = Race2D::GetCornerColors(j + i * 2);
+                    picture->m_cornerColors = Race2D::GetCornerColors(player.index);
                 }
                 if (k == 1) {
                     Array<char, 32> name;
-                    snprintf(name.values(), name.count(), "PlayerNumberSimple_%luP.bti",
-                            j + i * 2 + 1);
+                    snprintf(name.values(), name.count(), "PlayerNumberSimple_%uP.bti",
+                            player.index + 1);
                     picture->changeTexture(name.values(), 0);
                 }
             }
@@ -126,7 +136,7 @@ void ScenePlayerList::slideIn() {
         for (u32 j = 0; j < pictures.count(); j++) {
             pictures[j] = screen.search("MMR%u", j)->downcast<J2DPicture>();
         }
-        s32 mmr = random->get(10000);
+        s32 mmr = kart.mmr;
         kart2DCommon->changeNumberTexture(mmr, pictures.values(), pictures.count(), false, false);
     }
 

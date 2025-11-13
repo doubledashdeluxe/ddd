@@ -110,7 +110,11 @@ pub fn server_room_options() -> impl ComplexDataType {
 pub fn server_kart() -> impl ComplexDataType {
     let local: SimpleDataType<u8> = SimpleDataType::new();
     let players = ArrayType::new(server_player(), MIN_KART_PLAYER_COUNT, MAX_KART_PLAYER_COUNT);
-    StructType::new("ServerKart").with_field("local", local).with_field("players", players)
+    let mmr: SimpleDataType<u16> = SimpleDataType::new();
+    StructType::new("ServerKart")
+        .with_field("local", local)
+        .with_field("players", players)
+        .with_field("mmr", mmr)
 }
 
 pub fn server_player() -> impl ComplexDataType {
@@ -134,9 +138,11 @@ pub fn server_team_state_main() -> impl ComplexDataType {
     let team: SimpleDataType<u8> = SimpleDataType::new();
     let teams = ArrayType::new(team, 2, MAX_ROOM_KART_COUNT);
     let entry_index: SimpleDataType<u8> = SimpleDataType::new();
+    let continuing: SimpleDataType<u8> = SimpleDataType::new();
     StructType::new("ServerTeamStateMain")
         .with_field("teams", teams)
         .with_field("entry_index", entry_index)
+        .with_field("continuing", continuing)
 }
 
 pub const MAX_MOTD_LENGTH: u8 = 99;

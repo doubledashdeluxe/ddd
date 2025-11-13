@@ -49,6 +49,8 @@ private:
     void setTeamsElement(u32 i0, u8 teamsElement) override;
     bool isEntryIndexValid(u8 entryIndex) override;
     void setEntryIndex(u8 entryIndex) override;
+    bool isContinuingValid(u8 continuing) override;
+    void setContinuing(u8 continuing) override;
 
     ClientStateTeamWriter &teamWriter() override;
 
@@ -60,6 +62,7 @@ private:
     u32 getTeamsCount() override;
     u8 getTeamsElement(u32 i0) override;
     u8 getEntryIndex() override;
+    u8 getContinuing() override;
 
     void checkSocket();
 

@@ -9,7 +9,6 @@ use crate::crypto::PublicKey;
 use crate::formats::online::*;
 use crate::formats::version;
 use crate::kart::Kart;
-use crate::room;
 use crate::rooms::Rooms;
 
 pub struct Client {
@@ -265,10 +264,12 @@ impl Client {
                             let karts = room
                                 .karts()
                                 .iter()
-                                .map(|kart| {
+                                .enumerate()
+                                .map(|(i, kart)| {
                                     let local = (kart.client_pk() == &self.pk).into();
                                     let players = kart.players().to_vec();
-                                    ServerKart { local, players }
+                                    let mmr = i as u16 * 1023;
+                                    ServerKart { local, players, mmr }
                                 })
                                 .collect();
                             let spectator_count = room.spectator_count() as u16;
@@ -306,10 +307,7 @@ impl Client {
             State::Team { room_info, .. } => {
                 let server_team_state = match room_info {
                     Some(room_info) => {
-                        let main = rooms.read(&room_info.id, |room| match room.state() {
-                            room::State::Team { main } => Some(main.clone()),
-                            _ => None,
-                        });
+                        let main = rooms.read(&room_info.id, |room| room.team_state().cloned());
                         let Ok(Some(main)) = main else {
                             return Ok(None);
                         };

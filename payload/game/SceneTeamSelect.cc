@@ -117,12 +117,19 @@ void SceneTeamSelect::init() {
     const RaceInfo &raceInfo = RaceInfo::Instance();
     const OnlineInfo &onlineInfo = OnlineInfo::Instance();
     m_ok = true;
+    m_balanced = false;
     m_isHost = onlineInfo.m_isHost;
     m_canContinue = true;
+    m_continuing = false;
     m_kartCount = raceInfo.m_kartCount;
     m_teams.fill(0);
     m_entryIndex = 0;
     m_teamCount = onlineInfo.m_teamCount;
+
+    m_writeInfo.isHost = m_isHost;
+    m_writeInfo.kartCount = m_kartCount;
+    m_writeInfo.teamCount = m_teamCount;
+    m_writeInfo.continuing = false;
 
     J2DPicture *iconPicture = m_modeScreen.search("BtlPict")->downcast<J2DPicture>();
     J2DPicture *namePicture = m_modeScreen.search("SubM")->downcast<J2DPicture>();
@@ -150,24 +157,19 @@ void SceneTeamSelect::calc() {
     Client *client = Client::Instance();
     client->read(*this);
 
+    calcBalanced();
+
     (this->*m_state)();
+
+    calcBalanced();
+    OnlineInfo::Instance().m_teams = m_teams;
 
     OnlineBackground::Instance()->calc();
     MenuTitleLine::Instance()->calc();
 
-    Array<u8, MaxTeamCount> teamSizes(0);
-    for (u32 i = 0; i < m_kartCount; i++) {
-        teamSizes[m_teams[i]]++;
-    }
-    const OnlineInfo &onlineInfo = OnlineInfo::Instance();
-    bool even = true;
-    for (u32 i = 0; i < teamSizes.count(); i++) {
-        even = even && teamSizes[i] <= onlineInfo.m_maxTeamSize;
-    }
-
     Kart2DCommon *kart2DCommon = Kart2DCommon::Instance();
     J2DScreen &okScreen = m_entryScreens[MaxEntryCount - 1];
-    if (even) {
+    if (m_balanced) {
         const char *path = "/ok.txt";
         char *ok = static_cast<char *>(ResMgr::GetPtr(ResMgr::ArchiveID::MRAMLoc, path));
         u32 size = ResMgr::GetResSize(ResMgr::ArchiveID::MRAMLoc, ok);
@@ -274,15 +276,11 @@ void SceneTeamSelect::calc() {
 
     OnlineTimer::Instance()->calc();
 
-    ClientStateTeamWriteInfo writeInfo;
-    writeInfo.isHost = m_isHost;
-    writeInfo.kartCount = m_kartCount;
     if (m_isHost) {
-        writeInfo.kartTeams = m_teams;
-        writeInfo.entryIndex = m_entryIndex;
+        m_writeInfo.kartTeams = m_teams;
+        m_writeInfo.entryIndex = m_entryIndex;
     }
-    writeInfo.teamCount = m_teamCount;
-    client->writeStateTeam(writeInfo);
+    client->writeStateTeam(m_writeInfo);
 }
 
 bool SceneTeamSelect::clientStateRoom(const ClientStateRoomReadInfo & /* readInfo */) {
@@ -296,8 +294,11 @@ bool SceneTeamSelect::clientStateTeam(const ClientStateTeamReadInfo &readInfo) {
         return true;
     }
 
-    if (m_isHost) {
-        m_canContinue = info->kartTeams == m_teams;
+    m_canContinue = true;
+    if (m_isHost && (m_balanced || !info->continuing)) {
+        for (u32 i = 0; i < m_kartCount; i++) {
+            m_canContinue = m_canContinue && info->kartTeams[i] == m_teams[i];
+        }
     } else {
         for (u32 i = 0; i < m_kartCount; i++) {
             u8 team = info->kartTeams[i];
@@ -323,6 +324,7 @@ bool SceneTeamSelect::clientStateTeam(const ClientStateTeamReadInfo &readInfo) {
             GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CURSOL);
         }
     }
+    m_continuing = info->continuing;
     return true;
 }
 
@@ -420,14 +422,16 @@ void SceneTeamSelect::stateIdle() {
     }
 
     const JUTGamePad::CButton &button = KartGamePad::GamePad(0)->button();
-    if ((m_isHost && button.risingEdge() & PAD_BUTTON_A) || OnlineTimer::Instance()->hasExpired()) {
-        if (m_entryIndex + 1 == MaxEntryCount) {
-            m_nextScene = SceneType::PlayerList;
-            GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE_LITTLE);
-            System::GetDisplay()->startFadeOut(15);
-            slideOut();
+    if ((m_isHost && button.risingEdge() & PAD_BUTTON_A && m_entryIndex + 1 == MaxEntryCount) ||
+            OnlineTimer::Instance()->hasExpired() || (m_balanced && m_continuing)) {
+        if (m_isHost) {
+            m_writeInfo.continuing = true;
         }
-    } else if (button.risingEdge() & PAD_BUTTON_B || !m_ok) {
+        m_nextScene = SceneType::PlayerList;
+        GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE_LITTLE);
+        System::GetDisplay()->startFadeOut(15);
+        slideOut();
+    } else if (button.risingEdge() & PAD_BUTTON_B || !m_ok || (!m_balanced && m_continuing)) {
         m_nextScene = SceneType::RoomTypeSelect;
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CANCEL_LITTLE);
         slideOut();
@@ -499,9 +503,36 @@ void SceneTeamSelect::stateSpin() {
 }
 
 void SceneTeamSelect::stateNextScene() {
+    const JUTGamePad::CButton &button = KartGamePad::GamePad(0)->button();
+    if (m_nextScene == SceneType::PlayerList) {
+        if (button.risingEdge() & PAD_BUTTON_B || !m_ok || (!m_balanced && m_continuing)) {
+            m_nextScene = SceneType::RoomTypeSelect;
+            System::GetDisplay()->startFadeIn(15);
+            GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CANCEL_LITTLE);
+        }
+    }
+
+    if (m_nextScene == SceneType::PlayerList) {
+        if (!m_canContinue || !m_continuing) {
+            return;
+        }
+    }
+
     if (!SequenceApp::Instance()->ready(m_nextScene)) {
         return;
     }
 
     SequenceApp::Instance()->setNextScene(m_nextScene);
+}
+
+void SceneTeamSelect::calcBalanced() {
+    Array<u8, MaxTeamCount> teamSizes(0);
+    for (u32 i = 0; i < m_kartCount; i++) {
+        teamSizes[m_teams[i]]++;
+    }
+    const OnlineInfo &onlineInfo = OnlineInfo::Instance();
+    m_balanced = true;
+    for (u32 i = 0; i < teamSizes.count(); i++) {
+        m_balanced = m_balanced && teamSizes[i] <= onlineInfo.m_maxTeamSize;
+    }
 }

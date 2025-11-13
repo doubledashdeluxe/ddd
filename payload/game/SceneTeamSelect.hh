@@ -5,6 +5,7 @@
 #include <jsystem/J2DScreen.hh>
 #include <portable/Array.hh>
 #include <portable/online/ClientReadHandler.hh>
+#include <portable/online/ClientStateTeamWriteInfo.hh>
 
 class SceneTeamSelect
     : public Scene
@@ -39,15 +40,20 @@ private:
     void stateSpin();
     void stateNextScene();
 
+    void calcBalanced();
+
     State m_state;
     bool m_ok;
+    bool m_balanced;
     bool m_isHost;
     bool m_canContinue;
+    bool m_continuing;
     u32 m_kartCount;
     Array<u8, MaxRoomKartCount> m_teams;
     u32 m_entryIndex;
     u32 m_teamCount;
     u32 m_spinFrame;
+    ClientStateTeamWriteInfo m_writeInfo;
     u32 m_nextScene;
     J2DScreen m_mainScreen;
     J2DScreen m_modeScreen;

@@ -126,9 +126,11 @@ pub fn client_team_state_host() -> impl ComplexDataType {
     let team: SimpleDataType<u8> = SimpleDataType::new();
     let teams = ArrayType::new(team, 2, MAX_ROOM_KART_COUNT);
     let entry_index: SimpleDataType<u8> = SimpleDataType::new();
+    let continuing: SimpleDataType<u8> = SimpleDataType::new();
     StructType::new("ClientTeamStateHost")
         .with_field("teams", teams)
         .with_field("entry_index", entry_index)
+        .with_field("continuing", continuing)
 }
 
 pub fn client_team_state_guest() -> impl ComplexDataType {

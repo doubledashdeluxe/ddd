@@ -10,4 +10,5 @@ struct ClientStateTeamWriteInfo {
     Array<u8, MaxRoomKartCount> kartTeams;
     u8 entryIndex;
     u8 teamCount;
+    bool continuing;
 };

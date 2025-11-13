@@ -520,12 +520,15 @@ bool ScenePersonalRoom::clientStateRoom(const ClientStateRoomReadInfo &readInfo)
         maxTeamSize = 4;
         break;
     }
+    bool isFFA = maxTeamSize == 1;
     u8 teamCount = (raceInfo.m_kartCount + maxTeamSize - 1) / maxTeamSize;
-    if (maxTeamSize >= 2) {
+    if (!isFFA) {
         teamCount = Max<u8>(teamCount, 2);
     }
-    onlineInfo.m_maxTeamSize = maxTeamSize;
+    maxTeamSize = (raceInfo.m_kartCount + teamCount - 1) / teamCount;
+    onlineInfo.m_isFFA = isFFA;
     onlineInfo.m_teamCount = teamCount;
+    onlineInfo.m_maxTeamSize = maxTeamSize;
 
     m_continuing = info->continuing;
     return true;
@@ -602,19 +605,18 @@ void ScenePersonalRoom::stateSlideOut() {
 
 void ScenePersonalRoom::stateIdle() {
     const JUTGamePad::CButton &button = KartGamePad::GamePad(0)->button();
-    if ((m_isHost && button.risingEdge() & PAD_BUTTON_A) || m_continuing) {
-        if (m_entryIndex + 1 == MaxEntryCount) {
-            if (OnlineInfo::Instance().m_maxTeamSize >= 2) {
-                m_nextScene = SceneType::TeamSelect;
-            } else {
-                m_nextScene = SceneType::PlayerList;
-            }
-            if (m_isHost) {
-                m_writeInfo.continuing = true;
-            }
-            GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE_LITTLE);
-            slideOut();
+    if ((m_isHost && button.risingEdge() & PAD_BUTTON_A && m_entryIndex + 1 == MaxEntryCount) ||
+            m_continuing) {
+        if (m_isHost) {
+            m_writeInfo.continuing = true;
         }
+        if (OnlineInfo::Instance().m_isFFA) {
+            m_nextScene = SceneType::PlayerList;
+        } else {
+            m_nextScene = SceneType::TeamSelect;
+        }
+        GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE_LITTLE);
+        slideOut();
     } else if (button.risingEdge() & PAD_BUTTON_B || !m_ok) {
         m_nextScene = SceneType::RoomTypeSelect;
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CANCEL_LITTLE);

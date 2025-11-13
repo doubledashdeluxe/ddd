@@ -55,6 +55,7 @@ ClientState &ClientStateTeam::writeStateTeam(const ClientStateTeamWriteInfo &wri
     m_writeInfo.kartTeams = writeInfo.kartTeams;
     m_writeInfo.entryIndex = writeInfo.entryIndex;
     m_writeInfo.teamCount = writeInfo.teamCount;
+    m_writeInfo.continuing = writeInfo.continuing;
 
     Array<u8, 512> buffer;
     u32 size = buffer.count();
@@ -110,20 +111,35 @@ void ClientStateTeam::setTeamsCount(u32 teamsCount) {
     m_readInfo.info.getOrEmplace().kartCount = teamsCount;
 }
 
-bool ClientStateTeam::isTeamsElementValid(u32 /* i0 */, u8 teamsElement) {
-    return teamsElement < m_writeInfo.teamCount;
+bool ClientStateTeam::isTeamsElementValid(u32 i0, u8 teamsElement) {
+    const Optional<ReadInfo::Info> &info = m_readInfo.info;
+    if (info && info->continuing) {
+        return teamsElement == info->kartTeams[i0];
+    } else {
+        return teamsElement < m_writeInfo.teamCount;
+    }
 }
 
 void ClientStateTeam::setTeamsElement(u32 i0, u8 teamsElement) {
     m_readInfo.info.getOrEmplace().kartTeams[i0] = teamsElement;
 }
 
-bool ClientStateTeam::isEntryIndexValid(u8 /* entryIndex */) {
-    return true;
+bool ClientStateTeam::isEntryIndexValid(u8 entryIndex) {
+    const Optional<ReadInfo::Info> &info = m_readInfo.info;
+    return !info || !info->continuing || entryIndex == info->entryIndex;
 }
 
 void ClientStateTeam::setEntryIndex(u8 entryIndex) {
     m_readInfo.info.getOrEmplace().entryIndex = entryIndex;
+}
+
+bool ClientStateTeam::isContinuingValid(u8 continuing) {
+    const Optional<ReadInfo::Info> &info = m_readInfo.info;
+    return !info || !info->continuing || continuing;
+}
+
+void ClientStateTeam::setContinuing(u8 continuing) {
+    m_readInfo.info.getOrEmplace().continuing = continuing;
 }
 
 ClientStateTeamWriter &ClientStateTeam::teamWriter() {
@@ -156,6 +172,10 @@ u8 ClientStateTeam::getTeamsElement(u32 i0) {
 
 u8 ClientStateTeam::getEntryIndex() {
     return m_writeInfo.entryIndex;
+}
+
+u8 ClientStateTeam::getContinuing() {
+    return m_writeInfo.continuing;
 }
 
 void ClientStateTeam::checkSocket() {

@@ -84,6 +84,8 @@ private:
     bool isPlayersCountValid(u32 playersCount) override;
     void setPlayersCount(u32 playersCount) override;
     ServerPlayerReader *playersElementReader(u32 i0) override;
+    bool isMmrValid(u16 mmr) override;
+    void setMmr(u16 mmr) override;
 
     bool isIndexValid(u8 index) override;
     void setIndex(u8 index) override;

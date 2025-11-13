@@ -116,6 +116,7 @@ ClientState &FakeClient::writeStateTeam() {
     writeInfo.kartTeams[1] = 1;
     writeInfo.entryIndex = 0;
     writeInfo.teamCount = 2;
+    writeInfo.continuing = true;
     return m_state->writeStateTeam(writeInfo);
 }
 

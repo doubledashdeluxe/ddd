@@ -2,6 +2,7 @@
 
 #include "game/Scene.hh"
 
+#include <formats/Online.hh>
 #include <jsystem/J2DScreen.hh>
 #include <portable/Array.hh>
 
@@ -14,10 +15,6 @@ public:
     void calc() override;
 
 private:
-    enum {
-        MaxPlayerCount = 8,
-    };
-
     typedef void (ScenePlayerList::*State)();
 
     void slideIn();
@@ -33,7 +30,7 @@ private:
     State m_state;
     u32 m_nextScene;
     J2DScreen m_mainScreen;
-    Array<J2DScreen, MaxPlayerCount> m_playerScreens;
+    Array<J2DScreen, MaxRoomKartCount> m_kartScreens;
     J2DAnmBase *m_mainAnmTransform;
     u8 m_mainAnmTransformFrame;
 };

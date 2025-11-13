@@ -1,7 +1,10 @@
+use std::array;
 use std::collections::hash_map::{Entry, HashMap};
+use std::time::{Duration, Instant};
 
 use anyhow::Result;
 use log::debug;
+use rand::seq::SliceRandom;
 
 use crate::crypto::PublicKey;
 use crate::formats::online::*;
@@ -67,7 +70,7 @@ impl Room {
             };
             ServerRoomOptions::Battle(options)
         };
-        let state = State::Room { continuing: false };
+        let state = State::Room;
         Room {
             host_pk,
             karts,
@@ -111,6 +114,10 @@ impl Room {
         self.id
     }
 
+    pub fn options(&self) -> &ServerRoomOptions {
+        &self.options
+    }
+
     pub fn code(&self) -> u64 {
         match self.code_type() {
             RoomOptionCodeType::Long => self.long_code,
@@ -125,11 +132,50 @@ impl Room {
         }
     }
 
-    fn max_team_size(&self) -> usize {
-        match self.format() {
+    fn is_ffa(&self) -> bool {
+        matches!(self.format(), RoomOptionFormat::FreeForAll)
+    }
+
+    fn team_count(&self) -> u8 {
+        let max_team_size = match self.format() {
             RoomOptionFormat::FreeForAll => 1,
             RoomOptionFormat::TeamsOf2 => 2,
             RoomOptionFormat::TeamsOf4 => 4,
+        };
+        self.karts.len().div_ceil(max_team_size).max(2) as u8
+    }
+
+    fn balance_teams(&self, teams: &mut [u8]) {
+        let mut team_sizes = [0; MAX_TEAM_COUNT as usize];
+        for team in teams.iter() {
+            team_sizes[*team as usize] += 1;
+        }
+
+        let kart_count = teams.len();
+        let mut karts: [_; MAX_ROOM_KART_COUNT as usize] = array::from_fn(|i| i);
+        karts[..kart_count].shuffle(&mut rand::rng());
+
+        let team_count = self.team_count() as usize;
+        let mut other_teams: [_; MAX_TEAM_COUNT as usize] = array::from_fn(|i| i);
+        other_teams[..team_count].shuffle(&mut rand::rng());
+
+        let max_team_size = kart_count.div_ceil(team_count);
+        for kart in karts[..kart_count].iter() {
+            let team = &mut teams[*kart];
+            let team_size = team_sizes[*team as usize];
+            if team_size <= max_team_size {
+                continue;
+            }
+
+            for other_team in other_teams[..team_count].iter() {
+                let other_team_size = team_sizes[*other_team];
+                if other_team_size < max_team_size {
+                    team_sizes[*team as usize] -= 1;
+                    *team = *other_team as u8;
+                    team_sizes[*other_team] += 1;
+                    break;
+                }
+            }
         }
     }
 
@@ -140,18 +186,19 @@ impl Room {
         }
     }
 
-    pub fn options(&self) -> &ServerRoomOptions {
-        &self.options
-    }
-
-    pub fn state(&self) -> &State {
-        &self.state
+    pub fn team_state(&self) -> Option<&ServerTeamStateMain> {
+        match &self.state {
+            State::Room => None,
+            State::Team { state, .. } => Some(state),
+            State::Poll { team_state } => team_state.as_ref(),
+        }
     }
 
     pub fn has_room_lock(&self) -> bool {
         match self.state {
-            State::Room { continuing } => continuing,
+            State::Room => false,
             State::Team { .. } => true,
+            State::Poll { .. } => true,
         }
     }
 
@@ -191,37 +238,29 @@ impl Room {
     }
 
     pub fn set_options(&mut self, client_pk: &PublicKey, options: ClientRoomOptions) -> Result<()> {
-        match (options, &self.options, &self.state) {
-            (
-                ClientRoomOptions::Race(client_options),
-                ServerRoomOptions::Race(server_options),
-                State::Room { continuing },
-            ) => {
+        match (options, &self.options) {
+            (ClientRoomOptions::Race(client), ServerRoomOptions::Race(server)) => {
                 anyhow::ensure!(self.is_host(client_pk));
-                if *continuing {
-                    anyhow::ensure!(client_options == *server_options);
+                if self.has_room_lock() {
+                    anyhow::ensure!(client == *server);
                 } else {
-                    anyhow::ensure!(client_options.lap_count <= MAX_LAP_COUNT);
-                    anyhow::ensure!(client_options.match_count >= MIN_MATCH_COUNT);
-                    anyhow::ensure!(client_options.match_count <= MAX_MATCH_COUNT);
-                    self.options = ServerRoomOptions::Race(client_options);
+                    anyhow::ensure!(client.lap_count <= MAX_LAP_COUNT);
+                    anyhow::ensure!(client.match_count >= MIN_MATCH_COUNT);
+                    anyhow::ensure!(client.match_count <= MAX_MATCH_COUNT);
+                    self.options = ServerRoomOptions::Race(client);
                 }
             }
-            (
-                ClientRoomOptions::Battle(client_options),
-                ServerRoomOptions::Battle(server_options),
-                State::Room { continuing },
-            ) => {
+            (ClientRoomOptions::Battle(client), ServerRoomOptions::Battle(server)) => {
                 anyhow::ensure!(self.is_host(client_pk));
-                if *continuing {
-                    anyhow::ensure!(client_options == *server_options);
+                if self.has_room_lock() {
+                    anyhow::ensure!(client == *server);
                 } else {
-                    anyhow::ensure!(client_options.match_count >= MIN_MATCH_COUNT);
-                    anyhow::ensure!(client_options.match_count <= MAX_MATCH_COUNT);
-                    self.options = ServerRoomOptions::Battle(client_options);
+                    anyhow::ensure!(client.match_count >= MIN_MATCH_COUNT);
+                    anyhow::ensure!(client.match_count <= MAX_MATCH_COUNT);
+                    self.options = ServerRoomOptions::Battle(client);
                 }
             }
-            (ClientRoomOptions::None(()), _, _) => {
+            (ClientRoomOptions::None(()), _) => {
                 anyhow::ensure!(self.is_guest(client_pk))
             }
             _ => anyhow::bail!("Invalid options"),
@@ -231,13 +270,20 @@ impl Room {
 
     pub fn set_continuing(&mut self, client_pk: &PublicKey, continuing: bool) -> Result<()> {
         if self.is_host(client_pk) {
-            if continuing {
-                match &mut self.state {
-                    State::Room { continuing } => *continuing = true,
-                    _ => anyhow::bail!("Unexpected room state"),
+            if self.has_room_lock() {
+                anyhow::ensure!(continuing);
+            } else if continuing {
+                if self.is_ffa() {
+                    self.state = State::Poll { team_state: None };
+                } else {
+                    let state = ServerTeamStateMain {
+                        teams: vec![0; self.karts.len()],
+                        entry_index: 0,
+                        continuing: false as u8,
+                    };
+                    let deadline = Instant::now() + Duration::from_secs(35);
+                    self.state = State::Team { state, deadline };
                 }
-            } else {
-                anyhow::ensure!(matches!(self.state, State::Room { continuing: false }));
             }
         } else {
             anyhow::ensure!(!continuing);
@@ -246,24 +292,42 @@ impl Room {
     }
 
     pub fn set_team_state(&mut self, client_pk: &PublicKey, state: ClientTeamState) -> Result<()> {
-        anyhow::ensure!(self.has_room_lock());
-        let max_team_size = self.max_team_size();
-        anyhow::ensure!(max_team_size >= 2);
-        let team_count = self.karts.len().div_ceil(max_team_size).max(2) as u8;
+        anyhow::ensure!(self.team_state().is_some());
         match state {
-            ClientTeamState::Host(host) => {
-                anyhow::ensure!(self.is_host(client_pk));
-                let teams = host.teams;
-                let entry_index = host.entry_index;
-                anyhow::ensure!(teams.len() == self.karts.len());
-                anyhow::ensure!(teams.iter().all(|team| *team < team_count));
-                let main = ServerTeamStateMain { teams, entry_index };
-                self.state = State::Team { main };
-            }
-            ClientTeamState::Guest(_) => {
-                anyhow::ensure!(self.is_guest(client_pk));
-            }
+            ClientTeamState::Host(host) => self.set_team_state_host(client_pk, host),
+            ClientTeamState::Guest(_) => self.set_team_state_guest(client_pk),
         }
+    }
+
+    fn set_team_state_host(
+        &mut self,
+        client_pk: &PublicKey,
+        state: ClientTeamStateHost,
+    ) -> Result<()> {
+        anyhow::ensure!(self.is_host(client_pk));
+        let ClientTeamStateHost { teams, entry_index, continuing } = state;
+        anyhow::ensure!(teams.len() == self.karts.len());
+        let team_count = self.team_count();
+        anyhow::ensure!(teams.iter().all(|team| *team < team_count));
+        match &mut self.state {
+            State::Room => anyhow::bail!("Invalid room state"),
+            State::Team { state, .. } => {
+                state.teams = teams;
+                state.entry_index = entry_index;
+                if continuing != 0 {
+                    let mut state = state.clone();
+                    self.balance_teams(&mut state.teams);
+                    state.continuing = true as u8;
+                    self.state = State::Poll { team_state: Some(state) };
+                }
+            }
+            State::Poll { .. } => (),
+        }
+        Ok(())
+    }
+
+    fn set_team_state_guest(&mut self, client_pk: &PublicKey) -> Result<()> {
+        anyhow::ensure!(self.is_guest(client_pk));
         Ok(())
     }
 
@@ -291,6 +355,15 @@ impl Room {
             .flat_map(|karts| karts.iter().map(|kart| kart.players().len()))
             .sum();
 
+        if let State::Team { state, deadline } = &mut self.state
+            && Instant::now() >= *deadline
+        {
+            let mut state = state.clone();
+            self.balance_teams(&mut state.teams);
+            state.continuing = true as u8;
+            self.state = State::Poll { team_state: Some(state) };
+        }
+
         Ok(())
     }
 }
@@ -301,7 +374,8 @@ impl Drop for Room {
     }
 }
 
-pub enum State {
-    Room { continuing: bool },
-    Team { main: ServerTeamStateMain },
+enum State {
+    Room,
+    Team { deadline: Instant, state: ServerTeamStateMain },
+    Poll { team_state: Option<ServerTeamStateMain> },
 }

@@ -19,8 +19,10 @@ public:
     u32 m_roomCounter;
     u64 m_roomCode;
     Array<Kart, MaxRoomKartCount> m_karts;
-    u8 m_maxTeamSize;
+    bool m_isFFA;
     u8 m_teamCount;
+    u8 m_maxTeamSize;
+    Array<u8, MaxRoomKartCount> m_teams;
     bool m_hasIDs;
     Array<Array<u32, 2>, 4> m_characterIDs;
     Array<u32, 4> m_kartIDs;

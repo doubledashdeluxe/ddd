@@ -243,6 +243,15 @@ ServerPlayerReader *ClientStateRoom::playersElementReader(u32 i0) {
     return this;
 }
 
+bool ClientStateRoom::isMmrValid(u16 mmr) {
+    const Optional<ReadInfo::Info> &info = m_readInfo.info;
+    return !info || !info->continuing || mmr == info->karts[m_kartIndex].mmr;
+}
+
+void ClientStateRoom::setMmr(u16 mmr) {
+    m_readInfo.info.getOrEmplace().karts[m_kartIndex].mmr = mmr;
+}
+
 bool ClientStateRoom::isIndexValid(u8 index) {
     return index < MaxClientPlayerCount;
 }
