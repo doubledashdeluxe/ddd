@@ -5,8 +5,9 @@ use std::time::{Duration, Instant};
 use anyhow::Result;
 use log::debug;
 use rand::seq::SliceRandom;
+use rand::{Rng, SeedableRng};
 
-use crate::crypto::PublicKey;
+use crate::crypto::{ChaCha20Rng, PublicKey};
 use crate::formats::online::*;
 use crate::kart::Kart;
 
@@ -22,6 +23,7 @@ pub struct Room {
     short_code: u64,
     options: ServerRoomOptions,
     state: State,
+    rng: ChaCha20Rng,
 }
 
 impl Room {
@@ -32,6 +34,7 @@ impl Room {
         id: u128,
         long_code: u64,
         short_code: u64,
+        rng: &mut impl Rng,
     ) -> Room {
         debug!("-> {id}");
         let karts = host_karts;
@@ -83,6 +86,7 @@ impl Room {
             short_code,
             options,
             state,
+            rng: ChaCha20Rng::from_rng(rng),
         }
     }
 
@@ -145,7 +149,7 @@ impl Room {
         self.karts.len().div_ceil(max_team_size).max(2) as u8
     }
 
-    fn balance_teams(&self, teams: &mut [u8]) {
+    fn balance_teams(&mut self, teams: &mut [u8]) {
         let mut team_sizes = [0; MAX_TEAM_COUNT as usize];
         for team in teams.iter() {
             team_sizes[*team as usize] += 1;
@@ -153,11 +157,11 @@ impl Room {
 
         let kart_count = teams.len();
         let mut karts: [_; MAX_ROOM_KART_COUNT as usize] = array::from_fn(|i| i);
-        karts[..kart_count].shuffle(&mut rand::rng());
+        karts[..kart_count].shuffle(&mut self.rng);
 
         let team_count = self.team_count() as usize;
         let mut other_teams: [_; MAX_TEAM_COUNT as usize] = array::from_fn(|i| i);
-        other_teams[..team_count].shuffle(&mut rand::rng());
+        other_teams[..team_count].shuffle(&mut self.rng);
 
         let max_team_size = kart_count.div_ceil(team_count);
         for kart in karts[..kart_count].iter() {

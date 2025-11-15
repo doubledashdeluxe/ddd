@@ -4,6 +4,7 @@ use std::time::{Duration, Instant};
 
 use anyhow::{Result, anyhow};
 use log::debug;
+use rand::Rng;
 
 use crate::crypto::PublicKey;
 use crate::formats::online::*;
@@ -65,7 +66,7 @@ impl Client {
         Some(room_info.id)
     }
 
-    pub fn update(&mut self, now: Instant, rooms: &Rooms) -> Result<()> {
+    pub fn update(&mut self, now: Instant, rooms: &Rooms, rng: &mut impl Rng) -> Result<()> {
         anyhow::ensure!(now < self.expiration);
         let client_state = self.client_state.take();
         let Some(client_state) = client_state else {
@@ -136,7 +137,7 @@ impl Client {
                         let karts = karts();
                         let mode_index = new.mode_index;
                         let pack_hash = new.pack_hash;
-                        let room = rooms.insert(frame_rate, karts, mode_index, pack_hash);
+                        let room = rooms.insert(frame_rate, karts, mode_index, pack_hash, rng);
                         room.map(|id| {
                             let spectating_counter = 0;
                             let spectating = false;

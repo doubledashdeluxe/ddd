@@ -5,6 +5,7 @@ use std::sync::Arc;
 
 use anyhow::{Context, Result};
 use orion::util;
+use rand::Rng;
 use scc::Queue;
 use scc::hash_map::{Entry, HashMap, OccupiedEntry};
 
@@ -64,6 +65,7 @@ impl Rooms {
         karts: Vec<Kart>,
         mode_index: ModeIndex,
         pack_hash: Vec<u8>,
+        rng: &mut impl Rng,
     ) -> Result<u128> {
         let room_entry = loop {
             let rooms = self.rooms_by_frame_rate(frame_rate);
@@ -93,7 +95,7 @@ impl Rooms {
         let id = *room_entry.key();
         let long_code = *long_code_id_entry.key();
         let short_code = **self.short_codes.pop().context("Reached capacity")?;
-        let room = Room::new(karts, mode_index, pack_hash, id, long_code, short_code);
+        let room = Room::new(karts, mode_index, pack_hash, id, long_code, short_code, rng);
         room_entry.insert_entry(room);
         long_code_id_entry.insert_entry(id);
         self.short_code_ids.insert_sync(short_code, id).unwrap();

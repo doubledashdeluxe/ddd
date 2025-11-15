@@ -4,8 +4,10 @@ use std::thread;
 use std::time::{Duration, Instant};
 
 use anyhow::Result;
+use rand::SeedableRng;
 
 use crate::clients::Clients;
+use crate::crypto::ChaCha20Rng;
 use crate::formats::online::FrameRate;
 use crate::message::Message;
 use crate::rooms::Rooms;
@@ -18,12 +20,13 @@ pub fn run(
 ) -> Result<()> {
     let mut next_tick = Instant::now();
     let mut client_room_ids = HashMap::new();
+    let mut rng = ChaCha20Rng::from_os_rng();
     loop {
         let now = Instant::now();
         match next_tick.checked_duration_since(now) {
             Some(duration) if !duration.is_zero() => thread::sleep(duration),
             _ => {
-                clients.update(now, &mut client_room_ids, &rooms);
+                clients.update(now, &mut client_room_ids, &rooms, &mut rng);
                 rooms.update(frame_rate, &client_room_ids);
                 for message_sender in &message_senders {
                     let message = Message::Write { frame_rate };

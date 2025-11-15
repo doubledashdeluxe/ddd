@@ -13,12 +13,15 @@ Random::Random() : m_offset(m_buffer.count()) {}
 Random::~Random() {}
 
 void Random::get(void *data, size_t size) {
+    size_t wipeOffset = m_offset;
+
     while (size > 0) {
         if (m_offset == m_buffer.count()) {
             Array<u8, 8> nonce(0);
             crypto_chacha20_djb(m_buffer.values(), nullptr, m_buffer.count(), m_buffer.values(),
                     nonce.values(), 0);
             m_offset = 32;
+            wipeOffset = m_offset;
         }
 
         size_t chunkSize = Min(size, m_buffer.count() - m_offset);
@@ -28,7 +31,7 @@ void Random::get(void *data, size_t size) {
         m_offset += chunkSize;
     }
 
-    crypto_wipe(m_buffer.values() + 32, m_offset - 32);
+    crypto_wipe(m_buffer.values() + wipeOffset, m_offset - wipeOffset);
 }
 
 u32 Random::get(u32 range) {

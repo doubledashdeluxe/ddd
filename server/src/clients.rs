@@ -6,6 +6,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::Instant;
 
 use anyhow::{Context, Result, anyhow};
+use rand::Rng;
 use scc::hash_map::{Entry, HashMap, OccupiedEntry};
 
 use crate::client::Client;
@@ -61,12 +62,13 @@ impl Clients {
         now: Instant,
         client_room_ids: &mut collections::HashMap<PublicKey, Option<u128>>,
         rooms: &Rooms,
+        rng: &mut impl Rng,
     ) {
         client_room_ids.clear();
         let mut count = 0;
         let mut player_count = 0;
         self.clients.retain_sync(|pk, client| {
-            let retain = client.update(now, rooms).is_ok();
+            let retain = client.update(now, rooms, rng).is_ok();
             if retain {
                 count += 1;
                 player_count += client.player_count();
