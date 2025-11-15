@@ -508,7 +508,8 @@ void ScenePackSelect::refreshPacks() {
         u32 descPictureCount = 42 - m_playerCountIsVisible * 6;
         descText.refresh(descOffset, courseCount, descPictureCount, screen, "Desc");
         kart2DCommon->changeNumberTexture<3>(courseCount, screen, "CCount", true);
-        kart2DCommon->changeUnicodeTexture(m_playerCounts[i].values(), 3, screen, "PCount", true);
+        const Array<char, 4> &playerCount = m_playerCounts[packIndex];
+        kart2DCommon->changeUnicodeTexture(playerCount.values(), 3, screen, "PCount", true);
     }
 }
 
