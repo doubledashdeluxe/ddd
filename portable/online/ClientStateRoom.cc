@@ -8,7 +8,9 @@
 
 ClientStateRoom::ClientStateRoom(const ClientPlatform &platform, Connection &connection,
         const ClientStateRoomWriteInfo &writeInfo)
-    : ClientState(platform), m_connection(&connection), m_writeInfo(writeInfo) {
+    : ClientState(platform), m_writeInfo(writeInfo) {
+    m_connections.pushBack();
+    m_connections.back()->reset(&connection);
     m_readInfo.ok = true;
 }
 
@@ -19,27 +21,16 @@ bool ClientStateRoom::needsSockets() {
 }
 
 ClientState &ClientStateRoom::read(ClientReadHandler &handler) {
-    checkSocket();
+    ClientState::read(*this);
 
-    for (u32 i = 0; i < 16; i++) {
-        Array<u8, 512> buffer;
-        Address address;
-        s32 result = m_platform.socket.recvFrom(buffer.values(), buffer.count(), address);
-        if (result < 0) {
-            break;
-        }
-        if (!m_connection->read(*this, buffer.values(), result, address)) {
-            continue;
-        }
-        Optional<ReadInfo::Info> &info = m_readInfo.info;
-        if (info) {
-            for (u32 j = 0; j < info->kartCount; j++) {
-                Kart &kart = info->karts[j];
-                for (u32 k = kart.playerCount; k < kart.players.count(); k++) {
-                    Player &player = kart.players[k];
-                    player.index = UINT8_MAX;
-                    player.name = "   ";
-                }
+    Optional<ReadInfo::Info> &info = m_readInfo.info;
+    if (info) {
+        for (u32 j = 0; j < info->kartCount; j++) {
+            Kart &kart = info->karts[j];
+            for (u32 k = kart.playerCount; k < kart.players.count(); k++) {
+                Player &player = kart.players[k];
+                player.index = UINT8_MAX;
+                player.name = "   ";
             }
         }
     }
@@ -52,37 +43,30 @@ ClientState &ClientStateRoom::read(ClientReadHandler &handler) {
 }
 
 ClientState &ClientStateRoom::writeStateMode(const ClientStateModeWriteInfo &writeInfo) {
-    Connection &connection = *m_connection.release();
+    Connection &connection = *m_connections.front()->release();
     u8 playerCount = writeInfo.playerCount;
     return *(new (m_platform.allocator) ClientStateMode(m_platform, connection, playerCount));
 }
 
 ClientState &ClientStateRoom::writeStatePack(const ClientStatePackWriteInfo &writeInfo) {
-    Connection &connection = *m_connection.release();
+    Connection &connection = *m_connections.front()->release();
     return *(new (m_platform.allocator) ClientStatePack(m_platform, connection, writeInfo));
 }
 
 ClientState &ClientStateRoom::writeStateRoom(const ClientStateRoomWriteInfo &writeInfo) {
-    checkSocket();
-
     m_writeInfo.spectatingCounter = writeInfo.spectatingCounter;
     m_writeInfo.spectating = writeInfo.spectating;
     m_writeInfo.options = writeInfo.options;
     m_writeInfo.entryIndex = writeInfo.entryIndex;
     m_writeInfo.continuing = writeInfo.continuing;
 
-    Array<u8, 512> buffer;
-    u32 size = buffer.count();
-    Address address;
-    if (m_connection->write(*this, buffer.values(), size, address)) {
-        m_platform.socket.sendTo(buffer.values(), size, address);
-    }
+    ClientState::write(*this);
 
     return *this;
 }
 
 ClientState &ClientStateRoom::writeStateTeam(const ClientStateTeamWriteInfo &writeInfo) {
-    Connection &connection = *m_connection.release();
+    Connection &connection = *m_connections.front()->release();
     return *(new (m_platform.allocator) ClientStateTeam(m_platform, connection, writeInfo));
 }
 
@@ -506,11 +490,4 @@ u8 ClientStateRoom::getCourseSelection() {
 
 u8 ClientStateRoom::getEntryIndex() {
     return m_writeInfo.entryIndex;
-}
-
-void ClientStateRoom::checkSocket() {
-    if (!m_platform.socket.ok()) {
-        m_connection->reset();
-        m_platform.socket.open();
-    }
 }

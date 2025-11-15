@@ -153,9 +153,6 @@ private:
     u8 getCourseSelection() override;
     u8 getEntryIndex() override;
 
-    void checkSocket();
-
-    UniquePtr<Connection> m_connection;
     ReadInfo m_readInfo;
     u32 m_kartIndex;
     u32 m_playerIndex;

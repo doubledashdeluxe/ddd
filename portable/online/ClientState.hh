@@ -7,6 +7,7 @@
 #include "portable/online/ClientStateRoomWriteInfo.hh"
 #include "portable/online/ClientStateServerWriteInfo.hh"
 #include "portable/online/ClientStateTeamWriteInfo.hh"
+#include "portable/online/Connection.hh"
 
 class ClientState {
 public:
@@ -23,5 +24,15 @@ public:
     virtual ClientState &writeStateError();
 
 protected:
+    void read(ServerStateReader &reader);
+    void write(ClientStateWriter &writer);
+
+private:
+    void checkSocket();
+
+protected:
     const ClientPlatform &m_platform;
+    Ring<UniquePtr<Connection>, MaxServerCount> m_connections;
+    u32 m_readIndex;
+    u32 m_writeIndex;
 };

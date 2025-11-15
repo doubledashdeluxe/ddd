@@ -13,4 +13,5 @@ struct ClientStatePackReadInfo {
     };
 
     Array<Optional<Pack>, MaxPackCount> packs;
+    Optional<u32> packIndex;
 };

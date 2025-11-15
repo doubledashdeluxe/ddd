@@ -6,7 +6,10 @@
 
 ClientStatePack::ClientStatePack(const ClientPlatform &platform, Connection &connection,
         const ClientStatePackWriteInfo &writeInfo)
-    : ClientState(platform), m_connection(&connection), m_writeInfo(writeInfo), m_packIndex(0) {}
+    : ClientState(platform), m_writeInfo(writeInfo), m_packIndex(0) {
+    m_connections.pushBack();
+    m_connections.back()->reset(&connection);
+}
 
 ClientStatePack::~ClientStatePack() {}
 
@@ -15,18 +18,10 @@ bool ClientStatePack::needsSockets() {
 }
 
 ClientState &ClientStatePack::read(ClientReadHandler &handler) {
-    checkSocket();
+    ClientState::read(*this);
 
-    for (u32 i = 0; i < 16; i++) {
-        Array<u8, 512> buffer;
-        Address address;
-        s32 result = m_platform.socket.recvFrom(buffer.values(), buffer.count(), address);
-        if (result < 0) {
-            break;
-        }
-        if (m_connection->read(*this, buffer.values(), result, address) && !m_writeInfo.packIndex) {
-            m_packIndex = (m_packIndex + 1) % m_writeInfo.packCount;
-        }
+    if (!m_writeInfo.packIndex && m_readInfo.packIndex == m_packIndex) {
+        m_packIndex = (m_packIndex + 1) % m_writeInfo.packCount;
     }
 
     if (!handler.clientStatePack(m_readInfo)) {
@@ -37,32 +32,25 @@ ClientState &ClientStatePack::read(ClientReadHandler &handler) {
 }
 
 ClientState &ClientStatePack::writeStateMode(const ClientStateModeWriteInfo &writeInfo) {
-    Connection &connection = *m_connection.release();
+    Connection &connection = *m_connections.front()->release();
     u8 playerCount = writeInfo.playerCount;
     return *(new (m_platform.allocator) ClientStateMode(m_platform, connection, playerCount));
 }
 
 ClientState &ClientStatePack::writeStatePack(const WriteInfo &writeInfo) {
-    checkSocket();
-
     Optional<u32> packIndex = writeInfo.packIndex;
     m_writeInfo.packIndex = packIndex;
     if (packIndex) {
         m_packIndex = *packIndex;
     }
 
-    Array<u8, 512> buffer;
-    u32 size = buffer.count();
-    Address address;
-    if (m_connection->write(*this, buffer.values(), size, address)) {
-        m_platform.socket.sendTo(buffer.values(), size, address);
-    }
+    ClientState::write(*this);
 
     return *this;
 }
 
 ClientState &ClientStatePack::writeStateRoom(const ClientStateRoomWriteInfo &writeInfo) {
-    Connection &connection = *m_connection.release();
+    Connection &connection = *m_connections.front()->release();
     return *(new (m_platform.allocator) ClientStateRoom(m_platform, connection, writeInfo));
 }
 
@@ -96,7 +84,9 @@ bool ClientStatePack::isPackIndexValid(u8 packIndex) {
     return packIndex == m_packIndex;
 }
 
-void ClientStatePack::setPackIndex(u8 /* packIndex */) {}
+void ClientStatePack::setPackIndex(u8 packIndex) {
+    m_readInfo.packIndex = packIndex;
+}
 
 bool ClientStatePack::isPlayerCountValid(u16 /* playerCount */) {
     return true;
@@ -139,11 +129,4 @@ u32 ClientStatePack::getPackHashCount() {
 
 u8 ClientStatePack::getPackHashElement(u32 i0) {
     return m_writeInfo.packs[m_packIndex].hash[i0];
-}
-
-void ClientStatePack::checkSocket() {
-    if (!m_platform.socket.ok()) {
-        m_connection->reset();
-        m_platform.socket.open();
-    }
 }

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "portable/UniquePtr.hh"
 #include "portable/online/ClientState.hh"
 #include "portable/online/Connection.hh"
 
@@ -46,9 +45,6 @@ private:
 
     ClientStateModeWriter &modeWriter() override;
 
-    void checkSocket();
-
-    UniquePtr<Connection> m_connection;
     u8 m_playerCount;
     ReadInfo m_readInfo;
     u32 m_modeIndex;

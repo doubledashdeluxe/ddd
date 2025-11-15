@@ -7,7 +7,10 @@
 
 ClientStateMode::ClientStateMode(const ClientPlatform &platform, Connection &connection,
         u8 playerCount)
-    : ClientState(platform), m_connection(&connection), m_playerCount(playerCount) {}
+    : ClientState(platform), m_playerCount(playerCount) {
+    m_connections.pushBack();
+    m_connections.back()->reset(&connection);
+}
 
 ClientStateMode::~ClientStateMode() {}
 
@@ -16,17 +19,7 @@ bool ClientStateMode::needsSockets() {
 }
 
 ClientState &ClientStateMode::read(ClientReadHandler &handler) {
-    checkSocket();
-
-    for (u32 i = 0; i < 16; i++) {
-        Array<u8, 512> buffer;
-        Address address;
-        s32 result = m_platform.socket.recvFrom(buffer.values(), buffer.count(), address);
-        if (result < 0) {
-            break;
-        }
-        m_connection->read(*this, buffer.values(), result, address);
-    }
+    ClientState::read(*this);
 
     if (!handler.clientStateMode(m_readInfo)) {
         return *(new (m_platform.allocator) ClientStateError(m_platform));
@@ -40,25 +33,18 @@ ClientState &ClientStateMode::writeStateServer(const ClientStateServerWriteInfo 
 }
 
 ClientState &ClientStateMode::writeStateMode(const WriteInfo & /* writeInfo */) {
-    checkSocket();
-
-    Array<u8, 512> buffer;
-    u32 size = buffer.count();
-    Address address;
-    if (m_connection->write(*this, buffer.values(), size, address)) {
-        m_platform.socket.sendTo(buffer.values(), size, address);
-    }
+    ClientState::write(*this);
 
     return *this;
 }
 
 ClientState &ClientStateMode::writeStatePack(const ClientStatePackWriteInfo &writeInfo) {
-    Connection &connection = *m_connection.release();
+    Connection &connection = *m_connections.front()->release();
     return *(new (m_platform.allocator) ClientStatePack(m_platform, connection, writeInfo));
 }
 
 ClientState &ClientStateMode::writeStateRoom(const ClientStateRoomWriteInfo &writeInfo) {
-    Connection &connection = *m_connection.release();
+    Connection &connection = *m_connections.front()->release();
     return *(new (m_platform.allocator) ClientStateRoom(m_platform, connection, writeInfo));
 }
 
@@ -117,11 +103,4 @@ void ClientStateMode::setPlayerCount(u16 playerCount) {
 
 ClientStateModeWriter &ClientStateMode::modeWriter() {
     return *this;
-}
-
-void ClientStateMode::checkSocket() {
-    if (!m_platform.socket.ok()) {
-        m_connection->reset();
-        m_platform.socket.open();
-    }
 }

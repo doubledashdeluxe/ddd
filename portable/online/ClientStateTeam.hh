@@ -64,9 +64,6 @@ private:
     u8 getEntryIndex() override;
     u8 getContinuing() override;
 
-    void checkSocket();
-
-    UniquePtr<Connection> m_connection;
     ReadInfo m_readInfo;
     WriteInfo m_writeInfo;
 };

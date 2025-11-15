@@ -11,8 +11,7 @@ extern "C" {
 #include <string.h>
 }
 
-ClientStateServer::ClientStateServer(const ClientPlatform &platform)
-    : ClientState(platform), m_readIndex(0), m_writeIndex(0) {
+ClientStateServer::ClientStateServer(const ClientPlatform &platform) : ClientState(platform) {
     m_platform.socket.close();
     snprintf(m_version.values(), m_version.count(), "%s", Version);
 }
@@ -33,32 +32,15 @@ ClientState &ClientStateServer::read(ClientReadHandler &handler) {
 
     m_readInfo.networkIsRunning = m_platform.network.isRunning();
     if (m_readInfo.networkIsRunning) {
-        checkSocket();
-
-        if (!m_connections.empty()) {
-            for (u32 i = 0; i < 16; i++) {
-                Array<u8, 512> buffer;
-                Address address;
-                s32 result = m_platform.socket.recvFrom(buffer.values(), buffer.count(), address);
-                if (result < 0) {
-                    break;
-                }
-                for (u32 j = 0; j < m_connections.count(); j++) {
-                    m_readIndex = (m_readIndex + 1) % m_connections.count();
-                    if (m_connections[m_readIndex]->read(*this, buffer.values(), result, address)) {
-                        ReadInfo::Server &server = m_readInfo.servers[m_readIndex];
-                        server.versionIsCompatible = server.protocolVersion == ProtocolVersion;
-                        break;
-                    }
-                }
-            }
-        }
+        ClientState::read(*this);
     }
 
     m_readInfo.networkName = m_platform.network.name();
     m_readInfo.networkAddress = m_readInfo.networkIsRunning ? m_platform.network.address() : 0;
     for (u32 i = 0; i < m_connections.count(); i++) {
-        m_readInfo.servers[i].address = m_connections[i]->address();
+        ReadInfo::Server &server = m_readInfo.servers[i];
+        server.address = m_connections[i]->address();
+        server.versionIsCompatible = server.protocolVersion == ProtocolVersion;
     }
 
     if (!handler.clientStateServer(m_readInfo)) {
@@ -78,19 +60,9 @@ ClientState &ClientStateServer::writeStateServer(const WriteInfo &writeInfo) {
 
     m_readInfo.networkIsRunning = m_platform.network.isRunning();
     if (m_readInfo.networkIsRunning) {
-        checkSocket();
-
         m_writeInfo = &writeInfo;
 
-        if (!m_connections.empty()) {
-            Array<u8, 512> buffer;
-            u32 size = buffer.count();
-            Address address;
-            if (m_connections[m_writeIndex]->write(*this, buffer.values(), size, address)) {
-                m_platform.socket.sendTo(buffer.values(), size, address);
-            }
-            m_writeIndex = (m_writeIndex + 1) % m_connections.count();
-        }
+        ClientState::write(*this);
     }
 
     return *this;
@@ -257,15 +229,6 @@ void ClientStateServer::checkConnections() {
                     new (m_platform.allocator) Connection(m_platform, publicK, name, port);
             m_connections.back()->reset(connection);
         }
-    }
-}
-
-void ClientStateServer::checkSocket() {
-    if (!m_platform.socket.ok()) {
-        for (u32 i = 0; i < m_connections.count(); i++) {
-            m_connections[i]->reset();
-        }
-        m_platform.socket.open();
     }
 }
 

@@ -1,10 +1,6 @@
 #pragma once
 
-#include "portable/Ring.hh"
-#include "portable/UniquePtr.hh"
 #include "portable/online/ClientState.hh"
-#include "portable/online/Connection.hh"
-#include "portable/online/ServerManager.hh"
 
 #include <formats/Online.hh>
 
@@ -78,12 +74,8 @@ private:
     u8 getNameElement(u32 i0) override;
 
     void checkConnections();
-    void checkSocket();
     void checkServers();
 
-    Ring<UniquePtr<Connection>, MaxServerCount> m_connections;
-    u32 m_readIndex;
-    u32 m_writeIndex;
     ReadInfo m_readInfo;
     Array<char, MaxVersionLength + 1> m_version;
     const WriteInfo *m_writeInfo;

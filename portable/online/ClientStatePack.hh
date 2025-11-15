@@ -1,6 +1,5 @@
 #pragma once
 
-#include "portable/UniquePtr.hh"
 #include "portable/online/ClientState.hh"
 #include "portable/online/Connection.hh"
 
@@ -50,9 +49,6 @@ private:
     u32 getPackHashCount() override;
     u8 getPackHashElement(u32 i0) override;
 
-    void checkSocket();
-
-    UniquePtr<Connection> m_connection;
     ReadInfo m_readInfo;
     WriteInfo m_writeInfo;
     u8 m_packIndex;

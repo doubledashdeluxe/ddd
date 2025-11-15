@@ -7,7 +7,9 @@
 
 ClientStateTeam::ClientStateTeam(const ClientPlatform &platform, Connection &connection,
         const ClientStateTeamWriteInfo &writeInfo)
-    : ClientState(platform), m_connection(&connection), m_writeInfo(writeInfo) {
+    : ClientState(platform), m_writeInfo(writeInfo) {
+    m_connections.pushBack();
+    m_connections.back()->reset(&connection);
     m_readInfo.ok = true;
 }
 
@@ -18,17 +20,7 @@ bool ClientStateTeam::needsSockets() {
 }
 
 ClientState &ClientStateTeam::read(ClientReadHandler &handler) {
-    checkSocket();
-
-    for (u32 i = 0; i < 16; i++) {
-        Array<u8, 512> buffer;
-        Address address;
-        s32 result = m_platform.socket.recvFrom(buffer.values(), buffer.count(), address);
-        if (result < 0) {
-            break;
-        }
-        m_connection->read(*this, buffer.values(), result, address);
-    }
+    ClientState::read(*this);
 
     if (!handler.clientStateTeam(m_readInfo)) {
         return *(new (m_platform.allocator) ClientStateError(m_platform));
@@ -38,31 +30,24 @@ ClientState &ClientStateTeam::read(ClientReadHandler &handler) {
 }
 
 ClientState &ClientStateTeam::writeStateMode(const ClientStateModeWriteInfo &writeInfo) {
-    Connection &connection = *m_connection.release();
+    Connection &connection = *m_connections.front()->release();
     u8 playerCount = writeInfo.playerCount;
     return *(new (m_platform.allocator) ClientStateMode(m_platform, connection, playerCount));
 }
 
 ClientState &ClientStateTeam::writeStatePack(const ClientStatePackWriteInfo &writeInfo) {
-    Connection &connection = *m_connection.release();
+    Connection &connection = *m_connections.front()->release();
     return *(new (m_platform.allocator) ClientStatePack(m_platform, connection, writeInfo));
 }
 
 ClientState &ClientStateTeam::writeStateTeam(const ClientStateTeamWriteInfo &writeInfo) {
-    checkSocket();
-
     m_writeInfo.kartCount = writeInfo.kartCount;
     m_writeInfo.kartTeams = writeInfo.kartTeams;
     m_writeInfo.entryIndex = writeInfo.entryIndex;
     m_writeInfo.teamCount = writeInfo.teamCount;
     m_writeInfo.continuing = writeInfo.continuing;
 
-    Array<u8, 512> buffer;
-    u32 size = buffer.count();
-    Address address;
-    if (m_connection->write(*this, buffer.values(), size, address)) {
-        m_platform.socket.sendTo(buffer.values(), size, address);
-    }
+    ClientState::write(*this);
 
     return *this;
 }
@@ -176,11 +161,4 @@ u8 ClientStateTeam::getEntryIndex() {
 
 u8 ClientStateTeam::getContinuing() {
     return m_writeInfo.continuing;
-}
-
-void ClientStateTeam::checkSocket() {
-    if (!m_platform.socket.ok()) {
-        m_connection->reset();
-        m_platform.socket.open();
-    }
 }
