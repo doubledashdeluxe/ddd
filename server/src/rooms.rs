@@ -4,7 +4,6 @@ use std::ops::{Deref, DerefMut};
 use std::sync::Arc;
 
 use anyhow::{Context, Result};
-use orion::util;
 use rand::Rng;
 use scc::Queue;
 use scc::hash_map::{Entry, HashMap, OccupiedEntry};
@@ -69,9 +68,7 @@ impl Rooms {
     ) -> Result<u128> {
         let room_entry = loop {
             let rooms = self.rooms_by_frame_rate(frame_rate);
-            let mut id = [0; 16];
-            util::secure_rand_bytes(&mut id)?;
-            let mut id = u128::from_ne_bytes(id);
+            let mut id = rng.random();
             id &= !1;
             id |= frame_rate as u128;
             if let Entry::Vacant(v) = rooms.entry_sync(id) {
@@ -80,9 +77,7 @@ impl Rooms {
         };
 
         let long_code_id_entry = loop {
-            let mut code = [0; 8];
-            util::secure_rand_bytes(&mut code)?;
-            let code = u64::from_ne_bytes(code);
+            let code: u64 = rng.random();
             let code = code >> (64 - 20 * 3);
             if code >> (15 * 3) == 0 {
                 continue;
