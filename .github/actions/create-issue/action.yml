@@ -20,6 +20,7 @@ runs:
             .paginate(github.rest.issues.listForRepo, {
               owner: context.repo.owner,
               repo: context.repo.repo,
+              state: 'all',
             })
           const title = process.env.TITLE
           for (const issue of issues) {
