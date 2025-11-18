@@ -31,6 +31,7 @@ private:
     ServerStatePackReader *packReader() override;
     ServerStateRoomReader *roomReader() override;
     ServerStateTeamReader *teamReader() override;
+    ServerStatePollReader *pollReader() override;
 
     bool isModesCountValid(u32 modesCount) override;
     void setModesCount(u32 modesCount) override;

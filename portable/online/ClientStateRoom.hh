@@ -39,6 +39,7 @@ public:
     ClientState &writeStatePack(const ClientStatePackWriteInfo &writeInfo) override;
     ClientState &writeStateRoom(const ClientStateRoomWriteInfo &writeInfo) override;
     ClientState &writeStateTeam(const ClientStateTeamWriteInfo &writeInfo) override;
+    ClientState &writeStatePoll(const ClientStatePollWriteInfo &writeInfo) override;
 
 private:
     typedef ClientStateRoomReadInfo ReadInfo;
@@ -49,6 +50,7 @@ private:
     ServerStatePackReader *packReader() override;
     ServerStateRoomReader *roomReader() override;
     ServerStateTeamReader *teamReader() override;
+    ServerStatePollReader *pollReader() override;
 
     ServerRoomStateReader *serverRoomStateReader() override;
 
@@ -63,6 +65,8 @@ private:
     void setSpectatorCount(u16 spectatorCount) override;
     bool isModeIndexValid(u8 modeIndex) override;
     void setModeIndex(u8 modeIndex) override;
+    bool isPackCourseCountValid(u8 packCourseCount) override;
+    void setPackCourseCount(u8 packCourseCount) override;
     bool isPackHashCountValid(u32 packHashCount) override;
     void setPackHashCount(u32 packHashCount) override;
     bool isPackHashElementValid(u32 i0, u8 packHashElement) override;
@@ -127,6 +131,7 @@ private:
     ClientRoomStateMainWriter &mainWriter() override;
 
     u8 getModeIndex() override;
+    u8 getPackCourseCount() override;
     u32 getPackHashCount() override;
     u8 getPackHashElement(u32 i0) override;
     u32 getRoomCounter() override;

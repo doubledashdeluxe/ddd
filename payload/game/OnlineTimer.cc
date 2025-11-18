@@ -1,11 +1,17 @@
 #include "OnlineTimer.hh"
 
 #include "game/Kart2DCommon.hh"
+#include "game/KartLocale.hh"
 
 #include <payload/crypto/CubeRandom.hh>
 #include <portable/Array.hh>
 
 void OnlineTimer::init(u32 duration) {
+    if (KartLocale::GetVideoFrameMode() == KartLocale::VideoFrameMode::FiftyHz) {
+        duration *= 50;
+    } else {
+        duration *= 60;
+    }
     m_duration = duration;
     m_frame = duration;
 }

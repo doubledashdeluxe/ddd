@@ -19,13 +19,16 @@ public:
     u32 m_roomCounter;
     u64 m_roomCode;
     Array<Kart, MaxRoomKartCount> m_karts;
+    bool m_spectating;
     bool m_isFFA;
     u8 m_teamCount;
     u8 m_maxTeamSize;
     Array<u8, MaxRoomKartCount> m_teams;
     bool m_hasIDs;
-    Array<Array<u32, 2>, 4> m_characterIDs;
-    Array<u32, 4> m_kartIDs;
+    Array<Array<u8, 2>, 4> m_characterIDs;
+    Array<u8, 4> m_kartIDs;
+    bool m_hasCourseSelection;
+    bool m_hasCourseShuffle;
 
 private:
     OnlineInfo();

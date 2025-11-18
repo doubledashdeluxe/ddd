@@ -1,10 +1,12 @@
 #include "SceneMapSelect.hh"
 
+#include "game/ErrorViewApp.hh"
 #include "game/GameAudioMain.hh"
 #include "game/KartGamePad.hh"
 #include "game/MenuBackground.hh"
 #include "game/MenuTitleLine.hh"
 #include "game/OnlineBackground.hh"
+#include "game/OnlineInfo.hh"
 #include "game/OnlineTimer.hh"
 #include "game/RaceInfo.hh"
 #include "game/RaceMode.hh"
@@ -20,6 +22,7 @@
 #include <payload/CourseManager.hh>
 #include <payload/Lock.hh>
 #include <payload/crypto/CubeRandom.hh>
+#include <payload/online/CubeClient.hh>
 #include <portable/Algorithm.hh>
 
 SceneMapSelect::SceneMapSelect(JKRArchive *archive, JKRHeap *heap)
@@ -118,6 +121,7 @@ void SceneMapSelect::init() {
 
     SequenceInfo &sequenceInfo = SequenceInfo::Instance();
     CourseManager *courseManager = CourseManager::Instance();
+    m_ok = true;
     m_mapCount = courseManager->courseCount(raceInfo.isRace(), sequenceInfo.m_packIndex);
     m_mapIndex = 0;
     if (sequenceInfo.m_fromPause) {
@@ -130,6 +134,9 @@ void SceneMapSelect::init() {
     m_rowCount = (m_mapCount + 3 - 1) / 3;
     m_rowIndex = m_mapIndex / 3;
     m_rowIndex = Min(m_rowIndex, m_rowCount - Min<u32>(m_rowCount, 2));
+
+    m_writeInfo.packCourseCount = m_mapCount;
+    m_writeInfo.kartCount = raceInfo.m_kartCount;
 
     slideIn();
 }
@@ -155,6 +162,12 @@ void SceneMapSelect::draw() {
 }
 
 void SceneMapSelect::calc() {
+    const SequenceInfo &sequenceInfo = SequenceInfo::Instance();
+    CubeClient *client = CubeClient::Instance();
+    if (sequenceInfo.m_isOnline) {
+        client->read(*this);
+    }
+
     (this->*m_state)();
 
     for (u32 i = 0; i < m_mapScreens.count(); i++) {
@@ -192,7 +205,6 @@ void SceneMapSelect::calc() {
         }
     }
 
-    SequenceInfo &sequenceInfo = SequenceInfo::Instance();
     if (sequenceInfo.m_isOnline) {
         OnlineBackground::Instance()->calc();
     } else {
@@ -266,7 +278,21 @@ void SceneMapSelect::calc() {
 
     if (sequenceInfo.m_isOnline) {
         OnlineTimer::Instance()->calc();
+
+        client->writeStatePoll(m_writeInfo);
     }
+}
+
+bool SceneMapSelect::clientStatePoll(const ClientStatePollReadInfo &readInfo) {
+    m_ok = m_ok && readInfo.ok;
+    if (readInfo.ready) {
+        OnlineTimer::Instance()->init(0);
+    }
+    return true;
+}
+
+void SceneMapSelect::clientStateError() {
+    ErrorViewApp::Call(6);
 }
 
 void SceneMapSelect::slideIn() {
@@ -441,7 +467,7 @@ void SceneMapSelect::stateSlideOut() {
             }
         }
         if (SequenceInfo::Instance().m_isOnline) {
-            if (m_nextScene != SceneType::CharacterSelect) {
+            if (m_nextScene == SceneType::CoursePoll) {
                 OnlineTimer::Instance()->setAlpha(m_mainAnmTransformFrame * 17);
             }
         }
@@ -465,8 +491,16 @@ void SceneMapSelect::stateIdle() {
             (sequenceInfo.m_isOnline && OnlineTimer::Instance()->hasExpired())) {
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE_LITTLE);
         selectIn();
-    } else if (button.risingEdge() & PAD_BUTTON_B) {
-        m_nextScene = sequenceInfo.m_isOnline ? SceneType::CharacterSelect : SceneType::PackSelect;
+    } else if (button.risingEdge() & PAD_BUTTON_B || !m_ok) {
+        if (sequenceInfo.m_isOnline) {
+            if (OnlineInfo::Instance().m_spectating) {
+                m_nextScene = SceneType::PlayerList;
+            } else {
+                m_nextScene = SceneType::CharacterSelect;
+            }
+        } else {
+            m_nextScene = SceneType::PackSelect;
+        }
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CANCEL_LITTLE);
         slideOut();
     } else if (button.repeat() & JUTGamePad::PAD_MSTICK_UP) {
@@ -558,7 +592,7 @@ void SceneMapSelect::stateSpin() {
         isSpinning = button.level() & PAD_TRIGGER_R && button.level() & PAD_TRIGGER_L;
     }
     if (SequenceInfo::Instance().m_isOnline) {
-        if (OnlineTimer::Instance()->hasExpired()) {
+        if (OnlineTimer::Instance()->hasExpired() || !m_ok) {
             isSpinning = false;
         }
     }
@@ -608,6 +642,7 @@ void SceneMapSelect::stateSelect() {
     if (button.risingEdge() & PAD_BUTTON_A ||
             (sequenceInfo.m_isOnline && OnlineTimer::Instance()->hasExpired())) {
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE);
+        sequenceInfo.m_mapIndex = m_mapIndex;
         if (sequenceInfo.m_isOnline) {
             m_nextScene = SceneType::CoursePoll;
         } else {
@@ -619,16 +654,22 @@ void SceneMapSelect::stateSelect() {
             const CourseManager::Course &course =
                     courseManager->course(raceInfo.isRace(), sequenceInfo.m_packIndex, m_mapIndex);
             ResMgr::LoadExtendedCourseData(&course, 2);
-            sequenceInfo.m_mapIndex = m_mapIndex;
         }
         slideOut();
-    } else if (button.risingEdge() & PAD_BUTTON_B) {
+    } else if (button.risingEdge() & PAD_BUTTON_B || !m_ok) {
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CANCEL_LITTLE);
         selectOut();
     }
 }
 
 void SceneMapSelect::stateNextScene() {
+    if (m_nextScene != SceneType::Title && !m_ok) {
+        m_nextScene = SceneType::Title;
+        GameAudio::Main::Instance()->fadeOutAll(15);
+        GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CANCEL);
+        System::GetDisplay()->startFadeOut(15);
+    }
+
     if (!SequenceApp::Instance()->ready(m_nextScene)) {
         return;
     }

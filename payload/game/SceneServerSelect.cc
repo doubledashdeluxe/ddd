@@ -7,7 +7,6 @@
 #include "game/MenuTitleLine.hh"
 #include "game/OnlineBackground.hh"
 #include "game/OnlineInfo.hh"
-#include "game/RaceInfo.hh"
 #include "game/SceneFactory.hh"
 #include "game/SequenceApp.hh"
 #include "game/SequenceInfo.hh"
@@ -78,11 +77,11 @@ void SceneServerSelect::init() {
         CubeClient::Instance()->reset();
     }
 
-    u32 playerCount = SequenceInfo::Instance().m_padCount;
-    const RaceInfo &raceInfo = RaceInfo::Instance();
+    const SequenceInfo &sequenceInfo = SequenceInfo::Instance();
     OnlineInfo &onlineInfo = OnlineInfo::Instance();
-    s16 tandemCount = playerCount - raceInfo.m_statusCount;
-    for (s16 i = 0; i < raceInfo.m_statusCount; i++) {
+    u32 playerCount = sequenceInfo.m_padCount;
+    u32 tandemCount = playerCount - sequenceInfo.m_statusCount;
+    for (u32 i = 0; i < sequenceInfo.m_statusCount; i++) {
         Kart &kart = onlineInfo.m_localKarts[i];
         kart.local = true;
         if (i < tandemCount) {
@@ -125,7 +124,7 @@ void SceneServerSelect::init() {
         m_writeInfo.players[i].profile = profileIndex;
         m_writeInfo.players[i].name = onlineInfo.m_names[i];
     }
-    m_writeInfo.kartCount = raceInfo.m_statusCount;
+    m_writeInfo.kartCount = sequenceInfo.m_statusCount;
 
     if (CubeServerManager::Instance()->lock()) {
         slideIn();

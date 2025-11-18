@@ -10,7 +10,7 @@ mod server_state;
 
 pub fn format() -> Format<impl ConstantList, impl TypeList> {
     let default_port = SimpleConstant::new("DEFAULT_PORT", 3549u16);
-    let protocol_version = SimpleConstant::new("PROTOCOL_VERSION", 7u32);
+    let protocol_version = SimpleConstant::new("PROTOCOL_VERSION", 8u32);
     let max_lap_count = SimpleConstant::new("MAX_LAP_COUNT", 9u8);
     let min_match_count = SimpleConstant::new("MIN_MATCH_COUNT", 1u8);
     let max_match_count = SimpleConstant::new("MAX_MATCH_COUNT", 96u8);
@@ -20,6 +20,8 @@ pub fn format() -> Format<impl ConstantList, impl TypeList> {
         SimpleConstant::new("MIN_CLIENT_PLAYER_COUNT", MIN_CLIENT_PLAYER_COUNT);
     let max_client_player_count =
         SimpleConstant::new("MAX_CLIENT_PLAYER_COUNT", MAX_CLIENT_PLAYER_COUNT);
+    let max_client_kart_count = SimpleConstant::new("MAX_CLIENT_KART_COUNT", MAX_CLIENT_KART_COUNT);
+    let kart_character_count = SimpleConstant::new("KART_CHARACTER_COUNT", KART_CHARACTER_COUNT);
     let player_name_length = SimpleConstant::new("PLAYER_NAME_LENGTH", PLAYER_NAME_LENGTH);
     let mode_index_count = SimpleConstant::new("MODE_INDEX_COUNT", MODE_INDEX_COUNT);
     let max_team_count = SimpleConstant::new("MAX_TEAM_COUNT", MAX_TEAM_COUNT);
@@ -38,6 +40,8 @@ pub fn format() -> Format<impl ConstantList, impl TypeList> {
         .with_constant(max_version_length)
         .with_constant(min_client_player_count)
         .with_constant(max_client_player_count)
+        .with_constant(max_client_kart_count)
+        .with_constant(kart_character_count)
         .with_constant(player_name_length)
         .with_constant(mode_index_count)
         .with_constant(max_motd_length)
@@ -55,6 +59,8 @@ pub fn format() -> Format<impl ConstantList, impl TypeList> {
         .with_type(room_option_course_selection())
         .with_type(room_options_race())
         .with_type(room_options_battle())
+        .with_type(character_id())
+        .with_type(kart_id())
         .with_type(client_identity_unspecified())
         .with_type(client_player())
         .with_type(client_identity_specified())
@@ -72,6 +78,11 @@ pub fn format() -> Format<impl ConstantList, impl TypeList> {
         .with_type(client_team_state_guest())
         .with_type(client_team_state())
         .with_type(client_state_team())
+        .with_type(client_poll_kart())
+        .with_type(client_course_index())
+        .with_type(client_poll_state_ready())
+        .with_type(client_poll_state())
+        .with_type(client_state_poll())
         .with_type(client_state())
         .with_type(server_identity_unspecified())
         .with_type(server_identity_specified())
@@ -89,5 +100,10 @@ pub fn format() -> Format<impl ConstantList, impl TypeList> {
         .with_type(server_team_state_main())
         .with_type(server_team_state())
         .with_type(server_state_team())
+        .with_type(server_poll_state_pending())
+        .with_type(server_poll_kart())
+        .with_type(server_poll_state_ready())
+        .with_type(server_poll_state())
+        .with_type(server_state_poll())
         .with_type(server_state())
 }

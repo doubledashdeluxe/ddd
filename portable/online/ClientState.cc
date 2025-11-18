@@ -31,6 +31,10 @@ ClientState &ClientState::writeStateTeam(const ClientStateTeamWriteInfo & /* wri
     return *(new (m_platform.allocator) ClientStateError(m_platform));
 }
 
+ClientState &ClientState::writeStatePoll(const ClientStatePollWriteInfo & /* writeInfo */) {
+    return *(new (m_platform.allocator) ClientStateError(m_platform));
+}
+
 ClientState &ClientState::writeStateError() {
     return *(new (m_platform.allocator) ClientStateError(m_platform));
 }

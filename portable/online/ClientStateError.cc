@@ -36,6 +36,14 @@ ClientState &ClientStateError::writeStateRoom(const ClientStateRoomWriteInfo & /
     return *this;
 }
 
+ClientState &ClientStateError::writeStateTeam(const ClientStateTeamWriteInfo & /* writeInfo */) {
+    return *this;
+}
+
+ClientState &ClientStateError::writeStatePoll(const ClientStatePollWriteInfo & /* writeInfo */) {
+    return *this;
+}
+
 ClientState &ClientStateError::writeStateError() {
     return *this;
 }

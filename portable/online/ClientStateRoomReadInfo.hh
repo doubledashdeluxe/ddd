@@ -14,6 +14,7 @@ struct ClientStateRoomReadInfo {
         Array<Kart, MaxRoomKartCount> karts;
         u16 spectatorCount;
         u8 modeIndex;
+        u8 packCourseCount;
         Hash packHash;
         u64 roomCode;
         u32 spectatingCounter;

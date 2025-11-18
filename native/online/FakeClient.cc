@@ -55,6 +55,11 @@ bool FakeClient::clientStateRoom(const ClientStateRoomReadInfo & /* readInfo */)
 }
 
 bool FakeClient::clientStateTeam(const ClientStateTeamReadInfo & /* readInfo */) {
+    m_writer = &FakeClient::writeStatePoll;
+    return true;
+}
+
+bool FakeClient::clientStatePoll(const ClientStatePollReadInfo & /* readInfo */) {
     return true;
 }
 
@@ -91,6 +96,7 @@ ClientState &FakeClient::writeStateRoom() {
     ClientStateRoomWriteInfo writeInfo;
     writeInfo.modeIndex = 0;
     writeInfo.isRace = true;
+    writeInfo.packCourseCount = 1;
     writeInfo.packHash.fill(0xff);
     writeInfo.isHost = true;
     writeInfo.roomCounter = 0;
@@ -118,6 +124,19 @@ ClientState &FakeClient::writeStateTeam() {
     writeInfo.teamCount = 2;
     writeInfo.continuing = true;
     return m_state->writeStateTeam(writeInfo);
+}
+
+ClientState &FakeClient::writeStatePoll() {
+    ClientStatePollWriteInfo writeInfo;
+    writeInfo.packCourseCount = 1;
+    writeInfo.kartCount = 2;
+    auto &ready = writeInfo.ready.emplace();
+    ready.kartCount = 1;
+    ready.karts[0].characterIDs[0] = CharacterID::Mario;
+    ready.karts[0].characterIDs[1] = CharacterID::Luigi;
+    ready.karts[0].kartID = KartID::Mario;
+    ready.courseIndex = 0;
+    return m_state->writeStatePoll(writeInfo);
 }
 
 bool FakeClient::updateState(ClientState &nextState) {

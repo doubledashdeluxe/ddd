@@ -6,8 +6,6 @@
 #include "game/MenuTitleLine.hh"
 #include "game/OnlineBackground.hh"
 #include "game/OnlineInfo.hh"
-#include "game/RaceInfo.hh"
-#include "game/RaceMode.hh"
 #include "game/SceneFactory.hh"
 #include "game/SequenceApp.hh"
 #include "game/SequenceInfo.hh"
@@ -70,8 +68,9 @@ SceneRoomCodeEnter::~SceneRoomCodeEnter() {}
 
 void SceneRoomCodeEnter::init() {
     if (SequenceApp::Instance()->prevScene() == SceneType::RoomTypeSelect) {
-        m_padCount = SequenceInfo::Instance().m_padCount;
-        m_statusCount = RaceInfo::Instance().m_statusCount;
+        const SequenceInfo &sequenceInfo = SequenceInfo::Instance();
+        m_padCount = sequenceInfo.m_padCount;
+        m_statusCount = sequenceInfo.m_statusCount;
         m_charCount = 0;
         m_chars.fill(0);
 
@@ -302,8 +301,6 @@ void SceneRoomCodeEnter::stateSelect() {
     if (button.risingEdge() & PAD_BUTTON_A) {
         m_nextScene = SceneType::PersonalRoom;
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE_LITTLE);
-        RaceInfo::Instance().m_raceMode = RaceMode::VS;
-        SequenceInfo::Instance().m_packIndex = 0;
         OnlineInfo &onlineInfo = OnlineInfo::Instance();
         onlineInfo.m_isHost = false;
         onlineInfo.m_roomCode = 0;

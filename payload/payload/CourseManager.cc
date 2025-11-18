@@ -303,15 +303,15 @@ const CourseManager::Pack &CourseManager::battlePack(u32 index) const {
     return m_customBattlePacks[index - m_defaultBattlePacks.count()];
 }
 
-const CourseManager::Pack *CourseManager::searchPack(bool isRace, const Hash &hash) const {
+Optional<u32> CourseManager::searchPack(bool isRace, u32 courseCount, const Hash &hash) const {
     u32 packCount = this->packCount(isRace);
     for (u32 i = 0; i < packCount; i++) {
         const Pack &pack = this->pack(isRace, i);
-        if (pack.hash() == hash) {
-            return &pack;
+        if (pack.courseIndices().count() == courseCount && pack.hash() == hash) {
+            return i;
         }
     }
-    return nullptr;
+    return Optional<u32>();
 }
 
 u32 CourseManager::courseCount(bool isRace, u32 packIndex) const {

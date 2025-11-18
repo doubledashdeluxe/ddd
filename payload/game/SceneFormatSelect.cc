@@ -15,8 +15,8 @@
 
 #include <jsystem/J2DAnmLoaderDataBase.hh>
 #include <jsystem/J2DPicture.hh>
+#include <payload/CourseManager.hh>
 #include <payload/online/CubeClient.hh>
-#include <payload/payload/CourseManager.hh>
 
 SceneFormatSelect::SceneFormatSelect(JKRArchive *archive, JKRHeap *heap) : Scene(archive, heap) {
     SceneFactory *sceneFactory = SceneFactory::Instance();

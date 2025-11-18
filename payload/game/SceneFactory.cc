@@ -108,6 +108,7 @@ void SceneFactory::loadData(s32 sceneType, JKRHeap *heap) {
         loadLocalizedArchive(ArchiveType::GhostData, "GhostData", heap);
         return;
     case SceneType::CoursePoll:
+        REPLACED(loadData)(SceneType::PackSelect, heap);
         REPLACED(loadData)(SceneType::LanEntry, heap);
         loadLocalizedArchive(ArchiveType::CourseSelect, "CourseSelect", heap);
         return;

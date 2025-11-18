@@ -10,6 +10,7 @@ use crate::crypto::PublicKey;
 use crate::formats::online::*;
 use crate::formats::version;
 use crate::kart::Kart;
+use crate::pack::Pack;
 use crate::rooms::Rooms;
 
 pub struct Client {
@@ -41,6 +42,7 @@ impl Client {
             State::Pack { identity, .. } => identity,
             State::Room { identity, .. } => identity,
             State::Team { identity, .. } => identity,
+            State::Poll { identity, .. } => identity,
             _ => return None,
         };
         Some(identity.frame_rate)
@@ -52,6 +54,7 @@ impl Client {
             State::Pack { identity, .. } => identity,
             State::Room { identity, .. } => identity,
             State::Team { identity, .. } => identity,
+            State::Poll { identity, .. } => identity,
             _ => return 0,
         };
         identity.players.len()
@@ -61,6 +64,7 @@ impl Client {
         let room_info = match &self.state {
             State::Room { room_info: Some(room_info), .. } => room_info,
             State::Team { room_info: Some(room_info), .. } => room_info,
+            State::Poll { room_info: Some(room_info), .. } => room_info,
             _ => return None,
         };
         Some(room_info.id)
@@ -80,6 +84,7 @@ impl Client {
             State::Pack { identity, .. } => (Some(identity), None),
             State::Room { identity, room_info } => (Some(identity), room_info),
             State::Team { identity, room_info } => (Some(identity), room_info),
+            State::Poll { identity, room_info } => (Some(identity), room_info),
         };
         self.state = match (client_state, identity, room_info) {
             (ClientState::Server(server), _, _) => {
@@ -136,8 +141,9 @@ impl Client {
                         let frame_rate = identity.frame_rate;
                         let karts = karts();
                         let mode_index = new.mode_index;
-                        let pack_hash = new.pack_hash;
-                        let room = rooms.insert(frame_rate, karts, mode_index, pack_hash, rng);
+                        let pack =
+                            Pack { course_count: new.pack_course_count, hash: new.pack_hash };
+                        let room = rooms.insert(frame_rate, karts, mode_index, pack, rng);
                         room.map(|id| {
                             let spectating_counter = 0;
                             let spectating = false;
@@ -193,6 +199,17 @@ impl Client {
                 };
                 let room_info = room_info.ok();
                 State::Team { identity, room_info }
+            }
+            (ClientState::Poll(poll), Some(identity), room_info) => {
+                let room_info = match room_info {
+                    Some(room_info) => rooms.get(&room_info.id).and_then(|mut room| {
+                        room.set_poll_state(&self.pk, poll.client_poll_state)?;
+                        Ok(room_info)
+                    }),
+                    None => Err(anyhow!("Unexpected client team state")),
+                };
+                let room_info = room_info.ok();
+                State::Poll { identity, room_info }
             }
             _ => anyhow::bail!("Unexpected client state"),
         };
@@ -275,7 +292,7 @@ impl Client {
                                 .collect();
                             let spectator_count = room.spectator_count() as u16;
                             let mode_index = room.mode_index();
-                            let pack_hash = room.pack_hash().to_vec();
+                            let pack = room.pack();
                             let room_counter = room_info.counter;
                             let room_code = room.code();
                             let spectating_counter = room_info.spectating_counter;
@@ -286,7 +303,8 @@ impl Client {
                                 karts,
                                 spectator_count,
                                 mode_index,
-                                pack_hash,
+                                pack_course_count: pack.course_count,
+                                pack_hash: pack.hash.to_vec(),
                                 room_counter,
                                 room_code,
                                 spectating_counter,
@@ -319,6 +337,20 @@ impl Client {
                 let team = ServerStateTeam { server_team_state };
                 ServerState::Team(team)
             }
+            State::Poll { room_info, .. } => {
+                let server_poll_state = match room_info {
+                    Some(room_info) => {
+                        let poll_state = rooms.read(&room_info.id, |room| room.poll_state());
+                        let Ok(Some(poll_state)) = poll_state else {
+                            return Ok(None);
+                        };
+                        poll_state
+                    }
+                    None => ServerPollState::Error(()),
+                };
+                let poll = ServerStatePoll { server_poll_state };
+                ServerState::Poll(poll)
+            }
         };
         let message_len = message.len() - server_state.write(message).unwrap().len();
         Ok(Some(message_len))
@@ -338,6 +370,7 @@ enum State {
     Pack { identity: ClientIdentitySpecified, pack: ClientStatePack },
     Room { identity: ClientIdentitySpecified, room_info: Option<RoomInfo> },
     Team { identity: ClientIdentitySpecified, room_info: Option<RoomInfo> },
+    Poll { identity: ClientIdentitySpecified, room_info: Option<RoomInfo> },
 }
 
 struct RoomInfo {

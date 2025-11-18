@@ -64,7 +64,7 @@ public:
         reset();
         new (&m_buffer) T;
         m_hasValue = true;
-        return *reinterpret_cast<T *>(m_buffer);
+        return *value();
     }
 
     T &getOrEmplace() {

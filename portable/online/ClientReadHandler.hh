@@ -2,6 +2,7 @@
 
 #include "portable/online/ClientStateModeReadInfo.hh"
 #include "portable/online/ClientStatePackReadInfo.hh"
+#include "portable/online/ClientStatePollReadInfo.hh"
 #include "portable/online/ClientStateRoomReadInfo.hh"
 #include "portable/online/ClientStateServerReadInfo.hh"
 #include "portable/online/ClientStateTeamReadInfo.hh"
@@ -14,5 +15,6 @@ public:
     virtual bool clientStatePack(const ClientStatePackReadInfo &readInfo);
     virtual bool clientStateRoom(const ClientStateRoomReadInfo &readInfo);
     virtual bool clientStateTeam(const ClientStateTeamReadInfo &readInfo);
+    virtual bool clientStatePoll(const ClientStatePollReadInfo &readInfo);
     virtual void clientStateError() = 0;
 };

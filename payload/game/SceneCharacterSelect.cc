@@ -1,6 +1,7 @@
 #include "SceneCharacterSelect.hh"
 
 #include "game/CharacterSelect3D.hh"
+#include "game/ErrorViewApp.hh"
 #include "game/GameAudioMain.hh"
 #include "game/Kart2DCommon.hh"
 #include "game/KartGamePad.hh"
@@ -11,6 +12,7 @@
 #include "game/RaceInfo.hh"
 #include "game/SequenceApp.hh"
 #include "game/SequenceInfo.hh"
+#include "game/System.hh"
 
 extern "C" {
 #include <dolphin/GXTransform.h>
@@ -18,7 +20,9 @@ extern "C" {
 #include <jsystem/J2DAnmLoaderDataBase.hh>
 #include <jsystem/J2DOrthoGraph.hh>
 #include <jsystem/JKRExpHeap.hh>
+#include <payload/CourseManager.hh>
 #include <payload/crypto/CubeRandom.hh>
+#include <payload/online/CubeClient.hh>
 #include <portable/Algorithm.hh>
 #include <portable/Align.hh>
 
@@ -148,8 +152,11 @@ SceneCharacterSelect::SceneCharacterSelect(JKRArchive *archive, JKRHeap *heap)
 SceneCharacterSelect::~SceneCharacterSelect() {}
 
 void SceneCharacterSelect::init() {
-    m_padCount = SequenceInfo::Instance().m_padCount;
-    m_statusCount = RaceInfo::Instance().m_statusCount;
+    const SequenceInfo &sequenceInfo = SequenceInfo::Instance();
+    const RaceInfo &raceInfo = RaceInfo::Instance();
+    m_ok = true;
+    m_padCount = sequenceInfo.m_padCount;
+    m_statusCount = raceInfo.m_statusCount;
     J2DScreen &mainScreen = m_mainScreens[m_statusCount - 1];
     for (u32 i = 0; i < Min<u32>(m_statusCount * 2, 4); i++) {
         u32 j = i % m_statusCount;
@@ -163,7 +170,7 @@ void SceneCharacterSelect::init() {
             if (k == 0) {
                 m_pads[j][0] = l;
             }
-            m_pads[j][1] = i;
+            m_pads[j][1] = l;
             Array<char, 32> name;
             snprintf(name.values(), name.count(), "SC_P%lu_u.bti", l + 1);
             picture->changeTexture(name.values(), 0);
@@ -203,6 +210,11 @@ void SceneCharacterSelect::init() {
         m_kartIDs.fill(KartID::Count);
     }
     m_spinFrame = 0;
+
+    const CourseManager *courseManager = CourseManager::Instance();
+    u32 packIndex = sequenceInfo.m_packIndex;
+    m_writeInfo.packCourseCount = courseManager->courseCount(raceInfo.isRace(), packIndex);
+    m_writeInfo.kartCount = raceInfo.m_kartCount;
 
     if (SequenceApp::Instance()->prevScene() == SceneType::MapSelect &&
             OnlineTimer::Instance()->hasExpired()) {
@@ -273,6 +285,9 @@ void SceneCharacterSelect::draw() {
 }
 
 void SceneCharacterSelect::calc() {
+    CubeClient *client = CubeClient::Instance();
+    client->read(*this);
+
     (this->*m_state)();
 
     Array<Vec3f, 2> characterTranslations;
@@ -515,6 +530,20 @@ void SceneCharacterSelect::calc() {
     }
 
     OnlineTimer::Instance()->calc();
+
+    client->writeStatePoll(m_writeInfo);
+}
+
+bool SceneCharacterSelect::clientStatePoll(const ClientStatePollReadInfo &readInfo) {
+    m_ok = m_ok && readInfo.ok;
+    if (readInfo.ready) {
+        OnlineTimer::Instance()->init(0);
+    }
+    return true;
+}
+
+void SceneCharacterSelect::clientStateError() {
+    ErrorViewApp::Call(6);
 }
 
 void SceneCharacterSelect::slideIn() {
@@ -604,7 +633,7 @@ void SceneCharacterSelect::stateIdle() {
         if (button.risingEdge() & PAD_BUTTON_A || OnlineTimer::Instance()->hasExpired()) {
             selectCharacter(i);
             selectKart(statusIndex);
-        } else if (button.risingEdge() & PAD_BUTTON_B) {
+        } else if (button.risingEdge() & PAD_BUTTON_B || !m_ok) {
             if (i == 0) {
                 u32 selectedCharacterCount = 0;
                 for (u32 j = 0; j < m_pads[statusIndex].count(); j++) {
@@ -737,7 +766,15 @@ void SceneCharacterSelect::stateIdle() {
         }
     }
 
-    m_nextScene = SceneType::MapSelect;
+    OnlineInfo &onlineInfo = OnlineInfo::Instance();
+    if (onlineInfo.m_hasCourseSelection) {
+        m_nextScene = SceneType::MapSelect;
+    } else {
+        m_nextScene = SceneType::CoursePoll;
+    }
+    onlineInfo.m_characterIDs = m_characterIDs;
+    onlineInfo.m_kartIDs = m_kartIDs;
+    onlineInfo.m_hasIDs = true;
     slideOut();
 }
 
@@ -753,7 +790,7 @@ void SceneCharacterSelect::stateSpin() {
             }
         }
     }
-    if (OnlineTimer::Instance()->hasExpired()) {
+    if (OnlineTimer::Instance()->hasExpired() || !m_ok) {
         isSpinning = false;
     }
 
@@ -790,6 +827,13 @@ void SceneCharacterSelect::stateSpin() {
 }
 
 void SceneCharacterSelect::stateNextScene() {
+    if (m_nextScene != SceneType::Title && !m_ok) {
+        m_nextScene = SceneType::Title;
+        GameAudio::Main::Instance()->fadeOutAll(15);
+        GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CANCEL);
+        System::GetDisplay()->startFadeOut(15);
+    }
+
     if (!SequenceApp::Instance()->ready(m_nextScene)) {
         return;
     }

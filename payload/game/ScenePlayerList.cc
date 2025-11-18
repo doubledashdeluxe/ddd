@@ -1,5 +1,6 @@
 #include "ScenePlayerList.hh"
 
+#include "game/ErrorViewApp.hh"
 #include "game/GameAudioMain.hh"
 #include "game/Kart2DCommon.hh"
 #include "game/KartGamePad.hh"
@@ -11,9 +12,12 @@
 #include "game/RaceInfo.hh"
 #include "game/SceneFactory.hh"
 #include "game/SequenceApp.hh"
+#include "game/SequenceInfo.hh"
 #include "game/System.hh"
 
 #include <jsystem/J2DAnmLoaderDataBase.hh>
+#include <payload/CourseManager.hh>
+#include <payload/online/CubeClient.hh>
 
 extern "C" {
 #include <stdio.h>
@@ -52,13 +56,22 @@ ScenePlayerList::ScenePlayerList(JKRArchive *archive, JKRHeap *heap) : Scene(arc
 ScenePlayerList::~ScenePlayerList() {}
 
 void ScenePlayerList::init() {
-    if (SequenceApp::Instance()->prevScene() != SceneType::CharacterSelect) {
+    m_ok = true;
+
+    const CourseManager *courseManager = CourseManager::Instance();
+    const RaceInfo &raceInfo = RaceInfo::Instance();
+    u32 packIndex = SequenceInfo::Instance().m_packIndex;
+    m_writeInfo.packCourseCount = courseManager->courseCount(raceInfo.isRace(), packIndex);
+    m_writeInfo.kartCount = raceInfo.m_kartCount;
+
+    s32 prevScene = SequenceApp::Instance()->prevScene();
+    if (prevScene != SceneType::CharacterSelect) {
         System::GetDisplay()->startFadeIn(15);
     }
 
-    if (SequenceApp::Instance()->prevScene() == SceneType::CharacterSelect &&
+    if ((prevScene == SceneType::CharacterSelect || prevScene == SceneType::MapSelect) &&
             OnlineTimer::Instance()->hasExpired()) {
-        m_nextScene = SceneType::CharacterSelect;
+        m_nextScene = prevScene;
         nextScene();
     } else {
         slideIn();
@@ -77,6 +90,9 @@ void ScenePlayerList::draw() {
 }
 
 void ScenePlayerList::calc() {
+    CubeClient *client = CubeClient::Instance();
+    client->read(*this);
+
     (this->*m_state)();
 
     OnlineBackground::Instance()->calc();
@@ -90,6 +106,28 @@ void ScenePlayerList::calc() {
     }
 
     OnlineTimer::Instance()->calc();
+
+    client->writeStatePoll(m_writeInfo);
+}
+
+bool ScenePlayerList::clientStateRoom(const ClientStateRoomReadInfo & /* readInfo */) {
+    return true;
+}
+
+bool ScenePlayerList::clientStateTeam(const ClientStateTeamReadInfo & /* readInfo */) {
+    return true;
+}
+
+bool ScenePlayerList::clientStatePoll(const ClientStatePollReadInfo &readInfo) {
+    m_ok = m_ok && readInfo.ok;
+    if (readInfo.ready) {
+        OnlineTimer::Instance()->init(0);
+    }
+    return true;
+}
+
+void ScenePlayerList::clientStateError() {
+    ErrorViewApp::Call(6);
 }
 
 void ScenePlayerList::slideIn() {
@@ -164,7 +202,7 @@ void ScenePlayerList::stateSlideIn() {
         if (SequenceApp::Instance()->prevScene() != SceneType::CharacterSelect) {
             OnlineTimer *onlineTimer = OnlineTimer::Instance();
             if (m_mainAnmTransformFrame == 1) {
-                onlineTimer->init(30 * 60);
+                onlineTimer->init(30);
             }
             if (m_mainAnmTransformFrame <= 15) {
                 onlineTimer->setAlpha(m_mainAnmTransformFrame * 17);
@@ -191,10 +229,19 @@ void ScenePlayerList::stateSlideOut() {
 void ScenePlayerList::stateIdle() {
     const JUTGamePad::CButton &button = KartGamePad::GamePad(0)->button();
     if (button.risingEdge() & PAD_BUTTON_A || OnlineTimer::Instance()->hasExpired()) {
-        m_nextScene = SceneType::CharacterSelect;
+        const OnlineInfo &onlineInfo = OnlineInfo::Instance();
+        if (onlineInfo.m_spectating) {
+            if (onlineInfo.m_hasCourseSelection) {
+                m_nextScene = SceneType::MapSelect;
+            } else {
+                m_nextScene = SceneType::CoursePoll;
+            }
+        } else {
+            m_nextScene = SceneType::CharacterSelect;
+        }
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE_LITTLE);
         slideOut();
-    } else if (button.risingEdge() & PAD_BUTTON_B) {
+    } else if (button.risingEdge() & PAD_BUTTON_B || !m_ok) {
         m_nextScene = SceneType::Title;
         GameAudio::Main::Instance()->fadeOutAll(15);
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CANCEL);
@@ -204,6 +251,13 @@ void ScenePlayerList::stateIdle() {
 }
 
 void ScenePlayerList::stateNextScene() {
+    if (m_nextScene != SceneType::Title && !m_ok) {
+        m_nextScene = SceneType::Title;
+        GameAudio::Main::Instance()->fadeOutAll(15);
+        GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CANCEL);
+        System::GetDisplay()->startFadeOut(15);
+    }
+
     if (!SequenceApp::Instance()->ready(m_nextScene)) {
         return;
     }

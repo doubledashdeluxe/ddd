@@ -2,7 +2,6 @@
 
 #include "game/CourseID.hh"
 #include "game/Kart2DCommon.hh"
-#include "game/KartID.hh"
 #include "game/KartLocale.hh"
 #include "game/Race2D.hh"
 #include "game/RaceInfo.hh"
@@ -10,6 +9,7 @@
 #include "game/System.hh"
 
 #include <cube/Clock.hh>
+#include <formats/Online.hh>
 #include <jsystem/JKRExpHeap.hh>
 #include <jsystem/JKRMemArchive.hh>
 #include <payload/ArchivePatcher.hh>

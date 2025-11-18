@@ -4,6 +4,7 @@
 #include "portable/online/ClientStateError.hh"
 #include "portable/online/ClientStateMode.hh"
 #include "portable/online/ClientStatePack.hh"
+#include "portable/online/ClientStatePoll.hh"
 #include "portable/online/ClientStateTeam.hh"
 
 ClientStateRoom::ClientStateRoom(const ClientPlatform &platform, Connection &connection,
@@ -70,6 +71,11 @@ ClientState &ClientStateRoom::writeStateTeam(const ClientStateTeamWriteInfo &wri
     return *(new (m_platform.allocator) ClientStateTeam(m_platform, connection, writeInfo));
 }
 
+ClientState &ClientStateRoom::writeStatePoll(const ClientStatePollWriteInfo &writeInfo) {
+    Connection &connection = *m_connections.front()->release();
+    return *(new (m_platform.allocator) ClientStatePoll(m_platform, connection, writeInfo));
+}
+
 ServerStateServerReader *ClientStateRoom::serverReader() {
     return nullptr;
 }
@@ -87,6 +93,10 @@ ServerStateRoomReader *ClientStateRoom::roomReader() {
 }
 
 ServerStateTeamReader *ClientStateRoom::teamReader() {
+    return nullptr;
+}
+
+ServerStatePollReader *ClientStateRoom::pollReader() {
     return nullptr;
 }
 
@@ -139,6 +149,19 @@ bool ClientStateRoom::isModeIndexValid(u8 modeIndex) {
 
 void ClientStateRoom::setModeIndex(u8 modeIndex) {
     m_readInfo.info.getOrEmplace().modeIndex = modeIndex;
+}
+
+bool ClientStateRoom::isPackCourseCountValid(u8 packCourseCount) {
+    if (m_writeInfo.isHost) {
+        return packCourseCount == m_writeInfo.packCourseCount;
+    } else {
+        const Optional<ReadInfo::Info> &info = m_readInfo.info;
+        return !info || packCourseCount == info->packCourseCount;
+    }
+}
+
+void ClientStateRoom::setPackCourseCount(u8 packCourseCount) {
+    m_readInfo.info.getOrEmplace().packCourseCount = packCourseCount;
 }
 
 bool ClientStateRoom::isPackHashCountValid(u32 /* packHashCount */) {
@@ -404,6 +427,10 @@ ClientRoomStateMainWriter &ClientStateRoom::mainWriter() {
 
 u8 ClientStateRoom::getModeIndex() {
     return m_writeInfo.modeIndex;
+}
+
+u8 ClientStateRoom::getPackCourseCount() {
+    return m_writeInfo.packCourseCount;
 }
 
 u32 ClientStateRoom::getPackHashCount() {

@@ -18,11 +18,13 @@ mod kart;
 mod listener;
 mod logger;
 mod message;
+mod pack;
 mod room;
 mod rooms;
 mod server;
 mod shard;
 mod updater;
+mod weight;
 
 fn main() -> Result<()> {
     logger::init()?;

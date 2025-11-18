@@ -3,7 +3,7 @@
 #include "portable/Upcast.hh"
 #include "portable/online/ClientStateError.hh"
 #include "portable/online/ClientStateMode.hh"
-#include "portable/online/ClientStatePack.hh"
+#include "portable/online/ClientStatePoll.hh"
 
 ClientStateTeam::ClientStateTeam(const ClientPlatform &platform, Connection &connection,
         const ClientStateTeamWriteInfo &writeInfo)
@@ -35,11 +35,6 @@ ClientState &ClientStateTeam::writeStateMode(const ClientStateModeWriteInfo &wri
     return *(new (m_platform.allocator) ClientStateMode(m_platform, connection, playerCount));
 }
 
-ClientState &ClientStateTeam::writeStatePack(const ClientStatePackWriteInfo &writeInfo) {
-    Connection &connection = *m_connections.front()->release();
-    return *(new (m_platform.allocator) ClientStatePack(m_platform, connection, writeInfo));
-}
-
 ClientState &ClientStateTeam::writeStateTeam(const ClientStateTeamWriteInfo &writeInfo) {
     m_writeInfo.kartCount = writeInfo.kartCount;
     m_writeInfo.kartTeams = writeInfo.kartTeams;
@@ -50,6 +45,11 @@ ClientState &ClientStateTeam::writeStateTeam(const ClientStateTeamWriteInfo &wri
     ClientState::write(*this);
 
     return *this;
+}
+
+ClientState &ClientStateTeam::writeStatePoll(const ClientStatePollWriteInfo &writeInfo) {
+    Connection &connection = *m_connections.front()->release();
+    return *(new (m_platform.allocator) ClientStatePoll(m_platform, connection, writeInfo));
 }
 
 ServerStateServerReader *ClientStateTeam::serverReader() {
@@ -70,6 +70,10 @@ ServerStateRoomReader *ClientStateTeam::roomReader() {
 
 ServerStateTeamReader *ClientStateTeam::teamReader() {
     return this;
+}
+
+ServerStatePollReader *ClientStateTeam::pollReader() {
+    return nullptr;
 }
 
 ServerTeamStateReader *ClientStateTeam::serverTeamStateReader() {

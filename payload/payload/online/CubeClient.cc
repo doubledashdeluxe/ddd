@@ -41,6 +41,10 @@ void CubeClient::writeStateTeam(const ClientStateTeamWriteInfo &writeInfo) {
     while (updateState(m_state->writeStateTeam(writeInfo))) {}
 }
 
+void CubeClient::writeStatePoll(const ClientStatePollWriteInfo &writeInfo) {
+    while (updateState(m_state->writeStatePoll(writeInfo))) {}
+}
+
 void CubeClient::writeStateError() {
     while (updateState(m_state->writeStateError())) {}
 }

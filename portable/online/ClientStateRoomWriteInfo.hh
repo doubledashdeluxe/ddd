@@ -6,6 +6,7 @@
 struct ClientStateRoomWriteInfo {
     u8 modeIndex;
     bool isRace;
+    u8 packCourseCount;
     Hash packHash;
     bool isHost;
     u32 roomCounter;

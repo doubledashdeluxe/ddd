@@ -30,6 +30,7 @@ private:
     ServerStatePackReader *packReader() override;
     ServerStateRoomReader *roomReader() override;
     ServerStateTeamReader *teamReader() override;
+    ServerStatePollReader *pollReader() override;
 
     bool isModeIndexValid(u8 modeIndex) override;
     void setModeIndex(u8 modeIndex) override;

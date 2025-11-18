@@ -11,8 +11,12 @@ extern "C" {
 #include <payload/Mutex.hh>
 #include <portable/Array.hh>
 #include <portable/UniquePtr.hh>
+#include <portable/online/ClientReadHandler.hh>
+#include <portable/online/ClientStatePollWriteInfo.hh>
 
-class SceneMapSelect : public Scene {
+class SceneMapSelect
+    : public Scene
+    , private ClientReadHandler {
 public:
     SceneMapSelect(JKRArchive *archive, JKRHeap *heap);
     ~SceneMapSelect() override;
@@ -22,6 +26,9 @@ public:
 
 private:
     typedef void (SceneMapSelect::*State)();
+
+    bool clientStatePoll(const ClientStatePollReadInfo &readInfo) override;
+    void clientStateError() override;
 
     void slideIn();
     void slideOut();
@@ -67,6 +74,7 @@ private:
 
     JKRHeap *m_heap;
     State m_state;
+    bool m_ok;
     u32 m_mapCount;
     u32 m_mapIndex;
     u32 m_rowCount;
@@ -74,6 +82,7 @@ private:
     u32 m_spinFrame;
     u32 m_spinMapIndex;
     u32 m_spinRowIndex;
+    ClientStatePollWriteInfo m_writeInfo;
     u32 m_nextScene;
     J2DScreen m_mainScreen;
     J2DScreen m_gridScreen;

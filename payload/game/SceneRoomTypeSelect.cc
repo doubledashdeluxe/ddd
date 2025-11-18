@@ -102,8 +102,9 @@ SceneRoomTypeSelect::~SceneRoomTypeSelect() {}
 
 void SceneRoomTypeSelect::init() {
     if (SequenceApp::Instance()->prevScene() == SceneType::ServerSelect) {
-        m_padCount = SequenceInfo::Instance().m_padCount;
-        m_statusCount = RaceInfo::Instance().m_statusCount;
+        const SequenceInfo &sequenceInfo = SequenceInfo::Instance();
+        m_padCount = sequenceInfo.m_padCount;
+        m_statusCount = sequenceInfo.m_statusCount;
         m_roomTypeCount = m_statusCount == 1 ? 3 : 2;
         m_roomTypeIndex = 0;
 

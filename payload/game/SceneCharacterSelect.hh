@@ -1,13 +1,15 @@
 #pragma once
 
-#include "game/CharacterID.hh"
-#include "game/KartID.hh"
 #include "game/Scene.hh"
 
 #include <jsystem/J2DScreen.hh>
 #include <portable/Array.hh>
+#include <portable/online/ClientReadHandler.hh>
+#include <portable/online/ClientStatePollWriteInfo.hh>
 
-class SceneCharacterSelect : public Scene {
+class SceneCharacterSelect
+    : public Scene
+    , private ClientReadHandler {
 public:
     SceneCharacterSelect(JKRArchive *archive, JKRHeap *heap);
     ~SceneCharacterSelect() override;
@@ -17,6 +19,9 @@ public:
 
 private:
     typedef void (SceneCharacterSelect::*State)();
+
+    bool clientStatePoll(const ClientStatePollReadInfo &readInfo) override;
+    void clientStateError() override;
 
     void slideIn();
     void slideOut();
@@ -45,15 +50,17 @@ private:
     JKRHeap *m_parentHeap;
     JKRHeap *m_heap;
     State m_state;
+    bool m_ok;
     u32 m_padCount;
     u32 m_statusCount;
-    Array<u32, 4> m_statuses;
-    Array<Array<u32, 2>, 4> m_pads;
-    Array<u32, 4> m_characterIndices;
-    Array<u32, 4> m_kartIndices;
-    Array<Array<u32, 2>, 4> m_characterIDs;
-    Array<u32, 4> m_kartIDs;
+    Array<u8, 4> m_statuses;
+    Array<Array<u8, 2>, 4> m_pads;
+    Array<u8, 4> m_characterIndices;
+    Array<u8, 4> m_kartIndices;
+    Array<Array<u8, 2>, 4> m_characterIDs;
+    Array<u8, 4> m_kartIDs;
     u32 m_spinFrame;
+    ClientStatePollWriteInfo m_writeInfo;
     u32 m_nextScene;
     Array<J2DScreen, 4> m_mainScreens;
     Array<J2DScreen, CharacterID::Count / 2> m_colScreens;

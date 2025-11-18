@@ -21,6 +21,7 @@ public:
     void writeStatePack(const ClientStatePackWriteInfo &writeInfo);
     void writeStateRoom(const ClientStateRoomWriteInfo &writeInfo);
     void writeStateTeam(const ClientStateTeamWriteInfo &writeInfo);
+    void writeStatePoll(const ClientStatePollWriteInfo &writeInfo);
     void writeStateError();
 
     static void Init(JKRHeap *parentHeap, SOConfig &config);

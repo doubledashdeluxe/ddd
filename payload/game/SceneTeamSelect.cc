@@ -392,7 +392,7 @@ void SceneTeamSelect::stateSlideIn() {
         m_modeAnmTransformFrame = Min<u32>(m_mainAnmTransformFrame, 15);
         OnlineTimer *onlineTimer = OnlineTimer::Instance();
         if (m_mainAnmTransformFrame == 1) {
-            onlineTimer->init(30 * 60);
+            onlineTimer->init(30);
         }
         if (m_mainAnmTransformFrame <= 15) {
             onlineTimer->setAlpha(m_mainAnmTransformFrame * 17);

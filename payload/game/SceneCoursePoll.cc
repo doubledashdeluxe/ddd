@@ -1,9 +1,11 @@
 #include "SceneCoursePoll.hh"
 
+#include "game/ErrorViewApp.hh"
 #include "game/GameAudioMain.hh"
 #include "game/Kart2DCommon.hh"
 #include "game/MenuTitleLine.hh"
 #include "game/OnlineBackground.hh"
+#include "game/OnlineInfo.hh"
 #include "game/Race2D.hh"
 #include "game/RaceInfo.hh"
 #include "game/RaceMode.hh"
@@ -15,6 +17,7 @@
 #include <payload/CourseManager.hh>
 #include <payload/Lock.hh>
 #include <payload/crypto/CubeRandom.hh>
+#include <payload/online/CubeClient.hh>
 
 SceneCoursePoll::SceneCoursePoll(JKRArchive *archive, JKRHeap *heap)
     : Scene(archive, heap), m_heap(heap) {
@@ -62,7 +65,7 @@ SceneCoursePoll::SceneCoursePoll(JKRArchive *archive, JKRHeap *heap)
         m_courseScreens[i].search("MapPict")->setAnimation(m_thumbnailAnmTevRegKeys[i]);
     }
     m_courseNameAnmTransform = J2DAnmLoaderDataBase::Load("CoursePollCourse.bck", lanEntryArchive);
-    for (u32 i = 0; i < MaxPlayerCount; i++) {
+    for (u32 i = 0; i < MaxRoomKartCount; i++) {
         m_courseScreens[i].search("NName")->setAnimation(m_courseNameAnmTransform);
     }
     for (u32 i = 0; i < m_courseNameAnmTevRegKeys.count(); i++) {
@@ -87,18 +90,36 @@ SceneCoursePoll::~SceneCoursePoll() {
 void SceneCoursePoll::init() {
     J2DPicture *iconPicture = m_mainScreen.search("BtlPict")->downcast<J2DPicture>();
     J2DPicture *namePicture = m_mainScreen.search("SubM")->downcast<J2DPicture>();
-    RaceInfo &raceInfo = RaceInfo::Instance();
+    const RaceInfo &raceInfo = RaceInfo::Instance();
     const char *iconTextureName = RaceMode::IconTextureName(raceInfo.m_raceMode);
     iconPicture->changeTexture(iconTextureName, 0);
     const char *nameTextureName = RaceMode::NameTextureName(raceInfo.m_raceMode);
     namePicture->changeTexture(nameTextureName, 0);
 
-    SequenceInfo &sequenceInfo = SequenceInfo::Instance();
-    CourseManager *courseManager = CourseManager::Instance();
+    const SequenceInfo &sequenceInfo = SequenceInfo::Instance();
+    const CourseManager *courseManager = CourseManager::Instance();
+    m_ok = true;
     m_courseCount = courseManager->courseCount(raceInfo.isRace(), sequenceInfo.m_packIndex);
-    m_playerCount = 8;
-    m_playerIndex = UINT32_MAX;
+    m_kartCount = raceInfo.m_kartCount;
+    m_kartIndex = UINT32_MAX;
     m_nameCount = 0;
+    m_selectedKartIndex.reset();
+    for (u32 i = 0; i < m_courseShuffleIndices.count(); i++) {
+        m_courseShuffleIndices[i] = i;
+    }
+
+    const OnlineInfo &onlineInfo = OnlineInfo::Instance();
+    m_writeInfo.packCourseCount = m_courseCount;
+    m_writeInfo.kartCount = raceInfo.m_kartCount;
+    ClientStatePollWriteInfo::Ready &ready = m_writeInfo.ready.emplace();
+    ready.kartCount = raceInfo.m_statusCount;
+    for (s16 i = 0; i < raceInfo.m_statusCount; i++) {
+        ready.karts[i].characterIDs = onlineInfo.m_characterIDs[i];
+        ready.karts[i].kartID = onlineInfo.m_kartIDs[i];
+    }
+    if (onlineInfo.m_hasCourseSelection) {
+        ready.courseIndex = sequenceInfo.m_mapIndex;
+    }
 
     m_courseAlphas.fill(0);
 
@@ -116,57 +137,23 @@ void SceneCoursePoll::draw() {
 }
 
 void SceneCoursePoll::calc() {
-    Kart2DCommon *kart2DCommon = Kart2DCommon::Instance();
-    if (m_nameCount < m_playerCount) {
-        CubeRandom *random = CubeRandom::Instance();
-        if (random->get(30) == m_nameCount % 30) {
-            J2DScreen &screen = m_courseScreens[m_nameCount];
-            kart2DCommon->changeUnicodeTexture("ABC", 3, screen, "PName0");
-            if (random->get(2) == 0) {
-                kart2DCommon->changeUnicodeTexture("DEF", 3, screen, "PName1");
-                m_playerNameAnmTransformFrames[m_nameCount] = 0;
-            } else {
-                kart2DCommon->changeUnicodeTexture("   ", 3, screen, "PName1");
-                m_playerNameAnmTransformFrames[m_nameCount] = 6;
-            }
-            J2DPicture::CornerColors cornerColors = Race2D::GetCornerColors(m_nameCount);
-            for (u32 i = 0; i < 2; i++) {
-                for (u32 j = 0; j < 3; j++) {
-                    J2DPicture *picture = screen.search("PName%u%u", i, j)->downcast<J2DPicture>();
-                    picture->m_cornerColors = cornerColors;
-                }
-            }
-            if (m_nameCount == 1) {
-                Lock<Mutex> lock(m_mutex);
-                m_courseIndices[m_nameCount] = random->get(m_courseCount);
-                refreshCourses();
-            }
-            m_nameCount++;
-            if (m_nameCount == m_playerCount) {
-                Lock<Mutex> lock(m_mutex);
-                for (u32 i = 0; i < m_playerCount; i++) {
-                    if (m_courseIndices[i] >= m_courseCount) {
-                        m_courseIndices[i] = random->get(m_courseCount);
-                    }
-                }
-                refreshCourses();
-            }
-            GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CURSOL);
-        }
-    }
+    CubeClient *client = CubeClient::Instance();
+    client->read(*this);
 
     (this->*m_state)();
 
+    Kart2DCommon *kart2DCommon = Kart2DCommon::Instance();
     for (u32 i = 0; i < 3; i += 2) {
         J2DPicture *picture = m_mainScreen.search("PCount%u", i)->downcast<J2DPicture>();
-        s32 number = i == 0 ? m_nameCount : m_playerCount;
+        s32 number = i == 0 ? m_nameCount : m_kartCount;
         kart2DCommon->changeNumberTexture(number, &picture, 1, false, false);
     }
     for (u32 i = 0; i < m_courseScreens.count(); i++) {
+        u32 shuffleIndex = m_courseShuffleIndices[i];
         Lock<Mutex> lock(m_mutex);
         ResTIMG *thumbnail = nullptr, *nameImage = nullptr;
         for (u32 j = 0; j < m_courseIndices.count(); j++) {
-            if (m_courseIndices[j] != m_courseIndices[i]) {
+            if (m_courseIndices[j] != m_courseIndices[shuffleIndex]) {
                 continue;
             }
             if (!thumbnail) {
@@ -191,8 +178,8 @@ void SceneCoursePoll::calc() {
     OnlineBackground::Instance()->calc();
     MenuTitleLine::Instance()->calc();
 
-    for (u32 i = 0; i < m_playerCount; i++) {
-        if (i == m_playerIndex) {
+    for (u32 i = 0; i < m_kartCount; i++) {
+        if (i == m_kartIndex) {
             if (m_courseAnmTransformFrames[i] < 8) {
                 m_courseAnmTransformFrames[i]++;
             }
@@ -250,7 +237,7 @@ void SceneCoursePoll::calc() {
         }
     }
     for (u32 i = 0; i < 3; i++) {
-        m_mainScreen.search("PCount%u", i)->setAlpha(m_playerCountAlpha);
+        m_mainScreen.search("PCount%u", i)->setAlpha(m_kartCountAlpha);
     }
 
     m_mainScreen.animation();
@@ -258,6 +245,81 @@ void SceneCoursePoll::calc() {
     for (u32 i = 0; i < m_courseScreens.count(); i++) {
         m_courseScreens[i].animationMaterials();
     }
+
+    client->writeStatePoll(m_writeInfo);
+}
+
+bool SceneCoursePoll::clientStatePoll(const ClientStatePollReadInfo &readInfo) {
+    m_ok = m_ok && readInfo.ok;
+
+    const Ring<u8, MaxRoomKartCount> &kartIndices = readInfo.kartIndices;
+    for (u32 i = 0; i < kartIndices.count(); i++) {
+        for (u32 j = i + 1; j < kartIndices.count(); j++) {
+            if (kartIndices[j] == kartIndices[i]) {
+                m_ok = false;
+            }
+        }
+    }
+    if (!m_ok) {
+        return true;
+    }
+
+    const SequenceInfo &sequenceInfo = SequenceInfo::Instance();
+    const OnlineInfo &onlineInfo = OnlineInfo::Instance();
+    Kart2DCommon *kart2DCommon = Kart2DCommon::Instance();
+    for (; m_nameCount < kartIndices.count(); m_nameCount++) {
+        u32 kartIndex = kartIndices[m_nameCount];
+        J2DScreen &screen = m_courseScreens[m_nameCount];
+        const Kart &kart = onlineInfo.m_karts[kartIndex];
+        for (u32 i = 0; i < 2; i++) {
+            Array<char, 32> prefix;
+            snprintf(prefix.values(), prefix.count(), "PName%" PRIu32, i);
+            const Player &player = kart.players[i];
+            kart2DCommon->changeUnicodeTexture(player.name.values(), 3, screen, prefix.values());
+        }
+        m_playerNameAnmTransformFrames[m_nameCount] = kart.playerCount == 2 ? 0 : 6;
+        u32 colorIndex = kartIndex;
+        if (!onlineInfo.m_isFFA) {
+            colorIndex = onlineInfo.m_teams[kartIndex];
+        }
+        J2DPicture::CornerColors cornerColors = Race2D::GetCornerColors(colorIndex);
+        for (u32 i = 0; i < 2; i++) {
+            for (u32 j = 0; j < 3; j++) {
+                J2DPicture *picture = screen.search("PName%u%u", i, j)->downcast<J2DPicture>();
+                picture->m_cornerColors = cornerColors;
+            }
+        }
+        if (kart.local && onlineInfo.m_hasCourseSelection) {
+            Lock<Mutex> lock(m_mutex);
+            m_courseIndices[m_nameCount] = sequenceInfo.m_mapIndex;
+            refreshCourses();
+        }
+        GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CURSOL);
+    }
+
+    const Optional<ClientStatePollReadInfo::Ready> &ready = readInfo.ready;
+    if (!ready) {
+        return true;
+    }
+
+    m_selectedKartIndex = ready->kartIndex;
+    CubeRandom *random = CubeRandom::Instance();
+    Lock<Mutex> lock(m_mutex);
+    for (u32 i = 0; i < ready->kartCount; i++) {
+        const ClientStatePollReadInfo::Kart &kart = ready->karts[i];
+        m_courseIndices[i] = kart.courseIndex;
+    }
+    for (u32 i = 0; i < m_courseIndices.count(); i++) {
+        if (m_courseIndices[i] >= m_courseCount) {
+            m_courseIndices[i] = random->get(m_courseCount);
+        }
+    }
+    refreshCourses();
+    return true;
+}
+
+void SceneCoursePoll::clientStateError() {
+    ErrorViewApp::Call(6);
 }
 
 void SceneCoursePoll::slideIn() {
@@ -271,7 +333,7 @@ void SceneCoursePoll::slideIn() {
     m_gridAnmTransformFrame = 0;
     m_thumbnailAnmTevRegKeyFrames.fill(1);
     m_courseNameAnmTransformFrame = raceInfo.isRace() ? 0 : 6;
-    m_playerCountAlpha = 0;
+    m_kartCountAlpha = 0;
     m_courseIndices.fill(UINT32_MAX);
     OSInitMessageQueue(&m_queue, m_messages.values(), m_messages.count());
     u32 stackSize = 64 * 1024;
@@ -299,7 +361,7 @@ void SceneCoursePoll::spin() {
 void SceneCoursePoll::select() {
     m_selectFrame = 1;
     for (u32 i = 0; i < m_thumbnailAnmTevRegKeyFrames.count(); i++) {
-        m_thumbnailAnmTevRegKeyFrames[i] = i == m_playerIndex;
+        m_thumbnailAnmTevRegKeyFrames[i] = i == m_kartIndex;
     }
     m_state = &SceneCoursePoll::stateSelect;
 }
@@ -319,7 +381,7 @@ void SceneCoursePoll::stateSlideIn() {
     if (m_mainAnmTransformFrame < 10) {
         m_mainAnmTransformFrame++;
         m_gridAnmTransformFrame = m_mainAnmTransformFrame;
-        m_playerCountAlpha = (Max<u32>(m_mainAnmTransformFrame, 5) - 5) * 51;
+        m_kartCountAlpha = (Max<u32>(m_mainAnmTransformFrame, 5) - 5) * 51;
     } else {
         idle();
     }
@@ -331,7 +393,7 @@ void SceneCoursePoll::stateSlideOut() {
     if (m_mainAnmTransformFrame > 0) {
         m_mainAnmTransformFrame--;
         m_gridAnmTransformFrame = m_mainAnmTransformFrame;
-        m_playerCountAlpha = (Max<u32>(m_mainAnmTransformFrame, 5) - 5) * 51;
+        m_kartCountAlpha = (Max<u32>(m_mainAnmTransformFrame, 5) - 5) * 51;
     } else {
         if (OSIsThreadTerminated(&m_loadThread)) {
             OSDetachThread(&m_loadThread);
@@ -342,24 +404,38 @@ void SceneCoursePoll::stateSlideOut() {
 }
 
 void SceneCoursePoll::stateIdle() {
-    for (u32 i = 0; i < m_playerCount; i++) {
-        if (m_courseIndices[i] >= m_courseCount) {
-            return;
-        }
+    if (!m_ok) {
+        GameAudio::Main::Instance()->fadeOutAll(15);
+        GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CANCEL);
+        System::GetDisplay()->startFadeOut(15);
+        slideOut();
+        return;
     }
-    spin();
+
+    if (m_selectedKartIndex) {
+        spin();
+    }
 }
 
 void SceneCoursePoll::stateSpin() {
     m_spinFrame++;
-    if (m_spinFrame < 180) {
-        if (m_spinFrame % 5 == 0) {
-            m_playerIndex = CubeRandom::Instance()->get(m_playerCount);
-            GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CURSOL);
-        }
-    } else {
+    if (m_spinFrame >= 180) {
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_RANDOM_KETTEI);
         select();
+    } else if (m_spinFrame % 5 == 0) {
+        if (m_spinFrame == 180 - 5) {
+            m_kartIndex = *m_selectedKartIndex;
+            for (u32 i = 0; i < m_courseShuffleIndices.count(); i++) {
+                m_courseShuffleIndices[i] = i;
+            }
+        } else {
+            CubeRandom *random = CubeRandom::Instance();
+            m_kartIndex = random->get(m_kartCount);
+            if (OnlineInfo::Instance().m_hasCourseShuffle) {
+                random->shuffle(m_courseShuffleIndices, m_courseShuffleIndices.count());
+            }
+        }
+        GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CURSOL);
     }
 }
 
@@ -400,7 +476,7 @@ void *SceneCoursePoll::load() {
         }
 
         while (true) {
-            Array<u32, MaxPlayerCount> courseIndices;
+            Array<u32, MaxRoomKartCount> courseIndices;
             {
                 Lock<Mutex> lock(m_mutex);
                 courseIndices = m_courseIndices;
@@ -419,7 +495,7 @@ void *SceneCoursePoll::load() {
     }
 }
 
-bool SceneCoursePoll::load(const Array<u32, MaxPlayerCount> &courseIndices) {
+bool SceneCoursePoll::load(const Array<u32, MaxRoomKartCount> &courseIndices) {
     const CourseManager *courseManager = CourseManager::Instance();
     const RaceInfo &raceInfo = RaceInfo::Instance();
     const SequenceInfo &sequenceInfo = SequenceInfo::Instance();

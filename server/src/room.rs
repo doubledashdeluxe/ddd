@@ -10,6 +10,7 @@ use rand::{Rng, SeedableRng};
 use crate::crypto::{ChaCha20Rng, PublicKey};
 use crate::formats::online::*;
 use crate::kart::Kart;
+use crate::pack::Pack;
 
 pub struct Room {
     host_pk: PublicKey,
@@ -17,7 +18,7 @@ pub struct Room {
     spectating_karts: HashMap<PublicKey, Vec<Kart>>,
     spectator_count: usize,
     mode_index: ModeIndex,
-    pack_hash: Vec<u8>,
+    pack: Pack,
     id: u128,
     long_code: u64,
     short_code: u64,
@@ -30,7 +31,7 @@ impl Room {
     pub fn new(
         host_karts: Vec<Kart>,
         mode_index: ModeIndex,
-        pack_hash: Vec<u8>,
+        pack: Pack,
         id: u128,
         long_code: u64,
         short_code: u64,
@@ -73,14 +74,14 @@ impl Room {
             };
             ServerRoomOptions::Battle(options)
         };
-        let state = State::Room;
+        let state = State::new_room();
         Room {
             host_pk,
             karts,
             spectating_karts,
             spectator_count,
             mode_index,
-            pack_hash,
+            pack,
             id,
             long_code,
             short_code,
@@ -110,8 +111,8 @@ impl Room {
         self.mode_index
     }
 
-    pub fn pack_hash(&self) -> &[u8] {
-        &self.pack_hash
+    pub fn pack(&self) -> &Pack {
+        &self.pack
     }
 
     pub fn id(&self) -> u128 {
@@ -190,11 +191,28 @@ impl Room {
         }
     }
 
+    fn course_selection(&self) -> RoomOptionCourseSelection {
+        match &self.options {
+            ServerRoomOptions::Race(options) => options.course_selection,
+            ServerRoomOptions::Battle(options) => options.course_selection,
+        }
+    }
+
     pub fn team_state(&self) -> Option<&ServerTeamStateMain> {
         match &self.state {
             State::Room => None,
             State::Team { state, .. } => Some(state),
-            State::Poll { team_state } => team_state.as_ref(),
+            State::Poll { team_state, .. } => team_state.as_ref(),
+            State::Race { team_state, .. } => team_state.as_ref(),
+        }
+    }
+
+    pub fn poll_state(&self) -> Option<ServerPollState> {
+        match &self.state {
+            State::Room => None,
+            State::Team { .. } => None,
+            State::Poll { state, .. } => Some(ServerPollState::Pending(state.clone())),
+            State::Race { poll_state, .. } => Some(ServerPollState::Ready(poll_state.clone())),
         }
     }
 
@@ -203,6 +221,7 @@ impl Room {
             State::Room => false,
             State::Team { .. } => true,
             State::Poll { .. } => true,
+            State::Race { .. } => true,
         }
     }
 
@@ -278,15 +297,9 @@ impl Room {
                 anyhow::ensure!(continuing);
             } else if continuing {
                 if self.is_ffa() {
-                    self.state = State::Poll { team_state: None };
+                    self.state = State::new_poll(None);
                 } else {
-                    let state = ServerTeamStateMain {
-                        teams: vec![0; self.karts.len()],
-                        entry_index: 0,
-                        continuing: false as u8,
-                    };
-                    let deadline = Instant::now() + Duration::from_secs(35);
-                    self.state = State::Team { state, deadline };
+                    self.state = State::new_team(self.karts.len());
                 }
             }
         } else {
@@ -296,7 +309,6 @@ impl Room {
     }
 
     pub fn set_team_state(&mut self, client_pk: &PublicKey, state: ClientTeamState) -> Result<()> {
-        anyhow::ensure!(self.team_state().is_some());
         match state {
             ClientTeamState::Host(host) => self.set_team_state_host(client_pk, host),
             ClientTeamState::Guest(_) => self.set_team_state_guest(client_pk),
@@ -314,7 +326,6 @@ impl Room {
         let team_count = self.team_count();
         anyhow::ensure!(teams.iter().all(|team| *team < team_count));
         match &mut self.state {
-            State::Room => anyhow::bail!("Invalid room state"),
             State::Team { state, .. } => {
                 state.teams = teams;
                 state.entry_index = entry_index;
@@ -322,16 +333,112 @@ impl Room {
                     let mut state = state.clone();
                     self.balance_teams(&mut state.teams);
                     state.continuing = true as u8;
-                    self.state = State::Poll { team_state: Some(state) };
+                    self.state = State::new_poll(Some(state));
                 }
             }
-            State::Poll { .. } => (),
+            State::Poll { team_state: Some(_), .. } => (),
+            State::Race { team_state: Some(_), .. } => (),
+            _ => anyhow::bail!("Invalid room state"),
         }
         Ok(())
     }
 
-    fn set_team_state_guest(&mut self, client_pk: &PublicKey) -> Result<()> {
+    fn set_team_state_guest(&self, client_pk: &PublicKey) -> Result<()> {
+        anyhow::ensure!(self.team_state().is_some());
         anyhow::ensure!(self.is_guest(client_pk));
+        Ok(())
+    }
+
+    pub fn set_poll_state(&mut self, client_pk: &PublicKey, state: ClientPollState) -> Result<()> {
+        match state {
+            ClientPollState::Pending(()) => self.set_poll_state_pending(),
+            ClientPollState::Ready(ready) => self.set_poll_state_ready(client_pk, ready),
+        }
+    }
+
+    fn set_poll_state_pending(&self) -> Result<()> {
+        anyhow::ensure!(self.poll_state().is_some());
+        Ok(())
+    }
+
+    fn set_poll_state_ready(
+        &mut self,
+        client_pk: &PublicKey,
+        state: ClientPollStateReady,
+    ) -> Result<()> {
+        let ClientPollStateReady { karts: client_karts, course_index } = state;
+        let kart_count = self.karts.iter().filter(|kart| kart.client_pk() == client_pk).count();
+        anyhow::ensure!(client_karts.len() == kart_count);
+        for client_kart in &client_karts {
+            let ClientPollKart { character_ids, kart_id } = client_kart;
+            anyhow::ensure!(character_ids[0] != character_ids[1]);
+            anyhow::ensure!(kart_id.compatible(character_ids));
+        }
+        let course_index = match course_index {
+            ClientCourseIndex::Unspecified(()) => None,
+            ClientCourseIndex::Specified(course_index) => {
+                anyhow::ensure!(course_index < self.pack.course_count);
+                Some(course_index)
+            }
+        };
+        let course_selection = self.course_selection();
+        let is_host = self.is_host(client_pk);
+        match course_selection {
+            RoomOptionCourseSelection::Poll => {
+                let has_spectating_kart = self.spectating_karts.contains_key(client_pk);
+                anyhow::ensure!(course_index.is_some() == !has_spectating_kart);
+            }
+            RoomOptionCourseSelection::Host => {
+                anyhow::ensure!(course_index.is_some() == is_host);
+            }
+            RoomOptionCourseSelection::Random => {
+                anyhow::ensure!(course_index.is_none());
+            }
+        }
+        match &mut self.state {
+            State::Poll { team_state, state, karts: server_karts, host_course_index, .. } => {
+                let kart_indices = self
+                    .karts
+                    .iter()
+                    .enumerate()
+                    .filter(|(_, kart)| kart.client_pk() == client_pk)
+                    .map(|(i, _)| i as u8);
+                let is_host_selection = course_selection == RoomOptionCourseSelection::Host;
+                for (client_kart, kart_index) in client_karts.into_iter().zip(kart_indices) {
+                    let Entry::Vacant(v) = server_karts.entry(kart_index) else {
+                        continue;
+                    };
+                    let course_index = match course_index {
+                        Some(course_index) if !is_host_selection => course_index,
+                        _ => self.rng.random_range(..self.pack.course_count),
+                    };
+                    let server_kart = ServerPollKart {
+                        kart_index,
+                        character_ids: client_kart.character_ids,
+                        kart_id: client_kart.kart_id,
+                        course_index,
+                    };
+                    state.kart_indices.push(kart_index);
+                    v.insert(server_kart);
+                }
+                if is_host_selection && is_host {
+                    *host_course_index = course_index;
+                }
+                if server_karts.len() == self.karts.len()
+                    && (!is_host_selection || host_course_index.is_some())
+                {
+                    self.state = State::new_race(
+                        team_state.clone(),
+                        state,
+                        server_karts,
+                        *host_course_index,
+                        &mut self.rng,
+                    );
+                }
+            }
+            State::Race { .. } => (),
+            _ => anyhow::bail!("Invalid room state"),
+        }
         Ok(())
     }
 
@@ -359,13 +466,51 @@ impl Room {
             .flat_map(|karts| karts.iter().map(|kart| kart.players().len()))
             .sum();
 
-        if let State::Team { state, deadline } = &mut self.state
-            && Instant::now() >= *deadline
-        {
-            let mut state = state.clone();
-            self.balance_teams(&mut state.teams);
-            state.continuing = true as u8;
-            self.state = State::Poll { team_state: Some(state) };
+        let course_selection = self.course_selection();
+        match &mut self.state {
+            State::Team { state, deadline } if Instant::now() >= *deadline => {
+                let mut state = state.clone();
+                self.balance_teams(&mut state.teams);
+                state.continuing = true as u8;
+                self.state = State::new_poll(Some(state));
+            }
+            State::Poll { team_state, state, karts, host_course_index, deadline }
+                if Instant::now() >= *deadline =>
+            {
+                for (kart_index, kart) in self.karts.iter().enumerate() {
+                    let kart_index = kart_index as u8;
+                    let is_host = kart.client_pk() == &self.host_pk;
+                    let Entry::Vacant(v) = karts.entry(kart_index) else {
+                        continue;
+                    };
+                    let character_ids: Vec<_> = (0..2).map(|_| self.rng.random()).collect();
+                    let kart_id = loop {
+                        let kart_id: KartId = self.rng.random();
+                        if kart_id.compatible(&character_ids) {
+                            break kart_id;
+                        }
+                    };
+                    let course_index = self.rng.random_range(..self.pack.course_count);
+                    let kart = ServerPollKart { kart_index, character_ids, kart_id, course_index };
+                    state.kart_indices.push(kart_index);
+                    v.insert(kart);
+                    if course_selection == RoomOptionCourseSelection::Host && is_host {
+                        host_course_index.get_or_insert(course_index);
+                    }
+                }
+                if course_selection == RoomOptionCourseSelection::Host {
+                    host_course_index
+                        .get_or_insert_with(|| self.rng.random_range(..self.pack.course_count));
+                }
+                self.state = State::new_race(
+                    team_state.clone(),
+                    state,
+                    karts,
+                    *host_course_index,
+                    &mut self.rng,
+                );
+            }
+            _ => (),
         }
 
         Ok(())
@@ -380,6 +525,60 @@ impl Drop for Room {
 
 enum State {
     Room,
-    Team { deadline: Instant, state: ServerTeamStateMain },
-    Poll { team_state: Option<ServerTeamStateMain> },
+    Team {
+        state: ServerTeamStateMain,
+        deadline: Instant,
+    },
+    Poll {
+        team_state: Option<ServerTeamStateMain>,
+        state: ServerPollStatePending,
+        karts: HashMap<u8, ServerPollKart>,
+        host_course_index: Option<u8>,
+        deadline: Instant,
+    },
+    Race {
+        team_state: Option<ServerTeamStateMain>,
+        poll_state: ServerPollStateReady,
+    },
+}
+
+impl State {
+    fn new_room() -> Self {
+        Self::Room
+    }
+
+    fn new_team(kart_count: usize) -> Self {
+        let state = ServerTeamStateMain {
+            teams: vec![0; kart_count],
+            entry_index: 0,
+            continuing: false as u8,
+        };
+        Self::Team { state, deadline: Instant::now() + Duration::from_secs(35) }
+    }
+
+    fn new_poll(team_state: Option<ServerTeamStateMain>) -> Self {
+        Self::Poll {
+            team_state,
+            state: ServerPollStatePending { kart_indices: vec![] },
+            karts: HashMap::new(),
+            host_course_index: None,
+            deadline: Instant::now() + Duration::from_secs(35),
+        }
+    }
+
+    fn new_race(
+        team_state: Option<ServerTeamStateMain>,
+        state: &ServerPollStatePending,
+        karts: &mut HashMap<u8, ServerPollKart>,
+        host_course_index: Option<u8>,
+        rng: &mut impl Rng,
+    ) -> Self {
+        let mut karts: Vec<_> =
+            state.kart_indices.iter().map(|kart_index| karts.remove(kart_index).unwrap()).collect();
+        let selected_kart_index = rng.random_range(..karts.len() as u8);
+        if let Some(host_course_index) = host_course_index {
+            karts[selected_kart_index as usize].course_index = host_course_index;
+        }
+        Self::Race { team_state, poll_state: ServerPollStateReady { karts, selected_kart_index } }
+    }
 }

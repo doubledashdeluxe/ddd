@@ -80,9 +80,60 @@ pub fn room_option_course_selection() -> impl ComplexDataType {
         .with_variant("Random")
 }
 
+pub fn character_id() -> impl ComplexDataType {
+    SimpleEnumType::new("CharacterID")
+        .with_variant("BabyMario")
+        .with_variant("BabyLuigi")
+        .with_variant("Patapata")
+        .with_variant("Nokonoko")
+        .with_variant("Peach")
+        .with_variant("Daisy")
+        .with_variant("Mario")
+        .with_variant("Luigi")
+        .with_variant("Wario")
+        .with_variant("Waluigi")
+        .with_variant("Yoshi")
+        .with_variant("Catherine")
+        .with_variant("Donkey")
+        .with_variant("Diddy")
+        .with_variant("Koopa")
+        .with_variant("KoopaJr")
+        .with_variant("Kinopio")
+        .with_variant("Kinopico")
+        .with_variant("Teresa")
+        .with_variant("Pakkun")
+}
+
+pub fn kart_id() -> impl ComplexDataType {
+    SimpleEnumType::new("KartID")
+        .with_variant("Mario")
+        .with_variant("Donkey")
+        .with_variant("Yoshi")
+        .with_variant("Nokonoko")
+        .with_variant("Peach")
+        .with_variant("BabyMario")
+        .with_variant("Wario")
+        .with_variant("Koopa")
+        .with_variant("Luigi")
+        .with_variant("Diddy")
+        .with_variant("Catherine")
+        .with_variant("Patapata")
+        .with_variant("Daisy")
+        .with_variant("BabyLuigi")
+        .with_variant("Waluigi")
+        .with_variant("KoopaJr")
+        .with_variant("Kinopio")
+        .with_variant("Kinopico")
+        .with_variant("Teresa")
+        .with_variant("Pakkun")
+        .with_variant("Extra")
+}
+
 pub const MAX_VERSION_LENGTH: u8 = 19;
 pub const MIN_CLIENT_PLAYER_COUNT: u8 = 1;
 pub const MAX_CLIENT_PLAYER_COUNT: u8 = 4;
+pub const MAX_CLIENT_KART_COUNT: u8 = 4;
+pub const KART_CHARACTER_COUNT: u8 = 2;
 pub const PLAYER_NAME_LENGTH: u8 = 3;
 pub const MODE_INDEX_COUNT: u8 = 5;
 pub const MAX_ROOM_KART_COUNT: u8 = 8;

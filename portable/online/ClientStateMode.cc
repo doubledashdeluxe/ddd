@@ -68,6 +68,10 @@ ServerStateTeamReader *ClientStateMode::teamReader() {
     return nullptr;
 }
 
+ServerStatePollReader *ClientStateMode::pollReader() {
+    return nullptr;
+}
+
 bool ClientStateMode::isModesCountValid(u32 /* modesCount */) {
     return true;
 }

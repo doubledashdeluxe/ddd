@@ -11,6 +11,7 @@ use scc::hash_map::{Entry, HashMap, OccupiedEntry};
 use crate::crypto::PublicKey;
 use crate::formats::online::{FrameRate, ModeIndex};
 use crate::kart::Kart;
+use crate::pack::Pack;
 use crate::room::Room;
 
 #[derive(Clone)]
@@ -63,9 +64,11 @@ impl Rooms {
         frame_rate: FrameRate,
         karts: Vec<Kart>,
         mode_index: ModeIndex,
-        pack_hash: Vec<u8>,
+        pack: Pack,
         rng: &mut impl Rng,
     ) -> Result<u128> {
+        anyhow::ensure!(pack.course_count != 0);
+
         let room_entry = loop {
             let rooms = self.rooms_by_frame_rate(frame_rate);
             let mut id = rng.random();
@@ -90,7 +93,7 @@ impl Rooms {
         let id = *room_entry.key();
         let long_code = *long_code_id_entry.key();
         let short_code = **self.short_codes.pop().context("Reached capacity")?;
-        let room = Room::new(karts, mode_index, pack_hash, id, long_code, short_code, rng);
+        let room = Room::new(karts, mode_index, pack, id, long_code, short_code, rng);
         room_entry.insert_entry(room);
         long_code_id_entry.insert_entry(id);
         self.short_code_ids.insert_sync(short_code, id).unwrap();

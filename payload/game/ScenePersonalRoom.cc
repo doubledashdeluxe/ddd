@@ -170,10 +170,11 @@ void ScenePersonalRoom::init() {
         m_isRace = RaceInfo::Instance().isRace();
         m_writeInfo.modeIndex = onlineInfo.m_modeIndex;
         m_writeInfo.isRace = m_isRace;
-        SequenceInfo &sequenceInfo = SequenceInfo::Instance();
-        u32 packIndex = sequenceInfo.m_packIndex;
-        CourseManager *courseManager = CourseManager::Instance();
-        m_writeInfo.packHash = courseManager->pack(m_isRace, packIndex).hash();
+        u32 packIndex = SequenceInfo::Instance().m_packIndex;
+        const CourseManager *courseManager = CourseManager::Instance();
+        const CourseManager::Pack &pack = courseManager->pack(m_isRace, packIndex);
+        m_writeInfo.packCourseCount = pack.courseIndices().count();
+        m_writeInfo.packHash = pack.hash();
     }
     m_writeInfo.isHost = m_isHost;
     m_writeInfo.roomCounter = onlineInfo.m_roomCounter++;
@@ -410,10 +411,14 @@ bool ScenePersonalRoom::clientStateRoom(const ClientStateRoomReadInfo &readInfo)
         iconPicture->changeTexture(iconTextureName, 0);
     }
 
+    SequenceInfo &sequenceInfo = SequenceInfo::Instance();
     const CourseManager *courseManager = CourseManager::Instance();
-    const CourseManager::Pack *pack = courseManager->searchPack(m_isRace, info->packHash);
-    if (pack) {
-        kart2DCommon->changeUnicodeTexture(pack->name(), 26, m_mainScreen, "Name");
+    Optional<u32> packIndex =
+            courseManager->searchPack(m_isRace, info->packCourseCount, info->packHash);
+    if (packIndex) {
+        sequenceInfo.m_packIndex = *packIndex;
+        const CourseManager::Pack &pack = courseManager->pack(m_isRace, *packIndex);
+        kart2DCommon->changeUnicodeTexture(pack.name(), 26, m_mainScreen, "Name");
     } else {
         m_ok = false;
     }
@@ -432,6 +437,8 @@ bool ScenePersonalRoom::clientStateRoom(const ClientStateRoomReadInfo &readInfo)
         m_charCount = m_chars.count();
     }
 
+    onlineInfo.m_spectating = info->spectating;
+    raceInfo.m_statusCount = info->spectating ? 0 : sequenceInfo.m_statusCount;
     if (!prevIsReady || m_switchAnmTransformFrames[1] == 8) {
         if (info->spectatingCounter == m_writeInfo.spectatingCounter) {
             m_writeInfo.spectating = info->spectating;
@@ -443,11 +450,10 @@ bool ScenePersonalRoom::clientStateRoom(const ClientStateRoomReadInfo &readInfo)
         const Kart &kart = onlineInfo.m_karts[i];
         localKartCount += !!kart.local;
     }
-    const SequenceInfo &sequenceInfo = SequenceInfo::Instance();
     if (info->spectating) {
         m_ok = m_ok && localKartCount == 0 && info->spectatorCount >= sequenceInfo.m_padCount;
     } else {
-        m_ok = m_ok && localKartCount == raceInfo.m_statusCount;
+        m_ok = m_ok && localKartCount == sequenceInfo.m_statusCount;
         for (s16 i = 0, j = 0; i < raceInfo.m_kartCount && j < localKartCount; i++) {
             const Kart &kart = onlineInfo.m_karts[i];
             if (kart.local) {
@@ -506,6 +512,7 @@ bool ScenePersonalRoom::clientStateRoom(const ClientStateRoomReadInfo &readInfo)
             GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CURSOL);
         }
     }
+
     const RoomOptions &options = m_isHost ? m_writeInfo.options : info->options;
     u8 format = options.format;
     u8 maxTeamSize;
@@ -529,6 +536,20 @@ bool ScenePersonalRoom::clientStateRoom(const ClientStateRoomReadInfo &readInfo)
     onlineInfo.m_isFFA = isFFA;
     onlineInfo.m_teamCount = teamCount;
     onlineInfo.m_maxTeamSize = maxTeamSize;
+
+    u8 courseSelection = options.courseSelection;
+    switch (courseSelection) {
+    case RoomOptionCourseSelection::Poll:
+        onlineInfo.m_hasCourseSelection = !onlineInfo.m_spectating;
+        break;
+    case RoomOptionCourseSelection::Host:
+        onlineInfo.m_hasCourseSelection = onlineInfo.m_isHost;
+        break;
+    case RoomOptionCourseSelection::Random:
+        onlineInfo.m_hasCourseSelection = false;
+        break;
+    }
+    onlineInfo.m_hasCourseShuffle = courseSelection != RoomOptionCourseSelection::Poll;
 
     m_continuing = info->continuing;
     return true;

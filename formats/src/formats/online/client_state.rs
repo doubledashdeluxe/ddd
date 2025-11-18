@@ -13,6 +13,7 @@ pub fn client_state() -> impl ComplexDataType {
         .with_variant("Pack", client_state_pack())
         .with_variant("Room", client_state_room())
         .with_variant("Team", client_state_team())
+        .with_variant("Poll", client_state_poll())
 }
 
 pub fn client_state_server() -> impl ComplexDataType {
@@ -77,11 +78,13 @@ pub fn client_room_state() -> impl ComplexDataType {
 }
 
 pub fn client_room_state_new() -> impl ComplexDataType {
+    let pack_course_count: SimpleDataType<u8> = SimpleDataType::new();
     let pack_hash_element: SimpleDataType<u8> = SimpleDataType::new();
     let pack_hash = ArrayType::new(pack_hash_element, 32, 32);
     let room_counter: SimpleDataType<u32> = SimpleDataType::new();
     StructType::new("ClientRoomStateNew")
         .with_field("mode_index", mode_index())
+        .with_field("pack_course_count", pack_course_count)
         .with_field("pack_hash", pack_hash)
         .with_field("room_counter", room_counter)
 }
@@ -135,4 +138,35 @@ pub fn client_team_state_host() -> impl ComplexDataType {
 
 pub fn client_team_state_guest() -> impl ComplexDataType {
     StructType::new("ClientTeamStateGuest")
+}
+
+pub fn client_state_poll() -> impl ComplexDataType {
+    StructType::new("ClientStatePoll").with_field("client_poll_state", client_poll_state())
+}
+
+pub fn client_poll_state() -> impl ComplexDataType {
+    EnumType::new("ClientPollState")
+        .with_variant("Pending", UnitType)
+        .with_variant("Ready", client_poll_state_ready())
+}
+
+pub fn client_poll_state_ready() -> impl ComplexDataType {
+    let karts = ArrayType::new(client_poll_kart(), 0, MAX_CLIENT_PLAYER_COUNT);
+    StructType::new("ClientPollStateReady")
+        .with_field("karts", karts)
+        .with_field("course_index", client_course_index())
+}
+
+pub fn client_poll_kart() -> impl ComplexDataType {
+    let character_ids = ArrayType::new(character_id(), KART_CHARACTER_COUNT, KART_CHARACTER_COUNT);
+    StructType::new("ClientPollKart")
+        .with_field("character_ids", character_ids)
+        .with_field("kart_id", kart_id())
+}
+
+pub fn client_course_index() -> impl ComplexDataType {
+    let specified: SimpleDataType<u8> = SimpleDataType::new();
+    EnumType::new("ClientCourseIndex")
+        .with_variant("Unspecified", UnitType)
+        .with_variant("Specified", specified)
 }

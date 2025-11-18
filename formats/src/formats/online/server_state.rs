@@ -13,6 +13,7 @@ pub fn server_state() -> impl ComplexDataType {
         .with_variant("Pack", server_state_pack())
         .with_variant("Room", server_state_room())
         .with_variant("Team", server_state_team())
+        .with_variant("Poll", server_state_poll())
 }
 
 pub fn server_state_server() -> impl ComplexDataType {
@@ -81,6 +82,7 @@ pub fn server_room_state() -> impl ComplexDataType {
 pub fn server_room_state_main() -> impl ComplexDataType {
     let karts = ArrayType::new(server_kart(), 0, MAX_ROOM_KART_COUNT);
     let spectator_count: SimpleDataType<u16> = SimpleDataType::new();
+    let pack_course_count: SimpleDataType<u8> = SimpleDataType::new();
     let pack_hash_element: SimpleDataType<u8> = SimpleDataType::new();
     let pack_hash = ArrayType::new(pack_hash_element, 32, 32);
     let room_counter: SimpleDataType<u32> = SimpleDataType::new();
@@ -92,6 +94,7 @@ pub fn server_room_state_main() -> impl ComplexDataType {
         .with_field("karts", karts)
         .with_field("spectator_count", spectator_count)
         .with_field("mode_index", mode_index())
+        .with_field("pack_course_count", pack_course_count)
         .with_field("pack_hash", pack_hash)
         .with_field("room_counter", room_counter)
         .with_field("room_code", room_code)
@@ -143,6 +146,42 @@ pub fn server_team_state_main() -> impl ComplexDataType {
         .with_field("teams", teams)
         .with_field("entry_index", entry_index)
         .with_field("continuing", continuing)
+}
+
+pub fn server_state_poll() -> impl ComplexDataType {
+    StructType::new("ServerStatePoll").with_field("server_poll_state", server_poll_state())
+}
+
+pub fn server_poll_state() -> impl ComplexDataType {
+    EnumType::new("ServerPollState")
+        .with_variant("Pending", server_poll_state_pending())
+        .with_variant("Ready", server_poll_state_ready())
+        .with_variant("Error", UnitType)
+}
+
+pub fn server_poll_state_pending() -> impl ComplexDataType {
+    let kart_index: SimpleDataType<u8> = SimpleDataType::new();
+    let kart_indices = ArrayType::new(kart_index, 0, MAX_ROOM_KART_COUNT);
+    StructType::new("ServerPollStatePending").with_field("kart_indices", kart_indices)
+}
+
+pub fn server_poll_state_ready() -> impl ComplexDataType {
+    let karts = ArrayType::new(server_poll_kart(), 2, MAX_ROOM_KART_COUNT);
+    let selected_kart_index: SimpleDataType<u8> = SimpleDataType::new();
+    StructType::new("ServerPollStateReady")
+        .with_field("karts", karts)
+        .with_field("selected_kart_index", selected_kart_index)
+}
+
+pub fn server_poll_kart() -> impl ComplexDataType {
+    let kart_index: SimpleDataType<u8> = SimpleDataType::new();
+    let character_ids = ArrayType::new(character_id(), KART_CHARACTER_COUNT, KART_CHARACTER_COUNT);
+    let course_index: SimpleDataType<u8> = SimpleDataType::new();
+    StructType::new("ServerPollKart")
+        .with_field("kart_index", kart_index)
+        .with_field("character_ids", character_ids)
+        .with_field("kart_id", kart_id())
+        .with_field("course_index", course_index)
 }
 
 pub const MAX_MOTD_LENGTH: u8 = 99;

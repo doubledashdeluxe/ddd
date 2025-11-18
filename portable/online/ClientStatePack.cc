@@ -74,6 +74,10 @@ ServerStateTeamReader *ClientStatePack::teamReader() {
     return nullptr;
 }
 
+ServerStatePollReader *ClientStatePack::pollReader() {
+    return nullptr;
+}
+
 bool ClientStatePack::isModeIndexValid(u8 modeIndex) {
     return modeIndex == m_writeInfo.modeIndex;
 }
