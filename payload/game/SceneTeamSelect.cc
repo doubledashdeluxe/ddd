@@ -121,7 +121,7 @@ void SceneTeamSelect::init() {
     m_isHost = onlineInfo.m_isHost;
     m_canContinue = true;
     m_continuing = false;
-    m_kartCount = raceInfo.m_kartCount;
+    m_kartCount = raceInfo.getKartCount();
     m_teams.fill(0);
     m_entryIndex = 0;
     m_teamCount = onlineInfo.m_teamCount;

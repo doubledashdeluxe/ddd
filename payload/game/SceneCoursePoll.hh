@@ -36,6 +36,7 @@ private:
     void spin();
     void select();
     void nextScene();
+    void nextRace();
 
     void stateSlideIn();
     void stateSlideOut();
@@ -43,6 +44,7 @@ private:
     void stateSpin();
     void stateSelect();
     void stateNextScene();
+    void stateNextRace();
 
     void refreshCourses();
 
@@ -63,6 +65,7 @@ private:
     u32 m_spinFrame;
     u32 m_selectFrame;
     ClientStatePollWriteInfo m_writeInfo;
+    u32 m_nextScene;
     J2DScreen m_mainScreen;
     J2DScreen m_gridScreen;
     Array<J2DScreen, MaxRoomKartCount> m_courseScreens;

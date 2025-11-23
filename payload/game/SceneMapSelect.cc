@@ -136,7 +136,7 @@ void SceneMapSelect::init() {
     m_rowIndex = Min(m_rowIndex, m_rowCount - Min<u32>(m_rowCount, 2));
 
     m_writeInfo.packCourseCount = m_mapCount;
-    m_writeInfo.kartCount = raceInfo.m_kartCount;
+    m_writeInfo.kartCount = raceInfo.getKartCount();
 
     slideIn();
 }

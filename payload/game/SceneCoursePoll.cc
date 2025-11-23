@@ -1,5 +1,6 @@
 #include "SceneCoursePoll.hh"
 
+#include "game/AppMgr.hh"
 #include "game/ErrorViewApp.hh"
 #include "game/GameAudioMain.hh"
 #include "game/Kart2DCommon.hh"
@@ -7,9 +8,12 @@
 #include "game/OnlineBackground.hh"
 #include "game/OnlineInfo.hh"
 #include "game/Race2D.hh"
+#include "game/RaceApp.hh"
 #include "game/RaceInfo.hh"
 #include "game/RaceMode.hh"
+#include "game/ResMgr.hh"
 #include "game/SceneFactory.hh"
+#include "game/SequenceApp.hh"
 #include "game/SequenceInfo.hh"
 #include "game/System.hh"
 
@@ -100,7 +104,7 @@ void SceneCoursePoll::init() {
     const CourseManager *courseManager = CourseManager::Instance();
     m_ok = true;
     m_courseCount = courseManager->courseCount(raceInfo.isRace(), sequenceInfo.m_packIndex);
-    m_kartCount = raceInfo.m_kartCount;
+    m_kartCount = raceInfo.getKartCount();
     m_kartIndex = UINT32_MAX;
     m_nameCount = 0;
     m_selectedKartIndex.reset();
@@ -110,10 +114,10 @@ void SceneCoursePoll::init() {
 
     const OnlineInfo &onlineInfo = OnlineInfo::Instance();
     m_writeInfo.packCourseCount = m_courseCount;
-    m_writeInfo.kartCount = raceInfo.m_kartCount;
+    m_writeInfo.kartCount = m_kartCount;
     ClientStatePollWriteInfo::Ready &ready = m_writeInfo.ready.emplace();
-    ready.kartCount = raceInfo.m_statusCount;
-    for (s16 i = 0; i < raceInfo.m_statusCount; i++) {
+    ready.kartCount = onlineInfo.m_spectating ? 0 : raceInfo.getStatusCount();
+    for (s16 i = 0; i < ready.kartCount; i++) {
         ready.karts[i].characterIDs = onlineInfo.m_characterIDs[i];
         ready.karts[i].kartID = onlineInfo.m_kartIDs[i];
     }
@@ -302,6 +306,44 @@ bool SceneCoursePoll::clientStatePoll(const ClientStatePollReadInfo &readInfo) {
         return true;
     }
 
+    RaceInfo &raceInfo = RaceInfo::Instance();
+    for (u32 i = 0; i < m_kartCount; i++) {
+        u32 kartIndex = kartIndices[i];
+        const ClientStatePollReadInfo::Kart &kart = ready->karts[i];
+        u8 frontCharacterID = kart.characterIDs[0];
+        u8 backCharacterID = kart.characterIDs[1];
+        if (frontCharacterID == backCharacterID) {
+            m_ok = false;
+        }
+        u8 kartID = kart.kartID;
+        if (kartID != KartID::Extra) {
+            u32 frontCharacterWeight = KartInfo::GetDriverWeight(frontCharacterID + 1);
+            u32 backCharacterWeight = KartInfo::GetDriverWeight(backCharacterID + 1);
+            u32 maxCharacterWeight = Max(frontCharacterWeight, backCharacterWeight);
+            u32 kartWeight = KartInfo::GetKartWeight(kartID);
+            if (kartWeight != maxCharacterWeight) {
+                m_ok = false;
+            }
+        }
+        KartGamePad *frontPad = nullptr, *backPad = nullptr;
+        u32 localKartCount = onlineInfo.m_spectating ? 0 : raceInfo.getStatusCount();
+        for (u32 j = 0; j < localKartCount; j++) {
+            if (onlineInfo.m_localKartIndices[j] != kartIndex) {
+                continue;
+            }
+            const Array<u8, 2> &padIndices = onlineInfo.m_padIndices[j];
+            frontPad = KartGamePad::GamePad(padIndices[0]);
+            if (padIndices[1] != padIndices[0]) {
+                backPad = KartGamePad::GamePad(padIndices[1]);
+            }
+        }
+        raceInfo.setKart(kartIndex, kartID, frontCharacterID + 1, frontPad, backCharacterID + 1,
+                backPad);
+    }
+    if (!m_ok) {
+        return true;
+    }
+
     m_selectedKartIndex = ready->kartIndex;
     CubeRandom *random = CubeRandom::Instance();
     Lock<Mutex> lock(m_mutex);
@@ -367,14 +409,11 @@ void SceneCoursePoll::select() {
 }
 
 void SceneCoursePoll::nextScene() {
-    for (u32 i = 0; i < m_thumbnails.count(); i++) {
-        m_thumbnails[i].reset();
-    }
-    for (u32 i = 0; i < m_nameImages.count(); i++) {
-        m_nameImages[i].reset();
-    }
-    refreshCourses();
     m_state = &SceneCoursePoll::stateNextScene;
+}
+
+void SceneCoursePoll::nextRace() {
+    m_state = &SceneCoursePoll::stateNextRace;
 }
 
 void SceneCoursePoll::stateSlideIn() {
@@ -398,13 +437,25 @@ void SceneCoursePoll::stateSlideOut() {
         if (OSIsThreadTerminated(&m_loadThread)) {
             OSDetachThread(&m_loadThread);
             m_loadStack.reset();
-            nextScene();
+            for (u32 i = 0; i < m_thumbnails.count(); i++) {
+                m_thumbnails[i].reset();
+            }
+            for (u32 i = 0; i < m_nameImages.count(); i++) {
+                m_nameImages[i].reset();
+            }
+            refreshCourses();
+            if (m_nextScene == SceneType::None) {
+                nextRace();
+            } else {
+                nextScene();
+            }
         }
     }
 }
 
 void SceneCoursePoll::stateIdle() {
     if (!m_ok) {
+        m_nextScene = SceneType::Title;
         GameAudio::Main::Instance()->fadeOutAll(15);
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CANCEL);
         System::GetDisplay()->startFadeOut(15);
@@ -413,6 +464,13 @@ void SceneCoursePoll::stateIdle() {
     }
 
     if (m_selectedKartIndex) {
+        SequenceInfo &sequenceInfo = SequenceInfo::Instance();
+        const RaceInfo &raceInfo = RaceInfo::Instance();
+        const CourseManager *courseManager = CourseManager::Instance();
+        u32 courseIndex = m_courseIndices[*m_selectedKartIndex];
+        const CourseManager::Course &course =
+                courseManager->course(raceInfo.isRace(), sequenceInfo.m_packIndex, courseIndex);
+        ResMgr::LoadExtendedCourseData(&course, 2);
         spin();
     }
 }
@@ -443,13 +501,29 @@ void SceneCoursePoll::stateSelect() {
     if (m_selectFrame < 120) {
         m_selectFrame++;
     } else {
+        m_nextScene = SceneType::None;
         GameAudio::Main::Instance()->fadeOutAll(15);
         System::GetDisplay()->startFadeOut(15);
         slideOut();
     }
 }
 
-void SceneCoursePoll::stateNextScene() {}
+void SceneCoursePoll::stateNextScene() {
+    if (!SequenceApp::Instance()->ready(m_nextScene)) {
+        return;
+    }
+
+    SequenceApp::Instance()->setNextScene(m_nextScene);
+}
+
+void SceneCoursePoll::stateNextRace() {
+    if (!ResMgr::IsFinishedLoadingArc(ResMgr::ArchiveID::Course)) {
+        return;
+    }
+
+    AppMgr::Request(AppMgr::Request::DestroyApp);
+    RaceApp::Call();
+}
 
 void SceneCoursePoll::refreshCourses() {
     for (u32 i = 0; i < m_courseScreens.count(); i++) {

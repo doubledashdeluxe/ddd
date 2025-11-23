@@ -377,8 +377,6 @@ bool ScenePersonalRoom::clientStateRoom(const ClientStateRoomReadInfo &readInfo)
 
     Kart2DCommon *kart2DCommon = Kart2DCommon::Instance();
     m_kartCount = info->kartCount;
-    RaceInfo &raceInfo = RaceInfo::Instance();
-    raceInfo.m_kartCount = m_kartCount;
     OnlineInfo &onlineInfo = OnlineInfo::Instance();
     onlineInfo.m_karts = info->karts;
     for (u32 i = 0; i < m_playerScreens.count(); i++) {
@@ -403,11 +401,11 @@ bool ScenePersonalRoom::clientStateRoom(const ClientStateRoomReadInfo &readInfo)
 
     kart2DCommon->changeNumberTexture(info->spectatorCount, 3, m_mainScreen, "SCount");
 
-    raceInfo.m_raceMode = Modes[info->modeIndex];
-    m_isRace = raceInfo.isRace();
+    u32 raceMode = Modes[info->modeIndex];
+    m_isRace = RaceMode::IsRace(raceMode);
     for (u32 i = 0; i < m_entryScreens.count(); i++) {
         J2DPicture *iconPicture = m_entryScreens[i].search("Icon")->downcast<J2DPicture>();
-        const char *iconTextureName = RaceMode::IconTextureName(raceInfo.m_raceMode);
+        const char *iconTextureName = RaceMode::IconTextureName(raceMode);
         iconPicture->changeTexture(iconTextureName, 0);
     }
 
@@ -438,23 +436,24 @@ bool ScenePersonalRoom::clientStateRoom(const ClientStateRoomReadInfo &readInfo)
     }
 
     onlineInfo.m_spectating = info->spectating;
-    raceInfo.m_statusCount = info->spectating ? 0 : sequenceInfo.m_statusCount;
     if (!prevIsReady || m_switchAnmTransformFrames[1] == 8) {
         if (info->spectatingCounter == m_writeInfo.spectatingCounter) {
             m_writeInfo.spectating = info->spectating;
             m_switchAnmTexPatternFrames[1] = info->spectating;
         }
     }
-    s16 localKartCount = 0;
-    for (s16 i = 0; i < raceInfo.m_kartCount; i++) {
+    u32 localKartCount = 0;
+    for (u32 i = 0; i < m_kartCount; i++) {
         const Kart &kart = onlineInfo.m_karts[i];
-        localKartCount += !!kart.local;
+        if (kart.local) {
+            onlineInfo.m_localKartIndices[localKartCount++] = i;
+        }
     }
     if (info->spectating) {
         m_ok = m_ok && localKartCount == 0 && info->spectatorCount >= sequenceInfo.m_padCount;
     } else {
         m_ok = m_ok && localKartCount == sequenceInfo.m_statusCount;
-        for (s16 i = 0, j = 0; i < raceInfo.m_kartCount && j < localKartCount; i++) {
+        for (u32 i = 0, j = 0; i < m_kartCount && j < localKartCount; i++) {
             const Kart &kart = onlineInfo.m_karts[i];
             if (kart.local) {
                 m_ok = m_ok && kart == onlineInfo.m_localKarts[j++];
@@ -486,7 +485,12 @@ bool ScenePersonalRoom::clientStateRoom(const ClientStateRoomReadInfo &readInfo)
         }
     }
     if (m_isHost) {
-        m_canContinue = info->options == m_writeInfo.options;
+        m_canContinue = true;
+        for (u32 i = 0; i < m_optionCount; i++) {
+            u32 serverValue = RoomOption::Read(m_options[i], info->options);
+            u32 clientValue = RoomOption::Read(m_options[i], m_writeInfo.options);
+            m_canContinue = m_canContinue && serverValue == clientValue;
+        }
     } else {
         for (u32 i = 0; i < m_optionCount; i++) {
             u8 value = RoomOption::Read(m_options[i], info->options);
@@ -528,11 +532,11 @@ bool ScenePersonalRoom::clientStateRoom(const ClientStateRoomReadInfo &readInfo)
         break;
     }
     bool isFFA = maxTeamSize == 1;
-    u8 teamCount = (raceInfo.m_kartCount + maxTeamSize - 1) / maxTeamSize;
+    u8 teamCount = (m_kartCount + maxTeamSize - 1) / maxTeamSize;
     if (!isFFA) {
         teamCount = Max<u8>(teamCount, 2);
     }
-    maxTeamSize = (raceInfo.m_kartCount + teamCount - 1) / teamCount;
+    maxTeamSize = (m_kartCount + teamCount - 1) / teamCount;
     onlineInfo.m_isFFA = isFFA;
     onlineInfo.m_teamCount = teamCount;
     onlineInfo.m_maxTeamSize = maxTeamSize;
@@ -552,6 +556,20 @@ bool ScenePersonalRoom::clientStateRoom(const ClientStateRoomReadInfo &readInfo)
     onlineInfo.m_hasCourseShuffle = courseSelection != RoomOptionCourseSelection::Poll;
 
     m_continuing = info->continuing;
+
+    if (!m_ok) {
+        return true;
+    }
+
+    RaceInfo &raceInfo = RaceInfo::Instance();
+    u32 statusCount = info->spectating ? 1 : sequenceInfo.m_statusCount;
+    u32 consoleCount = statusCount == 3 ? 4 : statusCount;
+    raceInfo.setRace(raceMode, m_kartCount, m_kartCount, consoleCount, statusCount);
+    raceInfo.setRaceLevel(info->options.engineSize);
+    for (u32 i = 0; i < consoleCount; i++) {
+        u32 targetKart = info->spectating ? 0 : onlineInfo.m_localKartIndices[i];
+        raceInfo.setConsoleTarget(i, targetKart, info->spectating);
+    }
     return true;
 }
 

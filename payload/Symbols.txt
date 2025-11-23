@@ -339,13 +339,16 @@
 80116900 fadeOutAll__Q29GameAudio4MainFUl
 80116b40 setOutputMode__Q29GameAudio4MainFUl
 801256a4 init__6Goal2DFv
+80126600 draw__12PauseManagerFv
 80127ee8 init__7Pause2DFv
+80128074 draw__7Pause2DFv
 8012c7bc drawK2D__10K2DPictureFffffb
 8012cfbc __ct__5SceneFP10JKRArchiveP7JKRHeap
 8012cfd8 __dt__5SceneFv
 801326c0 init__11SceneRecordFv
 80139480 Instance__12Kart2DCommonFv
 80139628 init__8Result2DFv
+801399e0 draw__8Result2DFv
 8013f014 __ct__12SceneFactoryFv
 8013f044 __dt__12SceneFactoryFv
 8013f0cc loadData__12SceneFactoryFlP7JKRHeap
@@ -365,6 +368,7 @@
 801528c0 draw__15PrintMemoryCardFv
 801528f0 calc__15PrintMemoryCardFv
 80153694 init__9PreRace2DFv
+8015506c draw__5MarioFf7GXColor
 801573fc reset__9SceneMenuFv
 80157c08 init__9SceneMenuFv
 80163cb0 setRaceData__9SceneMenuFv
@@ -396,7 +400,11 @@
 80189bb4 setDefaultHeapGroup__8SysDebugFP7JKRHeap
 80189c64 createHeapInfo__8SysDebugFP7JKRHeapPCc
 8018b298 reset__8RaceInfoFv
+8018b3d8 setConsoleTarget__8RaceInfoFUlUlb
 8018b3f0 settingForWaitDemo__8RaceInfoFb
+8018b708 setRace__8RaceInfoFUlUlUlUlUl
+8018b794 setKart__8RaceInfoFUlUlUlP11KartGamePadUlP11KartGamePad
+8018b824 setRaceLevel__8RaceInfoFUl
 8019e54c resetCommon__12RaceDirectorFv
 801af940 Create__8MovieAppFv
 801b0084 Create__11MoviePlayerFP7JKRHeap
@@ -557,10 +565,13 @@
 803d540c UPnPHttpState
 
 803d5498 s_instance__Q29GameAudio4Main
+803d5528 s_nextPauseChoice__12PauseManager
+803d5540 s_instance__11WipeManager
 803d5578 s_instance__12SceneFactory
 803d5580 s_instance__6Race2D
 803d55e0 s_instance__17CharacterSelect3D
 803d5600 s_instance__12BattleName2D
+803d5628 s_instance__7RaceMgr
 803d5630 s_manager__8SysDebug
 803d5ab0 s_instance__11MoviePlayer
 803d5b30 s_time__9GameClock

@@ -156,7 +156,7 @@ void SceneCharacterSelect::init() {
     const RaceInfo &raceInfo = RaceInfo::Instance();
     m_ok = true;
     m_padCount = sequenceInfo.m_padCount;
-    m_statusCount = raceInfo.m_statusCount;
+    m_statusCount = raceInfo.getStatusCount();
     J2DScreen &mainScreen = m_mainScreens[m_statusCount - 1];
     for (u32 i = 0; i < Min<u32>(m_statusCount * 2, 4); i++) {
         u32 j = i % m_statusCount;
@@ -214,7 +214,7 @@ void SceneCharacterSelect::init() {
     const CourseManager *courseManager = CourseManager::Instance();
     u32 packIndex = sequenceInfo.m_packIndex;
     m_writeInfo.packCourseCount = courseManager->courseCount(raceInfo.isRace(), packIndex);
-    m_writeInfo.kartCount = raceInfo.m_kartCount;
+    m_writeInfo.kartCount = raceInfo.getKartCount();
 
     if (SequenceApp::Instance()->prevScene() == SceneType::MapSelect &&
             OnlineTimer::Instance()->hasExpired()) {
@@ -772,6 +772,7 @@ void SceneCharacterSelect::stateIdle() {
     } else {
         m_nextScene = SceneType::CoursePoll;
     }
+    onlineInfo.m_padIndices = m_pads;
     onlineInfo.m_characterIDs = m_characterIDs;
     onlineInfo.m_kartIDs = m_kartIDs;
     onlineInfo.m_hasIDs = true;

@@ -7,6 +7,7 @@ class Result2D {
 public:
     void REPLACED(init)();
     REPLACE void init();
+    void draw();
 
 private:
     u8 _0000[0x004c - 0x0000];

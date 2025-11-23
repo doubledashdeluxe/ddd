@@ -14,6 +14,10 @@ s16 RaceInfo::getConsoleCount() const {
     return m_consoleCount;
 }
 
+s16 RaceInfo::getStatusCount() const {
+    return m_statusCount;
+}
+
 const KartInfo &RaceInfo::getKartInfo(u32 index) const {
     return m_karts[index];
 }
@@ -23,26 +27,11 @@ s16 RaceInfo::getAwardKartNo() const {
 }
 
 bool RaceInfo::isRace() const {
-    switch (m_raceMode) {
-    case RaceMode::TA:
-    case RaceMode::GP:
-    case RaceMode::VS:
-        return true;
-    default:
-        return false;
-    }
+    return RaceMode::IsRace(m_raceMode);
 }
 
 bool RaceInfo::isBattle() const {
-    switch (m_raceMode) {
-    case RaceMode::Balloon:
-    case RaceMode::Robbery:
-    case RaceMode::Bomb:
-    case RaceMode::Escape:
-        return true;
-    default:
-        return false;
-    }
+    return RaceMode::IsBattle(m_raceMode);
 }
 
 RaceInfo &RaceInfo::Instance() {

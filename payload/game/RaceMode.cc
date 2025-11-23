@@ -1,5 +1,28 @@
 #include "RaceMode.hh"
 
+bool RaceMode::IsRace(u32 raceMode) {
+    switch (raceMode) {
+    case RaceMode::TA:
+    case RaceMode::GP:
+    case RaceMode::VS:
+        return true;
+    default:
+        return false;
+    }
+}
+
+bool RaceMode::IsBattle(u32 raceMode) {
+    switch (raceMode) {
+    case RaceMode::Balloon:
+    case RaceMode::Robbery:
+    case RaceMode::Bomb:
+    case RaceMode::Escape:
+        return true;
+    default:
+        return false;
+    }
+}
+
 const char *RaceMode::IconTextureName(u32 raceMode) {
     switch (raceMode) {
     case TA:

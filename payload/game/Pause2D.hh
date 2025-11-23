@@ -7,6 +7,7 @@ class Pause2D {
 public:
     void REPLACED(init)();
     REPLACE void init();
+    void draw();
 
 private:
     u8 _000[0x008 - 0x000];

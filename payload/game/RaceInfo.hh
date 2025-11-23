@@ -1,5 +1,6 @@
 #pragma once
 
+#include "game/KartGamePad.hh"
 #include "game/KartInfo.hh"
 
 class RaceInfo {
@@ -7,6 +8,7 @@ public:
     u32 getRaceLevel() const;
     s16 getKartCount() const;
     s16 getConsoleCount() const;
+    s16 getStatusCount() const;
     const KartInfo &getKartInfo(u32 index) const;
     s16 getAwardKartNo() const;
 
@@ -14,7 +16,12 @@ public:
     bool isBattle() const;
 
     void reset();
+    void setConsoleTarget(u32 index, u32 targetKart, bool isDemoKart);
     void settingForWaitDemo(bool isLast);
+    void setRace(u32 raceMode, u32 kartCount, u32 playerCount, u32 consoleCount, u32 statusCount);
+    void setKart(u32 index, u32 kartID, u32 frontChararacterID, KartGamePad *frontPad,
+            u32 backCharacterID, KartGamePad *backPad);
+    void setRaceLevel(u32 raceLevel);
 
     static RaceInfo &Instance();
 
@@ -34,18 +41,10 @@ public:
 
 private:
     u8 _01a[0x01c - 0x01a];
-
-public:
     s16 m_kartCount;
-
-private:
     u8 _01e[0x020 - 0x01e];
     s16 m_consoleCount;
-
-public:
     s16 m_statusCount;
-
-private:
     u8 _024[0x030 - 0x024];
     KartInfo m_karts[8];
     u8 _0f0[0x120 - 0x0f0];

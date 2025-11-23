@@ -15,6 +15,8 @@ public:
         Award = 0x8,
     };
 
+    static bool IsRace(u32 raceMode);
+    static bool IsBattle(u32 raceMode);
     static const char *IconTextureName(u32 raceMode);
     static const char *NameTextureName(u32 raceMode);
 

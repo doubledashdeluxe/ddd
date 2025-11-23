@@ -62,7 +62,7 @@ void ScenePlayerList::init() {
     const RaceInfo &raceInfo = RaceInfo::Instance();
     u32 packIndex = SequenceInfo::Instance().m_packIndex;
     m_writeInfo.packCourseCount = courseManager->courseCount(raceInfo.isRace(), packIndex);
-    m_writeInfo.kartCount = raceInfo.m_kartCount;
+    m_writeInfo.kartCount = raceInfo.getKartCount();
 
     s32 prevScene = SequenceApp::Instance()->prevScene();
     if (prevScene != SceneType::CharacterSelect) {
@@ -134,7 +134,7 @@ void ScenePlayerList::slideIn() {
     const OnlineInfo &onlineInfo = OnlineInfo::Instance();
     const RaceInfo &raceInfo = RaceInfo::Instance();
     Kart2DCommon *kart2DCommon = Kart2DCommon::Instance();
-    u32 kartCount = raceInfo.m_kartCount;
+    u32 kartCount = raceInfo.getKartCount();
     for (u32 i = 0; i < m_kartScreens.count(); i++) {
         m_mainScreen.search("Player%u", i)->m_isVisible = i < kartCount;
         if (i >= kartCount) {
