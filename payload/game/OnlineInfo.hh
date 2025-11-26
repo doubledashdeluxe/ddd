@@ -15,6 +15,7 @@ public:
     u32 m_serverIndex;
     u32 m_roomType;
     u32 m_modeIndex;
+    u32 m_format;
     bool m_isHost;
     u32 m_roomCounter;
     u64 m_roomCode;

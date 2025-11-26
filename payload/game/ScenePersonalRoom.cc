@@ -12,8 +12,10 @@
 #include "game/RaceMode.hh"
 #include "game/ResMgr.hh"
 #include "game/RoomOption.hh"
+#include "game/RoomType.hh"
 #include "game/SequenceApp.hh"
 #include "game/SequenceInfo.hh"
+#include "game/System.hh"
 
 #include <jsystem/J2DAnmLoaderDataBase.hh>
 #include <payload/CourseManager.hh>
@@ -157,6 +159,8 @@ ScenePersonalRoom::~ScenePersonalRoom() {}
 
 void ScenePersonalRoom::init() {
     OnlineInfo &onlineInfo = OnlineInfo::Instance();
+    m_isSearch = onlineInfo.m_roomType != RoomType::Personal;
+    m_isDuel = onlineInfo.m_roomType == RoomType::Duel;
     m_isHost = onlineInfo.m_isHost;
     m_canContinue = true;
     m_continuing = false;
@@ -166,7 +170,9 @@ void ScenePersonalRoom::init() {
     m_optionCount = 0;
     m_entryIndex = 0;
 
-    if (m_isHost) {
+    m_writeInfo.isSearch = m_isSearch;
+    m_writeInfo.isDuel = m_isDuel;
+    if (m_isSearch || m_isHost) {
         m_isRace = RaceInfo::Instance().isRace();
         m_writeInfo.modeIndex = onlineInfo.m_modeIndex;
         m_writeInfo.isRace = m_isRace;
@@ -183,6 +189,9 @@ void ScenePersonalRoom::init() {
     }
     m_writeInfo.spectatingCounter = 0;
     m_writeInfo.spectating = false;
+    if (m_isSearch) {
+        m_writeInfo.options.format = onlineInfo.m_format;
+    }
     m_writeInfo.continuing = false;
 
     wait();
@@ -618,11 +627,24 @@ void ScenePersonalRoom::nextScene() {
 void ScenePersonalRoom::stateWait() {
     const JUTGamePad::CButton &button = KartGamePad::GamePad(0)->button();
     if (button.risingEdge() & PAD_BUTTON_B || !m_ok) {
-        m_nextScene = m_isHost ? SceneType::PackSelect : SceneType::RoomCodeEnter;
+        if (m_isSearch) {
+            m_nextScene = m_isDuel ? SceneType::PackSelect : SceneType::FormatSelect;
+        } else {
+            m_nextScene = m_isHost ? SceneType::PackSelect : SceneType::RoomCodeEnter;
+        }
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CANCEL_LITTLE);
         slideOut();
     } else if (m_isReady) {
-        slideIn();
+        if (m_isSearch) {
+            if (OnlineInfo::Instance().m_isFFA) {
+                m_nextScene = SceneType::PlayerList;
+            } else {
+                m_nextScene = SceneType::TeamSelect;
+            }
+            nextScene();
+        } else {
+            slideIn();
+        }
     }
 }
 
@@ -718,13 +740,27 @@ void ScenePersonalRoom::stateNextScene() {
     const JUTGamePad::CButton &button = KartGamePad::GamePad(0)->button();
     if (m_nextScene == SceneType::TeamSelect || m_nextScene == SceneType::PlayerList) {
         if (button.risingEdge() & PAD_BUTTON_B || !m_ok) {
-            m_nextScene = SceneType::RoomTypeSelect;
+            if (m_isSearch) {
+                m_nextScene = m_isDuel ? SceneType::PackSelect : SceneType::FormatSelect;
+            } else {
+                m_nextScene = SceneType::RoomTypeSelect;
+            }
             GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CANCEL_LITTLE);
         }
     }
 
     if (m_nextScene == SceneType::TeamSelect || m_nextScene == SceneType::PlayerList) {
         if (!m_canContinue || !m_continuing) {
+            return;
+        }
+    }
+
+    if (m_nextScene == SceneType::PlayerList) {
+        if (!System::GetDisplay()->ensureOut(15)) {
+            return;
+        }
+    } else {
+        if (!System::GetDisplay()->ensureIn(15)) {
             return;
         }
     }

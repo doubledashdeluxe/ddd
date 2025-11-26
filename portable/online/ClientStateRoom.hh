@@ -18,6 +18,8 @@ class ClientStateRoom
     , private RoomOptionsBattleReader
     , private ClientStateWriter::Room
     , private ClientStateRoomWriter
+    , private ClientRoomStateWriter::Search
+    , private ClientRoomStateSearchWriter
     , private ClientRoomStateWriter::New
     , private ClientRoomStateNewWriter
     , private ClientRoomStateWriter::Code
@@ -126,14 +128,17 @@ private:
 
     ClientRoomStateWriter &clientRoomStateWriter() override;
 
+    ClientRoomStateSearchWriter &searchWriter() override;
     ClientRoomStateNewWriter &newWriter() override;
     ClientRoomStateCodeWriter &codeWriter() override;
     ClientRoomStateMainWriter &mainWriter() override;
 
+    u8 getIsDuel() override;
     u8 getModeIndex() override;
     u8 getPackCourseCount() override;
     u32 getPackHashCount() override;
     u8 getPackHashElement(u32 i0) override;
+    u8 getFormat() override;
     u32 getRoomCounter() override;
 
     u64 getRoomCode() override;
@@ -150,7 +155,6 @@ private:
     void getRace() override;
     void getBattle() override;
     u8 getCodeType() override;
-    u8 getFormat() override;
     u8 getEngineSize() override;
     u8 getItemMode() override;
     u8 getLapCount() override;

@@ -10,8 +10,10 @@ use crate::crypto::PublicKey;
 use crate::formats::online::*;
 use crate::formats::version;
 use crate::kart::Kart;
+use crate::mmr::Mmr;
 use crate::pack::Pack;
-use crate::rooms::Rooms;
+use crate::player::Player;
+use crate::rooms::{Rooms, Search};
 
 pub struct Client {
     expiration: Instant,
@@ -104,18 +106,20 @@ impl Client {
             (ClientState::Mode(_), Some(identity), _) => State::Mode { identity },
             (ClientState::Pack(pack), Some(identity), _) => State::Pack { identity, pack },
             (ClientState::Room(room), Some(identity), room_info) => {
-                let karts = || {
+                let mut karts = || {
                     let kart_count = identity.kart_count as usize;
                     let karts: Vec<_> = (0..kart_count)
                         .map(|i| {
                             let players = &identity.players;
                             let tandem_count = players.len() - kart_count;
 
-                            let player = |i| {
+                            let mut player = |i| {
                                 let index = i as u8;
                                 let player: &ClientPlayer = &players[i];
                                 let name = player.name.clone();
-                                ServerPlayer { index, name }
+                                let player = ServerPlayer { index, name };
+                                let mmr = rng.random_range(..=9999);
+                                Player::new(player, mmr)
                             };
 
                             let players = if i < tandem_count {
@@ -130,6 +134,31 @@ impl Client {
                 };
 
                 let room_info = match (room.client_room_state, room_info) {
+                    (ClientRoomState::Search(search), Some(room_info))
+                        if room_info.counter == search.room_counter =>
+                    {
+                        let id = room_info.id;
+                        rooms.read(&id, |_| room_info)
+                    }
+                    (ClientRoomState::Search(search), _) => {
+                        let counter = search.room_counter;
+                        let frame_rate = identity.frame_rate;
+                        let karts = karts();
+                        let is_duel = search.is_duel != 0;
+                        let mode_index = search.mode_index;
+                        let pack =
+                            Pack { course_count: search.pack_course_count, hash: search.pack_hash };
+                        let format = search.format;
+                        let search = Search { is_duel, mode_index, pack, format };
+                        let room = rooms.search(frame_rate, &karts, search, rng);
+                        room.and_then(|mut room| {
+                            let id = room.id();
+                            let spectating_counter = 0;
+                            let spectating = room.insert(karts)?;
+                            let continuing = room.has_room_lock();
+                            Ok(RoomInfo { counter, id, spectating_counter, spectating, continuing })
+                        })
+                    }
                     (ClientRoomState::New(new), Some(room_info))
                         if room_info.counter == new.room_counter =>
                     {
@@ -137,14 +166,14 @@ impl Client {
                         rooms.read(&id, |_| room_info)
                     }
                     (ClientRoomState::New(new), _) => {
-                        let counter = new.room_counter;
                         let frame_rate = identity.frame_rate;
                         let karts = karts();
                         let mode_index = new.mode_index;
                         let pack =
                             Pack { course_count: new.pack_course_count, hash: new.pack_hash };
-                        let room = rooms.insert(frame_rate, karts, mode_index, pack, rng);
-                        room.map(|id| {
+                        let id = rooms.insert(frame_rate, karts, mode_index, pack, rng);
+                        id.map(|id| {
+                            let counter = new.room_counter;
                             let spectating_counter = 0;
                             let spectating = false;
                             let continuing = false;
@@ -256,21 +285,42 @@ impl Client {
                 ServerState::Server(server_state_server)
             }
             State::Mode { identity } => {
-                let modes = (0..5)
-                    .map(|i| {
+                let modes = rooms
+                    .mode_player_counts(frame_rate)
+                    .iter()
+                    .enumerate()
+                    .map(|(i, player_count)| {
                         let mmrs =
-                            (0..identity.players.len()).map(|j| (i * 4 + j as u16) * 179).collect();
-                        let player_count = i * 79;
-                        ServerMode { mmrs, player_count }
+                            (0..identity.players.len()).map(|j| (i * 4 + j) as u16 * 179).collect();
+                        ServerMode { mmrs, player_count: *player_count as u16 }
                     })
                     .collect();
                 let mode = ServerStateMode { modes };
                 ServerState::Mode(mode)
             }
             State::Pack { pack, .. } => {
-                let ClientStatePack { mode_index, pack_index, .. } = *pack;
-                let player_count = pack_index as u16 * 137;
-                let format_player_counts = (0..3).map(|i| i * 73).collect();
+                let ClientStatePack {
+                    is_duel,
+                    mode_index,
+                    pack_index,
+                    pack_course_count,
+                    pack_hash,
+                } = pack.clone();
+                let formats = [
+                    RoomOptionFormat::FreeForAll,
+                    RoomOptionFormat::TeamsOf2,
+                    RoomOptionFormat::TeamsOf4,
+                ];
+                let format_player_counts: Vec<_> = formats
+                    .into_iter()
+                    .map(|format| {
+                        let pack =
+                            Pack { course_count: pack_course_count, hash: pack_hash.clone() };
+                        let search = Search { is_duel: is_duel != 0, mode_index, pack, format };
+                        rooms.search_player_count(frame_rate, &search) as u16
+                    })
+                    .collect();
+                let player_count = format_player_counts.iter().sum();
                 let pack =
                     ServerStatePack { mode_index, pack_index, player_count, format_player_counts };
                 ServerState::Pack(pack)
@@ -282,35 +332,31 @@ impl Client {
                             let karts = room
                                 .karts()
                                 .iter()
-                                .enumerate()
-                                .map(|(i, kart)| {
+                                .map(|kart| {
                                     let local = (kart.client_pk() == &self.pk).into();
-                                    let players = kart.players().to_vec();
-                                    let mmr = i as u16 * 1023;
+                                    let players = kart
+                                        .players()
+                                        .iter()
+                                        .map(&Player::player)
+                                        .cloned()
+                                        .collect();
+                                    let mmr = kart.mmr();
                                     ServerKart { local, players, mmr }
                                 })
                                 .collect();
-                            let spectator_count = room.spectator_count() as u16;
-                            let mode_index = room.mode_index();
                             let pack = room.pack();
-                            let room_counter = room_info.counter;
-                            let room_code = room.code();
-                            let spectating_counter = room_info.spectating_counter;
-                            let spectating = room_info.spectating.into();
-                            let options = room.options().clone();
-                            let continuing = room_info.continuing.into();
                             ServerRoomStateMain {
                                 karts,
-                                spectator_count,
-                                mode_index,
+                                spectator_count: room.spectator_count() as u16,
+                                mode_index: room.mode_index(),
                                 pack_course_count: pack.course_count,
                                 pack_hash: pack.hash.to_vec(),
-                                room_counter,
-                                room_code,
-                                spectating_counter,
-                                spectating,
-                                options,
-                                continuing,
+                                room_counter: room_info.counter,
+                                room_code: room.code().unwrap_or(u64::MAX),
+                                spectating_counter: room_info.spectating_counter,
+                                spectating: room_info.spectating.into(),
+                                options: room.options().clone(),
+                                continuing: room_info.continuing.into(),
                             }
                         });
                         let Ok(main) = main else {

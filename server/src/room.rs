@@ -10,39 +10,90 @@ use rand::{Rng, SeedableRng};
 use crate::crypto::{ChaCha20Rng, PublicKey};
 use crate::formats::online::*;
 use crate::kart::Kart;
+use crate::mmr::Mmr;
 use crate::pack::Pack;
 
 pub struct Room {
-    host_pk: PublicKey,
+    host_pk: Option<PublicKey>,
     karts: Vec<Kart>,
     spectating_karts: HashMap<PublicKey, Vec<Kart>>,
     spectator_count: usize,
+    max_kart_count: usize,
+    max_client_kart_count: usize,
     mode_index: ModeIndex,
     pack: Pack,
     id: u128,
-    long_code: u64,
-    short_code: u64,
+    code_pair: Option<CodePair>,
     options: ServerRoomOptions,
     state: State,
     rng: ChaCha20Rng,
 }
 
 impl Room {
-    pub fn new(
+    pub fn new_worldwide(
+        mode_index: ModeIndex,
+        pack: Pack,
+        id: u128,
+        format: RoomOptionFormat,
+        rng: &mut impl Rng,
+    ) -> Self {
+        let config = Config {
+            host_karts: vec![],
+            max_kart_count: MAX_ROOM_KART_COUNT as usize,
+            max_client_kart_count: MAX_CLIENT_KART_COUNT as usize,
+            mode_index,
+            pack,
+            id,
+            code_pair: None,
+            format,
+            match_count: 0,
+            rng,
+        };
+        Self::new(config)
+    }
+
+    pub fn new_duel(pack: Pack, id: u128, rng: &mut impl Rng) -> Self {
+        let config = Config {
+            host_karts: vec![],
+            max_kart_count: 2,
+            max_client_kart_count: 1,
+            mode_index: ModeIndex::Versus,
+            pack,
+            id,
+            code_pair: None,
+            format: RoomOptionFormat::FreeForAll,
+            match_count: 1,
+            rng,
+        };
+        Self::new(config)
+    }
+
+    pub fn new_personal(
         host_karts: Vec<Kart>,
         mode_index: ModeIndex,
         pack: Pack,
         id: u128,
-        long_code: u64,
-        short_code: u64,
+        code_pair: CodePair,
         rng: &mut impl Rng,
-    ) -> Room {
-        debug!("-> {id}");
-        let karts = host_karts;
-        let spectating_karts = HashMap::new();
-        let spectator_count = 0;
-        let host_pk = *karts[0].client_pk();
-        let is_race = match mode_index {
+    ) -> Self {
+        let config = Config {
+            host_karts,
+            max_kart_count: MAX_ROOM_KART_COUNT as usize,
+            max_client_kart_count: MAX_CLIENT_KART_COUNT as usize,
+            mode_index,
+            pack,
+            id,
+            code_pair: Some(code_pair),
+            format: RoomOptionFormat::FreeForAll,
+            match_count: DEFAULT_MATCH_COUNT,
+            rng,
+        };
+        Self::new(config)
+    }
+
+    fn new(config: Config<'_, impl Rng>) -> Room {
+        debug!("-> {}", config.id);
+        let is_race = match config.mode_index {
             ModeIndex::Versus => true,
             ModeIndex::Balloon => false,
             ModeIndex::Escape => false,
@@ -53,11 +104,11 @@ impl Room {
             let options = RoomOptionsRace {
                 race: (),
                 code_type: RoomOptionCodeType::Long,
-                format: RoomOptionFormat::FreeForAll,
+                format: config.format,
                 engine_size: RoomOptionEngineSize::Large,
                 item_mode: RoomOptionItemMode::Recommended,
                 lap_count: 0,
-                match_count: DEFAULT_MATCH_COUNT,
+                match_count: config.match_count,
                 course_selection: RoomOptionCourseSelection::Poll,
                 entry_index: 0,
             };
@@ -66,33 +117,33 @@ impl Room {
             let options = RoomOptionsBattle {
                 battle: (),
                 code_type: RoomOptionCodeType::Long,
-                format: RoomOptionFormat::FreeForAll,
+                format: config.format,
                 item_mode: RoomOptionItemMode::Recommended,
-                match_count: DEFAULT_MATCH_COUNT,
+                match_count: config.match_count,
                 course_selection: RoomOptionCourseSelection::Poll,
                 entry_index: 0,
             };
             ServerRoomOptions::Battle(options)
         };
-        let state = State::new_room();
         Room {
-            host_pk,
-            karts,
-            spectating_karts,
-            spectator_count,
-            mode_index,
-            pack,
-            id,
-            long_code,
-            short_code,
+            host_pk: config.host_karts.first().map(Kart::client_pk).copied(),
+            karts: config.host_karts,
+            spectating_karts: HashMap::new(),
+            spectator_count: 0,
+            max_kart_count: config.max_kart_count,
+            max_client_kart_count: config.max_client_kart_count,
+            mode_index: config.mode_index,
+            pack: config.pack,
+            id: config.id,
+            code_pair: config.code_pair,
             options,
-            state,
-            rng: ChaCha20Rng::from_rng(rng),
+            state: State::new_room(),
+            rng: ChaCha20Rng::from_rng(config.rng),
         }
     }
 
     fn is_host(&self, client_pk: &PublicKey) -> bool {
-        client_pk == &self.host_pk
+        Some(client_pk) == self.host_pk.as_ref()
     }
 
     fn is_guest(&self, client_pk: &PublicKey) -> bool {
@@ -101,6 +152,14 @@ impl Room {
 
     pub fn karts(&self) -> &[Kart] {
         &self.karts
+    }
+
+    pub fn player_count(&self) -> usize {
+        self.karts.iter().map(|kart| kart.players().len()).sum()
+    }
+
+    pub fn spectating_kart_count(&self) -> usize {
+        self.spectating_karts.values().map(|karts| karts.len()).sum()
     }
 
     pub fn spectator_count(&self) -> usize {
@@ -123,10 +182,11 @@ impl Room {
         &self.options
     }
 
-    pub fn code(&self) -> u64 {
-        match self.code_type() {
-            RoomOptionCodeType::Long => self.long_code,
-            RoomOptionCodeType::Short => self.short_code,
+    pub fn code(&self) -> Option<u64> {
+        match (&self.code_pair, self.code_type()) {
+            (Some(code_pair), RoomOptionCodeType::Long) => Some(code_pair.long),
+            (Some(code_pair), RoomOptionCodeType::Short) => Some(code_pair.short),
+            (None, _) => None,
         }
     }
 
@@ -226,7 +286,8 @@ impl Room {
     }
 
     pub fn insert(&mut self, guest_karts: Vec<Kart>) -> Result<bool> {
-        if !self.has_room_lock() && self.karts.len() + guest_karts.len() <= 8 {
+        anyhow::ensure!(guest_karts.len() <= self.max_client_kart_count);
+        if !self.has_room_lock() && self.karts.len() + guest_karts.len() <= self.max_kart_count {
             self.karts.extend(guest_karts);
             Ok(false)
         } else {
@@ -238,7 +299,7 @@ impl Room {
     }
 
     pub fn set_spectating(&mut self, client_pk: &PublicKey, spectating: bool) -> bool {
-        if self.has_room_lock() {
+        if self.host_pk.is_none() || self.has_room_lock() {
             return self.spectating_karts.contains_key(client_pk);
         }
 
@@ -246,7 +307,7 @@ impl Room {
             let karts = self.karts.extract_if(.., |kart| kart.client_pk() == client_pk).collect();
             self.spectating_karts.insert(*client_pk, karts);
         } else if let Entry::Occupied(o) = self.spectating_karts.entry(*client_pk) {
-            if o.get().len() + self.karts.len() > 8 {
+            if o.get().len() + self.karts.len() > self.max_kart_count {
                 return true;
             }
 
@@ -299,7 +360,8 @@ impl Room {
                 if self.is_ffa() {
                     self.state = State::new_poll(None);
                 } else {
-                    self.state = State::new_team(self.karts.len());
+                    let deadline = Instant::now() + Duration::from_secs(35);
+                    self.state = State::new_team(self.karts.len(), deadline);
                 }
             }
         } else {
@@ -452,12 +514,14 @@ impl Room {
         }
         self.spectating_karts.retain(|client_pk, _| present(client_pk));
 
-        if self.has_room_lock() {
-            anyhow::ensure!(self.karts.iter().any(|kart| present(kart.client_pk())));
+        if let Some(host_pk) = &self.host_pk
+            && !self.has_room_lock()
+        {
+            let has_host_kart = || self.karts.first().map(Kart::client_pk) == Some(host_pk);
+            let has_host_spectating_kart = || self.spectating_karts.contains_key(host_pk);
+            anyhow::ensure!(has_host_kart() || has_host_spectating_kart());
         } else {
-            let has_host_kart = self.karts.first().map(Kart::client_pk) == Some(&self.host_pk);
-            let has_host_spectating_kart = self.spectating_karts.contains_key(&self.host_pk);
-            anyhow::ensure!(has_host_kart || has_host_spectating_kart);
+            anyhow::ensure!(self.karts.iter().any(|kart| present(kart.client_pk())));
         }
 
         self.spectator_count = self
@@ -468,6 +532,23 @@ impl Room {
 
         let course_selection = self.course_selection();
         match &mut self.state {
+            State::Room if self.host_pk.is_none() => {
+                self.spectating_karts.retain(|_, karts| {
+                    let retain = self.karts.len() + karts.len() > self.max_kart_count;
+                    if !retain {
+                        self.karts.append(karts);
+                    }
+                    retain
+                });
+                if self.karts.windows(2).any(|karts| karts[0].client_pk() != karts[1].client_pk()) {
+                    if self.is_ffa() {
+                        self.state = State::new_poll(None);
+                    } else {
+                        let deadline = Instant::now();
+                        self.state = State::new_team(self.karts.len(), deadline);
+                    }
+                }
+            }
             State::Team { state, deadline } if Instant::now() >= *deadline => {
                 let mut state = state.clone();
                 self.balance_teams(&mut state.teams);
@@ -479,7 +560,7 @@ impl Room {
             {
                 for (kart_index, kart) in self.karts.iter().enumerate() {
                     let kart_index = kart_index as u8;
-                    let is_host = kart.client_pk() == &self.host_pk;
+                    let is_host = Some(kart.client_pk()) == self.host_pk.as_ref();
                     let Entry::Vacant(v) = karts.entry(kart_index) else {
                         continue;
                     };
@@ -523,6 +604,31 @@ impl Drop for Room {
     }
 }
 
+impl Mmr for Room {
+    fn mmr(&self) -> u16 {
+        self.karts.mmr()
+    }
+}
+
+#[derive(Clone, Copy, Debug)]
+pub struct CodePair {
+    pub long: u64,
+    pub short: u64,
+}
+
+struct Config<'a, R: Rng> {
+    host_karts: Vec<Kart>,
+    max_kart_count: usize,
+    max_client_kart_count: usize,
+    mode_index: ModeIndex,
+    pack: Pack,
+    id: u128,
+    code_pair: Option<CodePair>,
+    format: RoomOptionFormat,
+    match_count: u8,
+    rng: &'a mut R,
+}
+
 enum State {
     Room,
     Team {
@@ -547,13 +653,13 @@ impl State {
         Self::Room
     }
 
-    fn new_team(kart_count: usize) -> Self {
+    fn new_team(kart_count: usize, deadline: Instant) -> Self {
         let state = ServerTeamStateMain {
             teams: vec![0; kart_count],
             entry_index: 0,
             continuing: false as u8,
         };
-        Self::Team { state, deadline: Instant::now() + Duration::from_secs(35) }
+        Self::Team { state, deadline }
     }
 
     fn new_poll(team_state: Option<ServerTeamStateMain>) -> Self {

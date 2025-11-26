@@ -1,4 +1,4 @@
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub enum TwoVariants {
     First(Vec<u32>),
     Second(()),

@@ -27,3 +27,31 @@ bool JFWDisplay::startFadeOut(s32 duration) {
 
     return m_fader->startFadeOut(duration);
 }
+
+bool JFWDisplay::ensureIn(s32 duration) {
+    u32 faderStatus = getFaderStatus();
+    switch (faderStatus) {
+    case JUTFader::Status::Out:
+    case JUTFader::Status::FadingOut:
+        startFadeIn(duration);
+        return false;
+    case JUTFader::Status::In:
+        return true;
+    default:
+        return false;
+    }
+}
+
+bool JFWDisplay::ensureOut(s32 duration) {
+    u32 faderStatus = getFaderStatus();
+    switch (faderStatus) {
+    case JUTFader::Status::Out:
+        return true;
+    case JUTFader::Status::In:
+    case JUTFader::Status::FadingIn:
+        startFadeOut(duration);
+        return false;
+    default:
+        return false;
+    }
+}

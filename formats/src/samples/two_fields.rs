@@ -1,4 +1,4 @@
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct TwoFields {
     pub first: Vec<u32>,
     pub second: (),

@@ -118,7 +118,11 @@ void ClientStateRoom::setError() {
 
 bool ClientStateRoom::isKartsCountValid(u32 kartsCount) {
     const Optional<ReadInfo::Info> &info = m_readInfo.info;
-    return !info || !info->continuing || kartsCount == info->kartCount;
+    if (info && info->continuing) {
+        return kartsCount == info->kartCount;
+    } else {
+        return !m_writeInfo.isDuel || kartsCount <= 2;
+    }
 }
 
 void ClientStateRoom::setKartsCount(u32 kartsCount) {
@@ -139,7 +143,7 @@ void ClientStateRoom::setSpectatorCount(u16 spectatorCount) {
 }
 
 bool ClientStateRoom::isModeIndexValid(u8 modeIndex) {
-    if (m_writeInfo.isHost) {
+    if (m_writeInfo.isSearch || m_writeInfo.isHost) {
         return modeIndex == m_writeInfo.modeIndex;
     } else {
         const Optional<ReadInfo::Info> &info = m_readInfo.info;
@@ -152,7 +156,7 @@ void ClientStateRoom::setModeIndex(u8 modeIndex) {
 }
 
 bool ClientStateRoom::isPackCourseCountValid(u8 packCourseCount) {
-    if (m_writeInfo.isHost) {
+    if (m_writeInfo.isSearch || m_writeInfo.isHost) {
         return packCourseCount == m_writeInfo.packCourseCount;
     } else {
         const Optional<ReadInfo::Info> &info = m_readInfo.info;
@@ -171,7 +175,7 @@ bool ClientStateRoom::isPackHashCountValid(u32 /* packHashCount */) {
 void ClientStateRoom::setPackHashCount(u32 /* packHashCount */) {}
 
 bool ClientStateRoom::isPackHashElementValid(u32 i0, u8 packHashElement) {
-    if (m_writeInfo.isHost) {
+    if (m_writeInfo.isSearch || m_writeInfo.isHost) {
         return packHashElement == m_writeInfo.packHash[i0];
     } else {
         const Optional<ReadInfo::Info> &info = m_readInfo.info;
@@ -190,7 +194,11 @@ bool ClientStateRoom::isRoomCounterValid(u32 roomCounter) {
 void ClientStateRoom::setRoomCounter(u32 /* roomCounter */) {}
 
 bool ClientStateRoom::isRoomCodeValid(u64 roomCode) {
-    return roomCode >> (20 * 3) == 0;
+    if (m_writeInfo.isSearch) {
+        return roomCode == UINT64_MAX;
+    } else {
+        return roomCode >> (20 * 3) == 0;
+    }
 }
 
 void ClientStateRoom::setRoomCode(u64 roomCode) {
@@ -292,7 +300,7 @@ RoomOptionsBattleReader *ClientStateRoom::battleReader() {
 }
 
 bool ClientStateRoom::isRaceValid() {
-    if (m_writeInfo.isHost) {
+    if (m_writeInfo.isSearch || m_writeInfo.isHost) {
         return m_writeInfo.isRace;
     } else {
         const Optional<ReadInfo::Info> &info = m_readInfo.info;
@@ -305,7 +313,7 @@ void ClientStateRoom::setRace() {
 }
 
 bool ClientStateRoom::isBattleValid() {
-    if (m_writeInfo.isHost) {
+    if (m_writeInfo.isSearch || m_writeInfo.isHost) {
         return !m_writeInfo.isRace;
     } else {
         const Optional<ReadInfo::Info> &info = m_readInfo.info;
@@ -327,8 +335,12 @@ void ClientStateRoom::setCodeType(u8 codeType) {
 }
 
 bool ClientStateRoom::isFormatValid(u8 format) {
-    const Optional<ReadInfo::Info> &info = m_readInfo.info;
-    return !info || !info->continuing || format == info->options.format;
+    if (m_writeInfo.isSearch) {
+        return format == m_writeInfo.options.format;
+    } else {
+        const Optional<ReadInfo::Info> &info = m_readInfo.info;
+        return !info || !info->continuing || format == info->options.format;
+    }
 }
 
 void ClientStateRoom::setFormat(u8 format) {
@@ -336,8 +348,12 @@ void ClientStateRoom::setFormat(u8 format) {
 }
 
 bool ClientStateRoom::isEngineSizeValid(u8 engineSize) {
-    const Optional<ReadInfo::Info> &info = m_readInfo.info;
-    return !info || !info->continuing || engineSize == info->options.engineSize;
+    if (m_writeInfo.isSearch) {
+        return engineSize == RoomOptionEngineSize::Large;
+    } else {
+        const Optional<ReadInfo::Info> &info = m_readInfo.info;
+        return !info || !info->continuing || engineSize == info->options.engineSize;
+    }
 }
 
 void ClientStateRoom::setEngineSize(u8 engineSize) {
@@ -345,8 +361,12 @@ void ClientStateRoom::setEngineSize(u8 engineSize) {
 }
 
 bool ClientStateRoom::isItemModeValid(u8 itemMode) {
-    const Optional<ReadInfo::Info> &info = m_readInfo.info;
-    return !info || !info->continuing || itemMode == info->options.itemMode;
+    if (m_writeInfo.isSearch) {
+        return itemMode == RoomOptionItemMode::Recommended;
+    } else {
+        const Optional<ReadInfo::Info> &info = m_readInfo.info;
+        return !info || !info->continuing || itemMode == info->options.itemMode;
+    }
 }
 
 void ClientStateRoom::setItemMode(u8 itemMode) {
@@ -354,11 +374,15 @@ void ClientStateRoom::setItemMode(u8 itemMode) {
 }
 
 bool ClientStateRoom::isLapCountValid(u8 lapCount) {
-    const Optional<ReadInfo::Info> &info = m_readInfo.info;
-    if (info && info->continuing) {
-        return lapCount == info->options.lapCount;
+    if (m_writeInfo.isSearch) {
+        return lapCount == 0;
     } else {
-        return lapCount <= MaxLapCount;
+        const Optional<ReadInfo::Info> &info = m_readInfo.info;
+        if (info && info->continuing) {
+            return lapCount == info->options.lapCount;
+        } else {
+            return lapCount <= MaxLapCount;
+        }
     }
 }
 
@@ -367,11 +391,15 @@ void ClientStateRoom::setLapCount(u8 lapCount) {
 }
 
 bool ClientStateRoom::isMatchCountValid(u8 matchCount) {
-    const Optional<ReadInfo::Info> &info = m_readInfo.info;
-    if (info && info->continuing) {
-        return matchCount == info->options.matchCount;
+    if (m_writeInfo.isSearch) {
+        return matchCount == m_writeInfo.isDuel ? 1 : 0;
     } else {
-        return matchCount >= MinMatchCount && matchCount <= MaxMatchCount;
+        const Optional<ReadInfo::Info> &info = m_readInfo.info;
+        if (info && info->continuing) {
+            return matchCount == info->options.matchCount;
+        } else {
+            return matchCount >= MinMatchCount && matchCount <= MaxMatchCount;
+        }
     }
 }
 
@@ -380,8 +408,12 @@ void ClientStateRoom::setMatchCount(u8 matchCount) {
 }
 
 bool ClientStateRoom::isCourseSelectionValid(u8 courseSelection) {
-    const Optional<ReadInfo::Info> &info = m_readInfo.info;
-    return !info || !info->continuing || courseSelection == info->options.courseSelection;
+    if (m_writeInfo.isSearch) {
+        return courseSelection == RoomOptionCourseSelection::Poll;
+    } else {
+        const Optional<ReadInfo::Info> &info = m_readInfo.info;
+        return !info || !info->continuing || courseSelection == info->options.courseSelection;
+    }
 }
 
 void ClientStateRoom::setCourseSelection(u8 courseSelection) {
@@ -405,12 +437,18 @@ ClientRoomStateWriter &ClientStateRoom::clientRoomStateWriter() {
     if (m_readInfo.info) {
         return Upcast<ClientRoomStateWriter::Main>(*this);
     } else {
-        if (m_writeInfo.isHost) {
+        if (m_writeInfo.isSearch) {
+            return Upcast<ClientRoomStateWriter::Search>(*this);
+        } else if (m_writeInfo.isHost) {
             return Upcast<ClientRoomStateWriter::New>(*this);
         } else {
             return Upcast<ClientRoomStateWriter::Code>(*this);
         }
     }
+}
+
+ClientRoomStateSearchWriter &ClientStateRoom::searchWriter() {
+    return *this;
 }
 
 ClientRoomStateNewWriter &ClientStateRoom::newWriter() {
@@ -423,6 +461,10 @@ ClientRoomStateCodeWriter &ClientStateRoom::codeWriter() {
 
 ClientRoomStateMainWriter &ClientStateRoom::mainWriter() {
     return *this;
+}
+
+u8 ClientStateRoom::getIsDuel() {
+    return m_writeInfo.isDuel;
 }
 
 u8 ClientStateRoom::getModeIndex() {
@@ -439,6 +481,10 @@ u32 ClientStateRoom::getPackHashCount() {
 
 u8 ClientStateRoom::getPackHashElement(u32 i0) {
     return m_writeInfo.packHash[i0];
+}
+
+u8 ClientStateRoom::getFormat() {
+    return m_writeInfo.options.format;
 }
 
 u32 ClientStateRoom::getRoomCounter() {
@@ -489,10 +535,6 @@ void ClientStateRoom::getBattle() {}
 
 u8 ClientStateRoom::getCodeType() {
     return m_writeInfo.options.codeType;
-}
-
-u8 ClientStateRoom::getFormat() {
-    return m_writeInfo.options.format;
 }
 
 u8 ClientStateRoom::getEngineSize() {

@@ -14,7 +14,6 @@
 #include "game/SceneFactory.hh"
 #include "game/SequenceApp.hh"
 #include "game/SequenceInfo.hh"
-#include "game/System.hh"
 
 #include <jsystem/J2DAnmLoaderDataBase.hh>
 #include <payload/CourseManager.hh>
@@ -89,7 +88,7 @@ ScenePackSelect::~ScenePackSelect() {}
 void ScenePackSelect::init() {
     m_roomType = OnlineInfo::Instance().m_roomType;
     const SequenceInfo &sequenceInfo = SequenceInfo::Instance();
-    m_playerCountIsVisible = sequenceInfo.m_isOnline && m_roomType == RoomType::Worldwide;
+    m_playerCountIsVisible = sequenceInfo.m_isOnline && m_roomType != RoomType::Personal;
     m_packCount = 0;
     for (u32 i = 0; i < m_playerCounts.count(); i++) {
         snprintf(m_playerCounts[i].values(), m_playerCounts[i].count(), "...");
@@ -281,6 +280,10 @@ bool ScenePackSelect::clientStateRoom(const ClientStateRoomReadInfo & /* readInf
     return true;
 }
 
+bool ScenePackSelect::clientStateTeam(const ClientStateTeamReadInfo & /* readInfo */) {
+    return true;
+}
+
 void ScenePackSelect::clientStateError() {
     ErrorViewApp::Call(6);
 }
@@ -314,7 +317,9 @@ void ScenePackSelect::slideIn() {
     m_descOffset = 0;
 
     if (sequenceInfo.m_isOnline) {
-        m_writeInfo.modeIndex = OnlineInfo::Instance().m_modeIndex;
+        const OnlineInfo &onlineInfo = OnlineInfo::Instance();
+        m_writeInfo.isDuel = onlineInfo.m_roomType == RoomType::Duel;
+        m_writeInfo.modeIndex = onlineInfo.m_modeIndex;
         m_writeInfo.packCount = m_packCount;
         for (u32 i = 0; i < m_packCount; i++) {
             const CourseManager::Pack *pack;
@@ -323,6 +328,7 @@ void ScenePackSelect::slideIn() {
             } else {
                 pack = &courseManager->battlePack(i);
             }
+            m_writeInfo.packs[i].courseCount = pack->courseIndices().count();
             m_writeInfo.packs[i].hash = pack->hash();
         }
         m_writeInfo.packIndex.reset();
@@ -408,8 +414,7 @@ void ScenePackSelect::stateIdle() {
                 m_nextScene = SceneType::FormatSelect;
                 break;
             case RoomType::Duel:
-                m_nextScene = SceneType::PlayerList;
-                System::GetDisplay()->startFadeOut(15);
+                m_nextScene = SceneType::PersonalRoom;
                 break;
             default:
                 m_nextScene = SceneType::PersonalRoom;

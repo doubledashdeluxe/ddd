@@ -12,6 +12,8 @@ public:
     void setFaderColor(u8 r, u8 g, u8 b);
     bool startFadeIn(s32 duration);
     bool startFadeOut(s32 duration);
+    bool ensureIn(s32 duration);
+    bool ensureOut(s32 duration);
 
 private:
     JUTFader *m_fader;

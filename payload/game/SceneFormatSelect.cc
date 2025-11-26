@@ -6,12 +6,12 @@
 #include "game/KartGamePad.hh"
 #include "game/MenuTitleLine.hh"
 #include "game/OnlineBackground.hh"
+#include "game/OnlineInfo.hh"
 #include "game/RaceInfo.hh"
 #include "game/RaceMode.hh"
 #include "game/SceneFactory.hh"
 #include "game/SequenceApp.hh"
 #include "game/SequenceInfo.hh"
-#include "game/System.hh"
 
 #include <jsystem/J2DAnmLoaderDataBase.hh>
 #include <jsystem/J2DPicture.hh>
@@ -198,13 +198,23 @@ bool SceneFormatSelect::clientStatePack(const ClientStatePackReadInfo &readInfo)
     return true;
 }
 
+bool SceneFormatSelect::clientStateRoom(const ClientStateRoomReadInfo & /* readInfo */) {
+    return true;
+}
+
+bool SceneFormatSelect::clientStateTeam(const ClientStateTeamReadInfo & /* readInfo */) {
+    return true;
+}
+
 void SceneFormatSelect::clientStateError() {
     ErrorViewApp::Call(6);
 }
 
 void SceneFormatSelect::slideIn() {
     m_packIndex = SequenceInfo::Instance().m_packIndex;
-    m_formatIndex = 0;
+    if (SequenceApp::Instance()->prevScene() == SceneType::PackSelect) {
+        m_formatIndex = 0;
+    }
     for (u32 i = 0; i < m_playerCounts.count(); i++) {
         m_playerCounts[i] = "...";
     }
@@ -265,9 +275,10 @@ void SceneFormatSelect::stateSlideOut() {
 void SceneFormatSelect::stateIdle() {
     const JUTGamePad::CButton &button = KartGamePad::GamePad(0)->button();
     if (button.risingEdge() & PAD_BUTTON_A) {
-        m_nextScene = SceneType::PlayerList;
+        m_nextScene = SceneType::PersonalRoom;
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE_LITTLE);
-        System::GetDisplay()->startFadeOut(15);
+        OnlineInfo &onlineInfo = OnlineInfo::Instance();
+        onlineInfo.m_format = m_formatIndex;
         slideOut();
     } else if (button.risingEdge() & PAD_BUTTON_B) {
         m_nextScene = SceneType::PackSelect;

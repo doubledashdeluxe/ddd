@@ -24,6 +24,7 @@ public:
     bool needsSockets() override;
     ClientState &read(ClientReadHandler &handler) override;
     ClientState &writeStateMode(const ClientStateModeWriteInfo &writeInfo) override;
+    ClientState &writeStatePack(const ClientStatePackWriteInfo &writeInfo) override;
     ClientState &writeStateTeam(const ClientStateTeamWriteInfo &writeInfo) override;
     ClientState &writeStatePoll(const ClientStatePollWriteInfo &writeInfo) override;
 

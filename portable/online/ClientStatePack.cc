@@ -119,12 +119,20 @@ ClientStatePackWriter &ClientStatePack::packWriter() {
     return *this;
 }
 
+u8 ClientStatePack::getIsDuel() {
+    return m_writeInfo.isDuel;
+}
+
 u8 ClientStatePack::getModeIndex() {
     return m_writeInfo.modeIndex;
 }
 
 u8 ClientStatePack::getPackIndex() {
     return m_packIndex;
+}
+
+u8 ClientStatePack::getPackCourseCount() {
+    return m_writeInfo.packs[m_packIndex].courseCount;
 }
 
 u32 ClientStatePack::getPackHashCount() {

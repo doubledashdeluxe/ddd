@@ -45,6 +45,7 @@ private:
     State m_state;
     bool m_ok;
     bool m_balanced;
+    bool m_isSearch;
     bool m_isHost;
     bool m_canContinue;
     bool m_continuing;

@@ -7,9 +7,11 @@
 
 struct ClientStatePackWriteInfo {
     struct Pack {
+        u8 courseCount;
         Hash hash;
     };
 
+    bool isDuel;
     u8 modeIndex;
     u32 packCount;
     Array<Pack, MaxPackCount> packs;

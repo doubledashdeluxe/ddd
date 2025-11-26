@@ -12,6 +12,7 @@
 #include "game/RaceInfo.hh"
 #include "game/RaceMode.hh"
 #include "game/ResMgr.hh"
+#include "game/RoomType.hh"
 #include "game/SceneFactory.hh"
 #include "game/SequenceApp.hh"
 #include "game/System.hh"
@@ -99,6 +100,7 @@ SceneTeamSelect::SceneTeamSelect(JKRArchive *archive, JKRHeap *heap) : Scene(arc
         }
     }
 
+    m_mainAnmTransformFrame = 0;
     m_selectAnmTransformFrame = 0;
     m_entryAnmTransformFrames.fill(0);
     m_entryLeftAnmTransformFrames.fill(0);
@@ -118,6 +120,7 @@ void SceneTeamSelect::init() {
     const OnlineInfo &onlineInfo = OnlineInfo::Instance();
     m_ok = true;
     m_balanced = false;
+    m_isSearch = onlineInfo.m_roomType != RoomType::Personal;
     m_isHost = onlineInfo.m_isHost;
     m_canContinue = true;
     m_continuing = false;
@@ -138,7 +141,12 @@ void SceneTeamSelect::init() {
     const char *nameTextureName = RaceMode::NameTextureName(raceInfo.m_raceMode);
     namePicture->changeTexture(nameTextureName, 0);
 
-    slideIn();
+    if (m_isSearch) {
+        m_nextScene = SceneType::PlayerList;
+        nextScene();
+    } else {
+        slideIn();
+    }
 }
 
 void SceneTeamSelect::draw() {
@@ -150,7 +158,9 @@ void SceneTeamSelect::draw() {
     m_mainScreen.draw(0.0f, 0.0f, m_graphContext);
     m_modeScreen.draw(0.0f, 0.0f, m_graphContext);
 
-    OnlineTimer::Instance()->draw(m_graphContext);
+    if (!m_isSearch) {
+        OnlineTimer::Instance()->draw(m_graphContext);
+    }
 }
 
 void SceneTeamSelect::calc() {
@@ -274,7 +284,9 @@ void SceneTeamSelect::calc() {
         m_entryScreens[i].animationMaterials();
     }
 
-    OnlineTimer::Instance()->calc();
+    if (!m_isSearch) {
+        OnlineTimer::Instance()->calc();
+    }
 
     if (m_isHost) {
         m_writeInfo.kartTeams = m_teams;
@@ -364,7 +376,6 @@ void SceneTeamSelect::slideIn() {
     }
 
     MenuTitleLine::Instance()->drop("SelectTeams.bti");
-    m_mainAnmTransformFrame = 0;
     m_state = &SceneTeamSelect::stateSlideIn;
 }
 
@@ -429,7 +440,6 @@ void SceneTeamSelect::stateIdle() {
         }
         m_nextScene = SceneType::PlayerList;
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE_LITTLE);
-        System::GetDisplay()->startFadeOut(15);
         slideOut();
     } else if (button.risingEdge() & PAD_BUTTON_B || !m_ok || (!m_balanced && m_continuing)) {
         m_nextScene = SceneType::RoomTypeSelect;
@@ -506,14 +516,27 @@ void SceneTeamSelect::stateNextScene() {
     const JUTGamePad::CButton &button = KartGamePad::GamePad(0)->button();
     if (m_nextScene == SceneType::PlayerList) {
         if (button.risingEdge() & PAD_BUTTON_B || !m_ok || (!m_balanced && m_continuing)) {
-            m_nextScene = SceneType::RoomTypeSelect;
-            System::GetDisplay()->startFadeIn(15);
+            if (m_isSearch) {
+                m_nextScene = SceneType::FormatSelect;
+            } else {
+                m_nextScene = SceneType::RoomTypeSelect;
+            }
             GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CANCEL_LITTLE);
         }
     }
 
     if (m_nextScene == SceneType::PlayerList) {
         if (!m_canContinue || !m_continuing) {
+            return;
+        }
+    }
+
+    if (m_nextScene == SceneType::PlayerList) {
+        if (!System::GetDisplay()->ensureOut(15)) {
+            return;
+        }
+    } else {
+        if (!System::GetDisplay()->ensureIn(15)) {
             return;
         }
     }

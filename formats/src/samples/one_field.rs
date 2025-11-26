@@ -1,4 +1,4 @@
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum First {
     A,
     B,
@@ -27,7 +27,7 @@ impl First {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct OneField {
     pub first: First,
 }

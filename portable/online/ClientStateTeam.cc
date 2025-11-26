@@ -3,6 +3,7 @@
 #include "portable/Upcast.hh"
 #include "portable/online/ClientStateError.hh"
 #include "portable/online/ClientStateMode.hh"
+#include "portable/online/ClientStatePack.hh"
 #include "portable/online/ClientStatePoll.hh"
 
 ClientStateTeam::ClientStateTeam(const ClientPlatform &platform, Connection &connection,
@@ -33,6 +34,11 @@ ClientState &ClientStateTeam::writeStateMode(const ClientStateModeWriteInfo &wri
     Connection &connection = *m_connections.front()->release();
     u8 playerCount = writeInfo.playerCount;
     return *(new (m_platform.allocator) ClientStateMode(m_platform, connection, playerCount));
+}
+
+ClientState &ClientStateTeam::writeStatePack(const ClientStatePackWriteInfo &writeInfo) {
+    Connection &connection = *m_connections.front()->release();
+    return *(new (m_platform.allocator) ClientStatePack(m_platform, connection, writeInfo));
 }
 
 ClientState &ClientStateTeam::writeStateTeam(const ClientStateTeamWriteInfo &writeInfo) {

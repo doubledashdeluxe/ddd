@@ -47,6 +47,8 @@ private:
     State m_state;
     bool m_ok;
     bool m_isReady;
+    bool m_isSearch;
+    bool m_isDuel;
     bool m_isHost;
     bool m_isRace;
     bool m_canContinue;

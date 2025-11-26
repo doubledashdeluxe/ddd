@@ -261,18 +261,23 @@ void SceneRoomTypeSelect::stateSlideOut() {
 }
 
 void SceneRoomTypeSelect::stateIdle() {
+    OnlineInfo &onlineInfo = OnlineInfo::Instance();
     const JUTGamePad::CButton &button = KartGamePad::GamePad(0)->button();
     if (button.risingEdge() & PAD_BUTTON_A) {
         if (m_roomTypeIndex == 0) {
             m_nextScene = SceneType::ModeSelect;
-            OnlineInfo::Instance().m_roomType = RoomType::Worldwide;
+            onlineInfo.m_roomType = RoomType::Worldwide;
+            onlineInfo.m_isHost = false;
         } else if (m_roomTypeIndex == 1 && m_statusCount == 1) {
             m_nextScene = SceneType::PackSelect;
-            OnlineInfo::Instance().m_roomType = RoomType::Duel;
+            onlineInfo.m_roomType = RoomType::Duel;
+            onlineInfo.m_modeIndex = ModeIndex::Versus;
+            onlineInfo.m_format = RoomOptionFormat::FreeForAll;
+            onlineInfo.m_isHost = false;
             RaceInfo::Instance().m_raceMode = RaceMode::VS;
         } else {
             m_nextScene = SceneType::RoomCodeEnter;
-            OnlineInfo::Instance().m_roomType = RoomType::Personal;
+            onlineInfo.m_roomType = RoomType::Personal;
         }
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE_LITTLE);
         slideOut();

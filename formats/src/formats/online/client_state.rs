@@ -57,12 +57,16 @@ pub fn client_state_mode() -> impl ComplexDataType {
 }
 
 pub fn client_state_pack() -> impl ComplexDataType {
+    let is_duel: SimpleDataType<u8> = SimpleDataType::new();
     let pack_index: SimpleDataType<u8> = SimpleDataType::new();
+    let pack_course_count: SimpleDataType<u8> = SimpleDataType::new();
     let pack_hash_element: SimpleDataType<u8> = SimpleDataType::new();
     let pack_hash = ArrayType::new(pack_hash_element, 32, 32);
     StructType::new("ClientStatePack")
+        .with_field("is_duel", is_duel)
         .with_field("mode_index", mode_index())
         .with_field("pack_index", pack_index)
+        .with_field("pack_course_count", pack_course_count)
         .with_field("pack_hash", pack_hash)
 }
 
@@ -72,9 +76,25 @@ pub fn client_state_room() -> impl ComplexDataType {
 
 pub fn client_room_state() -> impl ComplexDataType {
     EnumType::new("ClientRoomState")
+        .with_variant("Search", client_room_state_search())
         .with_variant("New", client_room_state_new())
         .with_variant("Code", client_room_state_code())
         .with_variant("Main", client_room_state_main())
+}
+
+pub fn client_room_state_search() -> impl ComplexDataType {
+    let is_duel: SimpleDataType<u8> = SimpleDataType::new();
+    let pack_course_count: SimpleDataType<u8> = SimpleDataType::new();
+    let pack_hash_element: SimpleDataType<u8> = SimpleDataType::new();
+    let pack_hash = ArrayType::new(pack_hash_element, 32, 32);
+    let room_counter: SimpleDataType<u32> = SimpleDataType::new();
+    StructType::new("ClientRoomStateSearch")
+        .with_field("is_duel", is_duel)
+        .with_field("mode_index", mode_index())
+        .with_field("pack_course_count", pack_course_count)
+        .with_field("pack_hash", pack_hash)
+        .with_field("format", room_option_format())
+        .with_field("room_counter", room_counter)
 }
 
 pub fn client_room_state_new() -> impl ComplexDataType {

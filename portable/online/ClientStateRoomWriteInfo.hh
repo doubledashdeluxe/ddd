@@ -4,6 +4,8 @@
 #include "portable/online/RoomOptions.hh"
 
 struct ClientStateRoomWriteInfo {
+    bool isSearch;
+    bool isDuel;
     u8 modeIndex;
     bool isRace;
     u8 packCourseCount;

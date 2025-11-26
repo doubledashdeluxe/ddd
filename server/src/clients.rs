@@ -42,13 +42,13 @@ impl Clients {
     }
 
     pub fn insert(&self, now: Instant, addr: SocketAddr, pk: PublicKey) -> Result<ClientRef<'_>> {
-        let is_full = self.count.load(Ordering::Relaxed) >= 1000;
+        let is_full = || self.count.load(Ordering::Relaxed) >= 1000;
         let entry = match self.clients.entry_sync(pk) {
             Entry::Occupied(mut o) => {
                 o.get_mut().set_addr(addr);
                 o
             }
-            Entry::Vacant(v) if !is_full => {
+            Entry::Vacant(v) if !is_full() => {
                 let client = Client::new(now, addr, pk);
                 v.insert_entry(client)
             }

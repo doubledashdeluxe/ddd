@@ -1,13 +1,14 @@
 use crate::crypto::PublicKey;
-use crate::formats::online::ServerPlayer;
+use crate::mmr::Mmr;
+use crate::player::Player;
 
 pub struct Kart {
     client_pk: PublicKey,
-    players: Vec<ServerPlayer>,
+    players: Vec<Player>,
 }
 
 impl Kart {
-    pub fn new(client_pk: PublicKey, players: Vec<ServerPlayer>) -> Kart {
+    pub fn new(client_pk: PublicKey, players: Vec<Player>) -> Kart {
         Kart { client_pk, players }
     }
 
@@ -15,7 +16,13 @@ impl Kart {
         &self.client_pk
     }
 
-    pub fn players(&self) -> &[ServerPlayer] {
+    pub fn players(&self) -> &[Player] {
         &self.players
+    }
+}
+
+impl Mmr for Kart {
+    fn mmr(&self) -> u16 {
+        self.players.mmr()
     }
 }

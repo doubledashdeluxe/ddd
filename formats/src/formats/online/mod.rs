@@ -10,7 +10,7 @@ mod server_state;
 
 pub fn format() -> Format<impl ConstantList, impl TypeList> {
     let default_port = SimpleConstant::new("DEFAULT_PORT", 3549u16);
-    let protocol_version = SimpleConstant::new("PROTOCOL_VERSION", 8u32);
+    let protocol_version = SimpleConstant::new("PROTOCOL_VERSION", 9u32);
     let max_lap_count = SimpleConstant::new("MAX_LAP_COUNT", 9u8);
     let min_match_count = SimpleConstant::new("MIN_MATCH_COUNT", 1u8);
     let max_match_count = SimpleConstant::new("MAX_MATCH_COUNT", 96u8);
@@ -68,6 +68,7 @@ pub fn format() -> Format<impl ConstantList, impl TypeList> {
         .with_type(client_state_server())
         .with_type(client_state_mode())
         .with_type(client_state_pack())
+        .with_type(client_room_state_search())
         .with_type(client_room_state_new())
         .with_type(client_room_state_code())
         .with_type(client_room_options())
