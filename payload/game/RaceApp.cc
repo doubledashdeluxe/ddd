@@ -4,6 +4,10 @@
 #include "game/RaceMode.hh"
 #include "game/SceneType.hh"
 
+RaceApp *RaceApp::Instance() {
+    return s_instance;
+}
+
 void RaceApp::ctrlRace() {
     REPLACED(ctrlRace)();
 

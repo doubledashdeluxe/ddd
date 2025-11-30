@@ -95,7 +95,7 @@ private:
     Array<u8, 2> m_extraAnmTransformFrames;
     Array<u8, 2> m_extraAnmTevRegKeyFrames;
     u8 m_extraAnmColorFrame;
-    TBox<f32> m_colBox;
+    TBox2<f32> m_colBox;
 
     static const Array<u32, CharacterID::Count> CharacterIDs;
     static const Array<u32, KartID::Count> KartIDs;

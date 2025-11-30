@@ -68,6 +68,7 @@ public:
     virtual void vf_148();
 
     bool getBlackWhite(GXColor *black, GXColor *white) const;
+    void setCornerColor(GXColor color);
 
     static u32 GetTypeID();
 

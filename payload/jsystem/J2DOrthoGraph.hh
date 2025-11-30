@@ -11,7 +11,7 @@ public:
     J2DOrthoGraph(f32 x, f32 y, f32 w, f32 h, f32 far, f32 near);
     ~J2DOrthoGraph() override;
 
-    TBox<f32> m_orthoBox;
+    TBox2<f32> m_orthoBox;
 
 private:
     u8 _cc[0xd4 - 0xcc];

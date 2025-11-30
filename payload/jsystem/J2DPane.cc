@@ -7,7 +7,7 @@ extern "C" {
 #include <string.h>
 }
 
-const TBox<f32> &J2DPane::getGlobalBox() const {
+const TBox2<f32> &J2DPane::getGlobalBox() const {
     return m_globalBox;
 }
 

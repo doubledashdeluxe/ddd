@@ -258,7 +258,7 @@ void SceneCharacterSelect::draw() {
         for (u32 i = 0; i < m_statusCount; i++) {
             J2DScreen &mainScreen = m_mainScreens[m_statusCount - 1];
             J2DPane *pane = mainScreen.search("HC%u%uw", m_statusCount, i + 1);
-            const TBox<f32> &globalBox = pane->getGlobalBox();
+            const TBox2<f32> &globalBox = pane->getGlobalBox();
             f32 x = (globalBox.start.x + globalBox.end.x - w) * 0.5f;
             if (x < 0.0f) {
                 s32 xOffset = AlignUp(-floor(x) * J2DPane::GetARScale(), 2);

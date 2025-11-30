@@ -32,6 +32,10 @@ public:
     static f32 Get3DVpDiv2W(u8 index);
     static f32 Get3DVpDiv4X(u8 index);
     static f32 Get3DVpDiv4W(u8 index);
+    static u32 Get2DScisX();
+    static u32 Get2DScisY();
+    static u32 Get2DScisW();
+    static u32 Get2DScisH();
 
     static void SetAspectRatio(u32 index);
 

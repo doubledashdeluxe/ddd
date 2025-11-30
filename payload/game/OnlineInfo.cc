@@ -1,5 +1,9 @@
 #include "OnlineInfo.hh"
 
+u32 OnlineInfo::colorIndex(u32 kartIndex) const {
+    return m_isFFA ? kartIndex : m_teams[kartIndex];
+}
+
 void OnlineInfo::reset() {
     m_hasIDs = false;
 }

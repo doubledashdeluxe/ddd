@@ -5,6 +5,8 @@
 
 class K2DPicture : public J2DPicture {
 public:
+    K2DPicture();
+
     void REPLACED(drawK2D)(f32 x, f32 y, f32 w, f32 h, bool r4);
     REPLACE void drawK2D(f32 x, f32 y, f32 w, f32 h, bool r4);
 };

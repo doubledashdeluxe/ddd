@@ -5,6 +5,8 @@
 
 class OnlineInfo {
 public:
+    u32 colorIndex(u32 kartIndex) const;
+
     void reset();
 
     static OnlineInfo &Instance();

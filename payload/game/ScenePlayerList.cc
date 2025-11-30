@@ -141,10 +141,7 @@ void ScenePlayerList::slideIn() {
             continue;
         }
         J2DScreen &screen = m_kartScreens[i];
-        u32 colorIndex = i;
-        if (!onlineInfo.m_isFFA) {
-            colorIndex = onlineInfo.m_teams[i];
-        }
+        u32 colorIndex = onlineInfo.colorIndex(i);
         GXColor color = Race2D::GetPlayerNumberColor(colorIndex);
         for (u32 j = 1; j <= 3; j++) {
             J2DPicture *picture = screen.search("RCurs%02u", j)->downcast<J2DPicture>();

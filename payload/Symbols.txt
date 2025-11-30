@@ -76,6 +76,7 @@
 80029778 getBox__7J2DPaneCFv
 8002a020 getFirstChildPane__7J2DPaneFv
 8002a058 getNextChildPane__7J2DPaneFv
+8002aa38 __ct__10K2DPictureFv
 8002c908 drawFullSet__10J2DPictureFffffPA3_A4_f
 8002e058 GetTypeID__10J2DPictureFv
 8002ffc0 __ct__9J2DScreenFv
@@ -159,11 +160,18 @@
 800b9fac CARDGetStatus
 800ba234 CARDSetStatus
 800ba478 CARDRename
+800bc0c4 GXSetVtxDesc
+800bc9dc GXClearVtxDesc
+800bca14 GXSetVtxAttrFmt
 800bd280 GXSetArray
+800bd31c GXSetTexCoordGen2
 800bea44 GXCopyDisp
 800bf31c GXInitTexObj
 800bf904 GXInitTlutObj
+800c0730 GXSetTevColorOp
+800c0798 GXSetTevAlphaOp
 800c1efc GXCallDisplayList
+800c213c GXSetCurrentMtx
 800c22b4 GXSetViewport
 800c22fc GXSetScissor
 800c2374 GXGetScissor
@@ -338,6 +346,7 @@
 801167b0 setMasterVolume__Q29GameAudio4MainFSc
 80116900 fadeOutAll__Q29GameAudio4MainFUl
 80116b40 setOutputMode__Q29GameAudio4MainFUl
+801245f8 KartStatus__10J2DManagerFUl
 801256a4 init__6Goal2DFv
 80126600 draw__12PauseManagerFv
 80127ee8 init__7Pause2DFv
@@ -346,6 +355,7 @@
 8012cfbc __ct__5SceneFP10JKRArchiveP7JKRHeap
 8012cfd8 __dt__5SceneFv
 801326c0 init__11SceneRecordFv
+801391b0 setCornerColor__10J2DPictureF7GXColor
 80139480 Instance__12Kart2DCommonFv
 80139628 init__8Result2DFv
 801399e0 draw__8Result2DFv
@@ -358,6 +368,8 @@
 801449d0 setY__11Race2DParamFf
 801449d8 setX__11Race2DParamFf
 80144c14 init__6Race2DFv
+8014576c drawPlayerMark__6Race2DFv
+80149a58 calcPlayerMark__6Race2DFv
 8014d1e8 GetCornerColors__6Race2DFUl
 8014e640 getMapPos__6Race2DFlRC5Vec3fR5Vec2f
 8014efd8 getItemInfo__6Race2DFlllRfRfRf
@@ -446,6 +458,10 @@
 801d0c9c Get3DVpDiv2W__6SystemFUc
 801d0ccc Get3DVpDiv4X__6SystemFUc
 801d0cf8 Get3DVpDiv4W__6SystemFUc
+801d0d28 Get2DScisX__6SystemFv
+801d0d38 Get2DScisY__6SystemFv
+801d0d48 Get2DScisW__6SystemFv
+801d0d58 Get2DScisH__6SystemFv
 801d139c expand__11KartGamePadFRCQ26PadMgr11KartPadData
 801d1a9c Draw__6AppMgrFv
 801d1af4 Calc__6AppMgrFv
@@ -492,6 +508,9 @@
 801e03b4 calc__15NameEntryHelperFv
 801e0428 draw__15NameEntryHelperFP15J2DGraphContext
 801e0b04 selectOut__Q215NameEntryHelper13NameEntryDrumFv
+8026712c GetScreenPos__6SiUtilFlRC5Vec3fR5Vec2f
+802953dc setPosition__11ZCaptureMgrFUlUlss
+80295410 getZValue__11ZCaptureMgrFUlUl
 8029eb08 init__7KartCamFb
 8029f190 doCameraMode__7KartCamFv
 8029f63c dynamicsInit__8KartCtrlFb
@@ -575,6 +594,7 @@
 803d5630 s_manager__8SysDebug
 803d5ab0 s_instance__11MoviePlayer
 803d5b30 s_time__9GameClock
+803d5b60 s_instance__7RaceApp
 803d5b68 s_keepHeap__6ResMgr
 803d5b6c s_courseHeap__6ResMgr
 803d5b78 s_loadFlag__6ResMgr

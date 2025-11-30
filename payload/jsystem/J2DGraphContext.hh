@@ -1,6 +1,6 @@
 #pragma once
 
-#include "jsystem/TBox.hh"
+#include "jsystem/TBox2.hh"
 
 #include <portable/Types.hh>
 
@@ -8,7 +8,7 @@ class J2DGraphContext {
 public:
     J2DGraphContext();
     virtual ~J2DGraphContext();
-    virtual void place(const TBox<f32> &box);
+    virtual void place(const TBox2<f32> &box);
     virtual void place(f32 x, f32 y, f32 w, f32 h);
     virtual void setViewport();
     // ...

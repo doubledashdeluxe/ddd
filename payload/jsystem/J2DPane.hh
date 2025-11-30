@@ -1,7 +1,7 @@
 #pragma once
 
 #include "jsystem/J2DAnmBase.hh"
-#include "jsystem/TBox.hh"
+#include "jsystem/TBox2.hh"
 #include "jsystem/TVec2.hh"
 
 extern "C" {
@@ -76,8 +76,8 @@ public:
         return static_cast<P *>(getTypeID() == P::GetTypeID() ? this : nullptr);
     }
 
-    const TBox<f32> &getBox() const;
-    const TBox<f32> &getGlobalBox() const;
+    const TBox2<f32> &getBox() const;
+    const TBox2<f32> &getGlobalBox() const;
     J2DPane *getFirstChildPane();
     J2DPane *getNextChildPane();
     J2DPane *search(const char *format, ...);
@@ -119,8 +119,8 @@ private:
     u8 _007[0x020 - 0x007];
 
 protected:
-    TBox<f32> m_box;
-    TBox<f32> m_globalBox;
+    TBox2<f32> m_box;
+    TBox2<f32> m_globalBox;
 
 private:
     u8 _040[0x080 - 0x040];
@@ -132,7 +132,13 @@ public:
     bool m_isVisible;
 
 private:
-    u8 _0b1[0x0d4 - 0x0b1];
+    u8 _0b1[0x0b2 - 0x0b1];
+
+public:
+    u8 m_alpha;
+
+private:
+    u8 _0b3[0x0d4 - 0x0b3];
 
 public:
     TVec2<f32> m_offset;

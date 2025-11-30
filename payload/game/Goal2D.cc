@@ -26,7 +26,7 @@ void Goal2D::init() {
         }
         s32 mid = left + width / 2;
         width = width / J2DPane::GetARScale();
-        TBox<f32> &box = m_orthoGraphs[i]->m_orthoBox;
+        TBox2<f32> &box = m_orthoGraphs[i]->m_orthoBox;
         box.start.x = mid - static_cast<s32>(width / 2);
         box.end.x = mid + static_cast<s32>(width / 2);
     }
