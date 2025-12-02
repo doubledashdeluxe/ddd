@@ -224,6 +224,74 @@ void Race2D::drawPlayerMark() {
     GXSetScissor(x, y, w, h);
 }
 
+void Race2D::drawCourse() {
+    REPLACED(drawCourse)();
+
+    if (!SequenceInfo::Instance().m_isOnline) {
+        return;
+    }
+
+    if (!m_isVisible) {
+        return;
+    }
+}
+
+void Race2D::draw() {
+    REPLACED(draw)();
+
+    if (!SequenceInfo::Instance().m_isOnline) {
+        return;
+    }
+
+    if (!m_isVisible) {
+        return;
+    }
+
+    const RaceInfo &raceInfo = RaceInfo::Instance();
+    u32 statusCount = raceInfo.getStatusCount();
+    if (statusCount < 1 || statusCount > 2 || !raceInfo.isRace()) {
+        return;
+    }
+
+    f32 scale;
+    getStartScaleB(m_frame, scale);
+    s32 goalAnmFrame = J2DManager::Instance()->goalAnmFrame();
+    f32 goalX;
+    getGoalLapTimePos(goalAnmFrame, 0, goalX);
+    for (u32 i = 0; i < 10; i++) {
+        f32 startX;
+        getStartLapTimePos(m_frame, i, startX);
+        for (u32 j = 0; j < statusCount; j++) {
+            K2DPicture *picture = m_timePictures[j][i];
+            const TBox2<f32> &box = picture->getBox();
+            const Vec2f &pos = m_consoles[j].timePositions[i];
+            f32 w = scale * (box.end.x - box.start.x);
+            f32 h = scale * (box.end.y - box.start.y);
+            f32 x = pos.x - 0.5f * w + startX + goalX;
+            f32 y = pos.y - 0.5f * h;
+            picture->drawK2D(x, y, w, h, true);
+        }
+    }
+    for (u32 i = 0; i < 9; i++) {
+        getGoalLapTimePos(goalAnmFrame, i, goalX);
+        for (u32 j = 0; j < statusCount; j++) {
+            for (u32 k = 0; k < 11; k++) {
+                if (i != 0 && k == 10) {
+                    continue;
+                }
+                K2DPicture *picture = m_lapTimePictures[j][i][k];
+                const TBox2<f32> &box = picture->getBox();
+                const Vec2f &pos = m_consoles[j].lapTimePositions[i][k];
+                f32 x = pos.x + goalX;
+                f32 y = pos.y;
+                f32 w = box.end.x - box.start.x;
+                f32 h = box.end.y - box.start.y;
+                picture->drawK2D(x, y, w, h, true);
+            }
+        }
+    }
+}
+
 void Race2D::calcPlayerMark() {
     if (!SequenceInfo::Instance().m_isOnline) {
         REPLACED(calcPlayerMark)();

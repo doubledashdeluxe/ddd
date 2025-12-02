@@ -27,6 +27,16 @@ private:
         u32 w;
         u32 h;
     };
+    size_assert(Scissor, 0x10);
+
+    struct Console {
+        u8 _000[0x048 - 0x000];
+        Vec2f timePositions[10];
+        u8 _098[0x4d0 - 0x098];
+        Vec2f lapTimePositions[9][11];
+        u8 _7e8[0x8e8 - 0x7e8];
+    };
+    size_assert(Console, 0x8e8);
 
     struct PlayerMarkIndexComparator {
         bool operator()(const u32 &a, const u32 &b);
@@ -37,6 +47,10 @@ private:
     void setup();
     void REPLACED(drawPlayerMark)();
     REPLACE void drawPlayerMark();
+    void REPLACED(drawCourse)();
+    REPLACE void drawCourse();
+    void REPLACED(draw)();
+    REPLACE void draw();
     void REPLACED(calcPlayerMark)();
     REPLACE void calcPlayerMark();
     void REPLACED(getMapPos)(s32 r4, const Vec3f &pos, Vec2f &mapPos);
@@ -45,8 +59,12 @@ private:
     REPLACE void getCharacterInfo(s32 r4, s32 r5, f32 &x, f32 &y, f32 &scale);
     void REPLACED(getItemInfo)(s32 r4, s32 r5, s32 r6, f32 &x, f32 &y, f32 &scale);
     REPLACE void getItemInfo(s32 r4, s32 r5, s32 r6, f32 &x, f32 &y, f32 &scale);
+    void getStartScaleA(s32 index, f32 &scale);
+    void getStartScaleB(s32 index, f32 &scale);
     void REPLACED(getStartCharPos)(s32 r4, s32 r5, f32 &f1);
     REPLACE void getStartCharPos(s32 r4, s32 r5, f32 &f1);
+    void getStartLapTimePos(s32 frame, s32 index, f32 &x);
+    void getGoalLapTimePos(s32 frame, s32 index, f32 &x);
 
     u8 _0000[0x01b4 - 0x0000];
     J2DGraphContext *m_graphContext;
@@ -61,11 +79,18 @@ private:
     u8 _0348[0x04b4 - 0x0348];
     J2DPicture *m_specialItemPictures[4][2];
     K2DPicture *m_playerNamePictures[8][2][3]; // Modified
-    u8 _0594[0x1000 - 0x0594];
+    u8 _0594[0x0694 - 0x0594];
+    K2DPicture *m_timePictures[2][10];
+    K2DPicture *m_lapTimePictures[2][9][11];
+    u8 _09fc[0x1000 - 0x09fc];
     Vec2f m_playerMarkPositions[4][8];
     u8 _1100[0x1110 - 0x1100];
     MinimapConfig m_minimapConfig;
-    u8 _1124[0x4ec0 - 0x1124];
+    u8 _1124[0x1588 - 0x1124];
+    Console m_consoles[4];
+    u8 _3928[0x4eb4 - 0x3928];
+    s32 m_frame;
+    u8 _4eb8[0x4ec0 - 0x4eb8];
     bool m_isVisible;
     u8 _4ec1[0x4ec4 - 0x4ec1];
 
