@@ -2,6 +2,10 @@
 
 #include "game/RaceMode.hh"
 
+u32 RaceInfo::getRaceMode() const {
+    return m_raceMode;
+}
+
 u32 RaceInfo::getRaceLevel() const {
     return m_raceLevel;
 }

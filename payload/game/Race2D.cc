@@ -150,6 +150,12 @@ void Race2D::setup() {
                 }
             }
         }
+        if (consoleCount == 2 && raceInfo.getRaceMode() == RaceMode::VS) {
+            for (u32 i = 0; i < 8; i++) {
+                m_consoles[0].rankPositions[i].y += 23.0f;
+                m_consoles[1].rankPositions[i].y -= 23.0f;
+            }
+        }
     }
 }
 

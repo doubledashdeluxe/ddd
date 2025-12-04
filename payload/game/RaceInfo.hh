@@ -5,6 +5,7 @@
 
 class RaceInfo {
 public:
+    u32 getRaceMode() const;
     u32 getRaceLevel() const;
     s16 getKartCount() const;
     s16 getConsoleCount() const;

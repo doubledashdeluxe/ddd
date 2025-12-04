@@ -34,7 +34,9 @@ private:
         Vec2f timePositions[10];
         u8 _098[0x4d0 - 0x098];
         Vec2f lapTimePositions[9][11];
-        u8 _7e8[0x8e8 - 0x7e8];
+        u8 _7e8[0x854 - 0x7e8];
+        Vec2f rankPositions[8];
+        u8 _894[0x8e8 - 0x894];
     };
     size_assert(Console, 0x8e8);
 
