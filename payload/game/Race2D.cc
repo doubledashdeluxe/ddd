@@ -18,6 +18,10 @@ extern "C" {
 }
 #include <portable/Algorithm.hh>
 
+extern "C" {
+#include <math.h>
+}
+
 void Race2D::init() {
     if (!RaceApp::Instance()) {
         setup();
@@ -52,6 +56,10 @@ GXColor Race2D::GetPlayerNumberColor(u32 index) {
     return s_playerNumberColors[index];
 }
 
+bool Race2D::KartIndexComparator::operator()(const u32 &a, const u32 &b) {
+    return race2D.m_characterIndications[a].rank > race2D.m_characterIndications[b].rank;
+}
+
 bool Race2D::PlayerMarkIndexComparator::operator()(const u32 &a, const u32 &b) {
     return depths[a] > depths[b];
 }
@@ -61,6 +69,7 @@ void Race2D::setup() {
     const OnlineInfo &onlineInfo = OnlineInfo::Instance();
     const RaceInfo &raceInfo = RaceInfo::Instance();
     u32 consoleCount = raceInfo.getConsoleCount();
+    u32 statusCount = raceInfo.getStatusCount();
 
     if (isOnline) {
         for (u32 i = consoleCount * 2; i < 8; i++) {
@@ -156,6 +165,17 @@ void Race2D::setup() {
                 m_consoles[1].rankPositions[i].y -= 23.0f;
             }
         }
+        if (statusCount >= 1 && statusCount <= 2) {
+            for (u32 i = 0; i < 8; i++) {
+                if (onlineInfo.m_karts[i].local) {
+                    continue;
+                }
+                for (u32 j = 0; j < 2; j++) {
+                    K2DPicture *picture = m_characterIndications[i].characters[j].windowPicture;
+                    picture->changeTexture("chara_Window1.bti", 0);
+                }
+            }
+        }
     }
 }
 
@@ -204,21 +224,19 @@ void Race2D::drawPlayerMark() {
             K2DPicture *picture = m_playerMarkPictures[i][kartIndex];
             const TBox2<f32> &box = picture->getBox();
             const Vec2f &pos = m_playerMarkPositions[i][kartIndex];
-            f32 w = scale * (box.end.x - box.start.x);
-            f32 h = scale * (box.end.y - box.start.y);
+            TVec2<f32> size = scale * (box.end - box.start);
             f32 x = pos.x;
-            f32 y = pos.y - h;
-            picture->drawK2D(x, y, w, h, true);
+            f32 y = pos.y - size.y;
+            picture->drawK2D(x, y, size.x, size.y, true);
             u32 playerCount = OnlineInfo::Instance().m_karts[kartIndex].playerCount;
             for (u32 k = 0; k < playerCount; k++) {
                 for (u32 l = 0; l < 3; l++) {
                     K2DPicture *charPicture = m_playerNamePictures[kartIndex][k][l];
                     charPicture->m_alpha = picture->m_alpha;
-                    f32 charW = 14.0f / 64.0f * w;
-                    f32 charH = 14.0f / 64.0f * h;
-                    f32 charX = x + (26.0f + 12.0f * l) / 64.0f * w;
-                    f32 charY = y + (29.0f - 12.0f * (playerCount - k)) / 64.0f * h;
-                    charPicture->drawK2D(charX, charY, charW, charH, true);
+                    TVec2<f32> charSize = 14.0f / 64.0f * size;
+                    f32 charX = x + (26.0f + 12.0f * l) / 64.0f * size.x;
+                    f32 charY = y + (29.0f - 12.0f * (playerCount - k)) / 64.0f * size.y;
+                    charPicture->drawK2D(charX, charY, charSize.x, charSize.y, true);
                 }
             }
         }
@@ -228,18 +246,6 @@ void Race2D::drawPlayerMark() {
     u32 w = System::Get2DScisW();
     u32 h = System::Get2DScisH();
     GXSetScissor(x, y, w, h);
-}
-
-void Race2D::drawCourse() {
-    REPLACED(drawCourse)();
-
-    if (!SequenceInfo::Instance().m_isOnline) {
-        return;
-    }
-
-    if (!m_isVisible) {
-        return;
-    }
 }
 
 void Race2D::draw() {
@@ -271,11 +277,10 @@ void Race2D::draw() {
             K2DPicture *picture = m_timePictures[j][i];
             const TBox2<f32> &box = picture->getBox();
             const Vec2f &pos = m_consoles[j].timePositions[i];
-            f32 w = scale * (box.end.x - box.start.x);
-            f32 h = scale * (box.end.y - box.start.y);
-            f32 x = pos.x - 0.5f * w + startX + goalX;
-            f32 y = pos.y - 0.5f * h;
-            picture->drawK2D(x, y, w, h, true);
+            TVec2<f32> size = scale * (box.end - box.start);
+            f32 x = pos.x - 0.5f * size.x + startX + goalX;
+            f32 y = pos.y - 0.5f * size.y;
+            picture->drawK2D(x, y, size.x, size.y, true);
         }
     }
     for (u32 i = 0; i < 9; i++) {
@@ -290,11 +295,113 @@ void Race2D::draw() {
                 const Vec2f &pos = m_consoles[j].lapTimePositions[i][k];
                 f32 x = pos.x + goalX;
                 f32 y = pos.y;
-                f32 w = box.end.x - box.start.x;
-                f32 h = box.end.y - box.start.y;
-                picture->drawK2D(x, y, w, h, true);
+                TVec2<f32> size = box.end - box.start;
+                picture->drawK2D(x, y, size.x, size.y, true);
             }
         }
+    }
+}
+
+void Race2D::drawCourse() {
+    REPLACED(drawCourse)();
+
+    if (!SequenceInfo::Instance().m_isOnline) {
+        return;
+    }
+
+    if (!m_isVisible) {
+        return;
+    }
+
+    const RaceInfo &raceInfo = RaceInfo::Instance();
+    u32 kartCount = raceInfo.getKartCount();
+    u32 statusCount = raceInfo.getStatusCount();
+    if (statusCount < 1 || statusCount > 2 || !raceInfo.isRace()) {
+        return;
+    }
+
+    f32 scale;
+    getStartScaleB(m_frame, scale);
+    s32 goalAnmFrame = J2DManager::Instance()->goalAnmFrame();
+    u32 kartIndices[8];
+    for (u32 i = 0; i < kartCount; i++) {
+        kartIndices[i] = i;
+    }
+    KartIndexComparator comparator = {*this};
+    Sort(kartIndices, kartCount, comparator);
+    for (u32 i = 0; i < kartCount; i++) {
+        u32 kartIndex = kartIndices[i];
+        f32 startX;
+        getStartCharPos(m_frame, kartCount - 1 - kartIndex, startX);
+        f32 goalX;
+        getGoalCharPos(goalAnmFrame, kartCount - 1 - kartIndex, goalX);
+        const CharacterIndication &indication = m_characterIndications[kartIndex];
+        const CharacterIndicationAnm &anm = m_characterIndicationAnms[kartIndex];
+        const Vec2f &pos = indication.pos;
+        f32 characterX, characterY, characterScale;
+        getCharacterInfo(anm.characterIndices[0], anm.frame, characterX, characterY,
+                characterScale);
+        u8 characterIndices[2];
+        characterIndices[0] = characterScale > 0.9f;
+        characterIndices[1] = characterScale <= 0.9f;
+        u32 statusIndex = J2DManager::KartStatus(kartIndex);
+        f32 statusScale = statusIndex < statusCount ? 1.2f : 1.0f;
+        f32 kartScale = statusScale * getThunderCharScale(s_thunderAnm[kartIndex]);
+        for (u32 j = 0; j < 2; j++) {
+            u32 characterIndex = characterIndices[j];
+            getCharacterInfo(anm.characterIndices[characterIndex], anm.frame, characterX,
+                    characterY, characterScale);
+            GXColor windowColor, iconColor;
+            u8 iconAlpha;
+            getCharacterColor(kartIndex, anm.characterIndices[characterIndex], anm.frame,
+                    windowColor, iconColor, iconAlpha);
+            f32 angle = s_spinRotate[kartIndex];
+            K2DPicture *windowPicture = indication.characters[characterIndex].windowPicture;
+            windowPicture->setWhite(windowColor);
+            windowPicture->setAlpha(indication.alpha);
+            const TBox2<f32> &windowBox = windowPicture->getBox();
+            TVec2<f32> windowSize =
+                    scale * kartScale * characterScale * (windowBox.end - windowBox.start);
+            TVec2<f32> windowCenter = 0.5f * windowSize;
+            windowPicture->rotate(windowCenter.x, windowCenter.y, 'z', angle);
+            f32 windowX = pos.x + characterX - windowCenter.x + startX + goalX;
+            f32 windowY = pos.y + characterY - windowCenter.y;
+            windowPicture->drawK2D(windowX, windowY, windowSize.x, windowSize.y, true);
+            K2DPicture *iconPicture = indication.characters[characterIndex].iconPicture;
+            iconPicture->setWhite(iconColor);
+            iconPicture->setAlpha((iconAlpha * indication.alpha) >> 8);
+            const TBox2<f32> &iconBox = iconPicture->getBox();
+            TVec2<f32> iconSize =
+                    scale * kartScale * characterScale * (iconBox.end - iconBox.start);
+            TVec2<f32> iconCenter = 0.5f * iconSize;
+            iconPicture->rotate(iconCenter.x, iconCenter.y, 'z', angle);
+            f32 sin = ::sin(angle * -(M_PI / 180.0f));
+            f32 cos = ::cos(angle * -(M_PI / 180.0f));
+            TVec2<f32> iconPos = characterScale * m_characterIndicationIconPos;
+            iconPos.set(iconPos.x * cos - iconPos.y * sin, iconPos.x * sin + iconPos.y * cos);
+            f32 iconX = pos.x + iconPos.x + characterX - iconCenter.x + startX + goalX;
+            f32 iconY = pos.y + iconPos.y + characterY - iconCenter.y;
+            iconPicture->drawK2D(iconX, iconY, iconSize.x, iconSize.y, true);
+        }
+    }
+    for (u32 i = 0; i < kartCount; i++) {
+        u32 kartIndex = kartIndices[i];
+        f32 startX;
+        getStartCharPos(m_frame, kartCount - 1 - kartIndex, startX);
+        f32 goalX;
+        getGoalCharPos(goalAnmFrame, kartCount - 1 - kartIndex, goalX);
+        const CharacterIndication &indication = m_characterIndications[kartIndex];
+        const Vec2f &pos = indication.pos;
+        u32 statusIndex = J2DManager::KartStatus(kartIndex);
+        f32 statusScale = statusIndex < statusCount ? 1.2f : 1.0f;
+        K2DPicture *rankPicture = indication.rankPicture;
+        rankPicture->setAlpha(indication.alpha);
+        const TBox2<f32> &rankBox = rankPicture->getBox();
+        TVec2<f32> rankSize = scale * statusScale * (rankBox.end - rankBox.start);
+        TVec2<f32> rankCenter = 0.5f * rankSize;
+        f32 rankX = m_characterIndicationRankPos.x + pos.x - rankCenter.x + startX + goalX;
+        f32 rankY = m_characterIndicationRankPos.y + pos.y - rankCenter.y;
+        rankPicture->drawK2D(rankX, rankY, rankSize.x, rankSize.y, true);
     }
 }
 
@@ -372,8 +479,33 @@ void Race2D::getItemInfo(s32 r4, s32 r5, s32 r6, f32 &x, f32 &y, f32 &scale) {
     x += 0.5f * 608.0f;
 }
 
-void Race2D::getStartCharPos(s32 r4, s32 r5, f32 &f1) {
-    REPLACED(getStartCharPos)(r4, r5, f1);
+void Race2D::getCharacterColor(s32 kartIndex, s32 characterIndex, s32 frame, GXColor &windowColor,
+        GXColor &iconColor, u8 &iconAlpha) {
+    // clang-format off
+    REPLACED(getCharacterColor)(kartIndex, characterIndex, frame, windowColor, iconColor,
+            iconAlpha);
+    // clang-format on
+
+    if (!SequenceInfo::Instance().m_isOnline) {
+        return;
+    }
+
+    u32 colorIndex = OnlineInfo::Instance().colorIndex(kartIndex);
+    windowColor = s_playerNumberColors[colorIndex];
+
+    f32 t = 0.75f;
+    u32 statusCount = RaceInfo::Instance().getStatusCount();
+    if (J2DManager::KartStatus(kartIndex) < statusCount) {
+        t = fabs((20.0f - m_characterIndicationColorFrame) * (1.0f / 20.0f));
+        t = t * t * (1.5f - t) + 0.5f;
+    }
+    windowColor.r *= t;
+    windowColor.g *= t;
+    windowColor.b *= t;
+}
+
+void Race2D::getStartCharPos(s32 frame, s32 index, f32 &f1) {
+    REPLACED(getStartCharPos)(frame, index, f1);
 
     if (f1 >= 0.5f * 608.0f) {
         f1 += J2DPane::GetARShift();

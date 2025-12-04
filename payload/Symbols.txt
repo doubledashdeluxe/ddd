@@ -74,6 +74,7 @@
 80028b1c changeUseTrans__7J2DPaneFP7J2DPane
 80028d84 appendChild__7J2DPaneFP7J2DPane
 80029778 getBox__7J2DPaneCFv
+80029858 rotate__7J2DPaneFffcf
 8002a020 getFirstChildPane__7J2DPaneFv
 8002a058 getNextChildPane__7J2DPaneFv
 8002aa38 __ct__10K2DPictureFv
@@ -332,7 +333,9 @@
 80106d58 strncmp
 80106dc0 strcmp
 80107088 strlen
+8010b9ec cos
 8010bac0 floor
+8010bf54 sin
 8010c02c tan
 8010c434 sqrt
 8010c474 strcasecmp
@@ -374,9 +377,13 @@
 80149a58 calcPlayerMark__6Race2DFv
 8014d1e8 GetCornerColors__6Race2DFUl
 8014e640 getMapPos__6Race2DFlRC5Vec3fR5Vec2f
+8014e9ac getCharacterInfo__6Race2DFllRfRfRf
+8014e9dc getCharacterColor__6Race2DFlllR7GXColorR7GXColorRUc
 8014efd8 getItemInfo__6Race2DFlllRfRfRf
 801508cc getStartScaleB__6Race2DFlRf
 80150d18 getStartCharPos__6Race2DFllRf
+80150e18 getGoalCharPos__6Race2DFllRf
+80150e90 getThunderCharScale__6Race2DFl
 80151760 getStartLapTimePos__6Race2DFllRf
 80151874 getGoalLapTimePos__6Race2DFllRf
 80152374 __ct__15PrintMemoryCardFP7JKRHeap
@@ -548,6 +555,9 @@
 80379ae0 IFDefault
 803802a0 __THPLCWork512
 803802ac __THPLCWork640
+
+80389d80 s_spinRotate__6Race2D
+80389e00 s_thunderAnm__6Race2D
 
 803ae998 s_volumeList__13JKRFileLoader
 803b6db0 s_instance__6J3DSys

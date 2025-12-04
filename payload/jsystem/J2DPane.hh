@@ -78,6 +78,7 @@ public:
 
     const TBox2<f32> &getBox() const;
     const TBox2<f32> &getGlobalBox() const;
+    void rotate(f32 w, f32 h, char axis, float angle);
     J2DPane *getFirstChildPane();
     J2DPane *getNextChildPane();
     J2DPane *search(const char *format, ...);

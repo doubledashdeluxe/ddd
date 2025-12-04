@@ -40,6 +40,36 @@ private:
     };
     size_assert(Console, 0x8e8);
 
+    struct CharacterIndicationAnm {
+        s32 frame;
+        s32 characterIndices[2];
+    };
+    size_assert(CharacterIndicationAnm, 0xc);
+
+    struct CharacterIndication {
+        struct Character {
+            K2DPicture *windowPicture;
+            K2DPicture *iconPicture;
+        };
+
+        u8 _00[0x04 - 0x00];
+        Character characters[2];
+        K2DPicture *rankPicture;
+        u32 rank;
+        u8 _1c[0x2c - 0x1c];
+        Vec2f pos;
+        u8 _34[0x36 - 0x34];
+        u8 alpha;
+        u8 _37[0x38 - 0x37];
+    };
+    size_assert(CharacterIndication, 0x38);
+
+    struct KartIndexComparator {
+        bool operator()(const u32 &a, const u32 &b);
+
+        Race2D &race2D;
+    };
+
     struct PlayerMarkIndexComparator {
         bool operator()(const u32 &a, const u32 &b);
 
@@ -49,22 +79,27 @@ private:
     void setup();
     void REPLACED(drawPlayerMark)();
     REPLACE void drawPlayerMark();
-    void REPLACED(drawCourse)();
-    REPLACE void drawCourse();
     void REPLACED(draw)();
     REPLACE void draw();
+    void REPLACED(drawCourse)();
+    REPLACE void drawCourse();
     void REPLACED(calcPlayerMark)();
     REPLACE void calcPlayerMark();
     void REPLACED(getMapPos)(s32 r4, const Vec3f &pos, Vec2f &mapPos);
     REPLACE void getMapPos(s32 r4, const Vec3f &pos, Vec2f &mapPos);
-    void REPLACED(getCharacterInfo)(s32 r4, s32 r5, f32 &x, f32 &y, f32 &scale);
-    REPLACE void getCharacterInfo(s32 r4, s32 r5, f32 &x, f32 &y, f32 &scale);
     void REPLACED(getItemInfo)(s32 r4, s32 r5, s32 r6, f32 &x, f32 &y, f32 &scale);
     REPLACE void getItemInfo(s32 r4, s32 r5, s32 r6, f32 &x, f32 &y, f32 &scale);
+    void getCharacterInfo(s32 characterIndex, s32 frame, f32 &x, f32 &y, f32 &scale);
+    void REPLACED(getCharacterColor)(s32 kartIndex, s32 characterIndex, s32 frame,
+            GXColor &windowColor, GXColor &iconColor, u8 &iconAlpha);
+    REPLACE void getCharacterColor(s32 kartIndex, s32 characterIndex, s32 frame,
+            GXColor &windowColor, GXColor &iconColor, u8 &iconAlpha);
     void getStartScaleA(s32 index, f32 &scale);
     void getStartScaleB(s32 index, f32 &scale);
-    void REPLACED(getStartCharPos)(s32 r4, s32 r5, f32 &f1);
-    REPLACE void getStartCharPos(s32 r4, s32 r5, f32 &f1);
+    void REPLACED(getStartCharPos)(s32 frame, s32 index, f32 &x);
+    REPLACE void getStartCharPos(s32 frame, s32 index, f32 &x);
+    void getGoalCharPos(s32 frame, s32 index, f32 &x);
+    f32 getThunderCharScale(s32 frame);
     void getStartLapTimePos(s32 frame, s32 index, f32 &x);
     void getGoalLapTimePos(s32 frame, s32 index, f32 &x);
 
@@ -90,7 +125,14 @@ private:
     MinimapConfig m_minimapConfig;
     u8 _1124[0x1588 - 0x1124];
     Console m_consoles[4];
-    u8 _3928[0x4eb4 - 0x3928];
+    u8 _3928[0x4c3c - 0x3928];
+    CharacterIndicationAnm m_characterIndicationAnms[8];
+    CharacterIndication m_characterIndications[8];
+    u8 _4e5c[0x4e9c - 0x4e5c];
+    s32 m_characterIndicationColorFrame;
+    u8 _4ea0[0x4ea4 - 0x4ea0];
+    Vec2f m_characterIndicationIconPos;
+    Vec2f m_characterIndicationRankPos;
     s32 m_frame;
     u8 _4eb8[0x4ec0 - 0x4eb8];
     bool m_isVisible;
@@ -98,5 +140,7 @@ private:
 
     static Race2D *s_instance;
     static GXColor s_playerNumberColors[16];
+    static f32 s_spinRotate[8];
+    static s32 s_thunderAnm[8];
 };
 size_assert(Race2D, 0x4ec4);
