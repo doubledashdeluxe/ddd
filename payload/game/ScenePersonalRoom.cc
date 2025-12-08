@@ -576,8 +576,9 @@ bool ScenePersonalRoom::clientStateRoom(const ClientStateRoomReadInfo &readInfo)
     raceInfo.setRace(raceMode, m_kartCount, m_kartCount, consoleCount, statusCount);
     raceInfo.setRaceLevel(info->options.engineSize);
     for (u32 i = 0; i < consoleCount; i++) {
-        u32 targetKart = info->spectating ? 0 : onlineInfo.m_localKartIndices[i];
-        raceInfo.setConsoleTarget(i, targetKart, info->spectating);
+        bool spectating = info->spectating || i >= statusCount;
+        u32 targetKart = spectating ? 0 : onlineInfo.m_localKartIndices[i];
+        raceInfo.setConsoleTarget(i, targetKart, spectating);
     }
     return true;
 }
