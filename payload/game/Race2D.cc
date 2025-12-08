@@ -137,8 +137,10 @@ void Race2D::setup() {
         for (u32 i = 0; i < 8; i++) {
             u32 colorIndex = onlineInfo.colorIndex(i);
             GXColor white = s_playerNumberColors[colorIndex];
-            m_playerMarkPictures[0][i]->changeTexture("PlayerNumber.bti", 0);
-            m_playerMarkPictures[0][i]->setCornerColor(white);
+            for (u32 j = 0; j < 4; j++) {
+                m_playerMarkPictures[j][i]->changeTexture("PlayerNumber.bti", 0);
+                m_playerMarkPictures[j][i]->setCornerColor(white);
+            }
             for (u32 j = 0; j < 2; j++) {
                 const Array<char, 4> &name = onlineInfo.m_karts[i].players[j].name;
                 for (u32 k = 0; k < 3; k++) {
@@ -193,7 +195,7 @@ void Race2D::drawPlayerMark() {
             if (!raceMgr->raceDrawer()->kartDrawer(kartIndex)->isVisible()) {
                 continue;
             }
-            K2DPicture *picture = m_playerMarkPictures[0][kartIndex];
+            K2DPicture *picture = m_playerMarkPictures[i][kartIndex];
             const TBox2<f32> &box = picture->getBox();
             const Vec2f &pos = m_playerMarkPositions[i][kartIndex];
             f32 w = scale * (box.end.x - box.start.x);
@@ -259,7 +261,7 @@ void Race2D::calcPlayerMark() {
                 zCaptureMgr->setPosition(j, i, pos.x, pos.y);
                 isVisible = depth >= comparator.depths[j];
             }
-            u8 &alpha = m_playerMarkPictures[0][j]->m_alpha;
+            u8 &alpha = m_playerMarkPictures[i][j]->m_alpha;
             if (isVisible) {
                 alpha = Min<u8>(alpha, 247) + 8;
             } else {
