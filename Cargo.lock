@@ -148,9 +148,9 @@ checksum = "72373418560105d15920f9f8f49a301e7aed06223748e67e022213d09aea33c2"
 
 [[package]]
 name = "scc"
-version = "3.4.2"
+version = "3.4.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cd714a8af37b350df813d52ae4b2ea19211e40dac10dce189d80fb95e44cc618"
+checksum = "2a7a1e69112b94b624574f6d6a88a64b3d9bf016d2f97a44986dee7e4d39567b"
 dependencies = [
  "saa",
  "sdd",
@@ -158,9 +158,9 @@ dependencies = [
 
 [[package]]
 name = "sdd"
-version = "4.3.2"
+version = "4.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "19556830bd73d11d6961adaf20b1725fbb5b74c8cc32888a4dcd7049c56b6c35"
+checksum = "4dbf2f908eaaebc2a8d84816d209252faeb25eb7dbcff426a7bf0bf006e67a89"
 
 [[package]]
 name = "subtle"
