@@ -123,7 +123,9 @@ private:
     Vec2f m_playerMarkPositions[4][8];
     u8 _1100[0x1110 - 0x1100];
     MinimapConfig m_minimapConfig;
-    u8 _1124[0x1588 - 0x1124];
+    u8 _1124[0x1150 - 0x1124];
+    K2DPicture *m_playerPictures[8];
+    u8 _1170[0x1588 - 0x1170];
     Console m_consoles[4];
     u8 _3928[0x4c3c - 0x3928];
     CharacterIndicationAnm m_characterIndicationAnms[8];

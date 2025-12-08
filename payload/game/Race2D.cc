@@ -68,6 +68,7 @@ void Race2D::setup() {
     bool isOnline = SequenceInfo::Instance().m_isOnline;
     const OnlineInfo &onlineInfo = OnlineInfo::Instance();
     const RaceInfo &raceInfo = RaceInfo::Instance();
+    u32 kartCount = raceInfo.getKartCount();
     u32 consoleCount = raceInfo.getConsoleCount();
     u32 statusCount = raceInfo.getStatusCount();
 
@@ -143,7 +144,7 @@ void Race2D::setup() {
     if (isOnline) {
         Kart2DCommon *kart2DCommon = Kart2DCommon::Instance();
         GXColor black = {0, 0, 0, 0};
-        for (u32 i = 0; i < 8; i++) {
+        for (u32 i = 0; i < kartCount; i++) {
             u32 colorIndex = onlineInfo.colorIndex(i);
             GXColor white = s_playerNumberColors[colorIndex];
             for (u32 j = 0; j < 4; j++) {
@@ -159,6 +160,14 @@ void Race2D::setup() {
                 }
             }
         }
+        for (u32 i = 0; i < kartCount; i++) {
+            Array<char, 32> name;
+            snprintf(name.values(), name.count(), "LANMap_Icon_Player%" PRIu32 ".bti", i + 1);
+            m_playerPictures[i]->changeTexture(name.values(), 0);
+            u32 colorIndex = onlineInfo.colorIndex(i);
+            GXColor color = s_playerNumberColors[colorIndex];
+            m_playerPictures[i]->setCornerColor(color);
+        }
         if (consoleCount == 2 && raceInfo.getRaceMode() == RaceMode::VS) {
             for (u32 i = 0; i < 8; i++) {
                 m_consoles[0].rankPositions[i].y += 23.0f;
@@ -166,7 +175,7 @@ void Race2D::setup() {
             }
         }
         if (statusCount >= 1 && statusCount <= 2) {
-            for (u32 i = 0; i < 8; i++) {
+            for (u32 i = 0; i < kartCount; i++) {
                 if (onlineInfo.m_karts[i].local) {
                     continue;
                 }

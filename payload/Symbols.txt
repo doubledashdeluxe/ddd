@@ -350,6 +350,7 @@
 80116900 fadeOutAll__Q29GameAudio4MainFUl
 80116b40 setOutputMode__Q29GameAudio4MainFUl
 801245f8 KartStatus__10J2DManagerFUl
+8012460c StatusKart__10J2DManagerFUl
 801256a4 init__6Goal2DFv
 80126600 draw__12PauseManagerFv
 80127ee8 init__7Pause2DFv
