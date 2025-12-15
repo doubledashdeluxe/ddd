@@ -8,6 +8,10 @@ bool RaceMgr::isReplay() const {
     return m_isReplay;
 }
 
+KartChecker *RaceMgr::kartChecker(u32 index) {
+    return m_kartCheckers[index];
+}
+
 KartLoader *RaceMgr::kartLoader(u32 index) {
     return m_kartLoaders[index];
 }

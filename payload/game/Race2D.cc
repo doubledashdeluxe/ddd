@@ -414,6 +414,36 @@ void Race2D::drawCourse() {
     }
 }
 
+void Race2D::calc() {
+    REPLACED(calc)();
+
+    if (!SequenceInfo::Instance().m_isOnline) {
+        return;
+    }
+
+    const RaceInfo &raceInfo = RaceInfo::Instance();
+    u32 statusCount = raceInfo.getStatusCount();
+    if (statusCount < 1 || statusCount > 2 || !raceInfo.isRace()) {
+        return;
+    }
+
+    RaceMgr *raceMgr = RaceMgr::Instance();
+    for (u32 i = 0; i < statusCount; i++) {
+        u32 kartIndex = J2DManager::StatusKart(i);
+        KartChecker *kartChecker = raceMgr->kartChecker(kartIndex);
+        if (!kartChecker->raceEnd() && kartChecker->lapRenewal()) {
+            K2DPicture *picture = m_timePictures[i][0];
+            picture->changeTexture("im_lap1_1.bti", 0);
+            for (u32 j = 0; j < 10; j++) {
+                picture = m_timePictures[i][j];
+                picture->m_cornerColors = m_lapTimeCornerColors;
+            }
+            m_lapTimes[i].lapFrame = 1;
+        }
+        anmTA(i);
+    }
+}
+
 void Race2D::calcPlayerMark() {
     if (!SequenceInfo::Instance().m_isOnline) {
         REPLACED(calcPlayerMark)();

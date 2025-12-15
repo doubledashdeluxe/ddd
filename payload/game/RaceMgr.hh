@@ -1,5 +1,6 @@
 #pragma once
 
+#include "game/KartChecker.hh"
 #include "game/KartLoader.hh"
 #include "game/RaceDrawer.hh"
 
@@ -7,6 +8,7 @@ class RaceMgr {
 public:
     RaceDrawer *raceDrawer();
     bool isReplay() const;
+    KartChecker *kartChecker(u32 index);
     KartLoader *kartLoader(u32 index);
 
     static RaceMgr *Instance();
@@ -17,7 +19,8 @@ private:
     u8 _20[0x2c - 0x20];
     u16 : 15;
     bool m_isReplay : 1;
-    u8 _2e[0x68 - 0x2e];
+    u8 _2e[0x48 - 0x2e];
+    KartChecker *m_kartCheckers[8];
     KartLoader *m_kartLoaders[8];
     u8 _88[0xb8 - 0x88];
 

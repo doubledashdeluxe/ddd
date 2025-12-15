@@ -29,6 +29,12 @@ private:
     };
     size_assert(Scissor, 0x10);
 
+    struct LapTime {
+        u32 lapFrame;
+        u8 _04[0x14 - 0x04];
+    };
+    size_assert(LapTime, 0x14);
+
     struct Console {
         u8 _000[0x048 - 0x000];
         Vec2f timePositions[10];
@@ -83,8 +89,11 @@ private:
     REPLACE void draw();
     void REPLACED(drawCourse)();
     REPLACE void drawCourse();
+    void REPLACED(calc)();
+    REPLACE void calc();
     void REPLACED(calcPlayerMark)();
     REPLACE void calcPlayerMark();
+    void anmTA(s32 status); // Also GP
     void REPLACED(getMapPos)(s32 r4, const Vec3f &pos, Vec2f &mapPos);
     REPLACE void getMapPos(s32 r4, const Vec3f &pos, Vec2f &mapPos);
     void REPLACED(getItemInfo)(s32 r4, s32 r5, s32 r6, f32 &x, f32 &y, f32 &scale);
@@ -125,7 +134,9 @@ private:
     MinimapConfig m_minimapConfig;
     u8 _1124[0x1150 - 0x1124];
     K2DPicture *m_playerPictures[8];
-    u8 _1170[0x1588 - 0x1170];
+    u8 _1170[0x1550 - 0x1170];
+    J2DPicture::CornerColors m_lapTimeCornerColors;
+    LapTime m_lapTimes[2];
     Console m_consoles[4];
     u8 _3928[0x4c3c - 0x3928];
     CharacterIndicationAnm m_characterIndicationAnms[8];

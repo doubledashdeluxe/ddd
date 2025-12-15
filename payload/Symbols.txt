@@ -374,7 +374,9 @@
 80144c14 init__6Race2DFv
 8014576c drawPlayerMark__6Race2DFv
 80145ce0 draw__6Race2DFv
+801470d4 anmTA__6Race2DFl
 801483e4 drawCourse__6Race2DFv
+8014954c calc__6Race2DFv
 80149a58 calcPlayerMark__6Race2DFv
 8014d1e8 GetCornerColors__6Race2DFUl
 8014e640 getMapPos__6Race2DFlRC5Vec3fR5Vec2f
