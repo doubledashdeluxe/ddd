@@ -24,7 +24,7 @@ jobs:
       - name: Build
         run: cargo build --release
       - name: Upload result
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: ddd-server-${{ matrix.os }}
           path: |
