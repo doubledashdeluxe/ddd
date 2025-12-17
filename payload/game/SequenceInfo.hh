@@ -5,6 +5,8 @@
 class SequenceInfo {
 public:
     u32 getBattleMode() const;
+    const char *modeIconTextureName() const;
+    const char *modeNameTextureName() const;
 
     void init();
 

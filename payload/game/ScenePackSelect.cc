@@ -9,7 +9,6 @@
 #include "game/OnlineBackground.hh"
 #include "game/OnlineInfo.hh"
 #include "game/RaceInfo.hh"
-#include "game/RaceMode.hh"
 #include "game/RoomType.hh"
 #include "game/SceneFactory.hh"
 #include "game/SequenceApp.hh"
@@ -101,10 +100,9 @@ void ScenePackSelect::init() {
 
     J2DPicture *iconPicture = m_modeScreen.search("BtlPict")->downcast<J2DPicture>();
     J2DPicture *namePicture = m_modeScreen.search("SubM")->downcast<J2DPicture>();
-    RaceInfo &raceInfo = RaceInfo::Instance();
-    const char *iconTextureName = RaceMode::IconTextureName(raceInfo.m_raceMode);
+    const char *iconTextureName = sequenceInfo.modeIconTextureName();
     iconPicture->changeTexture(iconTextureName, 0);
-    const char *nameTextureName = RaceMode::NameTextureName(raceInfo.m_raceMode);
+    const char *nameTextureName = sequenceInfo.modeNameTextureName();
     namePicture->changeTexture(nameTextureName, 0);
     for (u32 i = 0; i < m_packScreens.count(); i++) {
         J2DPicture *picture = m_packScreens[i].search("CIcon")->downcast<J2DPicture>();

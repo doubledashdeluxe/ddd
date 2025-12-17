@@ -8,7 +8,6 @@
 #include "game/OnlineBackground.hh"
 #include "game/OnlineInfo.hh"
 #include "game/RaceInfo.hh"
-#include "game/RaceMode.hh"
 #include "game/ResMgr.hh"
 #include "game/RoomType.hh"
 #include "game/SceneFactory.hh"
@@ -46,10 +45,9 @@ SceneModeSelect::SceneModeSelect(JKRArchive *archive, JKRHeap *heap) : Scene(arc
     Kart2DCommon *kart2DCommon = Kart2DCommon::Instance();
     for (u32 i = 0; i < m_modeScreens.count(); i++) {
         J2DPicture *iconPicture = m_modeScreens[i].search("Icon")->downcast<J2DPicture>();
-        const char *iconTextureName = RaceMode::IconTextureName(Modes[i]);
-        iconPicture->changeTexture(iconTextureName, 0);
+        iconPicture->changeTexture(ModeIconTextureNames[i], 0);
         Array<char, 32> path;
-        snprintf(path.values(), path.count(), "/modenames/%lu.txt", Modes[i]);
+        snprintf(path.values(), path.count(), "/modenames/%lu.txt", i);
         char *name = static_cast<char *>(ResMgr::GetPtr(ResMgr::ArchiveID::MRAMLoc, path.values()));
         u32 size = ResMgr::GetResSize(ResMgr::ArchiveID::MRAMLoc, name);
         name[size - 1] = '\0';

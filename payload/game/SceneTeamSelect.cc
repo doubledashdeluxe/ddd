@@ -5,12 +5,12 @@
 #include "game/Kart2DCommon.hh"
 #include "game/KartGamePad.hh"
 #include "game/MenuTitleLine.hh"
+#include "game/Modes.hh"
 #include "game/OnlineBackground.hh"
 #include "game/OnlineInfo.hh"
 #include "game/OnlineTimer.hh"
 #include "game/Race2D.hh"
 #include "game/RaceInfo.hh"
-#include "game/RaceMode.hh"
 #include "game/ResMgr.hh"
 #include "game/RoomType.hh"
 #include "game/SceneFactory.hh"
@@ -136,9 +136,9 @@ void SceneTeamSelect::init() {
 
     J2DPicture *iconPicture = m_modeScreen.search("BtlPict")->downcast<J2DPicture>();
     J2DPicture *namePicture = m_modeScreen.search("SubM")->downcast<J2DPicture>();
-    const char *iconTextureName = RaceMode::IconTextureName(raceInfo.m_raceMode);
+    const char *iconTextureName = ModeIconTextureNames[onlineInfo.m_modeIndex];
     iconPicture->changeTexture(iconTextureName, 0);
-    const char *nameTextureName = RaceMode::NameTextureName(raceInfo.m_raceMode);
+    const char *nameTextureName = ModeNameTextureNames[onlineInfo.m_modeIndex];
     namePicture->changeTexture(nameTextureName, 0);
 
     if (m_isSearch) {

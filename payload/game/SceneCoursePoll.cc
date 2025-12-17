@@ -5,12 +5,12 @@
 #include "game/GameAudioMain.hh"
 #include "game/Kart2DCommon.hh"
 #include "game/MenuTitleLine.hh"
+#include "game/Modes.hh"
 #include "game/OnlineBackground.hh"
 #include "game/OnlineInfo.hh"
 #include "game/Race2D.hh"
 #include "game/RaceApp.hh"
 #include "game/RaceInfo.hh"
-#include "game/RaceMode.hh"
 #include "game/ResMgr.hh"
 #include "game/SceneFactory.hh"
 #include "game/SequenceApp.hh"
@@ -94,13 +94,14 @@ SceneCoursePoll::~SceneCoursePoll() {
 void SceneCoursePoll::init() {
     J2DPicture *iconPicture = m_mainScreen.search("BtlPict")->downcast<J2DPicture>();
     J2DPicture *namePicture = m_mainScreen.search("SubM")->downcast<J2DPicture>();
-    const RaceInfo &raceInfo = RaceInfo::Instance();
-    const char *iconTextureName = RaceMode::IconTextureName(raceInfo.m_raceMode);
+    const OnlineInfo &onlineInfo = OnlineInfo::Instance();
+    const char *iconTextureName = ModeIconTextureNames[onlineInfo.m_modeIndex];
     iconPicture->changeTexture(iconTextureName, 0);
-    const char *nameTextureName = RaceMode::NameTextureName(raceInfo.m_raceMode);
+    const char *nameTextureName = ModeNameTextureNames[onlineInfo.m_modeIndex];
     namePicture->changeTexture(nameTextureName, 0);
 
     const SequenceInfo &sequenceInfo = SequenceInfo::Instance();
+    const RaceInfo &raceInfo = RaceInfo::Instance();
     const CourseManager *courseManager = CourseManager::Instance();
     m_ok = true;
     m_courseCount = courseManager->courseCount(raceInfo.isRace(), sequenceInfo.m_packIndex);
@@ -112,7 +113,6 @@ void SceneCoursePoll::init() {
         m_courseShuffleIndices[i] = i;
     }
 
-    const OnlineInfo &onlineInfo = OnlineInfo::Instance();
     m_writeInfo.packCourseCount = m_courseCount;
     m_writeInfo.kartCount = m_kartCount;
     ClientStatePollWriteInfo::Ready &ready = m_writeInfo.ready.emplace();

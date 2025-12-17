@@ -9,7 +9,6 @@
 #include "game/OnlineInfo.hh"
 #include "game/OnlineTimer.hh"
 #include "game/RaceInfo.hh"
-#include "game/RaceMode.hh"
 #include "game/ResMgr.hh"
 #include "game/SceneFactory.hh"
 #include "game/SequenceApp.hh"
@@ -113,13 +112,13 @@ SceneMapSelect::~SceneMapSelect() {
 void SceneMapSelect::init() {
     J2DPicture *iconPicture = m_mainScreen.search("BtlPict")->downcast<J2DPicture>();
     J2DPicture *namePicture = m_mainScreen.search("SubM")->downcast<J2DPicture>();
-    RaceInfo &raceInfo = RaceInfo::Instance();
-    const char *iconTextureName = RaceMode::IconTextureName(raceInfo.m_raceMode);
+    SequenceInfo &sequenceInfo = SequenceInfo::Instance();
+    const char *iconTextureName = sequenceInfo.modeIconTextureName();
     iconPicture->changeTexture(iconTextureName, 0);
-    const char *nameTextureName = RaceMode::NameTextureName(raceInfo.m_raceMode);
+    const char *nameTextureName = sequenceInfo.modeNameTextureName();
     namePicture->changeTexture(nameTextureName, 0);
 
-    SequenceInfo &sequenceInfo = SequenceInfo::Instance();
+    const RaceInfo &raceInfo = RaceInfo::Instance();
     CourseManager *courseManager = CourseManager::Instance();
     m_ok = true;
     m_mapCount = courseManager->courseCount(raceInfo.isRace(), sequenceInfo.m_packIndex);

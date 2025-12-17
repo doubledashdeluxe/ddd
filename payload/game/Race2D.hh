@@ -70,12 +70,6 @@ private:
     };
     size_assert(CharacterIndication, 0x38);
 
-    struct KartIndexComparator {
-        bool operator()(const u32 &a, const u32 &b);
-
-        Race2D &race2D;
-    };
-
     struct PlayerMarkIndexComparator {
         bool operator()(const u32 &a, const u32 &b);
 
@@ -85,12 +79,9 @@ private:
     void setup();
     void REPLACED(drawPlayerMark)();
     REPLACE void drawPlayerMark();
-    void REPLACED(draw)();
-    REPLACE void draw();
-    void REPLACED(drawCourse)();
-    REPLACE void drawCourse();
-    void REPLACED(calc)();
-    REPLACE void calc();
+    void draw();
+    void drawCourse();
+    void calc();
     void REPLACED(calcPlayerMark)();
     REPLACE void calcPlayerMark();
     void anmTA(s32 status); // Also GP

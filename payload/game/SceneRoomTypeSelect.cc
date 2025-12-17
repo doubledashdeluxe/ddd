@@ -4,10 +4,10 @@
 #include "game/GameAudioMain.hh"
 #include "game/KartGamePad.hh"
 #include "game/MenuTitleLine.hh"
+#include "game/Modes.hh"
 #include "game/OnlineBackground.hh"
 #include "game/OnlineInfo.hh"
 #include "game/RaceInfo.hh"
-#include "game/RaceMode.hh"
 #include "game/RoomType.hh"
 #include "game/SceneFactory.hh"
 #include "game/SequenceApp.hh"
@@ -274,7 +274,7 @@ void SceneRoomTypeSelect::stateIdle() {
             onlineInfo.m_modeIndex = ModeIndex::Versus;
             onlineInfo.m_format = RoomOptionFormat::FreeForAll;
             onlineInfo.m_isHost = false;
-            RaceInfo::Instance().m_raceMode = RaceMode::VS;
+            RaceInfo::Instance().m_raceMode = Modes[ModeIndex::Versus];
         } else {
             m_nextScene = SceneType::RoomCodeEnter;
             onlineInfo.m_roomType = RoomType::Personal;
