@@ -89,6 +89,7 @@ private:
     Array<u8, MaxRoomKartCount> m_courseNameAnmTevRegKeyFrames;
     u8 m_kartCountAlpha;
     Array<u8, MaxRoomKartCount> m_courseAlphas;
+    bool m_loading;
     Mutex m_mutex;
     Array<u32, MaxRoomKartCount> m_courseIndices;
     Array<UniquePtr<ResTIMG>, MaxRoomKartCount> m_thumbnails;

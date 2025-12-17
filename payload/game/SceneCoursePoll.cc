@@ -86,8 +86,8 @@ SceneCoursePoll::SceneCoursePoll(JKRArchive *archive, JKRHeap *heap)
 }
 
 SceneCoursePoll::~SceneCoursePoll() {
-    uintptr_t msg = false;
-    OSSendMessage(&m_queue, reinterpret_cast<void *>(msg), OS_MESSAGE_NOBLOCK);
+    m_loading = false;
+    OSSendMessage(&m_queue, nullptr, OS_MESSAGE_NOBLOCK);
     OSJoinThread(&m_loadThread, nullptr);
 }
 
@@ -376,6 +376,7 @@ void SceneCoursePoll::slideIn() {
     m_thumbnailAnmTevRegKeyFrames.fill(1);
     m_courseNameAnmTransformFrame = raceInfo.isRace() ? 0 : 6;
     m_kartCountAlpha = 0;
+    m_loading = true;
     m_courseIndices.fill(UINT32_MAX);
     OSInitMessageQueue(&m_queue, m_messages.values(), m_messages.count());
     u32 stackSize = 64 * 1024;
@@ -388,6 +389,8 @@ void SceneCoursePoll::slideIn() {
 
 void SceneCoursePoll::slideOut() {
     MenuTitleLine::Instance()->lift();
+    m_loading = false;
+    OSSendMessage(&m_queue, nullptr, OS_MESSAGE_NOBLOCK);
     m_state = &SceneCoursePoll::stateSlideOut;
 }
 
@@ -427,8 +430,6 @@ void SceneCoursePoll::stateSlideIn() {
 }
 
 void SceneCoursePoll::stateSlideOut() {
-    uintptr_t msg = false;
-    OSSendMessage(&m_queue, reinterpret_cast<void *>(msg), OS_MESSAGE_NOBLOCK);
     if (m_mainAnmTransformFrame > 0) {
         m_mainAnmTransformFrame--;
         m_gridAnmTransformFrame = m_mainAnmTransformFrame;
@@ -537,19 +538,14 @@ void SceneCoursePoll::refreshCourses() {
         }
     }
 
-    uintptr_t msg = true;
-    OSSendMessage(&m_queue, reinterpret_cast<void *>(msg), OS_MESSAGE_NOBLOCK);
+    OSSendMessage(&m_queue, nullptr, OS_MESSAGE_NOBLOCK);
 }
 
 void *SceneCoursePoll::load() {
-    while (true) {
-        uintptr_t msg;
-        OSReceiveMessage(&m_queue, reinterpret_cast<void **>(&msg), OS_MESSAGE_BLOCK);
-        if (!msg) {
-            return nullptr;
-        }
+    while (m_loading) {
+        OSReceiveMessage(&m_queue, nullptr, OS_MESSAGE_BLOCK);
 
-        while (true) {
+        while (m_loading) {
             Array<u32, MaxRoomKartCount> courseIndices;
             {
                 Lock<Mutex> lock(m_mutex);
@@ -559,14 +555,9 @@ void *SceneCoursePoll::load() {
             if (load(courseIndices)) {
                 break;
             }
-
-            if (OSReceiveMessage(&m_queue, reinterpret_cast<void **>(&msg), OS_MESSAGE_NOBLOCK)) {
-                if (!msg) {
-                    return nullptr;
-                }
-            }
         }
     }
+    return nullptr;
 }
 
 bool SceneCoursePoll::load(const Array<u32, MaxRoomKartCount> &courseIndices) {
