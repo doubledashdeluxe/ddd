@@ -104,8 +104,8 @@ SceneMapSelect::SceneMapSelect(JKRArchive *archive, JKRHeap *heap)
 }
 
 SceneMapSelect::~SceneMapSelect() {
-    uintptr_t msg = false;
-    OSSendMessage(&m_queue, reinterpret_cast<void *>(msg), OS_MESSAGE_NOBLOCK);
+    m_loading = false;
+    OSSendMessage(&m_queue, nullptr, OS_MESSAGE_NOBLOCK);
     OSJoinThread(&m_loadThread, nullptr);
 }
 
@@ -319,6 +319,7 @@ void SceneMapSelect::slideIn() {
         }
     }
     m_arrowAlphas.fill(0);
+    m_loading = true;
     m_currMapIndices.fill(UINT32_MAX);
     OSInitMessageQueue(&m_queue, m_messages.values(), m_messages.count());
     u32 stackSize = 64 * 1024;
@@ -336,6 +337,8 @@ void SceneMapSelect::slideOut() {
     } else {
         m_gridAnmTransformFrame = 0;
     }
+    m_loading = false;
+    OSSendMessage(&m_queue, nullptr, OS_MESSAGE_NOBLOCK);
     m_state = &SceneMapSelect::stateSlideOut;
 }
 
@@ -452,8 +455,6 @@ void SceneMapSelect::stateSlideIn() {
 }
 
 void SceneMapSelect::stateSlideOut() {
-    uintptr_t msg = false;
-    OSSendMessage(&m_queue, reinterpret_cast<void *>(msg), OS_MESSAGE_NOBLOCK);
     if (m_mainAnmTransformFrame > 0) {
         m_mainAnmTransformFrame--;
         if (m_mainAnmTransformFrame >= 10) {
@@ -719,8 +720,7 @@ void SceneMapSelect::refreshMaps(const Array<u32, 12> &nextMapIndices) {
 
     Lock<Mutex> m_lock(m_mutex);
     m_nextMapIndices = nextMapIndices;
-    uintptr_t msg = true;
-    OSSendMessage(&m_queue, reinterpret_cast<void *>(msg), OS_MESSAGE_NOBLOCK);
+    OSSendMessage(&m_queue, nullptr, OS_MESSAGE_NOBLOCK);
 }
 
 void SceneMapSelect::showMaps(s32 rowOffset) {
@@ -769,14 +769,10 @@ void SceneMapSelect::hideArrows() {
 }
 
 void *SceneMapSelect::load() {
-    while (true) {
-        uintptr_t msg;
-        OSReceiveMessage(&m_queue, reinterpret_cast<void **>(&msg), OS_MESSAGE_BLOCK);
-        if (!msg) {
-            return nullptr;
-        }
+    while (m_loading) {
+        OSReceiveMessage(&m_queue, nullptr, OS_MESSAGE_BLOCK);
 
-        while (true) {
+        while (m_loading) {
             Array<u32, 12> nextMapIndices;
             {
                 Lock<Mutex> lock(m_mutex);
@@ -786,14 +782,9 @@ void *SceneMapSelect::load() {
             if (load(nextMapIndices)) {
                 break;
             }
-
-            if (OSReceiveMessage(&m_queue, reinterpret_cast<void **>(&msg), OS_MESSAGE_NOBLOCK)) {
-                if (!msg) {
-                    return nullptr;
-                }
-            }
         }
     }
+    return nullptr;
 }
 
 bool SceneMapSelect::load(const Array<u32, 12> &nextMapIndices) {

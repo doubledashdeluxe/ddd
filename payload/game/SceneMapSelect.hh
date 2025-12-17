@@ -114,6 +114,7 @@ private:
     u8 m_arrowAnmTransformFrame;
     Array<u8, 9> m_mapAlphas;
     Array<u8, 2> m_arrowAlphas;
+    bool m_loading;
     Mutex m_mutex;
     Array<u32, 12> m_nextMapIndices;
     Array<u32, 12> m_currMapIndices;
