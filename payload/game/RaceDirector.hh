@@ -21,6 +21,8 @@ private:
 
     u8 _00[0x04 - 0x00];
     u32 m_race2DMode;
-    u8 _08[0x48 - 0x08];
+    u8 _08[0x0c - 0x08];
+    u32 m_racePhase;
+    u8 _10[0x48 - 0x10];
 };
 size_assert(RaceDirector, 0x48);
