@@ -5,6 +5,7 @@
 class J2DManager {
 public:
     s32 goalAnmFrame() const;
+    void calc();
 
     static J2DManager *Instance();
     static u32 KartStatus(u32 kartIndex);

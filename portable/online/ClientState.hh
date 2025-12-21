@@ -5,6 +5,7 @@
 #include "portable/online/ClientStateModeWriteInfo.hh"
 #include "portable/online/ClientStatePackWriteInfo.hh"
 #include "portable/online/ClientStatePollWriteInfo.hh"
+#include "portable/online/ClientStateRaceWriteInfo.hh"
 #include "portable/online/ClientStateRoomWriteInfo.hh"
 #include "portable/online/ClientStateServerWriteInfo.hh"
 #include "portable/online/ClientStateTeamWriteInfo.hh"
@@ -23,6 +24,7 @@ public:
     virtual ClientState &writeStateRoom(const ClientStateRoomWriteInfo &writeInfo);
     virtual ClientState &writeStateTeam(const ClientStateTeamWriteInfo &writeInfo);
     virtual ClientState &writeStatePoll(const ClientStatePollWriteInfo &writeInfo);
+    virtual ClientState &writeStateRace(const ClientStateRaceWriteInfo &writeInfo);
     virtual ClientState &writeStateError();
 
 protected:

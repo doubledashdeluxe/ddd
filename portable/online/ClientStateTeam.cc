@@ -82,6 +82,10 @@ ServerStatePollReader *ClientStateTeam::pollReader() {
     return nullptr;
 }
 
+ServerStateRaceReader *ClientStateTeam::raceReader() {
+    return nullptr;
+}
+
 ServerTeamStateReader *ClientStateTeam::serverTeamStateReader() {
     return this;
 }

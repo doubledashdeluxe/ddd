@@ -29,6 +29,7 @@ public:
     ClientState &read(ClientReadHandler &handler) override;
     ClientState &writeStateMode(const ClientStateModeWriteInfo &writeInfo) override;
     ClientState &writeStatePoll(const ClientStatePollWriteInfo &writeInfo) override;
+    ClientState &writeStateRace(const ClientStateRaceWriteInfo &writeInfo) override;
 
 private:
     typedef ClientStatePollReadInfo ReadInfo;
@@ -40,6 +41,7 @@ private:
     ServerStateRoomReader *roomReader() override;
     ServerStateTeamReader *teamReader() override;
     ServerStatePollReader *pollReader() override;
+    ServerStateRaceReader *raceReader() override;
 
     ServerPollStateReader *serverPollStateReader() override;
 

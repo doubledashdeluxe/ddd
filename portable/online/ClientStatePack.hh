@@ -31,6 +31,7 @@ private:
     ServerStateRoomReader *roomReader() override;
     ServerStateTeamReader *teamReader() override;
     ServerStatePollReader *pollReader() override;
+    ServerStateRaceReader *raceReader() override;
 
     bool isModeIndexValid(u8 modeIndex) override;
     void setModeIndex(u8 modeIndex) override;

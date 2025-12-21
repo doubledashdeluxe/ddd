@@ -14,6 +14,7 @@ pub fn client_state() -> impl ComplexDataType {
         .with_variant("Room", client_state_room())
         .with_variant("Team", client_state_team())
         .with_variant("Poll", client_state_poll())
+        .with_variant("Race", client_state_race())
 }
 
 pub fn client_state_server() -> impl ComplexDataType {
@@ -130,8 +131,8 @@ pub fn client_room_state_main() -> impl ComplexDataType {
 
 pub fn client_room_options() -> impl ComplexDataType {
     EnumType::new("ClientRoomOptions")
-        .with_variant("Race", room_options_race())
-        .with_variant("Battle", room_options_battle())
+        .with_variant("RaceOptions", room_options_race())
+        .with_variant("BattleOptions", room_options_battle())
         .with_variant("None", UnitType)
 }
 
@@ -189,4 +190,9 @@ pub fn client_course_index() -> impl ComplexDataType {
     EnumType::new("ClientCourseIndex")
         .with_variant("Unspecified", UnitType)
         .with_variant("Specified", specified)
+}
+
+pub fn client_state_race() -> impl ComplexDataType {
+    let frame: SimpleDataType<u16> = SimpleDataType::new();
+    StructType::new("ClientStateRace").with_field("frame", frame)
 }

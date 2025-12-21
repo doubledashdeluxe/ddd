@@ -14,6 +14,7 @@ pub fn server_state() -> impl ComplexDataType {
         .with_variant("Room", server_state_room())
         .with_variant("Team", server_state_team())
         .with_variant("Poll", server_state_poll())
+        .with_variant("Race", server_state_race())
 }
 
 pub fn server_state_server() -> impl ComplexDataType {
@@ -106,8 +107,8 @@ pub fn server_room_state_main() -> impl ComplexDataType {
 
 pub fn server_room_options() -> impl ComplexDataType {
     EnumType::new("ServerRoomOptions")
-        .with_variant("Race", room_options_race())
-        .with_variant("Battle", room_options_battle())
+        .with_variant("RaceOptions", room_options_race())
+        .with_variant("BattleOptions", room_options_battle())
 }
 
 pub fn server_kart() -> impl ComplexDataType {
@@ -182,6 +183,24 @@ pub fn server_poll_kart() -> impl ComplexDataType {
         .with_field("character_ids", character_ids)
         .with_field("kart_id", kart_id())
         .with_field("course_index", course_index)
+}
+
+pub fn server_state_race() -> impl ComplexDataType {
+    StructType::new("ServerStateRace").with_field("server_race_state", server_race_state())
+}
+
+pub fn server_race_state() -> impl ComplexDataType {
+    EnumType::new("ServerRaceState")
+        .with_variant("Main", server_race_state_main())
+        .with_variant("Error", UnitType)
+}
+
+pub fn server_race_state_main() -> impl ComplexDataType {
+    let frame: SimpleDataType<u16> = SimpleDataType::new();
+    let client_frame: SimpleDataType<u16> = SimpleDataType::new();
+    StructType::new("ServerRaceStateMain")
+        .with_field("frame", frame)
+        .with_field("client_frame", client_frame)
 }
 
 pub const MAX_MOTD_LENGTH: u8 = 99;

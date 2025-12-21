@@ -45,6 +45,7 @@ impl Client {
             State::Room { identity, .. } => identity,
             State::Team { identity, .. } => identity,
             State::Poll { identity, .. } => identity,
+            State::Race { identity, .. } => identity,
             _ => return None,
         };
         Some(identity.frame_rate)
@@ -57,6 +58,7 @@ impl Client {
             State::Room { identity, .. } => identity,
             State::Team { identity, .. } => identity,
             State::Poll { identity, .. } => identity,
+            State::Race { identity, .. } => identity,
             _ => return 0,
         };
         identity.players.len()
@@ -67,6 +69,7 @@ impl Client {
             State::Room { room_info: Some(room_info), .. } => room_info,
             State::Team { room_info: Some(room_info), .. } => room_info,
             State::Poll { room_info: Some(room_info), .. } => room_info,
+            State::Race { room_info: Some(room_info), .. } => room_info,
             _ => return None,
         };
         Some(room_info.id)
@@ -87,6 +90,7 @@ impl Client {
             State::Room { identity, room_info } => (Some(identity), room_info),
             State::Team { identity, room_info } => (Some(identity), room_info),
             State::Poll { identity, room_info } => (Some(identity), room_info),
+            State::Race { identity, room_info, .. } => (Some(identity), room_info),
         };
         self.state = match (client_state, identity, room_info) {
             (ClientState::Server(server), _, _) => {
@@ -239,6 +243,18 @@ impl Client {
                 };
                 let room_info = room_info.ok();
                 State::Poll { identity, room_info }
+            }
+            (ClientState::Race(race), Some(identity), room_info) => {
+                let frame = race.frame;
+                let room_info = match room_info {
+                    Some(room_info) => rooms.get(&room_info.id).and_then(|room| {
+                        room.set_race(race)?;
+                        Ok(room_info)
+                    }),
+                    None => Err(anyhow!("Unexpected client team state")),
+                };
+                let room_info = room_info.ok();
+                State::Race { identity, room_info, frame }
             }
             _ => anyhow::bail!("Unexpected client state"),
         };
@@ -397,6 +413,21 @@ impl Client {
                 let poll = ServerStatePoll { server_poll_state };
                 ServerState::Poll(poll)
             }
+            State::Race { room_info, frame: client_frame, .. } => {
+                let server_race_state = match room_info {
+                    Some(room_info) => {
+                        let frame = rooms.read(&room_info.id, |room| room.frame());
+                        let Ok(Some(frame)) = frame else {
+                            return Ok(None);
+                        };
+                        let main = ServerRaceStateMain { frame, client_frame: *client_frame };
+                        ServerRaceState::Main(main)
+                    }
+                    None => ServerRaceState::Error(()),
+                };
+                let race = ServerStateRace { server_race_state };
+                ServerState::Race(race)
+            }
         };
         let message_len = message.len() - server_state.write(message).unwrap().len();
         Ok(Some(message_len))
@@ -417,6 +448,7 @@ enum State {
     Room { identity: ClientIdentitySpecified, room_info: Option<RoomInfo> },
     Team { identity: ClientIdentitySpecified, room_info: Option<RoomInfo> },
     Poll { identity: ClientIdentitySpecified, room_info: Option<RoomInfo> },
+    Race { identity: ClientIdentitySpecified, room_info: Option<RoomInfo>, frame: u16 },
 }
 
 struct RoomInfo {

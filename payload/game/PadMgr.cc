@@ -4,6 +4,10 @@
 #include "game/PadRecorder.hh"
 #include "game/SystemRecord.hh"
 
+void PadMgr::SetRecorder(PadRecorder *recorder) {
+    s_recorder = recorder;
+}
+
 void PadMgr::GetPadData(u8 port, bool remote, KartPadData *data) {
     REPLACED(GetPadData)(port, remote, data);
     if (!remote) {
@@ -13,16 +17,15 @@ void PadMgr::GetPadData(u8 port, bool remote, KartPadData *data) {
 }
 
 void PadMgr::ProcessKartPad() {
-    PadRecorder *recorder = PadRecorder::Instance();
     for (u32 i = 0; i < 16; i++) {
         KartPadData data;
         REPLACED(GetPadData)(i, s_kartPadInput, &data);
-        if (recorder) {
-            recorder->line(i, &data);
+        if (s_recorder) {
+            s_recorder->line(i, &data);
         }
         KartGamePad::KartPad(i)->expand(data);
     }
-    if (recorder) {
-        recorder->framework();
+    if (s_recorder) {
+        s_recorder->framework();
     }
 }

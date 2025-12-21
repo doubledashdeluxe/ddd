@@ -35,6 +35,7 @@ private:
     bool clientStateRoom(const ClientStateRoomReadInfo &readInfo) override;
     bool clientStateTeam(const ClientStateTeamReadInfo &readInfo) override;
     bool clientStatePoll(const ClientStatePollReadInfo &readInfo) override;
+    bool clientStateRace(const ClientStateRaceReadInfo &readInfo) override;
     void clientStateError() override;
 
     ClientState &writeStateServer();
@@ -43,6 +44,7 @@ private:
     ClientState &writeStateRoom();
     ClientState &writeStateTeam();
     ClientState &writeStatePoll();
+    ClientState &writeStateRace();
 
     bool updateState(ClientState &nextState);
 

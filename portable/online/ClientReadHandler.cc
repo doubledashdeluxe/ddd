@@ -27,3 +27,7 @@ bool ClientReadHandler::clientStateTeam(const ClientStateTeamReadInfo & /* readI
 bool ClientReadHandler::clientStatePoll(const ClientStatePollReadInfo & /* readInfo */) {
     return false;
 }
+
+bool ClientReadHandler::clientStateRace(const ClientStateRaceReadInfo & /* readInfo */) {
+    return false;
+}

@@ -98,6 +98,10 @@ ServerStatePollReader *ClientStateServer::pollReader() {
     return nullptr;
 }
 
+ServerStateRaceReader *ClientStateServer::raceReader() {
+    return nullptr;
+}
+
 bool ClientStateServer::isProtocolVersionValid(u32 /* protocolVersion */) {
     return true;
 }

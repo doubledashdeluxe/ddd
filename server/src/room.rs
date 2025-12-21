@@ -112,7 +112,7 @@ impl Room {
                 course_selection: RoomOptionCourseSelection::Poll,
                 entry_index: 0,
             };
-            ServerRoomOptions::Race(options)
+            ServerRoomOptions::RaceOptions(options)
         } else {
             let options = RoomOptionsBattle {
                 battle: (),
@@ -123,7 +123,7 @@ impl Room {
                 course_selection: RoomOptionCourseSelection::Poll,
                 entry_index: 0,
             };
-            ServerRoomOptions::Battle(options)
+            ServerRoomOptions::BattleOptions(options)
         };
         Room {
             host_pk: config.host_karts.first().map(Kart::client_pk).copied(),
@@ -192,8 +192,8 @@ impl Room {
 
     fn code_type(&self) -> RoomOptionCodeType {
         match &self.options {
-            ServerRoomOptions::Race(options) => options.code_type,
-            ServerRoomOptions::Battle(options) => options.code_type,
+            ServerRoomOptions::RaceOptions(options) => options.code_type,
+            ServerRoomOptions::BattleOptions(options) => options.code_type,
         }
     }
 
@@ -246,15 +246,15 @@ impl Room {
 
     fn format(&self) -> RoomOptionFormat {
         match &self.options {
-            ServerRoomOptions::Race(options) => options.format,
-            ServerRoomOptions::Battle(options) => options.format,
+            ServerRoomOptions::RaceOptions(options) => options.format,
+            ServerRoomOptions::BattleOptions(options) => options.format,
         }
     }
 
     fn course_selection(&self) -> RoomOptionCourseSelection {
         match &self.options {
-            ServerRoomOptions::Race(options) => options.course_selection,
-            ServerRoomOptions::Battle(options) => options.course_selection,
+            ServerRoomOptions::RaceOptions(options) => options.course_selection,
+            ServerRoomOptions::BattleOptions(options) => options.course_selection,
         }
     }
 
@@ -273,6 +273,15 @@ impl Room {
             State::Team { .. } => None,
             State::Poll { state, .. } => Some(ServerPollState::Pending(state.clone())),
             State::Race { poll_state, .. } => Some(ServerPollState::Ready(poll_state.clone())),
+        }
+    }
+
+    pub fn frame(&self) -> Option<u16> {
+        match &self.state {
+            State::Room => None,
+            State::Team { .. } => None,
+            State::Poll { .. } => None,
+            State::Race { frame, .. } => Some(*frame),
         }
     }
 
@@ -323,7 +332,7 @@ impl Room {
 
     pub fn set_options(&mut self, client_pk: &PublicKey, options: ClientRoomOptions) -> Result<()> {
         match (options, &self.options) {
-            (ClientRoomOptions::Race(client), ServerRoomOptions::Race(server)) => {
+            (ClientRoomOptions::RaceOptions(client), ServerRoomOptions::RaceOptions(server)) => {
                 anyhow::ensure!(self.is_host(client_pk));
                 if self.has_room_lock() {
                     anyhow::ensure!(client == *server);
@@ -331,17 +340,20 @@ impl Room {
                     anyhow::ensure!(client.lap_count <= MAX_LAP_COUNT);
                     anyhow::ensure!(client.match_count >= MIN_MATCH_COUNT);
                     anyhow::ensure!(client.match_count <= MAX_MATCH_COUNT);
-                    self.options = ServerRoomOptions::Race(client);
+                    self.options = ServerRoomOptions::RaceOptions(client);
                 }
             }
-            (ClientRoomOptions::Battle(client), ServerRoomOptions::Battle(server)) => {
+            (
+                ClientRoomOptions::BattleOptions(client),
+                ServerRoomOptions::BattleOptions(server),
+            ) => {
                 anyhow::ensure!(self.is_host(client_pk));
                 if self.has_room_lock() {
                     anyhow::ensure!(client == *server);
                 } else {
                     anyhow::ensure!(client.match_count >= MIN_MATCH_COUNT);
                     anyhow::ensure!(client.match_count <= MAX_MATCH_COUNT);
-                    self.options = ServerRoomOptions::Battle(client);
+                    self.options = ServerRoomOptions::BattleOptions(client);
                 }
             }
             (ClientRoomOptions::None(()), _) => {
@@ -504,6 +516,16 @@ impl Room {
         Ok(())
     }
 
+    pub fn set_race(&self, race: ClientStateRace) -> Result<()> {
+        match &self.state {
+            State::Race { frame, .. } => {
+                debug!("{:?} {:?}", frame, race.frame);
+            }
+            _ => anyhow::bail!("Invalid room state"),
+        }
+        Ok(())
+    }
+
     pub fn update(&mut self, client_room_ids: &HashMap<PublicKey, Option<u128>>) -> Result<()> {
         let present = |client_pk: &PublicKey| {
             client_room_ids.get(client_pk).is_some_and(|room_id| *room_id == Some(self.id))
@@ -591,6 +613,7 @@ impl Room {
                     &mut self.rng,
                 );
             }
+            State::Race { frame, .. } => *frame += 1,
             _ => (),
         }
 
@@ -645,6 +668,7 @@ enum State {
     Race {
         team_state: Option<ServerTeamStateMain>,
         poll_state: ServerPollStateReady,
+        frame: u16,
     },
 }
 
@@ -685,6 +709,10 @@ impl State {
         if let Some(host_course_index) = host_course_index {
             karts[selected_kart_index as usize].course_index = host_course_index;
         }
-        Self::Race { team_state, poll_state: ServerPollStateReady { karts, selected_kart_index } }
+        Self::Race {
+            team_state,
+            poll_state: ServerPollStateReady { karts, selected_kart_index },
+            frame: 0,
+        }
     }
 }

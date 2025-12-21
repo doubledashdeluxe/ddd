@@ -38,6 +38,7 @@ private:
     ServerStateRoomReader *roomReader() override;
     ServerStateTeamReader *teamReader() override;
     ServerStatePollReader *pollReader() override;
+    ServerStateRaceReader *raceReader() override;
 
     ServerTeamStateReader *serverTeamStateReader() override;
 

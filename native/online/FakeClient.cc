@@ -60,6 +60,11 @@ bool FakeClient::clientStateTeam(const ClientStateTeamReadInfo & /* readInfo */)
 }
 
 bool FakeClient::clientStatePoll(const ClientStatePollReadInfo & /* readInfo */) {
+    m_writer = &FakeClient::writeStateRace;
+    return true;
+}
+
+bool FakeClient::clientStateRace(const ClientStateRaceReadInfo & /* readInfo */) {
     return true;
 }
 
@@ -141,6 +146,12 @@ ClientState &FakeClient::writeStatePoll() {
     ready.karts[0].kartID = KartID::Mario;
     ready.courseIndex = 0;
     return m_state->writeStatePoll(writeInfo);
+}
+
+ClientState &FakeClient::writeStateRace() {
+    ClientStateRaceWriteInfo writeInfo;
+    writeInfo.frame = 0;
+    return m_state->writeStateRace(writeInfo);
 }
 
 bool FakeClient::updateState(ClientState &nextState) {

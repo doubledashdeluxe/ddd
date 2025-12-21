@@ -349,6 +349,8 @@
 801167b0 setMasterVolume__Q29GameAudio4MainFSc
 80116900 fadeOutAll__Q29GameAudio4MainFUl
 80116b40 setOutputMode__Q29GameAudio4MainFUl
+80123b7c exec__12MotorManagerFv
+80124424 calc__10J2DManagerFv
 801245f8 KartStatus__10J2DManagerFUl
 8012460c StatusKart__10J2DManagerFUl
 801256a4 init__6Goal2DFv
@@ -358,6 +360,7 @@
 8012c7bc drawK2D__10K2DPictureFffffb
 8012cfbc __ct__5SceneFP10JKRArchiveP7JKRHeap
 8012cfd8 __dt__5SceneFv
+8012d314 reset__7GameAppFv
 801326c0 init__11SceneRecordFv
 801391b0 setCornerColor__10J2DPictureF7GXColor
 80139480 Instance__12Kart2DCommonFv
@@ -378,6 +381,7 @@
 801483e4 drawCourse__6Race2DFv
 8014954c calc__6Race2DFv
 80149a58 calcPlayerMark__6Race2DFv
+8014a2e8 setLayoutData__6Race2DFv
 8014d1e8 GetCornerColors__6Race2DFUl
 8014e640 getMapPos__6Race2DFlRC5Vec3fR5Vec2f
 8014e9ac getCharacterInfo__6Race2DFllRfRfRf
@@ -423,6 +427,10 @@
 80184234 GetKartWeight__8KartInfoFUl
 801842a0 GetDriverWeight__8KartInfoFUl
 801842c4 GetDefaultKartID__8KartInfoFUl
+80188344 checkRank__7RaceMgrFv
+8018899c calcRace__7RaceMgrFv
+80188a54 framework__7RaceMgrFv
+80188b44 updateRace__7RaceMgrFv
 80189bb0 setHeapGroup__8SysDebugFPCcP7JKRHeap
 80189bb4 setDefaultHeapGroup__8SysDebugFP7JKRHeap
 80189c64 createHeapInfo__8SysDebugFP7JKRHeapPCc
@@ -433,6 +441,9 @@
 8018b794 setKart__8RaceInfoFUlUlUlP11KartGamePadUlP11KartGamePad
 8018b824 setRaceLevel__8RaceInfoFUl
 8019e54c resetCommon__12RaceDirectorFv
+8019e5dc calc__12RaceDirectorFv
+8019e9bc doRunning__12RaceDirectorFb
+8019f448 setPhaseWait__12RaceDirectorFUlbbl
 801af940 Create__8MovieAppFv
 801b0084 Create__11MoviePlayerFP7JKRHeap
 801b0314 DrawDone__11MoviePlayerFv
@@ -443,12 +454,19 @@
 801c9994 draw__14SceneTitleLineFP15J2DGraphContext
 801c99e8 calcAnm__14SceneTitleLineFl
 801c9ab0 calcMatAnm__14SceneTitleLineFv
+801cb9a4 calc__11StaffRoll2DFv
 801cbe60 Move__9GameClockFv
 801cc4a4 __ct__7GameAppFUlPCcPv
 801cc548 __dt__7GameAppFv
 801cc5bc main
+801ccda4 Create__7RaceAppFv
 801ccdf4 Call__7RaceAppFv
+801cce18 __ct__7RaceAppFv
+801cd748 __dt__7RaceAppFv
+801cd7fc draw__7RaceAppFv
+801cd840 calc__7RaceAppFv
 801cdb54 ctrlRace__7RaceAppFv
+801cde4c ctrlRecorder__7RaceAppFv
 801ce300 GetCrsArcName__6ResMgrFUl
 801ce530 Create__6ResMgrFP7JKRHeap
 801ce610 LoadKeepData__6ResMgrFPv
@@ -500,6 +518,7 @@
 801dc140 Framework__6PadMgrFv
 801dc1c4 ProcessKartPad__6PadMgrFv
 801dc290 GetPadData__6PadMgrFUcbPQ26PadMgr11KartPadData
+801dc6cc __dt__11PadRecorderFv
 801dc900 line__11PadRecorderFUcPQ26PadMgr11KartPadData
 801dcacc framework__11PadRecorderFv
 801dd1b4 processDHCP__6BBAMgrFv
@@ -511,6 +530,7 @@
 801de664 changeNumberTexture__12Kart2DCommonFlPP10J2DPictureUcbb
 801de75c getAsciiTexture__12Kart2DCommonFc
 801de8f4 __ct__12Kart2DCommonFv
+801dfae0 calc__7Award2DFv
 801e7124 __ct__14MenuBackgroundFP10JKRArchive
 801e71a8 calc__14MenuBackgroundFv
 801e7210 __ct__13MenuTitleLineFP10JKRArchive
@@ -523,6 +543,10 @@
 801e03b4 calc__15NameEntryHelperFv
 801e0428 draw__15NameEntryHelperFP15J2DGraphContext
 801e0b04 selectOut__Q215NameEntryHelper13NameEntryDrumFv
+80208528 clearKartItemUseTriggerList__10ItemObjMgrFv
+80209578 getKind__7ItemObjCFv
+802099e8 getKartEquipItem__10ItemObjMgrFUlUl
+80209a00 getKartEquipItem__10ItemObjMgrFUl
 8026712c GetScreenPos__6SiUtilFlRC5Vec3fR5Vec2f
 802953dc setPosition__11ZCaptureMgrFUlUlss
 80295410 getZValue__11ZCaptureMgrFUlUl
@@ -602,6 +626,7 @@
 803d540c UPnPHttpState
 
 803d5498 s_instance__Q29GameAudio4Main
+803d5500 s_instance__12MotorManager
 803d5508 s_instance__10J2DManager
 803d5528 s_nextPauseChoice__12PauseManager
 803d5540 s_instance__11WipeManager
@@ -640,10 +665,12 @@
 803d5c58 s_instance__10NetGameMgr
 803d5c60 s_instance__11SequenceApp
 803d5c98 s_kartPadInput__6PadMgr
-803d5c9c s_instance__11PadRecorder
+803d5c9c s_recorder__6PadMgr
+803d5ca0 s_instance__14ForceEffectMgr
 803d5ca8 s_instance__6BBAMgr
 803d5cb0 s_instance__8AwardApp
 803d5cb8 s_instance__12Kart2DCommon
 803d5cd0 s_instance__14MenuBackground
 803d5cd8 s_instance__13MenuTitleLine
+803d5d80 s_instance__10ItemObjMgr
 803d63c8 s_instance__8KartCtrl

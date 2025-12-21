@@ -44,6 +44,10 @@ ClientState &ClientStateError::writeStatePoll(const ClientStatePollWriteInfo & /
     return *this;
 }
 
+ClientState &ClientStateError::writeStateRace(const ClientStateRaceWriteInfo & /* writeInfo */) {
+    return *this;
+}
+
 ClientState &ClientStateError::writeStateError() {
     return *this;
 }

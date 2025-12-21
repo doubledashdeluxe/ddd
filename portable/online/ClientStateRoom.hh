@@ -26,8 +26,8 @@ class ClientStateRoom
     , private ClientRoomStateCodeWriter
     , private ClientRoomStateWriter::Main
     , private ClientRoomStateMainWriter
-    , private ClientRoomOptionsWriter::Race
-    , private ClientRoomOptionsWriter::Battle
+    , private ClientRoomOptionsWriter::RaceOptions
+    , private ClientRoomOptionsWriter::BattleOptions
     , private ClientRoomOptionsWriter::None
     , private RoomOptionsRaceWriter
     , private RoomOptionsBattleWriter {
@@ -53,6 +53,7 @@ private:
     ServerStateRoomReader *roomReader() override;
     ServerStateTeamReader *teamReader() override;
     ServerStatePollReader *pollReader() override;
+    ServerStateRaceReader *raceReader() override;
 
     ServerRoomStateReader *serverRoomStateReader() override;
 
@@ -100,8 +101,8 @@ private:
     bool isNameElementValid(u32 i0, u8 nameElement) override;
     void setNameElement(u32 i0, u8 nameElement) override;
 
-    RoomOptionsRaceReader *raceReader() override;
-    RoomOptionsBattleReader *battleReader() override;
+    RoomOptionsRaceReader *raceOptionsReader() override;
+    RoomOptionsBattleReader *battleOptionsReader() override;
 
     bool isRaceValid() override;
     void setRace() override;
@@ -148,8 +149,8 @@ private:
     ClientRoomOptionsWriter &optionsWriter() override;
     u8 getContinuing() override;
 
-    RoomOptionsRaceWriter &raceWriter() override;
-    RoomOptionsBattleWriter &battleWriter() override;
+    RoomOptionsRaceWriter &raceOptionsWriter() override;
+    RoomOptionsBattleWriter &battleOptionsWriter() override;
     void getNone() override;
 
     void getRace() override;

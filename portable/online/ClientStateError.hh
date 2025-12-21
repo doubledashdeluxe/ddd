@@ -15,5 +15,6 @@ public:
     ClientState &writeStateRoom(const ClientStateRoomWriteInfo &writeInfo) override;
     ClientState &writeStateTeam(const ClientStateTeamWriteInfo &writeInfo) override;
     ClientState &writeStatePoll(const ClientStatePollWriteInfo &writeInfo) override;
+    ClientState &writeStateRace(const ClientStateRaceWriteInfo &writeInfo) override;
     ClientState &writeStateError() override;
 };

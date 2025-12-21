@@ -3,6 +3,7 @@
 #include "portable/Upcast.hh"
 #include "portable/online/ClientStateError.hh"
 #include "portable/online/ClientStateMode.hh"
+#include "portable/online/ClientStateRace.hh"
 
 ClientStatePoll::ClientStatePoll(const ClientPlatform &platform, Connection &connection,
         const ClientStatePollWriteInfo &writeInfo)
@@ -42,6 +43,11 @@ ClientState &ClientStatePoll::writeStatePoll(const ClientStatePollWriteInfo &wri
     return *this;
 }
 
+ClientState &ClientStatePoll::writeStateRace(const ClientStateRaceWriteInfo &writeInfo) {
+    Connection &connection = *m_connections.front()->release();
+    return *(new (m_platform.allocator) ClientStateRace(m_platform, connection, writeInfo));
+}
+
 ServerStateServerReader *ClientStatePoll::serverReader() {
     return nullptr;
 }
@@ -64,6 +70,10 @@ ServerStateTeamReader *ClientStatePoll::teamReader() {
 
 ServerStatePollReader *ClientStatePoll::pollReader() {
     return this;
+}
+
+ServerStateRaceReader *ClientStatePoll::raceReader() {
+    return nullptr;
 }
 
 ServerPollStateReader *ClientStatePoll::serverPollStateReader() {

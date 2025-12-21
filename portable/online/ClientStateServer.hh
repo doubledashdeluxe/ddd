@@ -36,6 +36,7 @@ private:
     ServerStateRoomReader *roomReader() override;
     ServerStateTeamReader *teamReader() override;
     ServerStatePollReader *pollReader() override;
+    ServerStateRaceReader *raceReader() override;
 
     bool isProtocolVersionValid(u32 protocolVersion) override;
     void setProtocolVersion(u32 protocolVersion) override;

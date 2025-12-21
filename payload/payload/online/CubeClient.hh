@@ -22,6 +22,7 @@ public:
     void writeStateRoom(const ClientStateRoomWriteInfo &writeInfo);
     void writeStateTeam(const ClientStateTeamWriteInfo &writeInfo);
     void writeStatePoll(const ClientStatePollWriteInfo &writeInfo);
+    void writeStateRace(const ClientStateRaceWriteInfo &writeInfo);
     void writeStateError();
 
     static void Init(JKRHeap *parentHeap, SOConfig &config);
