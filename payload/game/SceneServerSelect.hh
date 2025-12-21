@@ -78,6 +78,8 @@ private:
     J2DScreen m_mainScreen;
     J2DScreen m_colorScreen;
     Array<J2DScreen, 6> m_serverScreens;
+    Array<Array<J2DPicture *, 26>, 6> m_namePictures;
+    Array<Array<J2DPicture *, 42>, 6> m_descPictures;
     J2DAnmBase *m_mainAnmTransform;
     J2DAnmBase *m_arrowAnmTransform;
     Array<J2DAnmBase *, 6> m_serverAnmTransforms;

@@ -15,6 +15,7 @@ class Kart2DCommon {
 public:
     Kart2DCommon();
 
+    void changeUnicodeTexture(const char *text, J2DPicture **pictures, u8 pictureCount);
     void changeUnicodeTexture(const char *text, u32 count, J2DScreen &screen, const char *prefix,
             bool center = false);
     void changeNumberTexture(s32 number, J2DPicture **pictures, u8 pictureCount, bool padWithZeros,

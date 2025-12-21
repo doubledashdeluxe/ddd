@@ -5,6 +5,18 @@
 #include <portable/Algorithm.hh>
 #include <portable/UTF8.hh>
 
+void Kart2DCommon::changeUnicodeTexture(const char *text, J2DPicture **pictures, u8 pictureCount) {
+    u32 length = UTF8::Length(text);
+    for (u32 i = 0; i < pictureCount; i++) {
+        J2DPicture *picture = pictures[i];
+        picture->m_isVisible = i < length;
+        if (i < length) {
+            u32 c = length > pictureCount && i + 3 >= pictureCount ? '.' : UTF8::Next(text);
+            picture->changeTexture(getUnicodeTexture(c), 0);
+        }
+    }
+}
+
 void Kart2DCommon::changeUnicodeTexture(const char *text, u32 count, J2DScreen &screen,
         const char *prefix, bool center) {
     u32 length = UTF8::Length(text);

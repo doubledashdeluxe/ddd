@@ -29,6 +29,12 @@ SceneServerSelect::SceneServerSelect(JKRArchive *archive, JKRHeap *heap) : Scene
     m_colorScreen.set("ServerColors.blo", 0x20000, lanEntryArchive);
     for (u32 i = 0; i < m_serverScreens.count(); i++) {
         m_serverScreens[i].set("Line.blo", 0x20000, m_archive);
+        for (u32 j = 0; j < m_namePictures[i].count(); j++) {
+            m_namePictures[i][j] = m_serverScreens[i].search("Name%u", j)->downcast<J2DPicture>();
+        }
+        for (u32 j = 0; j < m_descPictures[i].count(); j++) {
+            m_descPictures[i][j] = m_serverScreens[i].search("Desc%u", j)->downcast<J2DPicture>();
+        }
     }
 
     for (u32 i = 0; i < m_serverScreens.count(); i++) {
@@ -191,7 +197,7 @@ void SceneServerSelect::calc() {
         m_serverScreens[i].search("GDCurs")->setAlpha(m_serverAlphas[i]);
         m_serverScreens[i].search("GDCurs1")->setAlpha(m_serverAlphas[i]);
         for (u32 j = 0; j < 26; j++) {
-            m_serverScreens[i].search("Name%u", j)->setAlpha(m_serverAlphas[i]);
+            m_namePictures[i][j]->setAlpha(m_serverAlphas[i]);
         }
         for (u32 j = 0; j < 42; j++) {
             u8 alpha = m_serverAlphas[i];
@@ -200,7 +206,7 @@ void SceneServerSelect::calc() {
             } else if (j == 41) {
                 alpha = (alpha * m_descAlphas[i]) >> 8;
             }
-            m_serverScreens[i].search("Desc%u", j)->setAlpha(alpha);
+            m_descPictures[i][j]->setAlpha(alpha);
         }
         m_serverScreens[i].search("PIcon")->setAlpha(m_serverAlphas[i]);
         for (u32 j = 0; j < 3; j++) {
@@ -459,15 +465,14 @@ void SceneServerSelect::refreshServers() {
         }
         const ServerManager::Server &server = serverManager->server(serverIndex);
         J2DScreen &screen = m_serverScreens[i];
-        kart2DCommon->changeUnicodeTexture(server.name().values(), 26, screen, "Name");
+        kart2DCommon->changeUnicodeTexture(server.name().values(), m_namePictures[i].values(), 26);
         DescText descText(*this, i);
         u64 descOffset = Max<u64>(m_descOffsets[serverIndex], 300) - 300;
         descText.refresh(descOffset, 1, 42, screen, "Desc");
         J2DPicture *descColorPicture = m_descColorPictures[i];
         if (descColorPicture) {
             for (u32 j = 0; j < 42; j++) {
-                J2DPicture *descPicture = screen.search("Desc%u", j)->downcast<J2DPicture>();
-                descPicture->m_cornerColors = descColorPicture->m_cornerColors;
+                m_descPictures[i][j]->m_cornerColors = descColorPicture->m_cornerColors;
             }
         }
         kart2DCommon->changeUnicodeTexture(m_playerCounts[i].values(), 3, screen, "PCount", true);
