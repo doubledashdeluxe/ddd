@@ -172,7 +172,7 @@ pub fn client_poll_state() -> impl ComplexDataType {
 }
 
 pub fn client_poll_state_ready() -> impl ComplexDataType {
-    let karts = ArrayType::new(client_poll_kart(), 0, MAX_CLIENT_PLAYER_COUNT);
+    let karts = ArrayType::new(client_poll_kart(), 0, MAX_CLIENT_KART_COUNT);
     StructType::new("ClientPollStateReady")
         .with_field("karts", karts)
         .with_field("course_index", client_course_index())
@@ -194,5 +194,24 @@ pub fn client_course_index() -> impl ComplexDataType {
 
 pub fn client_state_race() -> impl ComplexDataType {
     let frame: SimpleDataType<u16> = SimpleDataType::new();
-    StructType::new("ClientStateRace").with_field("frame", frame)
+    let karts = ArrayType::new(client_race_kart(), 0, MAX_CLIENT_KART_COUNT);
+    StructType::new("ClientStateRace").with_field("frame", frame).with_field("karts", karts)
+}
+
+pub fn client_race_kart() -> impl ComplexDataType {
+    let pos_x: SimpleDataType<i16> = SimpleDataType::new();
+    let pos_y: SimpleDataType<i16> = SimpleDataType::new();
+    let pos_z: SimpleDataType<i16> = SimpleDataType::new();
+    let angle: SimpleDataType<i8> = SimpleDataType::new();
+    let vel_x: SimpleDataType<i16> = SimpleDataType::new();
+    let vel_y: SimpleDataType<i16> = SimpleDataType::new();
+    let vel_z: SimpleDataType<i16> = SimpleDataType::new();
+    StructType::new("ClientRaceKart")
+        .with_field("pos_x", pos_x)
+        .with_field("pos_y", pos_y)
+        .with_field("pos_z", pos_z)
+        .with_field("angle", angle)
+        .with_field("vel_x", vel_x)
+        .with_field("vel_y", vel_y)
+        .with_field("vel_z", vel_z)
 }

@@ -114,6 +114,8 @@
 800a9600 PPCMfmsr
 800a9608 PPCMtmsr
 800a96cc PPCMfhid2
+800a9774 PSMTXConcat
+800a9988 PSMTXRotRad
 800a9d6c C_MTXLookAt
 800aaacc Read
 800aafb4 DVDLowReadDiskID
@@ -337,6 +339,7 @@
 8010bac0 floor
 8010bf54 sin
 8010c02c tan
+8010c0c4 atan2
 8010c434 sqrt
 8010c474 strcasecmp
 
@@ -556,6 +559,7 @@
 8029fb60 dynamicsReset__8KartCtrlFv
 802aaf34 doChange__8KartGameFv
 802afcb0 doStatus__8KartGameFv
+802b1284 getBodyPos__8KartCtrlCFUlR5Vec3f
 802b14a0 getDriveCont__8KartCtrlFUl
 
 80333a20 __ptmf_null

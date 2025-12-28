@@ -1,10 +1,14 @@
 #include "KartCtrl.hh"
 
-KartPad *KartCtrl::getKartPad(u32 index) {
+KartPad *KartCtrl::getKartPad(u32 index) const {
     return m_kartPads[index];
 }
 
-KartCam *KartCtrl::getKartCam(u32 index) {
+KartBody *KartCtrl::getKartBody(u32 index) const {
+    return m_kartBodies[index];
+}
+
+KartCam *KartCtrl::getKartCam(u32 index) const {
     return m_kartCams[index];
 }
 

@@ -11,8 +11,10 @@ class ClientStateRace
     , private ServerStateRaceReader
     , private ServerRaceStateReader
     , private ServerRaceStateMainReader
+    , private ServerRaceKartReader
     , private ClientStateWriter::Race
-    , private ClientStateRaceWriter {
+    , private ClientStateRaceWriter
+    , private ClientRaceKartWriter {
 public:
     ClientStateRace(const ClientPlatform &platform, Connection &connection,
             const ClientStateRaceWriteInfo &writeInfo);
@@ -44,11 +46,44 @@ private:
     void setFrame(u16 frame) override;
     bool isClientFrameValid(u16 clientFrame) override;
     void setClientFrame(u16 clientFrame) override;
+    bool isKartFlagsValid(u8 kartFlags) override;
+    void setKartFlags(u8 kartFlags) override;
+    bool isKartsCountValid(u32 kartsCount) override;
+    void setKartsCount(u32 kartsCount) override;
+    ServerRaceKartReader *kartsElementReader(u32 i0) override;
+
+    bool isKartFrameValid(u16 kartFrame) override;
+    void setKartFrame(u16 kartFrame) override;
+    bool isPosXValid(s16 posX) override;
+    void setPosX(s16 posX) override;
+    bool isPosYValid(s16 posY) override;
+    void setPosY(s16 posY) override;
+    bool isPosZValid(s16 posZ) override;
+    void setPosZ(s16 posZ) override;
+    bool isAngleValid(s8 angle) override;
+    void setAngle(s8 angle) override;
+    bool isVelXValid(s16 posX) override;
+    void setVelX(s16 posX) override;
+    bool isVelYValid(s16 posY) override;
+    void setVelY(s16 posY) override;
+    bool isVelZValid(s16 posZ) override;
+    void setVelZ(s16 posZ) override;
 
     ClientStateRaceWriter &raceWriter() override;
 
     u16 getFrame() override;
+    u32 getKartsCount() override;
+    ClientRaceKartWriter &kartsElementWriter(u32 i0) override;
 
+    s16 getPosX() override;
+    s16 getPosY() override;
+    s16 getPosZ() override;
+    s8 getAngle() override;
+    s16 getVelX() override;
+    s16 getVelY() override;
+    s16 getVelZ() override;
+
+    u32 m_kartIndex;
     ReadInfo m_readInfo;
     WriteInfo m_writeInfo;
 };

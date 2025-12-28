@@ -1,6 +1,6 @@
 #pragma once
 
-#include <portable/Types.hh>
+#include <jsystem/TVec3.hh>
 
 class KartBody {
 public:
@@ -10,7 +10,26 @@ public:
     u8 getIndex() const;
 
 private:
-    u8 _000[0x578 - 0x000];
+    u8 _000[0x110 - 0x000];
+
+public:
+    Mtx34 m_mtx;
+    Mtx34 m_bodyMtx;
+
+private:
+    u8 _170[0x23c - 0x170];
+
+public:
+    Vec3f m_pos;
+
+private:
+    u8 _248[0x260 - 0x248];
+
+public:
+    Vec3f m_vel;
+
+private:
+    u8 _26c[0x578 - 0x26c];
     u32 m_gameStatus;
     u8 _57c[0x5b3 - 0x57c];
     u8 m_index;

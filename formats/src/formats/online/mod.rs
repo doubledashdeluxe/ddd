@@ -10,7 +10,7 @@ mod server_state;
 
 pub fn format() -> Format<impl ConstantList, impl TypeList> {
     let default_port = SimpleConstant::new("DEFAULT_PORT", 3549u16);
-    let protocol_version = SimpleConstant::new("PROTOCOL_VERSION", 10u32);
+    let protocol_version = SimpleConstant::new("PROTOCOL_VERSION", 11u32);
     let max_lap_count = SimpleConstant::new("MAX_LAP_COUNT", 9u8);
     let min_match_count = SimpleConstant::new("MIN_MATCH_COUNT", 1u8);
     let max_match_count = SimpleConstant::new("MAX_MATCH_COUNT", 96u8);
@@ -86,6 +86,7 @@ pub fn format() -> Format<impl ConstantList, impl TypeList> {
         .with_type(client_poll_state_ready())
         .with_type(client_poll_state())
         .with_type(client_state_poll())
+        .with_type(client_race_kart())
         .with_type(client_state_race())
         .with_type(client_state())
         .with_type(server_identity_unspecified())
@@ -109,6 +110,7 @@ pub fn format() -> Format<impl ConstantList, impl TypeList> {
         .with_type(server_poll_state_ready())
         .with_type(server_poll_state())
         .with_type(server_state_poll())
+        .with_type(server_race_kart())
         .with_type(server_race_state_main())
         .with_type(server_race_state())
         .with_type(server_state_race())

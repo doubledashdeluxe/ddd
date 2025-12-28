@@ -239,7 +239,7 @@ impl Client {
                         room.set_poll_state(&self.pk, poll.client_poll_state)?;
                         Ok(room_info)
                     }),
-                    None => Err(anyhow!("Unexpected client team state")),
+                    None => Err(anyhow!("Unexpected client poll state")),
                 };
                 let room_info = room_info.ok();
                 State::Poll { identity, room_info }
@@ -247,11 +247,11 @@ impl Client {
             (ClientState::Race(race), Some(identity), room_info) => {
                 let frame = race.frame;
                 let room_info = match room_info {
-                    Some(room_info) => rooms.get(&room_info.id).and_then(|room| {
-                        room.set_race(race)?;
+                    Some(room_info) => rooms.get(&room_info.id).and_then(|mut room| {
+                        room.set_race(&self.pk, race)?;
                         Ok(room_info)
                     }),
-                    None => Err(anyhow!("Unexpected client team state")),
+                    None => Err(anyhow!("Unexpected client race state")),
                 };
                 let room_info = room_info.ok();
                 State::Race { identity, room_info, frame }
@@ -416,11 +416,10 @@ impl Client {
             State::Race { room_info, frame: client_frame, .. } => {
                 let server_race_state = match room_info {
                     Some(room_info) => {
-                        let frame = rooms.read(&room_info.id, |room| room.frame());
-                        let Ok(Some(frame)) = frame else {
+                        let main = rooms.read(&room_info.id, |room| room.race_state(*client_frame));
+                        let Ok(Some(main)) = main else {
                             return Ok(None);
                         };
-                        let main = ServerRaceStateMain { frame, client_frame: *client_frame };
                         ServerRaceState::Main(main)
                     }
                     None => ServerRaceState::Error(()),

@@ -22,7 +22,7 @@ public:
     u32 m_roomCounter;
     u64 m_roomCode;
     Array<Kart, MaxRoomKartCount> m_karts;
-    Array<u8, MaxRoomKartCount> m_localKartIndices;
+    Array<u8, MaxClientKartCount> m_localKartIndices;
     bool m_spectating;
     bool m_isFFA;
     u8 m_teamCount;

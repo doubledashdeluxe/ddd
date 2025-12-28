@@ -1,5 +1,6 @@
 use std::array;
 use std::collections::hash_map::{Entry, HashMap};
+use std::ops::BitOr;
 use std::time::{Duration, Instant};
 
 use anyhow::Result;
@@ -276,12 +277,16 @@ impl Room {
         }
     }
 
-    pub fn frame(&self) -> Option<u16> {
+    pub fn race_state(&self, frame: u16) -> Option<ServerRaceStateMain> {
         match &self.state {
             State::Room => None,
             State::Team { .. } => None,
             State::Poll { .. } => None,
-            State::Race { frame, .. } => Some(*frame),
+            State::Race { states, .. } => {
+                let mut state = states.get(frame as usize)?.clone();
+                state.frame = states.len() as u16 - 1;
+                Some(state)
+            }
         }
     }
 
@@ -516,10 +521,31 @@ impl Room {
         Ok(())
     }
 
-    pub fn set_race(&self, race: ClientStateRace) -> Result<()> {
-        match &self.state {
-            State::Race { frame, .. } => {
-                debug!("{:?} {:?}", frame, race.frame);
+    pub fn set_race(&mut self, client_pk: &PublicKey, race: ClientStateRace) -> Result<()> {
+        let ClientStateRace { frame: client_frame, karts: client_karts } = race;
+        let kart_count = self.karts.iter().filter(|kart| kart.client_pk() == client_pk).count();
+        anyhow::ensure!(client_karts.len() == kart_count);
+        match &mut self.state {
+            State::Race { karts, .. } => {
+                let kart_indices = self
+                    .karts
+                    .iter()
+                    .enumerate()
+                    .filter(|(_, kart)| kart.client_pk() == client_pk)
+                    .map(|(i, _)| i as u8);
+                for (client_kart, kart_index) in client_karts.into_iter().zip(kart_indices) {
+                    let kart = ServerRaceKart {
+                        kart_frame: client_frame,
+                        pos_x: client_kart.pos_x,
+                        pos_y: client_kart.pos_y,
+                        pos_z: client_kart.pos_z,
+                        angle: client_kart.angle,
+                        vel_x: client_kart.vel_x,
+                        vel_y: client_kart.vel_y,
+                        vel_z: client_kart.vel_z,
+                    };
+                    karts[kart_index as usize] = Some(kart);
+                }
             }
             _ => anyhow::bail!("Invalid room state"),
         }
@@ -613,7 +639,21 @@ impl Room {
                     &mut self.rng,
                 );
             }
-            State::Race { frame, .. } => *frame += 1,
+            State::Race { karts, states, .. } => {
+                let kart_flags = karts
+                    .iter()
+                    .enumerate()
+                    .map(|(i, kart)| (kart.is_some() as u8) << i)
+                    .fold(0, BitOr::bitor);
+                let karts = karts.iter().filter_map(|kart| kart.clone()).collect();
+                let state = ServerRaceStateMain {
+                    frame: states.len() as u16,
+                    client_frame: states.len() as u16,
+                    kart_flags,
+                    karts,
+                };
+                states.push(state);
+            }
             _ => (),
         }
 
@@ -668,7 +708,8 @@ enum State {
     Race {
         team_state: Option<ServerTeamStateMain>,
         poll_state: ServerPollStateReady,
-        frame: u16,
+        karts: Vec<Option<ServerRaceKart>>,
+        states: Vec<ServerRaceStateMain>,
     },
 }
 
@@ -705,14 +746,16 @@ impl State {
     ) -> Self {
         let mut karts: Vec<_> =
             state.kart_indices.iter().map(|kart_index| karts.remove(kart_index).unwrap()).collect();
-        let selected_kart_index = rng.random_range(..karts.len() as u8);
+        let kart_count = karts.len();
+        let selected_kart_index = rng.random_range(..kart_count as u8);
         if let Some(host_course_index) = host_course_index {
             karts[selected_kart_index as usize].course_index = host_course_index;
         }
         Self::Race {
             team_state,
             poll_state: ServerPollStateReady { karts, selected_kart_index },
-            frame: 0,
+            karts: vec![None; kart_count],
+            states: vec![],
         }
     }
 }

@@ -20,6 +20,11 @@ const T &Max(const T &a, const T &b) {
 }
 
 template <typename T>
+const T &Clamp(const T &x, const T &a, const T &b) {
+    return Min(Max(x, a), b);
+}
+
+template <typename T>
 void Swap(T &a, T &b) {
     T tmp = a;
     a = b;

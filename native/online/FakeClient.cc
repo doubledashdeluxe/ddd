@@ -151,6 +151,14 @@ ClientState &FakeClient::writeStatePoll() {
 ClientState &FakeClient::writeStateRace() {
     ClientStateRaceWriteInfo writeInfo;
     writeInfo.frame = 0;
+    writeInfo.kartCount = 1;
+    writeInfo.karts[0].posX = 0;
+    writeInfo.karts[0].posY = 0;
+    writeInfo.karts[0].posZ = 0;
+    writeInfo.karts[0].angle = 0;
+    writeInfo.karts[0].velX = 0;
+    writeInfo.karts[0].velY = 0;
+    writeInfo.karts[0].velZ = 0;
     return m_state->writeStateRace(writeInfo);
 }
 

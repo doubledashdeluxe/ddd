@@ -198,9 +198,33 @@ pub fn server_race_state() -> impl ComplexDataType {
 pub fn server_race_state_main() -> impl ComplexDataType {
     let frame: SimpleDataType<u16> = SimpleDataType::new();
     let client_frame: SimpleDataType<u16> = SimpleDataType::new();
+    let kart_flags: SimpleDataType<u8> = SimpleDataType::new();
+    let karts = ArrayType::new(server_race_kart(), 0, MAX_ROOM_KART_COUNT);
     StructType::new("ServerRaceStateMain")
         .with_field("frame", frame)
         .with_field("client_frame", client_frame)
+        .with_field("kart_flags", kart_flags)
+        .with_field("karts", karts)
+}
+
+pub fn server_race_kart() -> impl ComplexDataType {
+    let kart_frame: SimpleDataType<u16> = SimpleDataType::new();
+    let pos_x: SimpleDataType<i16> = SimpleDataType::new();
+    let pos_y: SimpleDataType<i16> = SimpleDataType::new();
+    let pos_z: SimpleDataType<i16> = SimpleDataType::new();
+    let angle: SimpleDataType<i8> = SimpleDataType::new();
+    let vel_x: SimpleDataType<i16> = SimpleDataType::new();
+    let vel_y: SimpleDataType<i16> = SimpleDataType::new();
+    let vel_z: SimpleDataType<i16> = SimpleDataType::new();
+    StructType::new("ServerRaceKart")
+        .with_field("kart_frame", kart_frame)
+        .with_field("pos_x", pos_x)
+        .with_field("pos_y", pos_y)
+        .with_field("pos_z", pos_z)
+        .with_field("angle", angle)
+        .with_field("vel_x", vel_x)
+        .with_field("vel_y", vel_y)
+        .with_field("vel_z", vel_z)
 }
 
 pub const MAX_MOTD_LENGTH: u8 = 99;
