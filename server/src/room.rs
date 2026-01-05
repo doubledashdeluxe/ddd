@@ -1,5 +1,6 @@
 use std::array;
 use std::collections::hash_map::{Entry, HashMap};
+use std::iter;
 use std::ops::BitOr;
 use std::time::{Duration, Instant};
 
@@ -497,7 +498,7 @@ impl Room {
                         kart_id: client_kart.kart_id,
                         course_index,
                     };
-                    state.kart_indices.push(kart_index);
+                    state.kart_indices.push(kart_index).unwrap();
                     v.insert(server_kart);
                 }
                 if is_host_selection && is_host {
@@ -612,7 +613,8 @@ impl Room {
                     let Entry::Vacant(v) = karts.entry(kart_index) else {
                         continue;
                     };
-                    let character_ids: Vec<_> = (0..2).map(|_| self.rng.random()).collect();
+                    let character_ids: heapless::Vec<_, _> =
+                        (0..2).map(|_| self.rng.random()).collect();
                     let kart_id = loop {
                         let kart_id: KartId = self.rng.random();
                         if kart_id.compatible(&character_ids) {
@@ -621,7 +623,7 @@ impl Room {
                     };
                     let course_index = self.rng.random_range(..self.pack.course_count);
                     let kart = ServerPollKart { kart_index, character_ids, kart_id, course_index };
-                    state.kart_indices.push(kart_index);
+                    state.kart_indices.push(kart_index).unwrap();
                     v.insert(kart);
                     if course_selection == RoomOptionCourseSelection::Host && is_host {
                         host_course_index.get_or_insert(course_index);
@@ -720,7 +722,7 @@ impl State {
 
     fn new_team(kart_count: usize, deadline: Instant) -> Self {
         let state = ServerTeamStateMain {
-            teams: vec![0; kart_count],
+            teams: iter::repeat_n(0, kart_count).collect(),
             entry_index: 0,
             continuing: false as u8,
         };
@@ -730,7 +732,7 @@ impl State {
     fn new_poll(team_state: Option<ServerTeamStateMain>) -> Self {
         Self::Poll {
             team_state,
-            state: ServerPollStatePending { kart_indices: vec![] },
+            state: ServerPollStatePending { kart_indices: heapless::Vec::new() },
             karts: HashMap::new(),
             host_course_index: None,
             deadline: Instant::now() + Duration::from_secs(35),
@@ -744,7 +746,7 @@ impl State {
         host_course_index: Option<u8>,
         rng: &mut impl Rng,
     ) -> Self {
-        let mut karts: Vec<_> =
+        let mut karts: heapless::Vec<_, _> =
             state.kart_indices.iter().map(|kart_index| karts.remove(kart_index).unwrap()).collect();
         let kart_count = karts.len();
         let selected_kart_index = rng.random_range(..kart_count as u8);

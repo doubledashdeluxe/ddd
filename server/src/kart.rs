@@ -1,14 +1,20 @@
 use crate::crypto::PublicKey;
+use crate::formats::online::MAX_KART_PLAYER_COUNT;
 use crate::mmr::Mmr;
 use crate::player::Player;
 
+use heapless::Vec;
+
 pub struct Kart {
     client_pk: PublicKey,
-    players: Vec<Player>,
+    players: Vec<Player, { MAX_KART_PLAYER_COUNT as usize }>,
 }
 
 impl Kart {
-    pub fn new(client_pk: PublicKey, players: Vec<Player>) -> Kart {
+    pub fn new(
+        client_pk: PublicKey,
+        players: Vec<Player, { MAX_KART_PLAYER_COUNT as usize }>,
+    ) -> Kart {
         Kart { client_pk, players }
     }
 

@@ -24,7 +24,7 @@ impl<T: DataType> DataType for ArrayType<T> {
     }
 
     fn rs_name(&self) -> String {
-        format!("Vec<{}>", self.data_type.rs_name())
+        format!("heapless::Vec<{}, {}>", self.data_type.rs_name(), self.max_len)
     }
 
     fn rs_read(&self, name: &str) -> String {
@@ -41,16 +41,15 @@ impl<T: DataType> DataType for ArrayType<T> {
                 "if {} {{\n",
                 "    return Err(());\n",
                 "}}\n",
-                "let mut {} = Vec::with_capacity(*{}_len as usize);\n",
+                "let mut {} = heapless::Vec::new();\n",
                 "let buf = (0..*{}_len).try_fold(buf, |buf, _| {{\n",
                 "    {}\n",
-                "    {}.push({}_element);\n",
+                "    {}.push({}_element).unwrap();\n",
                 "    Ok(buf)\n",
                 "}})?;",
             ),
             name,
             len_check,
-            name,
             name,
             name,
             self.data_type.rs_read(&format!("{}_element", name)).replace("\n", "\n    "),

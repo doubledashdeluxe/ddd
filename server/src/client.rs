@@ -127,9 +127,9 @@ impl Client {
                             };
 
                             let players = if i < tandem_count {
-                                vec![player(i / 2 + 0), player(i / 2 + 1)]
+                                heapless::Vec::from([player(i / 2 + 0), player(i / 2 + 1)])
                             } else {
-                                vec![player(i + tandem_count)]
+                                heapless::Vec::from([player(i + tandem_count)])
                             };
                             Kart::new(self.pk, players)
                         })
@@ -286,9 +286,9 @@ impl Client {
             State::Idle => return Ok(None),
             State::Server { identity } => {
                 let protocol_version = PROTOCOL_VERSION;
-                let version = version::VERSION.into();
+                let version = heapless::Vec::try_from(version::VERSION.as_bytes())?;
                 let server_identity = if identity.is_some() {
-                    let motd = "test motd".into();
+                    let motd = heapless::Vec::try_from("test motd".as_bytes())?;
                     let player_count = player_count as u16;
                     let identity = ServerIdentitySpecified { motd, player_count };
                     ServerIdentity::Specified(identity)
@@ -327,7 +327,7 @@ impl Client {
                     RoomOptionFormat::TeamsOf2,
                     RoomOptionFormat::TeamsOf4,
                 ];
-                let format_player_counts: Vec<_> = formats
+                let format_player_counts: heapless::Vec<_, _> = formats
                     .into_iter()
                     .map(|format| {
                         let pack =
@@ -366,7 +366,7 @@ impl Client {
                                 spectator_count: room.spectator_count() as u16,
                                 mode_index: room.mode_index(),
                                 pack_course_count: pack.course_count,
-                                pack_hash: pack.hash.to_vec(),
+                                pack_hash: pack.hash.clone(),
                                 room_counter: room_info.counter,
                                 room_code: room.code().unwrap_or(u64::MAX),
                                 spectating_counter: room_info.spectating_counter,

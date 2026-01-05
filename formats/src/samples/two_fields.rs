@@ -1,6 +1,6 @@
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct TwoFields {
-    pub first: Vec<u32>,
+    pub first: heapless::Vec<u32, 3>,
     pub second: (),
 }
 
@@ -13,11 +13,11 @@ impl TwoFields {
         if *first_len < 1 || *first_len > 3 {
             return Err(());
         }
-        let mut first = Vec::with_capacity(*first_len as usize);
+        let mut first = heapless::Vec::new();
         let buf = (0..*first_len).try_fold(buf, |buf, _| {
             let (first_element_buf, buf) = buf.split_first_chunk().ok_or(())?;
             let first_element = u32::from_be_bytes(*first_element_buf);
-            first.push(first_element);
+            first.push(first_element).unwrap();
             Ok(buf)
         })?;
         let second = ();
