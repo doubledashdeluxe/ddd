@@ -21,7 +21,7 @@ pub struct Rooms {
     rooms: [Arc<HashMap<u128, Room>>; 2],
     counts: [Arc<AtomicUsize>; 2],
     search_rooms: [Arc<HashMap<Search, SearchRooms>>; 2],
-    mode_player_counts: [Arc<[AtomicUsize; MODE_INDEX_COUNT as usize]>; 2],
+    mode_player_counts: [Arc<[AtomicUsize; MODE_INDEX_COUNT]>; 2],
     long_code_ids: Arc<HashMap<u64, u128>>,
     short_code_ids: Arc<HashMap<u64, u128>>,
     short_codes: Arc<Queue<u64>>,
@@ -45,7 +45,7 @@ impl Rooms {
         self.counts[frame_rate as usize].load(Ordering::Relaxed)
     }
 
-    pub fn mode_player_counts(&self, frame_rate: FrameRate) -> [usize; MODE_INDEX_COUNT as usize] {
+    pub fn mode_player_counts(&self, frame_rate: FrameRate) -> [usize; MODE_INDEX_COUNT] {
         let counts = &self.mode_player_counts[frame_rate as usize];
         counts.each_ref().map(|count| count.load(Ordering::Relaxed))
     }
@@ -98,7 +98,7 @@ impl Rooms {
         ids.iter_mut_sync(|id| {
             let room = get(rooms, &id).ok().filter(|room| {
                 let room_kart_count = room.karts().len() + room.spectating_kart_count();
-                room_kart_count + karts.len() <= MAX_ROOM_KART_COUNT as usize
+                room_kart_count + karts.len() <= MAX_ROOM_KART_COUNT
             });
             if let Some(room) = room {
                 let diff = room.mmr().abs_diff(mmr);
@@ -129,7 +129,7 @@ impl Rooms {
     pub fn insert(
         &self,
         frame_rate: FrameRate,
-        karts: Vec<Kart, { MAX_CLIENT_KART_COUNT as usize }>,
+        karts: Vec<Kart, MAX_CLIENT_KART_COUNT>,
         mode_index: ModeIndex,
         pack: Pack,
         rng: &mut impl Rng,
@@ -166,7 +166,7 @@ impl Rooms {
         });
         self.counts[frame_rate as usize].store(count, Ordering::Relaxed);
         let search_rooms = &self.search_rooms[frame_rate as usize];
-        let mut mode_player_counts = [0; MODE_INDEX_COUNT as usize];
+        let mut mode_player_counts = [0; MODE_INDEX_COUNT];
         search_rooms.retain_sync(|search, SearchRooms { ids, player_count }| {
             *player_count = 0;
             ids.retain_sync(|id| {

@@ -3,24 +3,25 @@ use crate::str_ext::StrExt;
 
 pub struct ArrayType<T: DataType> {
     data_type: T,
-    min_len: u8,
-    max_len: u8,
+    min_len: usize,
+    max_len: usize,
 }
 
 impl<T: DataType> ArrayType<T> {
-    pub fn new(data_type: T, min_len: u8, max_len: u8) -> ArrayType<T> {
+    pub fn new(data_type: T, min_len: usize, max_len: usize) -> ArrayType<T> {
         assert!(min_len <= max_len);
+        assert!(max_len <= u8::MAX as usize);
         ArrayType { data_type, min_len, max_len }
     }
 }
 
 impl<T: DataType> DataType for ArrayType<T> {
     fn min_len(&self) -> usize {
-        1 + self.data_type.min_len() * self.min_len as usize
+        1 + self.data_type.min_len() * self.min_len
     }
 
     fn max_len(&self) -> usize {
-        1 + self.data_type.max_len() * self.max_len as usize
+        1 + self.data_type.max_len() * self.max_len
     }
 
     fn rs_name(&self) -> String {

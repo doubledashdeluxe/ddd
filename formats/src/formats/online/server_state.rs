@@ -227,7 +227,7 @@ pub fn server_race_kart() -> impl ComplexDataType {
         .with_field("vel_z", vel_z)
 }
 
-pub const MAX_MOTD_LENGTH: u8 = 99;
-pub const FORMAT_COUNT: u8 = 3;
-pub const MIN_KART_PLAYER_COUNT: u8 = 1;
-pub const MAX_KART_PLAYER_COUNT: u8 = 2;
+pub const MAX_MOTD_LENGTH: usize = 99;
+pub const FORMAT_COUNT: usize = 3;
+pub const MIN_KART_PLAYER_COUNT: usize = 1;
+pub const MAX_KART_PLAYER_COUNT: usize = 2;

@@ -42,3 +42,4 @@ impl_simple_constant!(u8, "u8");
 impl_simple_constant!(u16, "u16");
 impl_simple_constant!(u32, "u32");
 impl_simple_constant!(u64, "u64");
+impl_simple_constant!(usize, "size_t");

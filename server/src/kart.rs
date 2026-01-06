@@ -8,14 +8,11 @@ use heapless::Vec;
 #[derive(Clone, Debug)]
 pub struct Kart {
     client_pk: PublicKey,
-    players: Vec<Player, { MAX_KART_PLAYER_COUNT as usize }>,
+    players: Vec<Player, MAX_KART_PLAYER_COUNT>,
 }
 
 impl Kart {
-    pub fn new(
-        client_pk: PublicKey,
-        players: Vec<Player, { MAX_KART_PLAYER_COUNT as usize }>,
-    ) -> Kart {
+    pub fn new(client_pk: PublicKey, players: Vec<Player, MAX_KART_PLAYER_COUNT>) -> Kart {
         Kart { client_pk, players }
     }
 

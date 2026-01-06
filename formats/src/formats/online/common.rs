@@ -129,12 +129,12 @@ pub fn kart_id() -> impl ComplexDataType {
         .with_variant("Extra")
 }
 
-pub const MAX_VERSION_LENGTH: u8 = 19;
-pub const MIN_CLIENT_PLAYER_COUNT: u8 = 1;
-pub const MAX_CLIENT_PLAYER_COUNT: u8 = 4;
-pub const MAX_CLIENT_KART_COUNT: u8 = 4;
-pub const KART_CHARACTER_COUNT: u8 = 2;
-pub const PLAYER_NAME_LENGTH: u8 = 3;
-pub const MODE_INDEX_COUNT: u8 = 5;
-pub const MAX_ROOM_KART_COUNT: u8 = 8;
-pub const MAX_TEAM_COUNT: u8 = 4;
+pub const MAX_VERSION_LENGTH: usize = 19;
+pub const MIN_CLIENT_PLAYER_COUNT: usize = 1;
+pub const MAX_CLIENT_PLAYER_COUNT: usize = 4;
+pub const MAX_CLIENT_KART_COUNT: usize = 4;
+pub const KART_CHARACTER_COUNT: usize = 2;
+pub const PLAYER_NAME_LENGTH: usize = 3;
+pub const MODE_INDEX_COUNT: usize = 5;
+pub const MAX_ROOM_KART_COUNT: usize = 8;
+pub const MAX_TEAM_COUNT: usize = 4;

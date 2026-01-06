@@ -18,8 +18,8 @@ use crate::pack::Pack;
 
 pub struct Room {
     host_pk: Option<PublicKey>,
-    karts: heapless::Vec<Kart, { MAX_ROOM_KART_COUNT as usize }>,
-    spectating_karts: HashMap<PublicKey, heapless::Vec<Kart, { MAX_CLIENT_KART_COUNT as usize }>>,
+    karts: heapless::Vec<Kart, MAX_ROOM_KART_COUNT>,
+    spectating_karts: HashMap<PublicKey, heapless::Vec<Kart, MAX_CLIENT_KART_COUNT>>,
     spectator_count: usize,
     max_kart_count: usize,
     max_client_kart_count: usize,
@@ -42,8 +42,8 @@ impl Room {
     ) -> Self {
         let config = Config {
             host_karts: heapless::Vec::new(),
-            max_kart_count: MAX_ROOM_KART_COUNT as usize,
-            max_client_kart_count: MAX_CLIENT_KART_COUNT as usize,
+            max_kart_count: MAX_ROOM_KART_COUNT,
+            max_client_kart_count: MAX_CLIENT_KART_COUNT,
             mode_index,
             pack,
             id,
@@ -72,7 +72,7 @@ impl Room {
     }
 
     pub fn new_personal(
-        host_karts: heapless::Vec<Kart, { MAX_CLIENT_KART_COUNT as usize }>,
+        host_karts: heapless::Vec<Kart, MAX_CLIENT_KART_COUNT>,
         mode_index: ModeIndex,
         pack: Pack,
         id: u128,
@@ -81,8 +81,8 @@ impl Room {
     ) -> Self {
         let config = Config {
             host_karts,
-            max_kart_count: MAX_ROOM_KART_COUNT as usize,
-            max_client_kart_count: MAX_CLIENT_KART_COUNT as usize,
+            max_kart_count: MAX_ROOM_KART_COUNT,
+            max_client_kart_count: MAX_CLIENT_KART_COUNT,
             mode_index,
             pack,
             id,
@@ -214,17 +214,17 @@ impl Room {
     }
 
     fn balance_teams(&mut self, teams: &mut [u8]) {
-        let mut team_sizes = [0; MAX_TEAM_COUNT as usize];
+        let mut team_sizes = [0; MAX_TEAM_COUNT];
         for team in teams.iter() {
             team_sizes[*team as usize] += 1;
         }
 
         let kart_count = teams.len();
-        let mut karts: [_; MAX_ROOM_KART_COUNT as usize] = array::from_fn(|i| i);
+        let mut karts: [_; MAX_ROOM_KART_COUNT] = array::from_fn(|i| i);
         karts[..kart_count].shuffle(&mut self.rng);
 
         let team_count = self.team_count() as usize;
-        let mut other_teams: [_; MAX_TEAM_COUNT as usize] = array::from_fn(|i| i);
+        let mut other_teams: [_; MAX_TEAM_COUNT] = array::from_fn(|i| i);
         other_teams[..team_count].shuffle(&mut self.rng);
 
         let max_team_size = kart_count.div_ceil(team_count);
@@ -303,7 +303,7 @@ impl Room {
 
     pub fn insert(
         &mut self,
-        guest_karts: heapless::Vec<Kart, { MAX_CLIENT_KART_COUNT as usize }>,
+        guest_karts: heapless::Vec<Kart, MAX_CLIENT_KART_COUNT>,
     ) -> Result<bool> {
         anyhow::ensure!(guest_karts.len() <= self.max_client_kart_count);
         if !self.has_room_lock() && self.karts.len() + guest_karts.len() <= self.max_kart_count {
@@ -695,7 +695,7 @@ pub struct CodePair {
 }
 
 struct Config<'a, R: Rng> {
-    host_karts: heapless::Vec<Kart, { MAX_CLIENT_KART_COUNT as usize }>,
+    host_karts: heapless::Vec<Kart, MAX_CLIENT_KART_COUNT>,
     max_kart_count: usize,
     max_client_kart_count: usize,
     mode_index: ModeIndex,
@@ -716,14 +716,14 @@ enum State {
     Poll {
         team_state: Option<ServerTeamStateMain>,
         state: ServerPollStatePending,
-        karts: LinearMap<u8, ServerPollKart, { MAX_ROOM_KART_COUNT as usize }>,
+        karts: LinearMap<u8, ServerPollKart, MAX_ROOM_KART_COUNT>,
         host_course_index: Option<u8>,
         deadline: Instant,
     },
     Race {
         team_state: Option<ServerTeamStateMain>,
         poll_state: ServerPollStateReady,
-        karts: heapless::Vec<Option<ServerRaceKart>, { MAX_ROOM_KART_COUNT as usize }>,
+        karts: heapless::Vec<Option<ServerRaceKart>, MAX_ROOM_KART_COUNT>,
         states: Vec<ServerRaceStateMain>,
     },
 }
@@ -755,7 +755,7 @@ impl State {
     fn new_race(
         team_state: Option<ServerTeamStateMain>,
         state: &ServerPollStatePending,
-        karts: &mut LinearMap<u8, ServerPollKart, { MAX_ROOM_KART_COUNT as usize }>,
+        karts: &mut LinearMap<u8, ServerPollKart, MAX_ROOM_KART_COUNT>,
         host_course_index: Option<u8>,
         rng: &mut impl Rng,
     ) -> Self {
