@@ -112,7 +112,7 @@ impl Client {
             (ClientState::Room(room), Some(identity), room_info) => {
                 let mut karts = || {
                     let kart_count = identity.kart_count as usize;
-                    let karts: Vec<_> = (0..kart_count)
+                    let karts: heapless::Vec<_, _> = (0..kart_count)
                         .map(|i| {
                             let players = &identity.players;
                             let tandem_count = players.len() - kart_count;
@@ -286,9 +286,9 @@ impl Client {
             State::Idle => return Ok(None),
             State::Server { identity } => {
                 let protocol_version = PROTOCOL_VERSION;
-                let version = heapless::Vec::try_from(version::VERSION.as_bytes())?;
+                let version = heapless::Vec::try_from(version::VERSION.as_bytes()).unwrap();
                 let server_identity = if identity.is_some() {
-                    let motd = heapless::Vec::try_from("test motd".as_bytes())?;
+                    let motd = heapless::Vec::try_from("test motd".as_bytes()).unwrap();
                     let player_count = player_count as u16;
                     let identity = ServerIdentitySpecified { motd, player_count };
                     ServerIdentity::Specified(identity)

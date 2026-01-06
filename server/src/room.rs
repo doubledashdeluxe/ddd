@@ -5,6 +5,7 @@ use std::ops::BitOr;
 use std::time::{Duration, Instant};
 
 use anyhow::Result;
+use heapless::linear_map::{self, LinearMap};
 use log::debug;
 use rand::seq::SliceRandom;
 use rand::{Rng, SeedableRng};
@@ -17,8 +18,8 @@ use crate::pack::Pack;
 
 pub struct Room {
     host_pk: Option<PublicKey>,
-    karts: Vec<Kart>,
-    spectating_karts: HashMap<PublicKey, Vec<Kart>>,
+    karts: heapless::Vec<Kart, { MAX_ROOM_KART_COUNT as usize }>,
+    spectating_karts: HashMap<PublicKey, heapless::Vec<Kart, { MAX_CLIENT_KART_COUNT as usize }>>,
     spectator_count: usize,
     max_kart_count: usize,
     max_client_kart_count: usize,
@@ -40,7 +41,7 @@ impl Room {
         rng: &mut impl Rng,
     ) -> Self {
         let config = Config {
-            host_karts: vec![],
+            host_karts: heapless::Vec::new(),
             max_kart_count: MAX_ROOM_KART_COUNT as usize,
             max_client_kart_count: MAX_CLIENT_KART_COUNT as usize,
             mode_index,
@@ -56,7 +57,7 @@ impl Room {
 
     pub fn new_duel(pack: Pack, id: u128, rng: &mut impl Rng) -> Self {
         let config = Config {
-            host_karts: vec![],
+            host_karts: heapless::Vec::new(),
             max_kart_count: 2,
             max_client_kart_count: 1,
             mode_index: ModeIndex::Versus,
@@ -71,7 +72,7 @@ impl Room {
     }
 
     pub fn new_personal(
-        host_karts: Vec<Kart>,
+        host_karts: heapless::Vec<Kart, { MAX_CLIENT_KART_COUNT as usize }>,
         mode_index: ModeIndex,
         pack: Pack,
         id: u128,
@@ -129,7 +130,7 @@ impl Room {
         };
         Room {
             host_pk: config.host_karts.first().map(Kart::client_pk).copied(),
-            karts: config.host_karts,
+            karts: config.host_karts.into_iter().collect(),
             spectating_karts: HashMap::new(),
             spectator_count: 0,
             max_kart_count: config.max_kart_count,
@@ -300,7 +301,10 @@ impl Room {
         }
     }
 
-    pub fn insert(&mut self, guest_karts: Vec<Kart>) -> Result<bool> {
+    pub fn insert(
+        &mut self,
+        guest_karts: heapless::Vec<Kart, { MAX_CLIENT_KART_COUNT as usize }>,
+    ) -> Result<bool> {
         anyhow::ensure!(guest_karts.len() <= self.max_client_kart_count);
         if !self.has_room_lock() && self.karts.len() + guest_karts.len() <= self.max_kart_count {
             self.karts.extend(guest_karts);
@@ -319,7 +323,14 @@ impl Room {
         }
 
         if spectating {
-            let karts = self.karts.extract_if(.., |kart| kart.client_pk() == client_pk).collect();
+            let mut karts = heapless::Vec::new();
+            self.karts.retain(|kart| {
+                let retain = kart.client_pk() != client_pk;
+                if !retain {
+                    karts.push(kart.clone()).unwrap();
+                }
+                retain
+            });
             self.spectating_karts.insert(*client_pk, karts);
         } else if let Entry::Occupied(o) = self.spectating_karts.entry(*client_pk) {
             if o.get().len() + self.karts.len() > self.max_kart_count {
@@ -328,7 +339,9 @@ impl Room {
 
             let karts = o.remove();
             if self.is_host(client_pk) {
-                self.karts.splice(0..0, karts);
+                for kart in karts.into_iter().rev() {
+                    self.karts.insert(0, kart).unwrap();
+                }
             } else {
                 self.karts.extend(karts);
             }
@@ -485,7 +498,7 @@ impl Room {
                     .map(|(i, _)| i as u8);
                 let is_host_selection = course_selection == RoomOptionCourseSelection::Host;
                 for (client_kart, kart_index) in client_karts.into_iter().zip(kart_indices) {
-                    let Entry::Vacant(v) = server_karts.entry(kart_index) else {
+                    let linear_map::Entry::Vacant(v) = server_karts.entry(kart_index) else {
                         continue;
                     };
                     let course_index = match course_index {
@@ -499,7 +512,7 @@ impl Room {
                         course_index,
                     };
                     state.kart_indices.push(kart_index).unwrap();
-                    v.insert(server_kart);
+                    v.insert(server_kart).unwrap();
                 }
                 if is_host_selection && is_host {
                     *host_course_index = course_index;
@@ -585,7 +598,7 @@ impl Room {
                 self.spectating_karts.retain(|_, karts| {
                     let retain = self.karts.len() + karts.len() > self.max_kart_count;
                     if !retain {
-                        self.karts.append(karts);
+                        self.karts.extend(karts.drain(..));
                     }
                     retain
                 });
@@ -610,7 +623,7 @@ impl Room {
                 for (kart_index, kart) in self.karts.iter().enumerate() {
                     let kart_index = kart_index as u8;
                     let is_host = Some(kart.client_pk()) == self.host_pk.as_ref();
-                    let Entry::Vacant(v) = karts.entry(kart_index) else {
+                    let linear_map::Entry::Vacant(v) = karts.entry(kart_index) else {
                         continue;
                     };
                     let character_ids: heapless::Vec<_, _> =
@@ -624,7 +637,7 @@ impl Room {
                     let course_index = self.rng.random_range(..self.pack.course_count);
                     let kart = ServerPollKart { kart_index, character_ids, kart_id, course_index };
                     state.kart_indices.push(kart_index).unwrap();
-                    v.insert(kart);
+                    v.insert(kart).unwrap();
                     if course_selection == RoomOptionCourseSelection::Host && is_host {
                         host_course_index.get_or_insert(course_index);
                     }
@@ -682,7 +695,7 @@ pub struct CodePair {
 }
 
 struct Config<'a, R: Rng> {
-    host_karts: Vec<Kart>,
+    host_karts: heapless::Vec<Kart, { MAX_CLIENT_KART_COUNT as usize }>,
     max_kart_count: usize,
     max_client_kart_count: usize,
     mode_index: ModeIndex,
@@ -703,14 +716,14 @@ enum State {
     Poll {
         team_state: Option<ServerTeamStateMain>,
         state: ServerPollStatePending,
-        karts: HashMap<u8, ServerPollKart>,
+        karts: LinearMap<u8, ServerPollKart, { MAX_ROOM_KART_COUNT as usize }>,
         host_course_index: Option<u8>,
         deadline: Instant,
     },
     Race {
         team_state: Option<ServerTeamStateMain>,
         poll_state: ServerPollStateReady,
-        karts: Vec<Option<ServerRaceKart>>,
+        karts: heapless::Vec<Option<ServerRaceKart>, { MAX_ROOM_KART_COUNT as usize }>,
         states: Vec<ServerRaceStateMain>,
     },
 }
@@ -733,7 +746,7 @@ impl State {
         Self::Poll {
             team_state,
             state: ServerPollStatePending { kart_indices: heapless::Vec::new() },
-            karts: HashMap::new(),
+            karts: LinearMap::new(),
             host_course_index: None,
             deadline: Instant::now() + Duration::from_secs(35),
         }
@@ -742,7 +755,7 @@ impl State {
     fn new_race(
         team_state: Option<ServerTeamStateMain>,
         state: &ServerPollStatePending,
-        karts: &mut HashMap<u8, ServerPollKart>,
+        karts: &mut LinearMap<u8, ServerPollKart, { MAX_ROOM_KART_COUNT as usize }>,
         host_course_index: Option<u8>,
         rng: &mut impl Rng,
     ) -> Self {
@@ -756,7 +769,7 @@ impl State {
         Self::Race {
             team_state,
             poll_state: ServerPollStateReady { karts, selected_kart_index },
-            karts: vec![None; kart_count],
+            karts: iter::repeat_n(None, kart_count).collect(),
             states: vec![],
         }
     }

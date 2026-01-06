@@ -4,6 +4,7 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 use anyhow::{Context, Result};
+use heapless::Vec;
 use rand::Rng;
 use scc::hash_map::{Entry, HashMap, OccupiedEntry, VacantEntry};
 use scc::{HashSet, Queue};
@@ -128,7 +129,7 @@ impl Rooms {
     pub fn insert(
         &self,
         frame_rate: FrameRate,
-        karts: Vec<Kart>,
+        karts: Vec<Kart, { MAX_CLIENT_KART_COUNT as usize }>,
         mode_index: ModeIndex,
         pack: Pack,
         rng: &mut impl Rng,

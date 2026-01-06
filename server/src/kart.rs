@@ -5,6 +5,7 @@ use crate::player::Player;
 
 use heapless::Vec;
 
+#[derive(Clone, Debug)]
 pub struct Kart {
     client_pk: PublicKey,
     players: Vec<Player, { MAX_KART_PLAYER_COUNT as usize }>,
