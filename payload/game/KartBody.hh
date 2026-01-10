@@ -29,7 +29,13 @@ public:
     Vec3f m_vel;
 
 private:
-    u8 _26c[0x578 - 0x26c];
+    u8 _26c[0x3ec - 0x26c];
+
+public:
+    f32 m_speed;
+
+private:
+    u8 _3f0[0x578 - 0x3f0];
     u32 m_gameStatus;
     u8 _57c[0x5b3 - 0x57c];
     u8 m_index;

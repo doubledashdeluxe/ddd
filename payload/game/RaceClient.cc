@@ -236,7 +236,9 @@ bool RaceClient::clientStateRace(const ClientStateRaceReadInfo &readInfo) {
         PSMTXConcat(kartBody->m_bodyMtx, mtx, kartBody->m_bodyMtx);
         kartDiff.angle -= angleDiff;
         TVec3<f32> velDiff = t * kartDiff.vel;
-        kartBody->m_vel += velDiff;
+        Vec3f &vel = kartBody->m_vel;
+        vel += velDiff;
+        kartBody->m_speed = sqrt(vel.x * vel.x + vel.y * vel.y + vel.z * vel.z);
         kartDiff.vel -= velDiff;
         // Corrections should only be applied once even if a diff is reported for multiple frames.
         Ring<KartState, 30> &kartStates = m_kartStates[i];
