@@ -24,6 +24,10 @@ bool RaceMgr::isReplay() const {
     return m_isReplay;
 }
 
+RaceMgr::Console &RaceMgr::console(u32 index) const {
+    return m_consoles[index];
+}
+
 KartChecker *RaceMgr::kartChecker(u32 index) const {
     return m_kartCheckers[index];
 }
@@ -33,8 +37,8 @@ KartLoader *RaceMgr::kartLoader(u32 index) const {
 }
 
 void RaceMgr::calcRace(s32 adjustment) {
+    m_raceDirector->calc();
     if (adjustment <= 0) {
-        m_raceDirector->calc();
         MotorManager::Instance()->exec();
         J2DManager::Instance()->calc();
         ItemObjMgr::Instance()->clearKartItemUseTriggerList();

@@ -11,8 +11,8 @@
 #include <jsystem/J2DPane.hh>
 
 void LANNum2D::init() {
-    u16 consoleCount = RaceInfo::Instance().getConsoleCount();
-    for (u16 i = 1; i <= consoleCount; i++) {
+    u32 consoleCount = RaceInfo::Instance().getConsoleCount();
+    for (u32 i = 1; i <= consoleCount; i++) {
         for (u32 j = 1; j <= (consoleCount <= 2 || i == 1 ? 2 : 1); j++) {
             m_screen->search("NP%u%u", i, j)->setHasARTrans(false, true);
         }
@@ -24,10 +24,10 @@ void LANNum2D::init() {
 void LANNum2D::start() {
     REPLACED(start)();
 
-    if (SequenceInfo::Instance().m_isOnline) {
+    const OnlineInfo &onlineInfo = OnlineInfo::Instance();
+    if (SequenceInfo::Instance().m_isOnline && !onlineInfo.m_spectating) {
         m_screen->search("NLan")->m_isVisible = true;
-        u16 statusCount = RaceInfo::Instance().getStatusCount();
-        const OnlineInfo &onlineInfo = OnlineInfo::Instance();
+        u32 statusCount = RaceInfo::Instance().getStatusCount();
         for (u32 i = 0; i < statusCount; i++) {
             u32 kartIndex = J2DManager::StatusKart(i);
             u32 colorIndex = onlineInfo.colorIndex(kartIndex);

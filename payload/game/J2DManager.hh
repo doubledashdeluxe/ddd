@@ -1,9 +1,10 @@
 #pragma once
 
-#include <portable/Types.hh>
+#include <jsystem/JKRArchive.hh>
 
 class J2DManager {
 public:
+    JKRArchive *archive() const;
     s32 goalAnmFrame() const;
     void calc();
 
@@ -12,7 +13,8 @@ public:
     static u32 StatusKart(u32 statusIndex);
 
 private:
-    u8 _00[0x0c - 0x00];
+    JKRArchive *m_archive;
+    u8 _04[0x0c - 0x04];
     s32 m_goalAnmFrame;
     u8 _10[0x48 - 0x10];
 

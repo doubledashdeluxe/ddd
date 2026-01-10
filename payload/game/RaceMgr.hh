@@ -11,11 +11,21 @@
 
 class RaceMgr {
 public:
+    class Console {
+    public:
+        void changeTarget(u32 targetKart, bool isDemo);
+
+    private:
+        u8 _00[0x10 - 0x00];
+    };
+    size_assert(Console, 0x10);
+
     RaceDirector *raceDirector() const;
     RaceDrawer *raceDrawer() const;
     u8 loopFrame() const;
     u32 frame() const;
     bool isReplay() const;
+    Console &console(u32 index) const;
     KartChecker *kartChecker(u32 index) const;
     KartLoader *kartLoader(u32 index) const;
     void calcRace();
@@ -37,7 +47,9 @@ private:
     u8 _28[0x2c - 0x28];
     u16 : 15;
     bool m_isReplay : 1;
-    u8 _2e[0x48 - 0x2e];
+    u8 _2e[0x40 - 0x2e];
+    Console *m_consoles;
+    u8 _44[0x48 - 0x44];
     KartChecker *m_kartCheckers[8];
     KartLoader *m_kartLoaders[8];
     Award2D *m_award2D;

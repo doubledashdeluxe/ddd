@@ -390,6 +390,9 @@
 8014e9ac getCharacterInfo__6Race2DFllRfRfRf
 8014e9dc getCharacterColor__6Race2DFlllR7GXColorR7GXColorRUc
 8014efd8 getItemInfo__6Race2DFlllRfRfRf
+8014f22c calcLapInit__6Race2DFv
+8014f2b8 calcLap__6Race2DFv
+8014fa54 calcItem__6Race2DFv
 801508cc getStartScaleB__6Race2DFlRf
 80150d18 getStartCharPos__6Race2DFllRf
 80150e18 getGoalCharPos__6Race2DFllRf
@@ -421,6 +424,9 @@
 801737cc stateNextBattle__14SceneMapSelectFv
 80173d50 __ct__12BattleName2DFP10JKRArchive
 80173e34 getBattleNameTexture__12BattleName2DFUl
+801744d0 __ct__13CanNotSaveG2DFP7JKRHeap
+80174614 draw__13CanNotSaveG2DFv
+801746b0 calc__13CanNotSaveG2DFv
 80176800 init__8LANNum2DFv
 80176b0c start__8LANNum2DFv
 80176c0c start2__8LANNum2DFv
@@ -434,6 +440,7 @@
 8018899c calcRace__7RaceMgrFv
 80188a54 framework__7RaceMgrFv
 80188b44 updateRace__7RaceMgrFv
+8018970c changeTarget__Q27RaceMgr7ConsoleFUlb
 80189bb0 setHeapGroup__8SysDebugFPCcP7JKRHeap
 80189bb4 setDefaultHeapGroup__8SysDebugFP7JKRHeap
 80189c64 createHeapInfo__8SysDebugFP7JKRHeapPCc
@@ -553,6 +560,7 @@
 8026712c GetScreenPos__6SiUtilFlRC5Vec3fR5Vec2f
 802953dc setPosition__11ZCaptureMgrFUlUlss
 80295410 getZValue__11ZCaptureMgrFUlUl
+8029e080 debugCamera__7KartCamFPCcUl
 8029eb08 init__7KartCamFb
 8029f190 doCameraMode__7KartCamFv
 8029f63c dynamicsInit__8KartCtrlFb
@@ -561,6 +569,8 @@
 802afcb0 doStatus__8KartGameFv
 802b1284 getBodyPos__8KartCtrlCFUlR5Vec3f
 802b14a0 getDriveCont__8KartCtrlFUl
+802b33c8 setPtr__7KartCamFv
+802b60a0 initOutView__7KartCamFv
 
 80333a20 __ptmf_null
 
@@ -588,6 +598,7 @@
 803802ac __THPLCWork640
 
 80389d80 s_spinRotate__6Race2D
+80389da0 s_preLap__6Race2D
 80389e00 s_thunderAnm__6Race2D
 
 803ae998 s_volumeList__13JKRFileLoader

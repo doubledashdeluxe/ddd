@@ -2,6 +2,7 @@
 
 #include "game/J2DManager.hh"
 #include "game/Kart2DCommon.hh"
+#include "game/KartCtrl.hh"
 #include "game/OnlineInfo.hh"
 #include "game/RaceApp.hh"
 #include "game/RaceInfo.hh"
@@ -48,6 +49,104 @@ void Race2D::setMinimapConfig(const MinimapConfig &minimapConfig) {
     m_minimapConfig = minimapConfig;
 }
 
+void Race2D::drawPlayerMark() {
+    if (!SequenceInfo::Instance().m_isOnline) {
+        REPLACED(drawPlayerMark)();
+        return;
+    }
+
+    if (!m_isVisible) {
+        return;
+    }
+
+    m_graphContext->setViewport();
+    GXClearVtxDesc();
+    GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
+    GXSetVtxDesc(GX_VA_CLR0, GX_DIRECT);
+    GXSetVtxDesc(GX_VA_TEX0, GX_DIRECT);
+    for (u32 i = 0; i < 3; i++) {
+        GXSetVtxAttrFmt(i, GX_VA_POS, GX_POS_XY, GX_F32, 0);
+        GXSetVtxAttrFmt(i, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
+        GXSetVtxAttrFmt(i, GX_VA_TEX0, GX_TEX_ST, GX_U8, i == 1 ? 0 : 7);
+    }
+    for (u32 i = 0; i < 2; i++) {
+        GXSetTevColorOp(i, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, true, GX_TEVPREV);
+        GXSetTevAlphaOp(i, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, true, GX_TEVPREV);
+        GXSetTexCoordGen2(i, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY, false, GX_PTIDENTITY);
+    }
+    GXSetCurrentMtx(0);
+    const OnlineInfo &onlineInfo = OnlineInfo::Instance();
+    const RaceInfo &raceInfo = RaceInfo::Instance();
+    u32 statusCount = raceInfo.getStatusCount();
+    u32 kartCount = raceInfo.getKartCount();
+    f32 scale = statusCount > 2 ? 0.75f : statusCount == 2 ? 0.85f : 1.0f;
+    const RaceMgr *raceMgr = RaceMgr::Instance();
+    const KartCtrl *kartCtrl = KartCtrl::Instance();
+    for (u32 i = 0; i < statusCount; i++) {
+        const Scissor &scissor = m_scissors[i];
+        GXSetScissor(scissor.x, scissor.y, scissor.w, scissor.h);
+        for (u32 j = 0; j < kartCount; j++) {
+            u32 kartIndex = m_playerMarkIndices[i][j];
+            if (!onlineInfo.m_spectating && J2DManager::KartStatus(kartIndex) == i) {
+                continue;
+            }
+            if (!raceMgr->raceDrawer()->kartDrawer(kartIndex)->isVisible()) {
+                continue;
+            }
+            if (kartCtrl->getKartCam(i)->hasJumped()) {
+                continue;
+            }
+            K2DPicture *picture = m_playerMarkPictures[i][kartIndex];
+            const TBox2<f32> &box = picture->getBox();
+            const Vec2f &pos = m_playerMarkPositions[i][kartIndex];
+            TVec2<f32> size = scale * (box.end - box.start);
+            f32 x = pos.x;
+            f32 y = pos.y - size.y;
+            picture->drawK2D(x, y, size.x, size.y, true);
+            u32 playerCount = onlineInfo.m_karts[kartIndex].playerCount;
+            for (u32 k = 0; k < playerCount; k++) {
+                for (u32 l = 0; l < 3; l++) {
+                    K2DPicture *charPicture = m_playerNamePictures[kartIndex][k][l];
+                    charPicture->m_alpha = picture->m_alpha;
+                    TVec2<f32> charSize = 14.0f / 64.0f * size;
+                    f32 charX = x + (26.0f + 12.0f * l) / 64.0f * size.x;
+                    f32 charY = y + (29.0f - 12.0f * (playerCount - k)) / 64.0f * size.y;
+                    charPicture->drawK2D(charX, charY, charSize.x, charSize.y, true);
+                }
+            }
+        }
+    }
+    u32 x = System::Get2DScisX();
+    u32 y = System::Get2DScisY();
+    u32 w = System::Get2DScisW();
+    u32 h = System::Get2DScisH();
+    GXSetScissor(x, y, w, h);
+}
+
+void Race2D::drawCourse() {
+    REPLACED(drawCourse)();
+
+    if (!m_isVisible) {
+        return;
+    }
+
+    if (SequenceInfo::Instance().m_isOnline && OnlineInfo::Instance().m_spectating) {
+        m_canNotSaveG2D->draw();
+    }
+}
+
+void Race2D::calc() {
+    REPLACED(calc)();
+
+    if (!m_isVisible) {
+        return;
+    }
+
+    if (SequenceInfo::Instance().m_isOnline && OnlineInfo::Instance().m_spectating) {
+        m_canNotSaveG2D->calc();
+    }
+}
+
 Race2D *Race2D::Instance() {
     return s_instance;
 }
@@ -69,6 +168,11 @@ void Race2D::setup() {
     u32 statusCount = raceInfo.getStatusCount();
 
     if (isOnline) {
+        if (onlineInfo.m_spectating) {
+            m_canNotSaveG2D = new CanNotSaveG2D(JKRHeap::GetCurrentHeap());
+            m_canNotSaveG2D->setupOnline();
+        }
+
         for (u32 i = consoleCount * 2; i < 8; i++) {
             for (u32 j = 0; j < 2; j++) {
                 for (u32 k = 0; k < 3; k++) {
@@ -178,73 +282,22 @@ void Race2D::setup() {
     }
 }
 
-void Race2D::drawPlayerMark() {
-    if (!SequenceInfo::Instance().m_isOnline) {
-        REPLACED(drawPlayerMark)();
-        return;
+void Race2D::calcLap() {
+    if (SequenceInfo::Instance().m_isOnline && OnlineInfo::Instance().m_spectating) {
+        u32 kartIndex = J2DManager::StatusKart(0);
+        KartChecker *kartChecker = RaceMgr::Instance()->kartChecker(kartIndex);
+        s_preLap[0] = kartChecker->lap();
     }
 
-    if (!m_isVisible) {
-        return;
+    REPLACED(calcLap)();
+}
+
+void Race2D::anmTA(s32 status) {
+    if (SequenceInfo::Instance().m_isOnline && OnlineInfo::Instance().m_spectating) {
+        m_lapTimes[0].lapFrame = 246;
     }
 
-    m_graphContext->setViewport();
-    GXClearVtxDesc();
-    GXSetVtxDesc(GX_VA_POS, GX_DIRECT);
-    GXSetVtxDesc(GX_VA_CLR0, GX_DIRECT);
-    GXSetVtxDesc(GX_VA_TEX0, GX_DIRECT);
-    for (u32 i = 0; i < 3; i++) {
-        GXSetVtxAttrFmt(i, GX_VA_POS, GX_POS_XY, GX_F32, 0);
-        GXSetVtxAttrFmt(i, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
-        GXSetVtxAttrFmt(i, GX_VA_TEX0, GX_TEX_ST, GX_U8, i == 1 ? 0 : 7);
-    }
-    for (u32 i = 0; i < 2; i++) {
-        GXSetTevColorOp(i, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, true, GX_TEVPREV);
-        GXSetTevAlphaOp(i, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, true, GX_TEVPREV);
-        GXSetTexCoordGen2(i, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY, false, GX_PTIDENTITY);
-    }
-    GXSetCurrentMtx(0);
-    const RaceInfo &raceInfo = RaceInfo::Instance();
-    u32 statusCount = raceInfo.getStatusCount();
-    u32 kartCount = raceInfo.getKartCount();
-    f32 scale = statusCount > 2 ? 0.75f : statusCount == 2 ? 0.85f : 1.0f;
-    RaceMgr *raceMgr = RaceMgr::Instance();
-    for (u32 i = 0; i < statusCount; i++) {
-        const Scissor &scissor = m_scissors[i];
-        GXSetScissor(scissor.x, scissor.y, scissor.w, scissor.h);
-        for (u32 j = 0; j < kartCount; j++) {
-            u32 kartIndex = m_playerMarkIndices[i][j];
-            if (J2DManager::KartStatus(kartIndex) == i) {
-                continue;
-            }
-            if (!raceMgr->raceDrawer()->kartDrawer(kartIndex)->isVisible()) {
-                continue;
-            }
-            K2DPicture *picture = m_playerMarkPictures[i][kartIndex];
-            const TBox2<f32> &box = picture->getBox();
-            const Vec2f &pos = m_playerMarkPositions[i][kartIndex];
-            TVec2<f32> size = scale * (box.end - box.start);
-            f32 x = pos.x;
-            f32 y = pos.y - size.y;
-            picture->drawK2D(x, y, size.x, size.y, true);
-            u32 playerCount = OnlineInfo::Instance().m_karts[kartIndex].playerCount;
-            for (u32 k = 0; k < playerCount; k++) {
-                for (u32 l = 0; l < 3; l++) {
-                    K2DPicture *charPicture = m_playerNamePictures[kartIndex][k][l];
-                    charPicture->m_alpha = picture->m_alpha;
-                    TVec2<f32> charSize = 14.0f / 64.0f * size;
-                    f32 charX = x + (26.0f + 12.0f * l) / 64.0f * size.x;
-                    f32 charY = y + (29.0f - 12.0f * (playerCount - k)) / 64.0f * size.y;
-                    charPicture->drawK2D(charX, charY, charSize.x, charSize.y, true);
-                }
-            }
-        }
-    }
-    u32 x = System::Get2DScisX();
-    u32 y = System::Get2DScisY();
-    u32 w = System::Get2DScisW();
-    u32 h = System::Get2DScisH();
-    GXSetScissor(x, y, w, h);
+    REPLACED(anmTA)(status);
 }
 
 void Race2D::calcPlayerMark() {
@@ -257,10 +310,12 @@ void Race2D::calcPlayerMark() {
         return;
     }
 
+    const OnlineInfo &onlineInfo = OnlineInfo::Instance();
     const RaceInfo &raceInfo = RaceInfo::Instance();
     u32 statusCount = raceInfo.getStatusCount();
     u32 kartCount = raceInfo.getKartCount();
-    RaceMgr *raceMgr = RaceMgr::Instance();
+    const RaceMgr *raceMgr = RaceMgr::Instance();
+    const KartCtrl *kartCtrl = KartCtrl::Instance();
     for (u32 i = 0; i < statusCount; i++) {
         const Scissor &scissor = m_scissors[i];
         PlayerMarkIndexComparator comparator;
@@ -270,25 +325,26 @@ void Race2D::calcPlayerMark() {
             Vec3f kartPos = Vec3f(kartMtx[0][3], kartMtx[1][3], kartMtx[2][3]);
             Vec2f &pos = m_playerMarkPositions[i][j];
             comparator.depths[j] = SiUtil::GetScreenPos(i, kartPos, pos);
-            if (J2DManager::KartStatus(j) == i) {
+            if (!onlineInfo.m_spectating && J2DManager::KartStatus(j) == i) {
                 continue;
             }
-            bool isVisible = true;
-            isVisible = isVisible && pos.x >= scissor.x;
-            isVisible = isVisible && pos.x < scissor.x + scissor.w;
-            isVisible = isVisible && pos.y >= scissor.y;
-            isVisible = isVisible && pos.y < scissor.y + scissor.h;
-            if (isVisible) {
-                ZCaptureMgr *zCaptureMgr = raceMgr->raceDrawer()->zCaptureMgr();
-                s32 depth = zCaptureMgr->getZValue(j, i);
-                zCaptureMgr->setPosition(j, i, pos.x, pos.y);
-                isVisible = depth >= comparator.depths[j];
-            }
             u8 &alpha = m_playerMarkPictures[i][j]->m_alpha;
-            if (isVisible) {
-                alpha = Min<u8>(alpha, 247) + 8;
+            if (kartCtrl->getKartCam(i)->hasJumped()) {
+                alpha = 0;
             } else {
-                alpha = Max<u8>(alpha, 4) - 4;
+                bool isVisible = true;
+                isVisible = isVisible && comparator.depths[j] >= 0;
+                isVisible = isVisible && pos.x >= scissor.x;
+                isVisible = isVisible && pos.x < scissor.x + scissor.w;
+                isVisible = isVisible && pos.y >= scissor.y;
+                isVisible = isVisible && pos.y < scissor.y + scissor.h;
+                if (isVisible) {
+                    ZCaptureMgr *zCaptureMgr = raceMgr->raceDrawer()->zCaptureMgr();
+                    s32 depth = zCaptureMgr->getZValue(j, i);
+                    zCaptureMgr->setPosition(j, i, pos.x, pos.y);
+                    isVisible = depth >= comparator.depths[j];
+                }
+                alpha = isVisible ? Min<u8>(alpha, 247) + 8 : Max<u8>(alpha, 4) - 4;
             }
         }
         Sort(m_playerMarkIndices[i], kartCount, comparator);

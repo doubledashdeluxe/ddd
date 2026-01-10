@@ -7,3 +7,7 @@ bool KartChecker::lapRenewal() const {
 bool KartChecker::raceEnd() const {
     return m_raceEnd;
 }
+
+s32 KartChecker::lap() const {
+    return m_lap;
+}

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "game/CanNotSaveG2D.hh"
 #include "game/K2DPicture.hh"
 #include "game/MinimapConfig.hh"
 
@@ -15,6 +16,13 @@ public:
     void REPLACED(init)();
     REPLACE void init();
     void setMinimapConfig(const MinimapConfig &minimapConfig);
+    void REPLACED(drawPlayerMark)();
+    REPLACE void drawPlayerMark();
+    void draw();
+    void REPLACED(drawCourse)();
+    REPLACE void drawCourse();
+    void REPLACED(calc)();
+    REPLACE void calc();
 
     static Race2D *Instance();
     static GXColor GetPlayerNumberColor(u32 index);
@@ -77,14 +85,12 @@ private:
     };
 
     void setup();
-    void REPLACED(drawPlayerMark)();
-    REPLACE void drawPlayerMark();
-    void draw();
-    void drawCourse();
-    void calc();
+    void REPLACED(calcLap)();
+    REPLACE void calcLap();
     void REPLACED(calcPlayerMark)();
     REPLACE void calcPlayerMark();
-    void anmTA(s32 status); // Also GP
+    void REPLACED(anmTA)(s32 status);
+    REPLACE void anmTA(s32 status); // Also GP
     void REPLACED(getMapPos)(s32 r4, const Vec3f &pos, Vec2f &mapPos);
     REPLACE void getMapPos(s32 r4, const Vec3f &pos, Vec2f &mapPos);
     void REPLACED(getItemInfo)(s32 r4, s32 r5, s32 r6, f32 &x, f32 &y, f32 &scale);
@@ -105,7 +111,9 @@ private:
 
     u8 _0000[0x01b4 - 0x0000];
     J2DGraphContext *m_graphContext;
-    u8 _01b8[0x01c4 - 0x01b8];
+    u8 _01b8[0x01bc - 0x01b8];
+    CanNotSaveG2D *m_canNotSaveG2D;
+    u8 _01c0[0x01c4 - 0x01c0];
     Scissor m_scissors[4];
     u8 _0204[0x0230 - 0x0204];
     J2DScreen *m_raceScreen;
@@ -145,6 +153,7 @@ private:
     static Race2D *s_instance;
     static GXColor s_playerNumberColors[16];
     static f32 s_spinRotate[8];
+    static s32 s_preLap[4];
     static s32 s_thunderAnm[8];
 };
 size_assert(Race2D, 0x4ec4);
