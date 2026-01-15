@@ -184,6 +184,7 @@ void SceneCharacterSelect::init() {
         for (u32 i = 0; i < m_statusCount; i++) {
             deselectKart(i);
         }
+        onlineInfo.m_hasIDs = false;
     } else {
         switch (m_padCount) {
         case 1:
@@ -1011,7 +1012,8 @@ void SceneCharacterSelect::selectKart(u32 statusIndex) {
 void SceneCharacterSelect::deselectKart(u32 statusIndex) {
     for (u32 i = 0; i < KartID::Count; i++) {
         if (KartIDs[i] == m_kartIDs[statusIndex]) {
-            if (CharacterSelect3D::Instance()->isCancel(statusIndex)) {
+            CharacterSelect3D *characterSelect3D = CharacterSelect3D::Instance();
+            if (!characterSelect3D || characterSelect3D->isCancel(statusIndex)) {
                 m_kartIndices[statusIndex] = i;
                 m_kartIDs[statusIndex] = KartID::Count;
                 GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CANCEL_LITTLE);
