@@ -58,19 +58,11 @@ public:
         Hash m_archiveHash;
     };
 
-    u32 packCount(bool isRace) const;
-    u32 racePackCount() const;
-    u32 battlePackCount() const;
-    const Pack &pack(bool isRace, u32 index) const;
-    const Pack &racePack(u32 index) const;
-    const Pack &battlePack(u32 index) const;
-    Optional<u32> searchPack(bool isRace, u32 courseCount, const Hash &hash) const;
-    u32 courseCount(bool isRace, u32 packIndex) const;
-    u32 raceCourseCount(u32 packIndex) const;
-    u32 battleCourseCount(u32 packIndex) const;
-    const Course &course(bool isRace, u32 packIndex, u32 index) const;
-    const Course &raceCourse(u32 packIndex, u32 index) const;
-    const Course &battleCourse(u32 packIndex, u32 index) const;
+    u32 packCount(bool isOnline, bool isRace) const;
+    const Pack &pack(bool isOnline, bool isRace, u32 index) const;
+    Optional<u32> searchPack(bool isOnline, bool isRace, u32 courseCount, const Hash &hash) const;
+    u32 courseCount(bool isOnline, bool isRace, u32 packIndex) const;
+    const Course &course(bool isOnline, bool isRace, u32 packIndex, u32 index) const;
 
     static void Init();
     static CourseManager *Instance();
@@ -205,6 +197,14 @@ private:
     OSThread &thread() override;
     void process() override;
 
+    u32 racePackCount() const;
+    u32 battlePackCount() const;
+    const Pack &racePack(u32 index) const;
+    const Pack &battlePack(u32 index) const;
+    u32 raceCourseCount(u32 packIndex) const;
+    u32 battleCourseCount(u32 packIndex) const;
+    const Course &raceCourse(u32 packIndex, u32 index) const;
+    const Course &battleCourse(u32 packIndex, u32 index) const;
     u32 raceCourseCount() const;
     u32 battleCourseCount() const;
     const Course &raceCourse(u32 index) const;
@@ -267,6 +267,8 @@ private:
     bool compareCourseIndicesByName(const u32 &a, const u32 &b,
             CourseIndexComparator::Accessor access) const;
 
+    static u32 ConvertPackCount(bool isOnline, u32 packCount);
+    static u32 ConvertPackIndex(bool isOnline, u32 packIndex);
     static bool GetDefaultCourseID(const char *name, u32 &courseID);
     static void SortCustomPacksByName(Ring<CustomPack, MaxCustomPackCount> &packs);
     static bool ComparePacksByName(const Pack &a, const Pack &b);

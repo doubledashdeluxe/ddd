@@ -265,10 +265,10 @@ void SceneTitle::stateIdle() {
                 RaceInfo &raceInfo = RaceInfo::Instance();
                 raceInfo.settingForWaitDemo(s_demoType == 3);
                 u32 packIndex = 0;
-                u32 courseCount = courseManager->raceCourseCount(packIndex);
+                u32 courseCount = courseManager->courseCount(false, true, packIndex);
                 u32 courseIndex = CubeRandom::Instance()->get(courseCount);
                 const CourseManager::Course &course =
-                        courseManager->raceCourse(packIndex, courseIndex);
+                        courseManager->course(false, true, packIndex, courseIndex);
                 u32 courseOrder = raceInfo.getConsoleCount() < 2 ? 2 : 1;
                 ResMgr::LoadExtendedCourseData(&course, courseOrder);
                 fadeOut();

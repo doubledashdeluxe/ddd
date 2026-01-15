@@ -85,9 +85,12 @@ ScenePackSelect::ScenePackSelect(JKRArchive *archive, JKRHeap *heap) : Scene(arc
 ScenePackSelect::~ScenePackSelect() {}
 
 void ScenePackSelect::init() {
-    m_roomType = OnlineInfo::Instance().m_roomType;
     const SequenceInfo &sequenceInfo = SequenceInfo::Instance();
-    m_playerCountIsVisible = sequenceInfo.m_isOnline && m_roomType != RoomType::Personal;
+    m_isOnline = sequenceInfo.m_isOnline;
+    if (m_isOnline) {
+        m_roomType = OnlineInfo::Instance().m_roomType;
+    }
+    m_playerCountIsVisible = m_isOnline && m_roomType != RoomType::Personal;
     m_packCount = 0;
     for (u32 i = 0; i < m_playerCounts.count(); i++) {
         snprintf(m_playerCounts[i].values(), m_playerCounts[i].count(), "...");
@@ -123,7 +126,7 @@ void ScenePackSelect::init() {
 void ScenePackSelect::draw() {
     m_graphContext->setViewport();
 
-    if (SequenceInfo::Instance().m_isOnline) {
+    if (m_isOnline) {
         OnlineBackground::Instance()->draw(m_graphContext);
     } else {
         MenuBackground::Instance()->draw(m_graphContext);
@@ -137,13 +140,13 @@ void ScenePackSelect::draw() {
 void ScenePackSelect::calc() {
     const SequenceInfo &sequenceInfo = SequenceInfo::Instance();
     CubeClient *client = CubeClient::Instance();
-    if (sequenceInfo.m_isOnline) {
+    if (m_isOnline) {
         client->read(*this);
     }
 
     (this->*m_state)();
 
-    if (sequenceInfo.m_isOnline) {
+    if (m_isOnline) {
         OnlineBackground::Instance()->calc();
     } else {
         MenuBackground::Instance()->calc();
@@ -222,7 +225,7 @@ void ScenePackSelect::calc() {
         m_packScreens[i].animationMaterials();
     }
 
-    if (sequenceInfo.m_isOnline) {
+    if (m_isOnline) {
         if (m_packCount == 0) {
             ClientStateModeWriteInfo writeInfo;
             writeInfo.playerCount = sequenceInfo.m_padCount;
@@ -244,7 +247,7 @@ const char *ScenePackSelect::DescText::getPart(u32 partIndex) {
     const RaceInfo &raceInfo = RaceInfo::Instance();
     u32 packIndex = m_scene.m_rowIndex + m_descIndex;
     const CourseManager::Course &course =
-            courseManager->course(raceInfo.isRace(), packIndex, partIndex);
+            courseManager->course(m_scene.m_isOnline, raceInfo.isRace(), packIndex, partIndex);
     return course.name();
 }
 
@@ -293,11 +296,10 @@ void ScenePackSelect::wait() {
 void ScenePackSelect::slideIn() {
     const CourseManager *courseManager = CourseManager::Instance();
     const RaceInfo &raceInfo = RaceInfo::Instance();
-    m_packCount = courseManager->packCount(raceInfo.isRace());
+    m_packCount = courseManager->packCount(m_isOnline, raceInfo.isRace());
     m_packIndex = 0;
     s32 prevScene = SequenceApp::Instance()->prevScene();
-    const SequenceInfo &sequenceInfo = SequenceInfo::Instance();
-    if (sequenceInfo.m_isOnline) {
+    if (m_isOnline) {
         if (prevScene != SceneType::RoomTypeSelect && prevScene != SceneType::ModeSelect) {
             m_packIndex = SequenceInfo::Instance().m_packIndex;
         }
@@ -311,13 +313,13 @@ void ScenePackSelect::slideIn() {
     m_rowIndex = Min(m_rowIndex, m_packCount - Min<u32>(m_packCount, 5));
     m_descOffset = 0;
 
-    if (sequenceInfo.m_isOnline) {
+    if (m_isOnline) {
         const OnlineInfo &onlineInfo = OnlineInfo::Instance();
         m_writeInfo.isDuel = onlineInfo.m_roomType == RoomType::Duel;
         m_writeInfo.modeIndex = onlineInfo.m_modeIndex;
         m_writeInfo.packCount = m_packCount;
         for (u32 i = 0; i < m_packCount; i++) {
-            const CourseManager::Pack &pack = courseManager->pack(raceInfo.isRace(), i);
+            const CourseManager::Pack &pack = courseManager->pack(m_isOnline, raceInfo.isRace(), i);
             m_writeInfo.packs[i].courseCount = pack.courseIndices().count();
             m_writeInfo.packs[i].hash = pack.hash();
         }
@@ -398,7 +400,7 @@ void ScenePackSelect::stateIdle() {
     OnlineInfo &onlineInfo = OnlineInfo::Instance();
     const JUTGamePad::CButton &button = KartGamePad::GamePad(0)->button();
     if (button.risingEdge() & PAD_BUTTON_A) {
-        if (sequenceInfo.m_isOnline) {
+        if (m_isOnline) {
             switch (m_roomType) {
             case RoomType::Worldwide:
                 m_nextScene = SceneType::FormatSelect;
@@ -418,7 +420,7 @@ void ScenePackSelect::stateIdle() {
         sequenceInfo.m_packIndex = m_packIndex;
         slideOut();
     } else if (button.risingEdge() & PAD_BUTTON_B) {
-        if (sequenceInfo.m_isOnline) {
+        if (m_isOnline) {
             if (m_roomType == RoomType::Duel) {
                 m_nextScene = SceneType::RoomTypeSelect;
             } else {
@@ -489,7 +491,8 @@ void ScenePackSelect::refreshPacks() {
         if (packIndex >= m_packCount) {
             break;
         }
-        const CourseManager::Pack &pack = courseManager->pack(raceInfo.isRace(), packIndex);
+        const CourseManager::Pack &pack =
+                courseManager->pack(m_isOnline, raceInfo.isRace(), packIndex);
         u32 namePictureCount = 26 - m_playerCountIsVisible * 4;
         J2DScreen &screen = m_packScreens[i];
         kart2DCommon->changeUnicodeTexture(pack.name(), namePictureCount, screen, "Name");

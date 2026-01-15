@@ -74,6 +74,7 @@ private:
 
     JKRHeap *m_heap;
     State m_state;
+    bool m_isOnline;
     bool m_ok;
     u32 m_mapCount;
     u32 m_mapIndex;

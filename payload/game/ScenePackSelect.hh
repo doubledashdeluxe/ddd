@@ -63,6 +63,7 @@ private:
     void hideArrows();
 
     State m_state;
+    bool m_isOnline;
     u32 m_roomType;
     bool m_playerCountIsVisible;
     u32 m_packCount;

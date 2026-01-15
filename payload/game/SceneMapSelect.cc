@@ -120,8 +120,10 @@ void SceneMapSelect::init() {
 
     const RaceInfo &raceInfo = RaceInfo::Instance();
     CourseManager *courseManager = CourseManager::Instance();
+    m_isOnline = sequenceInfo.m_isOnline;
     m_ok = true;
-    m_mapCount = courseManager->courseCount(raceInfo.isRace(), sequenceInfo.m_packIndex);
+    m_mapCount =
+            courseManager->courseCount(m_isOnline, raceInfo.isRace(), sequenceInfo.m_packIndex);
     m_mapIndex = 0;
     if (sequenceInfo.m_fromPause) {
         m_mapIndex = sequenceInfo.m_mapIndex;
@@ -143,8 +145,7 @@ void SceneMapSelect::init() {
 void SceneMapSelect::draw() {
     m_graphContext->setViewport();
 
-    SequenceInfo &sequenceInfo = SequenceInfo::Instance();
-    if (sequenceInfo.m_isOnline) {
+    if (m_isOnline) {
         OnlineBackground::Instance()->draw(m_graphContext);
     } else {
         MenuBackground::Instance()->draw(m_graphContext);
@@ -155,15 +156,14 @@ void SceneMapSelect::draw() {
     m_gridScreen.draw(0.0f, 0.0f, m_graphContext);
     m_arrowScreen.draw(0.0f, 0.0f, m_graphContext);
 
-    if (sequenceInfo.m_isOnline) {
+    if (m_isOnline) {
         OnlineTimer::Instance()->draw(m_graphContext);
     }
 }
 
 void SceneMapSelect::calc() {
-    const SequenceInfo &sequenceInfo = SequenceInfo::Instance();
     CubeClient *client = CubeClient::Instance();
-    if (sequenceInfo.m_isOnline) {
+    if (m_isOnline) {
         client->read(*this);
     }
 
@@ -204,7 +204,7 @@ void SceneMapSelect::calc() {
         }
     }
 
-    if (sequenceInfo.m_isOnline) {
+    if (m_isOnline) {
         OnlineBackground::Instance()->calc();
     } else {
         MenuBackground::Instance()->calc();
@@ -275,7 +275,7 @@ void SceneMapSelect::calc() {
     }
     m_arrowScreen.animation();
 
-    if (sequenceInfo.m_isOnline) {
+    if (m_isOnline) {
         OnlineTimer::Instance()->calc();
 
         client->writeStatePoll(m_writeInfo);
@@ -466,7 +466,7 @@ void SceneMapSelect::stateSlideOut() {
                 m_gridAnmTransformFrame = 10 - m_mainAnmTransformFrame;
             }
         }
-        if (SequenceInfo::Instance().m_isOnline) {
+        if (m_isOnline) {
             if (m_nextScene == SceneType::CoursePoll) {
                 OnlineTimer::Instance()->setAlpha(m_mainAnmTransformFrame * 17);
             }
@@ -485,14 +485,13 @@ void SceneMapSelect::stateSlideOut() {
 }
 
 void SceneMapSelect::stateIdle() {
-    SequenceInfo &sequenceInfo = SequenceInfo::Instance();
     const JUTGamePad::CButton &button = KartGamePad::GamePad(0)->button();
     if (button.risingEdge() & PAD_BUTTON_A ||
-            (sequenceInfo.m_isOnline && OnlineTimer::Instance()->hasExpired())) {
+            (m_isOnline && OnlineTimer::Instance()->hasExpired())) {
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE_LITTLE);
         selectIn();
     } else if (button.risingEdge() & PAD_BUTTON_B || !m_ok) {
-        if (sequenceInfo.m_isOnline) {
+        if (m_isOnline) {
             if (OnlineInfo::Instance().m_spectating) {
                 m_nextScene = SceneType::PlayerList;
             } else {
@@ -591,7 +590,7 @@ void SceneMapSelect::stateSpin() {
         const JUTGamePad::CButton &button = KartGamePad::GamePad(0)->button();
         isSpinning = button.level() & PAD_TRIGGER_R && button.level() & PAD_TRIGGER_L;
     }
-    if (SequenceInfo::Instance().m_isOnline) {
+    if (m_isOnline) {
         if (OnlineTimer::Instance()->hasExpired() || !m_ok) {
             isSpinning = false;
         }
@@ -637,13 +636,13 @@ void SceneMapSelect::stateSelectOut() {
 }
 
 void SceneMapSelect::stateSelect() {
-    SequenceInfo &sequenceInfo = SequenceInfo::Instance();
     const JUTGamePad::CButton &button = KartGamePad::GamePad(0)->button();
     if (button.risingEdge() & PAD_BUTTON_A ||
-            (sequenceInfo.m_isOnline && OnlineTimer::Instance()->hasExpired())) {
+            (m_isOnline && OnlineTimer::Instance()->hasExpired())) {
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE);
+        SequenceInfo &sequenceInfo = SequenceInfo::Instance();
         sequenceInfo.m_mapIndex = m_mapIndex;
-        if (sequenceInfo.m_isOnline) {
+        if (m_isOnline) {
             m_nextScene = SceneType::CoursePoll;
         } else {
             m_nextScene = SceneType::None;
@@ -651,8 +650,8 @@ void SceneMapSelect::stateSelect() {
             System::GetDisplay()->startFadeOut(15);
             const CourseManager *courseManager = CourseManager::Instance();
             const RaceInfo &raceInfo = RaceInfo::Instance();
-            const CourseManager::Course &course =
-                    courseManager->course(raceInfo.isRace(), sequenceInfo.m_packIndex, m_mapIndex);
+            const CourseManager::Course &course = courseManager->course(m_isOnline,
+                    raceInfo.isRace(), sequenceInfo.m_packIndex, m_mapIndex);
             ResMgr::LoadExtendedCourseData(&course, 2);
         }
         slideOut();
@@ -796,8 +795,8 @@ bool SceneMapSelect::load(const Array<u32, 12> &nextMapIndices) {
         if (mapIndex >= m_mapCount) {
             continue;
         }
-        const CourseManager::Course &course =
-                courseManager->course(raceInfo.isRace(), sequenceInfo.m_packIndex, mapIndex);
+        const CourseManager::Course &course = courseManager->course(m_isOnline, raceInfo.isRace(),
+                sequenceInfo.m_packIndex, mapIndex);
         UniquePtr<ResTIMG> &thumbnail = findTexture(m_thumbnails, nextMapIndices, mapIndex);
         if (!thumbnail.get()) {
             void *texture = course.loadThumbnail(m_heap);

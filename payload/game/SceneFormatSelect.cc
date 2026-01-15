@@ -221,9 +221,9 @@ void SceneFormatSelect::slideIn() {
 
     const CourseManager *courseManager = CourseManager::Instance();
     const RaceInfo &raceInfo = RaceInfo::Instance();
-    u32 packCount = courseManager->packCount(raceInfo.isRace());
+    u32 packCount = courseManager->packCount(true, raceInfo.isRace());
     m_writeInfo.packCount = packCount;
-    const CourseManager::Pack &pack = courseManager->pack(raceInfo.isRace(), m_packIndex);
+    const CourseManager::Pack &pack = courseManager->pack(true, raceInfo.isRace(), m_packIndex);
     m_writeInfo.packs[m_packIndex].hash = pack.hash();
     m_writeInfo.packIndex = m_packIndex;
 

@@ -273,40 +273,21 @@ bool CourseManager::CustomCourse::isCustom() const {
     return true;
 }
 
-u32 CourseManager::packCount(bool isRace) const {
-    return isRace ? racePackCount() : battlePackCount();
+u32 CourseManager::packCount(bool isOnline, bool isRace) const {
+    u32 packCount = isRace ? racePackCount() : battlePackCount();
+    return ConvertPackCount(isOnline, packCount);
 }
 
-u32 CourseManager::racePackCount() const {
-    return m_defaultRacePacks.count() + m_customRacePacks.count();
-}
-
-u32 CourseManager::battlePackCount() const {
-    return m_defaultBattlePacks.count() + m_customBattlePacks.count();
-}
-
-const CourseManager::Pack &CourseManager::pack(bool isRace, u32 index) const {
+const CourseManager::Pack &CourseManager::pack(bool isOnline, bool isRace, u32 index) const {
+    index = ConvertPackIndex(isOnline, index);
     return isRace ? racePack(index) : battlePack(index);
 }
 
-const CourseManager::Pack &CourseManager::racePack(u32 index) const {
-    if (index < m_defaultRacePacks.count()) {
-        return m_defaultRacePacks[index];
-    }
-    return m_customRacePacks[index - m_defaultRacePacks.count()];
-}
-
-const CourseManager::Pack &CourseManager::battlePack(u32 index) const {
-    if (index < m_defaultBattlePacks.count()) {
-        return m_defaultBattlePacks[index];
-    }
-    return m_customBattlePacks[index - m_defaultBattlePacks.count()];
-}
-
-Optional<u32> CourseManager::searchPack(bool isRace, u32 courseCount, const Hash &hash) const {
-    u32 packCount = this->packCount(isRace);
+Optional<u32> CourseManager::searchPack(bool isOnline, bool isRace, u32 courseCount,
+        const Hash &hash) const {
+    u32 packCount = this->packCount(isOnline, isRace);
     for (u32 i = 0; i < packCount; i++) {
-        const Pack &pack = this->pack(isRace, i);
+        const Pack &pack = this->pack(isOnline, isRace, i);
         if (pack.courseIndices().count() == courseCount && pack.hash() == hash) {
             return i;
         }
@@ -314,28 +295,15 @@ Optional<u32> CourseManager::searchPack(bool isRace, u32 courseCount, const Hash
     return Optional<u32>();
 }
 
-u32 CourseManager::courseCount(bool isRace, u32 packIndex) const {
+u32 CourseManager::courseCount(bool isOnline, bool isRace, u32 packIndex) const {
+    packIndex = ConvertPackIndex(isOnline, packIndex);
     return isRace ? raceCourseCount(packIndex) : battleCourseCount(packIndex);
 }
 
-u32 CourseManager::raceCourseCount(u32 packIndex) const {
-    return racePack(packIndex).courseIndices().count();
-}
-
-u32 CourseManager::battleCourseCount(u32 packIndex) const {
-    return battlePack(packIndex).courseIndices().count();
-}
-
-const CourseManager::Course &CourseManager::course(bool isRace, u32 packIndex, u32 index) const {
+const CourseManager::Course &CourseManager::course(bool isOnline, bool isRace, u32 packIndex,
+        u32 index) const {
+    packIndex = ConvertPackIndex(isOnline, packIndex);
     return isRace ? raceCourse(packIndex, index) : battleCourse(packIndex, index);
-}
-
-const CourseManager::Course &CourseManager::raceCourse(u32 packIndex, u32 index) const {
-    return raceCourse(racePack(packIndex).courseIndices()[index]);
-}
-
-const CourseManager::Course &CourseManager::battleCourse(u32 packIndex, u32 index) const {
-    return battleCourse(battlePack(packIndex).courseIndices()[index]);
 }
 
 void CourseManager::Init() {
@@ -386,6 +354,44 @@ void CourseManager::process() {
     hashBattlePacks();
     sortRacePackCoursesByName();
     sortBattlePackCoursesByName();
+}
+
+u32 CourseManager::racePackCount() const {
+    return m_defaultRacePacks.count() + m_customRacePacks.count();
+}
+
+u32 CourseManager::battlePackCount() const {
+    return m_defaultBattlePacks.count() + m_customBattlePacks.count();
+}
+
+const CourseManager::Pack &CourseManager::racePack(u32 index) const {
+    if (index < m_defaultRacePacks.count()) {
+        return m_defaultRacePacks[index];
+    }
+    return m_customRacePacks[index - m_defaultRacePacks.count()];
+}
+
+const CourseManager::Pack &CourseManager::battlePack(u32 index) const {
+    if (index < m_defaultBattlePacks.count()) {
+        return m_defaultBattlePacks[index];
+    }
+    return m_customBattlePacks[index - m_defaultBattlePacks.count()];
+}
+
+u32 CourseManager::raceCourseCount(u32 packIndex) const {
+    return racePack(packIndex).courseIndices().count();
+}
+
+u32 CourseManager::battleCourseCount(u32 packIndex) const {
+    return battlePack(packIndex).courseIndices().count();
+}
+
+const CourseManager::Course &CourseManager::raceCourse(u32 packIndex, u32 index) const {
+    return raceCourse(racePack(packIndex).courseIndices()[index]);
+}
+
+const CourseManager::Course &CourseManager::battleCourse(u32 packIndex, u32 index) const {
+    return battleCourse(battlePack(packIndex).courseIndices()[index]);
 }
 
 u32 CourseManager::raceCourseCount() const {
@@ -1074,6 +1080,14 @@ bool CourseManager::compareCourseIndicesByName(const u32 &a, const u32 &b,
         CourseIndexComparator::Accessor access) const {
     const char *na = (this->*access)(a).name(), *nb = (this->*access)(b).name();
     return UTF8::CaseCompare(na, nb) <= 0;
+}
+
+u32 CourseManager::ConvertPackCount(bool isOnline, u32 packCount) {
+    return isOnline ? packCount - 2 : packCount;
+}
+
+u32 CourseManager::ConvertPackIndex(bool isOnline, u32 packIndex) {
+    return isOnline ? packIndex == 0 ? 1 : packIndex + 2 : packIndex;
 }
 
 bool CourseManager::GetDefaultCourseID(const char *name, u32 &courseID) {

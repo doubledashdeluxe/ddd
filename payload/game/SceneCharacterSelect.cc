@@ -213,7 +213,7 @@ void SceneCharacterSelect::init() {
 
     const CourseManager *courseManager = CourseManager::Instance();
     u32 packIndex = sequenceInfo.m_packIndex;
-    m_writeInfo.packCourseCount = courseManager->courseCount(raceInfo.isRace(), packIndex);
+    m_writeInfo.packCourseCount = courseManager->courseCount(true, raceInfo.isRace(), packIndex);
     m_writeInfo.kartCount = raceInfo.getKartCount();
 
     if (SequenceApp::Instance()->prevScene() == SceneType::MapSelect &&

@@ -104,7 +104,7 @@ void SceneCoursePoll::init() {
     const RaceInfo &raceInfo = RaceInfo::Instance();
     const CourseManager *courseManager = CourseManager::Instance();
     m_ok = true;
-    m_courseCount = courseManager->courseCount(raceInfo.isRace(), sequenceInfo.m_packIndex);
+    m_courseCount = courseManager->courseCount(true, raceInfo.isRace(), sequenceInfo.m_packIndex);
     m_kartCount = raceInfo.getKartCount();
     m_kartIndex = UINT32_MAX;
     m_nameCount = 0;
@@ -477,8 +477,8 @@ void SceneCoursePoll::stateIdle() {
         const RaceInfo &raceInfo = RaceInfo::Instance();
         const CourseManager *courseManager = CourseManager::Instance();
         u32 courseIndex = m_courseIndices[*m_selectedKartIndex];
-        const CourseManager::Course &course =
-                courseManager->course(raceInfo.isRace(), sequenceInfo.m_packIndex, courseIndex);
+        const CourseManager::Course &course = courseManager->course(true, raceInfo.isRace(),
+                sequenceInfo.m_packIndex, courseIndex);
         ResMgr::LoadExtendedCourseData(&course, 2);
         spin();
     }
@@ -589,8 +589,8 @@ bool SceneCoursePoll::load(const Array<u32, MaxRoomKartCount> &courseIndices) {
                 nameImage = &m_nameImages[j];
             }
         }
-        const CourseManager::Course &course =
-                courseManager->course(raceInfo.isRace(), sequenceInfo.m_packIndex, courseIndex);
+        const CourseManager::Course &course = courseManager->course(true, raceInfo.isRace(),
+                sequenceInfo.m_packIndex, courseIndex);
         if (!thumbnail->get()) {
             void *texture = course.loadThumbnail(m_heap);
             {

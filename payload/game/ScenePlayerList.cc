@@ -61,7 +61,7 @@ void ScenePlayerList::init() {
     const CourseManager *courseManager = CourseManager::Instance();
     const RaceInfo &raceInfo = RaceInfo::Instance();
     u32 packIndex = SequenceInfo::Instance().m_packIndex;
-    m_writeInfo.packCourseCount = courseManager->courseCount(raceInfo.isRace(), packIndex);
+    m_writeInfo.packCourseCount = courseManager->courseCount(true, raceInfo.isRace(), packIndex);
     m_writeInfo.kartCount = raceInfo.getKartCount();
 
     s32 prevScene = SequenceApp::Instance()->prevScene();

@@ -178,7 +178,7 @@ void ScenePersonalRoom::init() {
         m_writeInfo.isRace = m_isRace;
         u32 packIndex = SequenceInfo::Instance().m_packIndex;
         const CourseManager *courseManager = CourseManager::Instance();
-        const CourseManager::Pack &pack = courseManager->pack(m_isRace, packIndex);
+        const CourseManager::Pack &pack = courseManager->pack(true, m_isRace, packIndex);
         m_writeInfo.packCourseCount = pack.courseIndices().count();
         m_writeInfo.packHash = pack.hash();
     }
@@ -421,10 +421,10 @@ bool ScenePersonalRoom::clientStateRoom(const ClientStateRoomReadInfo &readInfo)
     SequenceInfo &sequenceInfo = SequenceInfo::Instance();
     const CourseManager *courseManager = CourseManager::Instance();
     Optional<u32> packIndex =
-            courseManager->searchPack(m_isRace, info->packCourseCount, info->packHash);
+            courseManager->searchPack(true, m_isRace, info->packCourseCount, info->packHash);
     if (packIndex) {
         sequenceInfo.m_packIndex = *packIndex;
-        const CourseManager::Pack &pack = courseManager->pack(m_isRace, *packIndex);
+        const CourseManager::Pack &pack = courseManager->pack(true, m_isRace, *packIndex);
         kart2DCommon->changeUnicodeTexture(pack.name(), 26, m_mainScreen, "Name");
     } else {
         m_ok = false;
