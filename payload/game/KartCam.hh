@@ -50,6 +50,11 @@ private:
     u8 _1b0[0x1e8 - 0x1b0];
     TVec3<f32> m_pos;
     TVec3<f32> m_target;
-    u8 _200[0x294 - 0x200];
+
+public:
+    TVec3<f32> m_basePos;
+
+private:
+    u8 _20c[0x294 - 0x20c];
 };
 size_assert(KartCam, 0x294);

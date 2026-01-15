@@ -228,6 +228,12 @@ bool RaceClient::clientStateRace(const ClientStateRaceReadInfo &readInfo) {
         kartBody->m_bodyMtx[0][3] += posDiff.x;
         kartBody->m_bodyMtx[1][3] += posDiff.y;
         kartBody->m_bodyMtx[2][3] += posDiff.z;
+        if (onlineInfo.m_spectating) {
+            KartCam *kartCam = kartCtrl->getKartCam(0);
+            if (kartCam->getBody() == kartBody) {
+                kartCam->m_basePos += posDiff;
+            }
+        }
         kartDiff.pos -= posDiff;
         f32 angleDiff = t * kartDiff.angle;
         Mtx34 mtx;
