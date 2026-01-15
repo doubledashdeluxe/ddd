@@ -292,11 +292,8 @@ void ScenePackSelect::wait() {
 
 void ScenePackSelect::slideIn() {
     const CourseManager *courseManager = CourseManager::Instance();
-    if (RaceInfo::Instance().isRace()) {
-        m_packCount = courseManager->racePackCount();
-    } else {
-        m_packCount = courseManager->battlePackCount();
-    }
+    const RaceInfo &raceInfo = RaceInfo::Instance();
+    m_packCount = courseManager->packCount(raceInfo.isRace());
     m_packIndex = 0;
     s32 prevScene = SequenceApp::Instance()->prevScene();
     const SequenceInfo &sequenceInfo = SequenceInfo::Instance();
@@ -320,14 +317,9 @@ void ScenePackSelect::slideIn() {
         m_writeInfo.modeIndex = onlineInfo.m_modeIndex;
         m_writeInfo.packCount = m_packCount;
         for (u32 i = 0; i < m_packCount; i++) {
-            const CourseManager::Pack *pack;
-            if (RaceInfo::Instance().isRace()) {
-                pack = &courseManager->racePack(i);
-            } else {
-                pack = &courseManager->battlePack(i);
-            }
-            m_writeInfo.packs[i].courseCount = pack->courseIndices().count();
-            m_writeInfo.packs[i].hash = pack->hash();
+            const CourseManager::Pack &pack = courseManager->pack(raceInfo.isRace(), i);
+            m_writeInfo.packs[i].courseCount = pack.courseIndices().count();
+            m_writeInfo.packs[i].hash = pack.hash();
         }
         m_writeInfo.packIndex.reset();
     }
@@ -491,23 +483,19 @@ void ScenePackSelect::stateNextScene() {
 void ScenePackSelect::refreshPacks() {
     Kart2DCommon *kart2DCommon = Kart2DCommon::Instance();
     CourseManager *courseManager = CourseManager::Instance();
+    const RaceInfo &raceInfo = RaceInfo::Instance();
     for (u32 i = 0; i < 6; i++) {
         u32 packIndex = m_rowIndex + i;
         if (packIndex >= m_packCount) {
             break;
         }
-        const CourseManager::Pack *pack;
-        if (RaceInfo::Instance().isRace()) {
-            pack = &courseManager->racePack(packIndex);
-        } else {
-            pack = &courseManager->battlePack(packIndex);
-        }
+        const CourseManager::Pack &pack = courseManager->pack(raceInfo.isRace(), packIndex);
         u32 namePictureCount = 26 - m_playerCountIsVisible * 4;
         J2DScreen &screen = m_packScreens[i];
-        kart2DCommon->changeUnicodeTexture(pack->name(), namePictureCount, screen, "Name");
+        kart2DCommon->changeUnicodeTexture(pack.name(), namePictureCount, screen, "Name");
         DescText descText(*this, i);
         u64 descOffset = Max<u64>(m_descOffset, 300) - 300;
-        u32 courseCount = pack->courseIndices().count();
+        u32 courseCount = pack.courseIndices().count();
         u32 descPictureCount = 42 - m_playerCountIsVisible * 6;
         descText.refresh(descOffset, courseCount, descPictureCount, screen, "Desc");
         kart2DCommon->changeNumberTexture<3>(courseCount, screen, "CCount", true);

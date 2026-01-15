@@ -220,20 +220,11 @@ void SceneFormatSelect::slideIn() {
     }
 
     const CourseManager *courseManager = CourseManager::Instance();
-    u32 packCount;
-    if (RaceInfo::Instance().isRace()) {
-        packCount = courseManager->racePackCount();
-    } else {
-        packCount = courseManager->battlePackCount();
-    }
+    const RaceInfo &raceInfo = RaceInfo::Instance();
+    u32 packCount = courseManager->packCount(raceInfo.isRace());
     m_writeInfo.packCount = packCount;
-    const CourseManager::Pack *pack;
-    if (RaceInfo::Instance().isRace()) {
-        pack = &courseManager->racePack(m_packIndex);
-    } else {
-        pack = &courseManager->battlePack(m_packIndex);
-    }
-    m_writeInfo.packs[m_packIndex].hash = pack->hash();
+    const CourseManager::Pack &pack = courseManager->pack(raceInfo.isRace(), m_packIndex);
+    m_writeInfo.packs[m_packIndex].hash = pack.hash();
     m_writeInfo.packIndex = m_packIndex;
 
     MenuTitleLine::Instance()->drop("SelectFormat.bti");
