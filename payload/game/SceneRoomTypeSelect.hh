@@ -1,5 +1,6 @@
 #pragma once
 
+#include "game/RoomType.hh"
 #include "game/Scene.hh"
 
 #include <jsystem/J2DScreen.hh>
@@ -17,10 +18,6 @@ public:
     void calc() override;
 
 private:
-    enum {
-        MaxRoomTypeCount = 3,
-    };
-
     typedef void (SceneRoomTypeSelect::*State)();
 
     bool clientStateServer(const ClientStateServerReadInfo &readInfo) override;
@@ -43,7 +40,6 @@ private:
     State m_state;
     u32 m_padCount;
     u32 m_statusCount;
-    u32 m_roomTypeCount;
     u32 m_roomTypeIndex;
     u32 m_nextScene;
     J2DScreen m_mainScreen;
@@ -51,19 +47,19 @@ private:
     J2DAnmBase *m_mainAnmTransform;
     J2DAnmBase *m_mainAnmTextureSRTKey;
     J2DAnmBase *m_mainAnmColor;
-    Array<J2DAnmBase *, MaxRoomTypeCount> m_roomTypeAnmTevRegKeys;
-    Array<J2DAnmBase *, MaxRoomTypeCount> m_cursorAnmTransforms;
-    Array<J2DAnmBase *, MaxRoomTypeCount> m_nameAnmTransforms;
-    Array<J2DAnmBase *, MaxRoomTypeCount> m_circleAnmTransforms;
+    Array<J2DAnmBase *, RoomType::Count> m_roomTypeAnmTevRegKeys;
+    Array<J2DAnmBase *, RoomType::Count> m_cursorAnmTransforms;
+    Array<J2DAnmBase *, RoomType::Count> m_nameAnmTransforms;
+    Array<J2DAnmBase *, RoomType::Count> m_circleAnmTransforms;
     J2DAnmBase *m_tandemAnmTransform;
     J2DAnmBase *m_tandemCircleAnmTransform;
     u8 m_mainAnmTransformFrame;
     u8 m_mainAnmTextureSRTKeyFrame;
     u8 m_mainAnmColorFrame;
-    Array<u8, MaxRoomTypeCount> m_roomTypeAnmTevRegKeyFrames;
-    Array<u8, MaxRoomTypeCount> m_cursorAnmTransformFrames;
-    Array<u8, MaxRoomTypeCount> m_nameAnmTransformFrames;
-    Array<u8, MaxRoomTypeCount> m_circleAnmTransformFrames;
+    Array<u8, RoomType::Count> m_roomTypeAnmTevRegKeyFrames;
+    Array<u8, RoomType::Count> m_cursorAnmTransformFrames;
+    Array<u8, RoomType::Count> m_nameAnmTransformFrames;
+    Array<u8, RoomType::Count> m_circleAnmTransformFrames;
     u8 m_tandemAnmTransformFrame;
     u8 m_tandemCircleAnmTransformFrame;
 };

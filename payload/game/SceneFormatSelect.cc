@@ -5,11 +5,9 @@
 #include "game/Kart2DCommon.hh"
 #include "game/KartGamePad.hh"
 #include "game/MenuTitleLine.hh"
-#include "game/Modes.hh"
 #include "game/OnlineBackground.hh"
 #include "game/OnlineInfo.hh"
 #include "game/RaceInfo.hh"
-#include "game/SceneFactory.hh"
 #include "game/SequenceApp.hh"
 #include "game/SequenceInfo.hh"
 
@@ -19,58 +17,43 @@
 #include <payload/online/CubeClient.hh>
 
 SceneFormatSelect::SceneFormatSelect(JKRArchive *archive, JKRHeap *heap) : Scene(archive, heap) {
-    SceneFactory *sceneFactory = SceneFactory::Instance();
-    JKRArchive *mapSelectArchive = sceneFactory->archive(SceneFactory::ArchiveType::MapSelect);
-
     m_mainScreen.set("SelectFormat.blo", 0x1040000, m_archive);
-    m_modeScreen.set("SelectMapLayout.blo", 0x1040000, mapSelectArchive);
     for (u32 i = 0; i < m_playerCountScreens.count(); i++) {
         m_playerCountScreens[i].set("PlayerCount.blo", 0x20000, m_archive);
     }
 
     for (u32 i = 0; i < m_playerCountScreens.count(); i++) {
-        m_mainScreen.search("M4pc%u", i + 1)->appendChild(&m_playerCountScreens[i]);
+        m_mainScreen.search("NPCount%u", i + 1)->appendChild(&m_playerCountScreens[i]);
     }
-    m_modeScreen.search("OK_wb11")->m_isVisible = false;
-    m_modeScreen.search("NRandom")->m_isVisible = false;
 
-    m_mainAnmTransform = J2DAnmLoaderDataBase::Load("SelectMode.bck", m_archive);
+    m_mainAnmTransform = J2DAnmLoaderDataBase::Load("SelectFormat.bck", m_archive);
     m_mainScreen.setAnimation(m_mainAnmTransform);
-    m_mainAnmTextureSRTKey = J2DAnmLoaderDataBase::Load("SelectMode.btk", m_archive);
+    m_mainAnmTextureSRTKey = J2DAnmLoaderDataBase::Load("HowManyDrivers.btk", m_archive);
     m_mainAnmTextureSRTKey->searchUpdateMaterialID(&m_mainScreen);
     m_mainScreen.setAnimation(m_mainAnmTextureSRTKey);
-    m_mainAnmColor = J2DAnmLoaderDataBase::Load("SelectMode.bpk", m_archive);
+    m_mainAnmColor = J2DAnmLoaderDataBase::Load("HowManyDrivers.bpk", m_archive);
     m_mainAnmColor->searchUpdateMaterialID(&m_mainScreen);
     m_mainScreen.setAnimation(m_mainAnmColor);
+    m_formatCountAnmTransform = J2DAnmLoaderDataBase::Load("SelectFormat.bck", m_archive);
+    for (u32 i = 0; i < FormatCount; i++) {
+        m_mainScreen.search("Format%u", i + 1)->setAnimation(m_formatCountAnmTransform);
+    }
+    for (u32 i = 0; i < m_formatAnmTransforms.count(); i++) {
+        m_formatAnmTransforms[i] = J2DAnmLoaderDataBase::Load("SelectFormat.bck", m_archive);
+        m_mainScreen.search("Ecrsr%u", i + 1)->setAnimation(m_formatAnmTransforms[i]);
+        m_mainScreen.search("ENplay%u", i + 1)->setAnimation(m_formatAnmTransforms[i]);
+    }
     for (u32 i = 0; i < m_formatAnmTevRegKeys.count(); i++) {
-        m_formatAnmTevRegKeys[i] = J2DAnmLoaderDataBase::Load("SelectMode.brk", m_archive);
+        m_formatAnmTevRegKeys[i] = J2DAnmLoaderDataBase::Load("HowManyDrivers.brk", m_archive);
         m_formatAnmTevRegKeys[i]->searchUpdateMaterialID(&m_mainScreen);
-        m_mainScreen.search("M4bar%u", i + 1)->setAnimation(m_formatAnmTevRegKeys[i]);
+        m_mainScreen.search("Ebar%u", i + 1)->setAnimation(m_formatAnmTevRegKeys[i]);
+        m_mainScreen.search("Eplay%u", i + 1)->setAnimation(m_formatAnmTevRegKeys[i]);
+        m_mainScreen.search("Eplay%ub", i + 1)->setAnimation(m_formatAnmTevRegKeys[i]);
     }
-    m_mainScreen.search("MgpM21")->setAnimation(m_formatAnmTevRegKeys[0]);
-    m_mainScreen.search("Mgpm1")->setAnimation(m_formatAnmTevRegKeys[0]);
-    m_mainScreen.search("MvsM21")->setAnimation(m_formatAnmTevRegKeys[1]);
-    m_mainScreen.search("Mvs")->setAnimation(m_formatAnmTevRegKeys[1]);
-    m_mainScreen.search("MminM21")->setAnimation(m_formatAnmTevRegKeys[2]);
-    m_mainScreen.search("Mmini")->setAnimation(m_formatAnmTevRegKeys[2]);
-    for (u32 i = 0; i < m_cursorAnmTransforms.count(); i++) {
-        m_cursorAnmTransforms[i] = J2DAnmLoaderDataBase::Load("SelectMode.bck", m_archive);
-        m_mainScreen.search("M4crsr%u", i + 1)->setAnimation(m_cursorAnmTransforms[i]);
-    }
-    for (u32 i = 0; i < m_nameAnmTransforms.count(); i++) {
-        m_nameAnmTransforms[i] = J2DAnmLoaderDataBase::Load("SelectMode.bck", m_archive);
-    }
-    m_mainScreen.search("Mgpm1N")->setAnimation(m_nameAnmTransforms[0]);
-    m_mainScreen.search("MvsN")->setAnimation(m_nameAnmTransforms[1]);
-    m_mainScreen.search("MminiN")->setAnimation(m_nameAnmTransforms[2]);
     for (u32 i = 0; i < m_circleAnmTransforms.count(); i++) {
-        m_circleAnmTransforms[i] = J2DAnmLoaderDataBase::Load("SelectMode.bck", m_archive);
+        m_circleAnmTransforms[i] = J2DAnmLoaderDataBase::Load("HowManyDrivers.bck", m_archive);
+        m_mainScreen.search("Eplay%ub", i + 1)->setAnimation(m_circleAnmTransforms[i]);
     }
-    m_mainScreen.search("MgpM21")->setAnimation(m_circleAnmTransforms[0]);
-    m_mainScreen.search("MvsM21")->setAnimation(m_circleAnmTransforms[1]);
-    m_mainScreen.search("MminM21")->setAnimation(m_circleAnmTransforms[2]);
-    m_modeAnmTransform = J2DAnmLoaderDataBase::Load("SelectMapLayout.bck", mapSelectArchive);
-    m_modeScreen.search("NSlMap")->setAnimation(m_modeAnmTransform);
     for (u32 i = 0; i < m_playerCountAnmTevRegKeys.count(); i++) {
         m_playerCountAnmTevRegKeys[i] = J2DAnmLoaderDataBase::Load("PlayerCount.brk", m_archive);
         m_playerCountAnmTevRegKeys[i]->searchUpdateMaterialID(&m_playerCountScreens[i]);
@@ -84,24 +67,15 @@ SceneFormatSelect::SceneFormatSelect(JKRArchive *archive, JKRHeap *heap) : Scene
 
     m_mainAnmTextureSRTKeyFrame = 0;
     m_mainAnmColorFrame = 0;
+    m_formatAnmTransformFrames.fill(14);
     m_formatAnmTevRegKeyFrames.fill(0);
-    m_cursorAnmTransformFrames.fill(10);
-    m_nameAnmTransformFrames.fill(14);
-    m_circleAnmTransformFrames.fill(10);
+    m_circleAnmTransformFrames.fill(14);
     m_playerCountAnmTevRegKeyFrames.fill(0);
 }
 
 SceneFormatSelect::~SceneFormatSelect() {}
 
 void SceneFormatSelect::init() {
-    J2DPicture *iconPicture = m_modeScreen.search("BtlPict")->downcast<J2DPicture>();
-    J2DPicture *namePicture = m_modeScreen.search("SubM")->downcast<J2DPicture>();
-    const OnlineInfo &onlineInfo = OnlineInfo::Instance();
-    const char *iconTextureName = ModeIconTextureNames[onlineInfo.m_modeIndex];
-    iconPicture->changeTexture(iconTextureName, 0);
-    const char *nameTextureName = ModeNameTextureNames[onlineInfo.m_modeIndex];
-    namePicture->changeTexture(nameTextureName, 0);
-
     slideIn();
 }
 
@@ -112,7 +86,6 @@ void SceneFormatSelect::draw() {
     MenuTitleLine::Instance()->draw(m_graphContext);
 
     m_mainScreen.draw(0.0f, 0.0f, m_graphContext);
-    m_modeScreen.draw(0.0f, 0.0f, m_graphContext);
 }
 
 void SceneFormatSelect::calc() {
@@ -130,24 +103,18 @@ void SceneFormatSelect::calc() {
     m_mainAnmColorFrame = (m_mainAnmColorFrame + 1) % 120;
     for (u32 i = 0; i < FormatCount; i++) {
         if (i == m_formatIndex) {
+            if (m_formatAnmTransformFrames[i] < 22) {
+                m_formatAnmTransformFrames[i]++;
+            }
             m_formatAnmTevRegKeyFrames[i] = 1;
-            if (m_cursorAnmTransformFrames[i] < 18) {
-                m_cursorAnmTransformFrames[i]++;
-            }
-            if (m_nameAnmTransformFrames[i] < 19) {
-                m_nameAnmTransformFrames[i]++;
-            }
-            m_circleAnmTransformFrames[i] = 10 + (m_circleAnmTransformFrames[i] - 9) % 60;
+            m_circleAnmTransformFrames[i] = 14 + (m_circleAnmTransformFrames[i] - 13) % 60;
             m_playerCountAnmTevRegKeyFrames[i] = 1;
         } else {
+            if (m_formatAnmTransformFrames[i] > 14) {
+                m_formatAnmTransformFrames[i]--;
+            }
             m_formatAnmTevRegKeyFrames[i] = 0;
-            if (m_cursorAnmTransformFrames[i] > 10) {
-                m_cursorAnmTransformFrames[i]--;
-            }
-            if (m_nameAnmTransformFrames[i] > 14) {
-                m_nameAnmTransformFrames[i]--;
-            }
-            m_circleAnmTransformFrames[i] = 10;
+            m_circleAnmTransformFrames[i] = 14;
             m_playerCountAnmTevRegKeyFrames[i] = 0;
         }
     }
@@ -155,25 +122,21 @@ void SceneFormatSelect::calc() {
     m_mainAnmTransform->m_frame = m_mainAnmTransformFrame;
     m_mainAnmTextureSRTKey->m_frame = m_mainAnmTextureSRTKeyFrame;
     m_mainAnmColor->m_frame = m_mainAnmColorFrame;
+    m_formatCountAnmTransform->m_frame = m_formatCountAnmTransformFrame;
+    for (u32 i = 0; i < m_formatAnmTransforms.count(); i++) {
+        m_formatAnmTransforms[i]->m_frame = m_formatAnmTransformFrames[i];
+    }
     for (u32 i = 0; i < m_formatAnmTevRegKeys.count(); i++) {
         m_formatAnmTevRegKeys[i]->m_frame = m_formatAnmTevRegKeyFrames[i];
-    }
-    for (u32 i = 0; i < m_cursorAnmTransforms.count(); i++) {
-        m_cursorAnmTransforms[i]->m_frame = m_cursorAnmTransformFrames[i];
-    }
-    for (u32 i = 0; i < m_nameAnmTransforms.count(); i++) {
-        m_nameAnmTransforms[i]->m_frame = m_nameAnmTransformFrames[i];
     }
     for (u32 i = 0; i < m_circleAnmTransforms.count(); i++) {
         m_circleAnmTransforms[i]->m_frame = m_circleAnmTransformFrames[i];
     }
-    m_modeAnmTransform->m_frame = m_modeAnmTransformFrame;
     for (u32 i = 0; i < m_playerCountAnmTevRegKeys.count(); i++) {
         m_playerCountAnmTevRegKeys[i]->m_frame = m_playerCountAnmTevRegKeyFrames[i];
     }
 
     m_mainScreen.animation();
-    m_modeScreen.animation();
     for (u32 i = 0; i < m_playerCountScreens.count(); i++) {
         m_playerCountScreens[i].animationMaterials();
     }
@@ -211,9 +174,16 @@ void SceneFormatSelect::clientStateError() {
 }
 
 void SceneFormatSelect::slideIn() {
-    m_packIndex = SequenceInfo::Instance().m_packIndex;
+    const SequenceInfo &sequenceInfo = SequenceInfo::Instance();
+    m_packIndex = sequenceInfo.m_packIndex;
     if (SequenceApp::Instance()->prevScene() == SceneType::PackSelect) {
+        m_formatCount = sequenceInfo.m_statusCount == 1 ? 4 : 3;
         m_formatIndex = 0;
+
+        for (u32 i = 0; i < FormatCount; i++) {
+            m_mainScreen.search("Format%u", i + 1)->m_isVisible = i < m_formatCount;
+        }
+        m_formatCountAnmTransformFrame = m_formatCount;
     }
     for (u32 i = 0; i < m_playerCounts.count(); i++) {
         m_playerCounts[i] = "...";
@@ -246,9 +216,8 @@ void SceneFormatSelect::nextScene() {
 }
 
 void SceneFormatSelect::stateSlideIn() {
-    if (m_mainAnmTransformFrame < 10) {
+    if (m_mainAnmTransformFrame < 15) {
         m_mainAnmTransformFrame++;
-        m_modeAnmTransformFrame = m_mainAnmTransformFrame;
     } else {
         idle();
     }
@@ -257,7 +226,6 @@ void SceneFormatSelect::stateSlideIn() {
 void SceneFormatSelect::stateSlideOut() {
     if (m_mainAnmTransformFrame > 0) {
         m_mainAnmTransformFrame--;
-        m_modeAnmTransformFrame = m_mainAnmTransformFrame;
     } else {
         nextScene();
     }
@@ -276,10 +244,10 @@ void SceneFormatSelect::stateIdle() {
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CANCEL_LITTLE);
         slideOut();
     } else if (button.repeat() & JUTGamePad::PAD_MSTICK_UP) {
-        m_formatIndex = m_formatIndex == 0 ? FormatCount - 1 : m_formatIndex - 1;
+        m_formatIndex = m_formatIndex == 0 ? m_formatCount - 1 : m_formatIndex - 1;
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CURSOL);
     } else if (button.repeat() & JUTGamePad::PAD_MSTICK_DOWN) {
-        m_formatIndex = m_formatIndex == FormatCount - 1 ? 0 : m_formatIndex + 1;
+        m_formatIndex = m_formatIndex == m_formatCount - 1 ? 0 : m_formatIndex + 1;
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CURSOL);
     }
 }

@@ -46,7 +46,6 @@ private:
 
     ClientStatePackWriter &packWriter() override;
 
-    u8 getIsDuel() override;
     u8 getModeIndex() override;
     u8 getPackIndex() override;
     u8 getPackCourseCount() override;

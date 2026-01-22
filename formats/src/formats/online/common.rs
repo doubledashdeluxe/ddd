@@ -55,6 +55,7 @@ pub fn room_option_format() -> impl ComplexDataType {
         .with_variant("FreeForAll")
         .with_variant("TeamsOf2")
         .with_variant("TeamsOf4")
+        .with_variant("Duel")
 }
 
 pub fn room_option_engine_size() -> impl ComplexDataType {

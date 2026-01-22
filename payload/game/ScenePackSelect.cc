@@ -90,7 +90,7 @@ void ScenePackSelect::init() {
     if (m_isOnline) {
         m_roomType = OnlineInfo::Instance().m_roomType;
     }
-    m_playerCountIsVisible = m_isOnline && m_roomType != RoomType::Personal;
+    m_playerCountIsVisible = m_isOnline && m_roomType == RoomType::Worldwide;
     m_packCount = 0;
     for (u32 i = 0; i < m_playerCounts.count(); i++) {
         snprintf(m_playerCounts[i].values(), m_playerCounts[i].count(), "...");
@@ -300,7 +300,7 @@ void ScenePackSelect::slideIn() {
     m_packIndex = 0;
     s32 prevScene = SequenceApp::Instance()->prevScene();
     if (m_isOnline) {
-        if (prevScene != SceneType::RoomTypeSelect && prevScene != SceneType::ModeSelect) {
+        if (prevScene != SceneType::ModeSelect) {
             m_packIndex = SequenceInfo::Instance().m_packIndex;
         }
     } else {
@@ -315,7 +315,6 @@ void ScenePackSelect::slideIn() {
 
     if (m_isOnline) {
         const OnlineInfo &onlineInfo = OnlineInfo::Instance();
-        m_writeInfo.isDuel = onlineInfo.m_roomType == RoomType::Duel;
         m_writeInfo.modeIndex = onlineInfo.m_modeIndex;
         m_writeInfo.packCount = m_packCount;
         for (u32 i = 0; i < m_packCount; i++) {
@@ -405,9 +404,6 @@ void ScenePackSelect::stateIdle() {
             case RoomType::Worldwide:
                 m_nextScene = SceneType::FormatSelect;
                 break;
-            case RoomType::Duel:
-                m_nextScene = SceneType::PersonalRoom;
-                break;
             default:
                 m_nextScene = SceneType::PersonalRoom;
                 onlineInfo.m_isHost = true;
@@ -421,11 +417,7 @@ void ScenePackSelect::stateIdle() {
         slideOut();
     } else if (button.risingEdge() & PAD_BUTTON_B) {
         if (m_isOnline) {
-            if (m_roomType == RoomType::Duel) {
-                m_nextScene = SceneType::RoomTypeSelect;
-            } else {
-                m_nextScene = SceneType::ModeSelect;
-            }
+            m_nextScene = SceneType::ModeSelect;
         } else {
             m_nextScene = SceneType::Menu;
         }

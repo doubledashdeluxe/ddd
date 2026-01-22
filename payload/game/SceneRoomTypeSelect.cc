@@ -4,10 +4,8 @@
 #include "game/GameAudioMain.hh"
 #include "game/KartGamePad.hh"
 #include "game/MenuTitleLine.hh"
-#include "game/Modes.hh"
 #include "game/OnlineBackground.hh"
 #include "game/OnlineInfo.hh"
-#include "game/RaceInfo.hh"
 #include "game/RoomType.hh"
 #include "game/SceneFactory.hh"
 #include "game/SequenceApp.hh"
@@ -41,20 +39,10 @@ SceneRoomTypeSelect::SceneRoomTypeSelect(JKRArchive *archive, JKRHeap *heap)
                 J2DAnmLoaderDataBase::Load("SelectRoomType.brk", lanEntryArchive);
         m_roomTypeAnmTevRegKeys[i]->searchUpdateMaterialID(&m_mainScreen);
     }
-    for (u32 i = 0; i < 5; i++) {
-        m_mainScreen.search("M4bar%u", i + 1)
-                ->setAnimation(m_roomTypeAnmTevRegKeys[i % MaxRoomTypeCount]);
-        m_mainScreen.search("M4rt%u", i + 1)
-                ->setAnimation(m_roomTypeAnmTevRegKeys[i % MaxRoomTypeCount]);
+    for (u32 i = 0; i < 2; i++) {
+        m_mainScreen.search("M4bar%u", i + 4)->setAnimation(m_roomTypeAnmTevRegKeys[i]);
+        m_mainScreen.search("M4rt%u", i + 4)->setAnimation(m_roomTypeAnmTevRegKeys[i]);
     }
-    m_mainScreen.search("MgpM21")->setAnimation(m_roomTypeAnmTevRegKeys[0]);
-    m_mainScreen.search("Mgpm1")->setAnimation(m_roomTypeAnmTevRegKeys[0]);
-    m_mainScreen.search("MvsM21")->setAnimation(m_roomTypeAnmTevRegKeys[1]);
-    m_mainScreen.search("Mvs")->setAnimation(m_roomTypeAnmTevRegKeys[1]);
-    m_mainScreen.search("MminM21")->setAnimation(m_roomTypeAnmTevRegKeys[2]);
-    m_mainScreen.search("Mmini")->setAnimation(m_roomTypeAnmTevRegKeys[2]);
-    m_mainScreen.search("MgpM11")->setAnimation(m_roomTypeAnmTevRegKeys[0]);
-    m_mainScreen.search("Mgpm2")->setAnimation(m_roomTypeAnmTevRegKeys[0]);
     m_mainScreen.search("MgpM11")->setAnimation(m_roomTypeAnmTevRegKeys[0]);
     m_mainScreen.search("Mgpm2")->setAnimation(m_roomTypeAnmTevRegKeys[0]);
     m_mainScreen.search("MminiM12")->setAnimation(m_roomTypeAnmTevRegKeys[1]);
@@ -62,24 +50,17 @@ SceneRoomTypeSelect::SceneRoomTypeSelect(JKRArchive *archive, JKRHeap *heap)
     for (u32 i = 0; i < m_cursorAnmTransforms.count(); i++) {
         m_cursorAnmTransforms[i] = J2DAnmLoaderDataBase::Load("SelectMode.bck", m_archive);
     }
-    for (u32 i = 0; i < 5; i++) {
-        m_mainScreen.search("M4crsr%u", i + 1)
-                ->setAnimation(m_cursorAnmTransforms[i % MaxRoomTypeCount]);
+    for (u32 i = 0; i < 2; i++) {
+        m_mainScreen.search("M4crsr%u", i + 4)->setAnimation(m_cursorAnmTransforms[i]);
     }
     for (u32 i = 0; i < m_nameAnmTransforms.count(); i++) {
         m_nameAnmTransforms[i] = J2DAnmLoaderDataBase::Load("SelectMode.bck", m_archive);
     }
-    m_mainScreen.search("Mgpm1N")->setAnimation(m_nameAnmTransforms[0]);
-    m_mainScreen.search("MvsN")->setAnimation(m_nameAnmTransforms[1]);
-    m_mainScreen.search("MminiN")->setAnimation(m_nameAnmTransforms[2]);
     m_mainScreen.search("MgpmN2")->setAnimation(m_nameAnmTransforms[0]);
     m_mainScreen.search("MminiN1")->setAnimation(m_nameAnmTransforms[1]);
     for (u32 i = 0; i < m_circleAnmTransforms.count(); i++) {
         m_circleAnmTransforms[i] = J2DAnmLoaderDataBase::Load("SelectMode.bck", m_archive);
     }
-    m_mainScreen.search("MgpM21")->setAnimation(m_circleAnmTransforms[0]);
-    m_mainScreen.search("MvsM21")->setAnimation(m_circleAnmTransforms[1]);
-    m_mainScreen.search("MminM21")->setAnimation(m_circleAnmTransforms[2]);
     m_mainScreen.search("MgpM11")->setAnimation(m_circleAnmTransforms[0]);
     m_mainScreen.search("MminiM12")->setAnimation(m_circleAnmTransforms[1]);
     m_tandemAnmTransform = J2DAnmLoaderDataBase::Load("PlayerIcon.bck", m_archive);
@@ -105,11 +86,8 @@ void SceneRoomTypeSelect::init() {
         const SequenceInfo &sequenceInfo = SequenceInfo::Instance();
         m_padCount = sequenceInfo.m_padCount;
         m_statusCount = sequenceInfo.m_statusCount;
-        m_roomTypeCount = m_statusCount == 1 ? 3 : 2;
         m_roomTypeIndex = 0;
 
-        m_mainScreen.search("N_Mode2")->m_isVisible = m_roomTypeCount == 3;
-        m_mainScreen.search("N_Mode1")->m_isVisible = m_roomTypeCount == 2;
         m_tandemScreen.search("Ns1234")->m_isVisible = m_statusCount + 0 == m_padCount;
         m_tandemScreen.search("Ns12_3_4")->m_isVisible = m_statusCount + 1 == m_padCount;
         m_tandemScreen.search("Ns12_34")->m_isVisible = m_statusCount + 2 == m_padCount;
@@ -148,7 +126,7 @@ void SceneRoomTypeSelect::calc() {
 
     m_mainAnmTextureSRTKeyFrame = (m_mainAnmTextureSRTKeyFrame + 1) % 180;
     m_mainAnmColorFrame = (m_mainAnmColorFrame + 1) % 120;
-    for (u32 i = 0; i < MaxRoomTypeCount; i++) {
+    for (u32 i = 0; i < RoomType::Count; i++) {
         if (i == m_roomTypeIndex) {
             m_roomTypeAnmTevRegKeyFrames[i] = 1;
             if (m_cursorAnmTransformFrames[i] < 18) {
@@ -261,23 +239,15 @@ void SceneRoomTypeSelect::stateSlideOut() {
 }
 
 void SceneRoomTypeSelect::stateIdle() {
-    OnlineInfo &onlineInfo = OnlineInfo::Instance();
     const JUTGamePad::CButton &button = KartGamePad::GamePad(0)->button();
     if (button.risingEdge() & PAD_BUTTON_A) {
-        if (m_roomTypeIndex == 0) {
+        OnlineInfo &onlineInfo = OnlineInfo::Instance();
+        onlineInfo.m_roomType = m_roomTypeIndex;
+        if (m_roomTypeIndex == RoomType::Worldwide) {
             m_nextScene = SceneType::ModeSelect;
-            onlineInfo.m_roomType = RoomType::Worldwide;
             onlineInfo.m_isHost = false;
-        } else if (m_roomTypeIndex == 1 && m_statusCount == 1) {
-            m_nextScene = SceneType::PackSelect;
-            onlineInfo.m_roomType = RoomType::Duel;
-            onlineInfo.m_modeIndex = ModeIndex::Versus;
-            onlineInfo.m_format = RoomOptionFormat::FreeForAll;
-            onlineInfo.m_isHost = false;
-            RaceInfo::Instance().m_raceMode = Modes[ModeIndex::Versus];
         } else {
             m_nextScene = SceneType::RoomCodeEnter;
-            onlineInfo.m_roomType = RoomType::Personal;
         }
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE_LITTLE);
         slideOut();
@@ -285,11 +255,8 @@ void SceneRoomTypeSelect::stateIdle() {
         m_nextScene = SceneType::ServerSelect;
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CANCEL_LITTLE);
         slideOut();
-    } else if (button.repeat() & JUTGamePad::PAD_MSTICK_UP) {
-        m_roomTypeIndex = m_roomTypeIndex == 0 ? m_roomTypeCount - 1 : m_roomTypeIndex - 1;
-        GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CURSOL);
-    } else if (button.repeat() & JUTGamePad::PAD_MSTICK_DOWN) {
-        m_roomTypeIndex = m_roomTypeIndex == m_roomTypeCount - 1 ? 0 : m_roomTypeIndex + 1;
+    } else if (button.repeat() & (JUTGamePad::PAD_MSTICK_UP | JUTGamePad::PAD_MSTICK_DOWN)) {
+        m_roomTypeIndex ^= 1;
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CURSOL);
     }
 }

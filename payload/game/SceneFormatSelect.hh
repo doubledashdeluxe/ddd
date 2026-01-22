@@ -18,10 +18,6 @@ public:
     void calc() override;
 
 private:
-    enum {
-        FormatCount = 3,
-    };
-
     typedef void (SceneFormatSelect::*State)();
 
     bool clientStateMode(const ClientStateModeReadInfo &readInfo) override;
@@ -44,29 +40,27 @@ private:
 
     State m_state;
     u32 m_packIndex;
+    u32 m_formatCount;
     u32 m_formatIndex;
     Array<Array<char, 4>, FormatCount> m_playerCounts;
     ClientStatePackWriteInfo m_writeInfo;
     u32 m_nextScene;
     J2DScreen m_mainScreen;
-    J2DScreen m_modeScreen;
     Array<J2DScreen, FormatCount> m_playerCountScreens;
     J2DAnmBase *m_mainAnmTransform;
     J2DAnmBase *m_mainAnmTextureSRTKey;
     J2DAnmBase *m_mainAnmColor;
+    J2DAnmBase *m_formatCountAnmTransform;
+    Array<J2DAnmBase *, FormatCount> m_formatAnmTransforms;
     Array<J2DAnmBase *, FormatCount> m_formatAnmTevRegKeys;
-    Array<J2DAnmBase *, FormatCount> m_cursorAnmTransforms;
-    Array<J2DAnmBase *, FormatCount> m_nameAnmTransforms;
     Array<J2DAnmBase *, FormatCount> m_circleAnmTransforms;
-    J2DAnmBase *m_modeAnmTransform;
     Array<J2DAnmBase *, FormatCount> m_playerCountAnmTevRegKeys;
     u8 m_mainAnmTransformFrame;
     u8 m_mainAnmTextureSRTKeyFrame;
     u8 m_mainAnmColorFrame;
+    u8 m_formatCountAnmTransformFrame;
+    Array<u8, FormatCount> m_formatAnmTransformFrames;
     Array<u8, FormatCount> m_formatAnmTevRegKeyFrames;
-    Array<u8, FormatCount> m_cursorAnmTransformFrames;
-    Array<u8, FormatCount> m_nameAnmTransformFrames;
     Array<u8, FormatCount> m_circleAnmTransformFrames;
-    u8 m_modeAnmTransformFrame;
     Array<u8, FormatCount> m_playerCountAnmTevRegKeyFrames;
 };

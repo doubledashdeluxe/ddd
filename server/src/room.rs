@@ -40,32 +40,20 @@ impl Room {
         format: RoomOptionFormat,
         rng: &mut impl Rng,
     ) -> Self {
+        let (max_kart_count, max_client_kart_count, match_count) = match format {
+            RoomOptionFormat::Duel => (2, 1, 5),
+            _ => (MAX_ROOM_KART_COUNT, MAX_CLIENT_KART_COUNT, 0),
+        };
         let config = Config {
             host_karts: heapless::Vec::new(),
-            max_kart_count: MAX_ROOM_KART_COUNT,
-            max_client_kart_count: MAX_CLIENT_KART_COUNT,
+            max_kart_count,
+            max_client_kart_count,
             mode_index,
             pack,
             id,
             code_pair: None,
             format,
-            match_count: 0,
-            rng,
-        };
-        Self::new(config)
-    }
-
-    pub fn new_duel(pack: Pack, id: u128, rng: &mut impl Rng) -> Self {
-        let config = Config {
-            host_karts: heapless::Vec::new(),
-            max_kart_count: 2,
-            max_client_kart_count: 1,
-            mode_index: ModeIndex::Versus,
-            pack,
-            id,
-            code_pair: None,
-            format: RoomOptionFormat::FreeForAll,
-            match_count: 1,
+            match_count,
             rng,
         };
         Self::new(config)
@@ -200,15 +188,19 @@ impl Room {
         }
     }
 
-    fn is_ffa(&self) -> bool {
-        matches!(self.format(), RoomOptionFormat::FreeForAll)
+    fn is_duel(&self) -> bool {
+        matches!(self.format(), RoomOptionFormat::Duel)
+    }
+
+    fn has_teams(&self) -> bool {
+        matches!(self.format(), RoomOptionFormat::TeamsOf2 | RoomOptionFormat::TeamsOf4)
     }
 
     fn team_count(&self) -> u8 {
         let max_team_size = match self.format() {
-            RoomOptionFormat::FreeForAll => 1,
             RoomOptionFormat::TeamsOf2 => 2,
             RoomOptionFormat::TeamsOf4 => 4,
+            _ => 1,
         };
         self.karts.len().div_ceil(max_team_size).max(2) as u8
     }
@@ -388,11 +380,18 @@ impl Room {
             if self.has_room_lock() {
                 anyhow::ensure!(continuing);
             } else if continuing {
-                if self.is_ffa() {
-                    self.state = State::new_poll(None);
-                } else {
+                if self.is_duel() {
+                    for kart in self.karts.drain(2..) {
+                        let client_pk = kart.client_pk();
+                        let karts = self.spectating_karts.entry(*client_pk).or_default();
+                        karts.push(kart).unwrap();
+                    }
+                }
+                if self.has_teams() {
                     let deadline = Instant::now() + Duration::from_secs(35);
                     self.state = State::new_team(self.karts.len(), deadline);
+                } else {
+                    self.state = State::new_poll(None);
                 }
             }
         } else {
@@ -478,8 +477,7 @@ impl Room {
         let is_host = self.is_host(client_pk);
         match course_selection {
             RoomOptionCourseSelection::Poll => {
-                let has_spectating_kart = self.spectating_karts.contains_key(client_pk);
-                anyhow::ensure!(course_index.is_some() == !has_spectating_kart);
+                anyhow::ensure!(course_index.is_some() == (kart_count != 0));
             }
             RoomOptionCourseSelection::Host => {
                 anyhow::ensure!(course_index.is_some() == is_host);
@@ -603,11 +601,11 @@ impl Room {
                     retain
                 });
                 if self.karts.windows(2).any(|karts| karts[0].client_pk() != karts[1].client_pk()) {
-                    if self.is_ffa() {
-                        self.state = State::new_poll(None);
-                    } else {
+                    if self.has_teams() {
                         let deadline = Instant::now();
                         self.state = State::new_team(self.karts.len(), deadline);
+                    } else {
+                        self.state = State::new_poll(None);
                     }
                 }
             }

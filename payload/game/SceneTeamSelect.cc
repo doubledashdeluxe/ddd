@@ -120,7 +120,7 @@ void SceneTeamSelect::init() {
     const OnlineInfo &onlineInfo = OnlineInfo::Instance();
     m_ok = true;
     m_balanced = false;
-    m_isSearch = onlineInfo.m_roomType != RoomType::Personal;
+    m_isSearch = onlineInfo.m_roomType == RoomType::Worldwide;
     m_isHost = onlineInfo.m_isHost;
     m_canContinue = true;
     m_continuing = false;

@@ -91,7 +91,6 @@ ClientState &FakeClient::writeStateMode() {
 
 ClientState &FakeClient::writeStatePack() {
     ClientStatePackWriteInfo writeInfo;
-    writeInfo.isDuel = false;
     writeInfo.modeIndex = 0;
     writeInfo.packCount = 1;
     writeInfo.packs[0].courseCount = 1;
@@ -102,7 +101,6 @@ ClientState &FakeClient::writeStatePack() {
 ClientState &FakeClient::writeStateRoom() {
     ClientStateRoomWriteInfo writeInfo;
     writeInfo.isSearch = false;
-    writeInfo.isDuel = false;
     writeInfo.modeIndex = 0;
     writeInfo.isRace = true;
     writeInfo.packCourseCount = 1;

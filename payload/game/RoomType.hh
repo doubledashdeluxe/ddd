@@ -4,8 +4,8 @@ class RoomType {
 public:
     enum {
         Worldwide,
-        Duel,
         Personal,
+        Count,
     };
 
 private:

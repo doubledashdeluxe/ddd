@@ -123,10 +123,6 @@ ClientStatePackWriter &ClientStatePack::packWriter() {
     return *this;
 }
 
-u8 ClientStatePack::getIsDuel() {
-    return m_writeInfo.isDuel;
-}
-
 u8 ClientStatePack::getModeIndex() {
     return m_writeInfo.modeIndex;
 }

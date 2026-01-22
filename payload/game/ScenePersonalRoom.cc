@@ -159,8 +159,7 @@ ScenePersonalRoom::~ScenePersonalRoom() {}
 
 void ScenePersonalRoom::init() {
     OnlineInfo &onlineInfo = OnlineInfo::Instance();
-    m_isSearch = onlineInfo.m_roomType != RoomType::Personal;
-    m_isDuel = onlineInfo.m_roomType == RoomType::Duel;
+    m_isSearch = onlineInfo.m_roomType == RoomType::Worldwide;
     m_isHost = onlineInfo.m_isHost;
     m_canContinue = true;
     m_continuing = false;
@@ -171,7 +170,6 @@ void ScenePersonalRoom::init() {
     m_entryIndex = 0;
 
     m_writeInfo.isSearch = m_isSearch;
-    m_writeInfo.isDuel = m_isDuel;
     if (m_isSearch || m_isHost) {
         m_isRace = RaceInfo::Instance().isRace();
         m_writeInfo.modeIndex = onlineInfo.m_modeIndex;
@@ -190,7 +188,9 @@ void ScenePersonalRoom::init() {
     m_writeInfo.spectatingCounter = 0;
     m_writeInfo.spectating = false;
     if (m_isSearch) {
-        m_writeInfo.options.format = onlineInfo.m_format;
+        u8 format = onlineInfo.m_format;
+        m_writeInfo.options.format = format;
+        m_writeInfo.options.matchCount = format == RoomOptionFormat::Duel ? 5 : 0;
     }
     m_writeInfo.continuing = false;
 
@@ -452,16 +452,22 @@ bool ScenePersonalRoom::clientStateRoom(const ClientStateRoomReadInfo &readInfo)
         }
     }
     u32 localKartCount = 0;
+    onlineInfo.localPlayerCount = 0;
     for (u32 i = 0; i < m_kartCount; i++) {
         const Kart &kart = onlineInfo.m_karts[i];
         if (kart.local) {
             onlineInfo.m_localKartIndices[localKartCount++] = i;
+            onlineInfo.localPlayerCount += kart.playerCount;
         }
     }
     if (info->spectating) {
         m_ok = m_ok && localKartCount == 0 && info->spectatorCount >= sequenceInfo.m_padCount;
     } else {
-        m_ok = m_ok && localKartCount == sequenceInfo.m_statusCount;
+        if (info->continuing && info->options.format == RoomOptionFormat::Duel) {
+            m_ok = m_ok && localKartCount <= sequenceInfo.m_statusCount;
+        } else {
+            m_ok = m_ok && localKartCount == sequenceInfo.m_statusCount;
+        }
         for (u32 i = 0, j = 0; i < m_kartCount && j < localKartCount; i++) {
             const Kart &kart = onlineInfo.m_karts[i];
             if (kart.local) {
@@ -530,14 +536,14 @@ bool ScenePersonalRoom::clientStateRoom(const ClientStateRoomReadInfo &readInfo)
     u8 format = options.format;
     u8 maxTeamSize;
     switch (format) {
-    case RoomOptionFormat::FreeForAll:
-        maxTeamSize = 1;
-        break;
     case RoomOptionFormat::TeamsOf2:
         maxTeamSize = 2;
         break;
     case RoomOptionFormat::TeamsOf4:
         maxTeamSize = 4;
+        break;
+    default:
+        maxTeamSize = 1;
         break;
     }
     bool isFFA = maxTeamSize == 1;
@@ -565,13 +571,18 @@ bool ScenePersonalRoom::clientStateRoom(const ClientStateRoomReadInfo &readInfo)
     onlineInfo.m_hasCourseShuffle = courseSelection != RoomOptionCourseSelection::Poll;
 
     m_continuing = info->continuing;
+    if (m_continuing) {
+        if (info->options.format == RoomOptionFormat::Duel) {
+            m_ok = m_ok && info->kartCount == 2;
+        }
+    }
 
     if (!m_ok) {
         return true;
     }
 
     RaceInfo &raceInfo = RaceInfo::Instance();
-    u32 statusCount = info->spectating ? 1 : sequenceInfo.m_statusCount;
+    u32 statusCount = info->spectating ? 1 : localKartCount;
     u32 consoleCount = statusCount == 3 ? 4 : statusCount;
     raceInfo.setRace(raceMode, m_kartCount, m_kartCount, consoleCount, statusCount);
     raceInfo.setRaceLevel(info->options.engineSize);
@@ -629,7 +640,7 @@ void ScenePersonalRoom::stateWait() {
     const JUTGamePad::CButton &button = KartGamePad::GamePad(0)->button();
     if (button.risingEdge() & PAD_BUTTON_B || !m_ok) {
         if (m_isSearch) {
-            m_nextScene = m_isDuel ? SceneType::PackSelect : SceneType::FormatSelect;
+            m_nextScene = SceneType::FormatSelect;
         } else {
             m_nextScene = m_isHost ? SceneType::PackSelect : SceneType::RoomCodeEnter;
         }
@@ -742,7 +753,7 @@ void ScenePersonalRoom::stateNextScene() {
     if (m_nextScene == SceneType::TeamSelect || m_nextScene == SceneType::PlayerList) {
         if (button.risingEdge() & PAD_BUTTON_B || !m_ok) {
             if (m_isSearch) {
-                m_nextScene = m_isDuel ? SceneType::PackSelect : SceneType::FormatSelect;
+                m_nextScene = SceneType::FormatSelect;
             } else {
                 m_nextScene = SceneType::RoomTypeSelect;
             }

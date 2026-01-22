@@ -114,11 +114,8 @@ impl Rooms {
                 anyhow::ensure!(self.count(frame_rate) <= 1000);
                 let room_entry = self.vacant_room_entry(frame_rate, rng);
                 let id = *room_entry.key();
-                let room = if search.is_duel {
-                    Room::new_duel(search.pack, id, rng)
-                } else {
-                    Room::new_worldwide(search.mode_index, search.pack, id, search.format, rng)
-                };
+                let room =
+                    Room::new_worldwide(search.mode_index, search.pack, id, search.format, rng);
                 let room = room_entry.insert_entry(room);
                 ids.insert_sync(id).unwrap();
                 Ok(RoomRef::new(room))
@@ -264,7 +261,6 @@ impl DerefMut for RoomRef<'_> {
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct Search {
-    pub is_duel: bool,
     pub mode_index: ModeIndex,
     pub pack: Pack,
     pub format: RoomOptionFormat,

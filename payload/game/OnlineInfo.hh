@@ -23,6 +23,7 @@ public:
     u64 m_roomCode;
     Array<Kart, MaxRoomKartCount> m_karts;
     Array<u8, MaxClientKartCount> m_localKartIndices;
+    u8 localPlayerCount;
     bool m_spectating;
     bool m_isFFA;
     u8 m_teamCount;

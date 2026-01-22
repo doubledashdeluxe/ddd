@@ -148,12 +148,11 @@ impl Client {
                         let counter = search.room_counter;
                         let frame_rate = identity.frame_rate;
                         let karts = karts();
-                        let is_duel = search.is_duel != 0;
                         let mode_index = search.mode_index;
                         let pack =
                             Pack { course_count: search.pack_course_count, hash: search.pack_hash };
                         let format = search.format;
-                        let search = Search { is_duel, mode_index, pack, format };
+                        let search = Search { mode_index, pack, format };
                         let room = rooms.search(frame_rate, &karts, search, rng);
                         room.and_then(|mut room| {
                             let id = room.id();
@@ -315,24 +314,20 @@ impl Client {
                 ServerState::Mode(mode)
             }
             State::Pack { pack, .. } => {
-                let ClientStatePack {
-                    is_duel,
-                    mode_index,
-                    pack_index,
-                    pack_course_count,
-                    pack_hash,
-                } = pack.clone();
-                let formats = [
+                let ClientStatePack { mode_index, pack_index, pack_course_count, pack_hash } =
+                    pack.clone();
+                let formats: [_; FORMAT_COUNT] = [
                     RoomOptionFormat::FreeForAll,
                     RoomOptionFormat::TeamsOf2,
                     RoomOptionFormat::TeamsOf4,
+                    RoomOptionFormat::Duel,
                 ];
                 let format_player_counts: heapless::Vec<_, _> = formats
                     .into_iter()
                     .map(|format| {
                         let pack =
                             Pack { course_count: pack_course_count, hash: pack_hash.clone() };
-                        let search = Search { is_duel: is_duel != 0, mode_index, pack, format };
+                        let search = Search { mode_index, pack, format };
                         rooms.search_player_count(frame_rate, &search) as u16
                     })
                     .collect();

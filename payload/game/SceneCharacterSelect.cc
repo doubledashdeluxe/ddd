@@ -153,9 +153,10 @@ SceneCharacterSelect::~SceneCharacterSelect() {}
 
 void SceneCharacterSelect::init() {
     const SequenceInfo &sequenceInfo = SequenceInfo::Instance();
+    OnlineInfo &onlineInfo = OnlineInfo::Instance();
     const RaceInfo &raceInfo = RaceInfo::Instance();
     m_ok = true;
-    m_padCount = sequenceInfo.m_padCount;
+    m_padCount = onlineInfo.localPlayerCount;
     m_statusCount = raceInfo.getStatusCount();
     J2DScreen &mainScreen = m_mainScreens[m_statusCount - 1];
     for (u32 i = 0; i < Min<u32>(m_statusCount * 2, 4); i++) {
@@ -177,7 +178,6 @@ void SceneCharacterSelect::init() {
         }
     }
     m_characterIndices.fill(CharacterID::Count);
-    OnlineInfo &onlineInfo = OnlineInfo::Instance();
     if (onlineInfo.m_hasIDs) {
         m_characterIDs = onlineInfo.m_characterIDs;
         m_kartIDs = onlineInfo.m_kartIDs;

@@ -228,6 +228,6 @@ pub fn server_race_kart() -> impl ComplexDataType {
 }
 
 pub const MAX_MOTD_LENGTH: usize = 99;
-pub const FORMAT_COUNT: usize = 3;
+pub const FORMAT_COUNT: usize = 4;
 pub const MIN_KART_PLAYER_COUNT: usize = 1;
 pub const MAX_KART_PLAYER_COUNT: usize = 2;

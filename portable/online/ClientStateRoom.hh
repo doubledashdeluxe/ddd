@@ -134,7 +134,6 @@ private:
     ClientRoomStateCodeWriter &codeWriter() override;
     ClientRoomStateMainWriter &mainWriter() override;
 
-    u8 getIsDuel() override;
     u8 getModeIndex() override;
     u8 getPackCourseCount() override;
     u32 getPackHashCount() override;

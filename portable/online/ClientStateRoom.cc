@@ -125,7 +125,8 @@ bool ClientStateRoom::isKartsCountValid(u32 kartsCount) {
     if (info && info->continuing) {
         return kartsCount == info->kartCount;
     } else {
-        return !m_writeInfo.isDuel || kartsCount <= 2;
+        return !m_writeInfo.isSearch || m_writeInfo.options.format != RoomOptionFormat::Duel ||
+                kartsCount <= 2;
     }
 }
 
@@ -396,7 +397,7 @@ void ClientStateRoom::setLapCount(u8 lapCount) {
 
 bool ClientStateRoom::isMatchCountValid(u8 matchCount) {
     if (m_writeInfo.isSearch) {
-        return matchCount == m_writeInfo.isDuel ? 1 : 0;
+        return matchCount == m_writeInfo.options.matchCount;
     } else {
         const Optional<ReadInfo::Info> &info = m_readInfo.info;
         if (info && info->continuing) {
@@ -465,10 +466,6 @@ ClientRoomStateCodeWriter &ClientStateRoom::codeWriter() {
 
 ClientRoomStateMainWriter &ClientStateRoom::mainWriter() {
     return *this;
-}
-
-u8 ClientStateRoom::getIsDuel() {
-    return m_writeInfo.isDuel;
 }
 
 u8 ClientStateRoom::getModeIndex() {
