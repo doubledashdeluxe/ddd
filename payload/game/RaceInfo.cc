@@ -30,6 +30,10 @@ s16 RaceInfo::getAwardKartNo() const {
     return m_awardKartNo;
 }
 
+bool RaceInfo::isDemoKart(u32 index) const {
+    return m_isDemoKart[index];
+}
+
 bool RaceInfo::isRace() const {
     return RaceMode::IsRace(m_raceMode);
 }

@@ -120,9 +120,7 @@ RaceClient::RaceClient() : m_ok(true), m_frame(0), m_clientFrame(MinClientFrame)
         m_kartDiffs[i].angle = 0.0f;
         m_kartDiffs[i].vel = Vec3f(0.0f, 0.0f, 0.0f);
     }
-    const OnlineInfo &onlineInfo = OnlineInfo::Instance();
-    const RaceInfo &raceInfo = RaceInfo::Instance();
-    m_writeInfo.kartCount = onlineInfo.m_spectating ? 0 : raceInfo.getStatusCount();
+    m_writeInfo.kartCount = OnlineInfo::Instance().m_localKartCount;
 }
 
 RaceClient::~RaceClient() {}
@@ -209,6 +207,7 @@ bool RaceClient::clientStateRace(const ClientStateRaceReadInfo &readInfo) {
         // Each state should only be processed once.
         kartStates.popFront();
     }
+    u32 consoleCount = raceInfo.getConsoleCount();
     const KartCtrl *kartCtrl = KartCtrl::Instance();
     for (u32 i = 0; i < kartCount; i++) {
         if (onlineInfo.m_karts[i].local) {
@@ -228,8 +227,11 @@ bool RaceClient::clientStateRace(const ClientStateRaceReadInfo &readInfo) {
         kartBody->m_bodyMtx[0][3] += posDiff.x;
         kartBody->m_bodyMtx[1][3] += posDiff.y;
         kartBody->m_bodyMtx[2][3] += posDiff.z;
-        if (onlineInfo.m_spectating) {
-            KartCam *kartCam = kartCtrl->getKartCam(0);
+        for (u32 j = 0; j < consoleCount; j++) {
+            if (!raceInfo.isDemoKart(j)) {
+                continue;
+            }
+            KartCam *kartCam = kartCtrl->getKartCam(j);
             if (kartCam->getBody() == kartBody) {
                 kartCam->m_basePos += posDiff;
             }

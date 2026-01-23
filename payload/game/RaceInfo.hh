@@ -12,6 +12,7 @@ public:
     s16 getStatusCount() const;
     const KartInfo &getKartInfo(u32 index) const;
     s16 getAwardKartNo() const;
+    bool isDemoKart(u32 index) const;
 
     bool isRace() const;
     bool isBattle() const;
@@ -48,7 +49,8 @@ private:
     s16 m_statusCount;
     u8 _024[0x030 - 0x024];
     KartInfo m_karts[8];
-    u8 _0f0[0x120 - 0x0f0];
+    u8 _0f0[0x11c - 0x0f0];
+    bool m_isDemoKart[4];
     s16 m_awardKartNo;
     u8 _122[0x298 - 0x122];
 

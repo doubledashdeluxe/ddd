@@ -28,7 +28,7 @@ void KartCam::init(bool isReset) {
 
 void KartCam::setPtr() {
     bool isOnline = SequenceInfo::Instance().m_isOnline;
-    if (isOnline && OnlineInfo::Instance().m_spectating) {
+    if (isOnline && RaceInfo::Instance().isDemoKart(m_index)) {
         m_mode = Mode::Land;
         m_flags |= 1 << 11;
         m_flags &= ~(1 << 8);

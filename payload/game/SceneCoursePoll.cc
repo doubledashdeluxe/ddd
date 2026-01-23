@@ -116,7 +116,7 @@ void SceneCoursePoll::init() {
     m_writeInfo.packCourseCount = m_courseCount;
     m_writeInfo.kartCount = m_kartCount;
     ClientStatePollWriteInfo::Ready &ready = m_writeInfo.ready.emplace();
-    ready.kartCount = onlineInfo.m_spectating ? 0 : raceInfo.getStatusCount();
+    ready.kartCount = onlineInfo.m_localKartCount;
     for (s16 i = 0; i < ready.kartCount; i++) {
         ready.karts[i].characterIDs = onlineInfo.m_characterIDs[i];
         ready.karts[i].kartID = onlineInfo.m_kartIDs[i];
@@ -326,8 +326,7 @@ bool SceneCoursePoll::clientStatePoll(const ClientStatePollReadInfo &readInfo) {
             }
         }
         KartGamePad *frontPad = nullptr, *backPad = nullptr;
-        u32 localKartCount = onlineInfo.m_spectating ? 0 : raceInfo.getStatusCount();
-        for (u32 j = 0; j < localKartCount; j++) {
+        for (u32 j = 0; j < onlineInfo.m_localKartCount; j++) {
             if (onlineInfo.m_localKartIndices[j] != kartIndex) {
                 continue;
             }

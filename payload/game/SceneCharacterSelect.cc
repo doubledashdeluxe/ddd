@@ -156,8 +156,8 @@ void SceneCharacterSelect::init() {
     OnlineInfo &onlineInfo = OnlineInfo::Instance();
     const RaceInfo &raceInfo = RaceInfo::Instance();
     m_ok = true;
-    m_padCount = onlineInfo.localPlayerCount;
-    m_statusCount = raceInfo.getStatusCount();
+    m_padCount = onlineInfo.m_localPlayerCount;
+    m_statusCount = onlineInfo.m_localKartCount;
     J2DScreen &mainScreen = m_mainScreens[m_statusCount - 1];
     for (u32 i = 0; i < Min<u32>(m_statusCount * 2, 4); i++) {
         u32 j = i % m_statusCount;

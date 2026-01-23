@@ -25,10 +25,16 @@ void LANNum2D::start() {
     REPLACED(start)();
 
     const OnlineInfo &onlineInfo = OnlineInfo::Instance();
+    const RaceInfo &raceInfo = RaceInfo::Instance();
     if (SequenceInfo::Instance().m_isOnline && !onlineInfo.m_spectating) {
         m_screen->search("NLan")->m_isVisible = true;
         u32 statusCount = RaceInfo::Instance().getStatusCount();
         for (u32 i = 0; i < statusCount; i++) {
+            if (raceInfo.isDemoKart(i)) {
+                for (u32 j = 0; j < (statusCount <= 2 || i == 0 ? 2 : 1); j++) {
+                    m_screen->search("NP%u%u", i + 1, j + 1)->m_isVisible = false;
+                }
+            }
             u32 kartIndex = J2DManager::StatusKart(i);
             u32 colorIndex = onlineInfo.colorIndex(kartIndex);
             J2DPicture::CornerColors cornerColors = Race2D::GetCornerColors(colorIndex);

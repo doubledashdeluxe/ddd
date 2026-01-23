@@ -36,7 +36,9 @@ private:
     u8 _0b0[0x0e0 - 0x0b0];
     u8 m_targetKart;
     u8 m_mode;
-    u8 _0e2[0x0e7 - 0x0e2];
+    u8 _0e2[0x0e3 - 0x0e2];
+    u8 m_index;
+    u8 _0e4[0x0e7 - 0x0e4];
 
 public:
     bool m_isRearView : 1; // Added

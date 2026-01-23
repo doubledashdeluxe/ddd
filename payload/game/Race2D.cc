@@ -30,17 +30,28 @@ void Race2D::init() {
 
     REPLACED(init)();
 
-    bool isOnline = SequenceInfo::Instance().m_isOnline;
-    const RaceInfo &raceInfo = RaceInfo::Instance();
-    u32 consoleCount = raceInfo.getConsoleCount();
+    if (!SequenceInfo::Instance().m_isOnline) {
+        return;
+    }
 
-    if (isOnline) {
-        for (u32 i = 0; i < consoleCount * 2; i++) {
-            for (u32 j = 0; j < 2; j++) {
-                for (u32 k = 0; k < 3; k++) {
-                    m_playerNamePictures[i][j][k]->m_isVisible = true;
-                }
+    const OnlineInfo &onlineInfo = OnlineInfo::Instance();
+    const RaceInfo &raceInfo = RaceInfo::Instance();
+    u32 kartCount = raceInfo.getKartCount();
+    u32 consoleCount = raceInfo.getConsoleCount();
+    for (u32 i = 0; i < consoleCount * 2; i++) {
+        for (u32 j = 0; j < 2; j++) {
+            for (u32 k = 0; k < 3; k++) {
+                m_playerNamePictures[i][j][k]->m_isVisible = true;
             }
+        }
+    }
+    if (onlineInfo.m_isDuel) {
+        for (u32 i = 0; i < kartCount; i++) {
+            for (u32 j = 0; j < 2; j++) {
+                m_characterIndications[i].characters[j].windowPicture->m_isVisible = false;
+                m_characterIndications[i].characters[j].iconPicture->m_isVisible = false;
+            }
+            m_characterIndications[i].rankPicture->m_isVisible = false;
         }
     }
 }

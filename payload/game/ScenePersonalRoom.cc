@@ -444,22 +444,22 @@ bool ScenePersonalRoom::clientStateRoom(const ClientStateRoomReadInfo &readInfo)
         m_charCount = m_chars.count();
     }
 
-    onlineInfo.m_spectating = info->spectating;
     if (!prevIsReady || m_switchAnmTransformFrames[1] == 8) {
         if (info->spectatingCounter == m_writeInfo.spectatingCounter) {
             m_writeInfo.spectating = info->spectating;
             m_switchAnmTexPatternFrames[1] = info->spectating;
         }
     }
-    u32 localKartCount = 0;
-    onlineInfo.localPlayerCount = 0;
+    u32 localKartCount = 0, localPlayerCount = 0;
     for (u32 i = 0; i < m_kartCount; i++) {
         const Kart &kart = onlineInfo.m_karts[i];
         if (kart.local) {
             onlineInfo.m_localKartIndices[localKartCount++] = i;
-            onlineInfo.localPlayerCount += kart.playerCount;
+            localPlayerCount += kart.playerCount;
         }
     }
+    onlineInfo.m_localKartCount = localKartCount;
+    onlineInfo.m_localPlayerCount = localPlayerCount;
     if (info->spectating) {
         m_ok = m_ok && localKartCount == 0 && info->spectatorCount >= sequenceInfo.m_padCount;
     } else {
@@ -475,6 +475,7 @@ bool ScenePersonalRoom::clientStateRoom(const ClientStateRoomReadInfo &readInfo)
             }
         }
     }
+    onlineInfo.m_spectating = localKartCount == 0;
 
     if (!prevIsReady) {
         if (info->isRace == m_isRace) {
@@ -555,11 +556,13 @@ bool ScenePersonalRoom::clientStateRoom(const ClientStateRoomReadInfo &readInfo)
     onlineInfo.m_isFFA = isFFA;
     onlineInfo.m_teamCount = teamCount;
     onlineInfo.m_maxTeamSize = maxTeamSize;
+    bool isDuel = info->options.format == RoomOptionFormat::Duel;
+    onlineInfo.m_isDuel = isDuel;
 
     u8 courseSelection = options.courseSelection;
     switch (courseSelection) {
     case RoomOptionCourseSelection::Poll:
-        onlineInfo.m_hasCourseSelection = !onlineInfo.m_spectating;
+        onlineInfo.m_hasCourseSelection = !info->spectating;
         break;
     case RoomOptionCourseSelection::Host:
         onlineInfo.m_hasCourseSelection = onlineInfo.m_isHost;
@@ -572,8 +575,10 @@ bool ScenePersonalRoom::clientStateRoom(const ClientStateRoomReadInfo &readInfo)
 
     m_continuing = info->continuing;
     if (m_continuing) {
-        if (info->options.format == RoomOptionFormat::Duel) {
+        if (isDuel) {
             m_ok = m_ok && info->kartCount == 2;
+        } else {
+            m_ok = m_ok && info->kartCount >= 2;
         }
     }
 
@@ -582,13 +587,14 @@ bool ScenePersonalRoom::clientStateRoom(const ClientStateRoomReadInfo &readInfo)
     }
 
     RaceInfo &raceInfo = RaceInfo::Instance();
-    u32 statusCount = info->spectating ? 1 : localKartCount;
+    u32 statusCount = isDuel ? 2 : info->spectating ? 1 : localKartCount;
     u32 consoleCount = statusCount == 3 ? 4 : statusCount;
     raceInfo.setRace(raceMode, m_kartCount, m_kartCount, consoleCount, statusCount);
     raceInfo.setRaceLevel(info->options.engineSize);
     for (u32 i = 0; i < consoleCount; i++) {
-        bool spectating = info->spectating || i >= statusCount;
-        u32 targetKart = spectating ? 0 : onlineInfo.m_localKartIndices[i];
+        const Kart &kart = onlineInfo.m_karts[i];
+        bool spectating = isDuel ? !kart.local : info->spectating || i >= statusCount;
+        u32 targetKart = isDuel ? i : spectating ? 0 : onlineInfo.m_localKartIndices[i];
         raceInfo.setConsoleTarget(i, targetKart, spectating);
     }
     return true;

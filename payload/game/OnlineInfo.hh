@@ -23,11 +23,13 @@ public:
     u64 m_roomCode;
     Array<Kart, MaxRoomKartCount> m_karts;
     Array<u8, MaxClientKartCount> m_localKartIndices;
-    u8 localPlayerCount;
+    u8 m_localKartCount;
+    u8 m_localPlayerCount;
     bool m_spectating;
     bool m_isFFA;
     u8 m_teamCount;
     u8 m_maxTeamSize;
+    bool m_isDuel;
     Array<u8, MaxRoomKartCount> m_teams;
     Array<Array<u8, 2>, 4> m_padIndices;
     bool m_hasIDs;
