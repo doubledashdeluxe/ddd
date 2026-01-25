@@ -4,7 +4,6 @@
 #include "game/RaceClient.hh"
 #include "game/RaceInfo.hh"
 #include "game/RaceMode.hh"
-#include "game/RacePhase.hh"
 #include "game/SceneType.hh"
 #include "game/SequenceInfo.hh"
 #include "game/System.hh"
@@ -44,32 +43,22 @@ void RaceApp::calc() {
         return;
     }
 
-    RaceDirector *raceDirector = m_raceMgr->raceDirector();
-    if (raceDirector->racePhase() != RacePhase::Running || !raceDirector->isFrameRenewal()) {
-        REPLACED(calc)();
-        return;
-    }
-
     raceClient->read();
 
-    s32 adjustment = -1;
-    Optional<s32> drift = raceClient->drift();
-    if (drift) {
-        if (*drift <= -120) {
-            adjustment = -*drift;
-        } else if (*drift < 0) {
-            adjustment = 1;
-        } else if (*drift > 0 && m_raceMgr->loopFrame() & 1) {
-            adjustment = -1;
-        } else {
-            adjustment = 0;
-        }
-        if (adjustment >= 0) {
-            u32 clientFrame = raceClient->clientFrame() - MinClientFrame;
-            adjustment = Min<s32>(adjustment, clientFrame - m_raceMgr->frame() + 30 - 1);
-        }
-        raceClient->adjustDrift(adjustment);
+    s32 adjustment = 0;
+    s32 drift = raceClient->drift();
+    if (drift <= -120) {
+        adjustment = -drift;
+    } else if (drift < 0) {
+        adjustment = 1;
+    } else if (drift > 0 && m_raceMgr->loopFrame() & 1) {
+        adjustment = -1;
     }
+    if (adjustment >= 0) {
+        u32 clientFrame = raceClient->clientFrame() - MinClientFrame;
+        adjustment = Min<s32>(adjustment, clientFrame - m_raceMgr->frame() + 30 - 1);
+    }
+    raceClient->adjustDrift(adjustment);
     do {
         m_raceMgr->calcRace(adjustment);
         ctrlRecorder();
@@ -78,6 +67,9 @@ void RaceApp::calc() {
         }
         if (adjustment <= 0) {
             ctrlRace();
+        }
+        if (adjustment >= 0) {
+            raceClient->updateInputs();
         }
     } while (adjustment-- > 0);
 

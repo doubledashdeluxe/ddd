@@ -31,6 +31,7 @@ pub fn format() -> Format<impl ConstantList, impl TypeList> {
     let min_kart_player_count = SimpleConstant::new("MIN_KART_PLAYER_COUNT", MIN_KART_PLAYER_COUNT);
     let max_kart_player_count = SimpleConstant::new("MAX_KART_PLAYER_COUNT", MAX_KART_PLAYER_COUNT);
     let min_client_frame = SimpleConstant::new("MIN_CLIENT_FRAME", 360u16);
+    let max_kart_input_count = SimpleConstant::new("MAX_KART_INPUT_COUNT", MAX_KART_INPUT_COUNT);
     Format::new("Online")
         .with_constant(default_port)
         .with_constant(protocol_version)
@@ -52,6 +53,7 @@ pub fn format() -> Format<impl ConstantList, impl TypeList> {
         .with_constant(min_kart_player_count)
         .with_constant(max_kart_player_count)
         .with_constant(min_client_frame)
+        .with_constant(max_kart_input_count)
         .with_type(frame_rate())
         .with_type(mode_index())
         .with_type(room_option_code_type())

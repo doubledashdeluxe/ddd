@@ -1,11 +1,18 @@
 #pragma once
 
 #include "portable/Array.hh"
+#include "portable/Ring.hh"
 
 #include <formats/Online.hh>
 
 struct ClientStateRaceWriteInfo {
+    struct Inputs {
+        u8 inputCount;
+        Array<u16, MaxKartPlayerCount> inputs;
+    };
+
     struct Kart {
+        Ring<Inputs, MaxKartInputCount> inputs;
         s16 posX;
         s16 posY;
         s16 posZ;

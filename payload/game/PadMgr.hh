@@ -18,6 +18,7 @@ public:
     static void Framework();
     static void REPLACED(GetPadData)(u8 port, bool remote, KartPadData *data);
     REPLACE static void GetPadData(u8 port, bool remote, KartPadData *data);
+    static void GetPadData(u8 port, bool remote, u16 *data);
 
 private:
     PadMgr();

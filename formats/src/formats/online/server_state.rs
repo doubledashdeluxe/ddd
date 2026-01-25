@@ -209,6 +209,8 @@ pub fn server_race_state_main() -> impl ComplexDataType {
 
 pub fn server_race_kart() -> impl ComplexDataType {
     let kart_frame: SimpleDataType<u16> = SimpleDataType::new();
+    let input: SimpleDataType<u16> = SimpleDataType::new();
+    let inputs = ArrayType::new(input, MIN_KART_PLAYER_COUNT, MAX_KART_PLAYER_COUNT);
     let pos_x: SimpleDataType<i16> = SimpleDataType::new();
     let pos_y: SimpleDataType<i16> = SimpleDataType::new();
     let pos_z: SimpleDataType<i16> = SimpleDataType::new();
@@ -218,6 +220,7 @@ pub fn server_race_kart() -> impl ComplexDataType {
     let vel_z: SimpleDataType<i16> = SimpleDataType::new();
     StructType::new("ServerRaceKart")
         .with_field("kart_frame", kart_frame)
+        .with_field("inputs", inputs)
         .with_field("pos_x", pos_x)
         .with_field("pos_y", pos_y)
         .with_field("pos_z", pos_z)
@@ -229,5 +232,3 @@ pub fn server_race_kart() -> impl ComplexDataType {
 
 pub const MAX_MOTD_LENGTH: usize = 99;
 pub const FORMAT_COUNT: usize = 4;
-pub const MIN_KART_PLAYER_COUNT: usize = 1;
-pub const MAX_KART_PLAYER_COUNT: usize = 2;

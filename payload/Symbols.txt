@@ -506,6 +506,7 @@
 801d0d48 Get2DScisW__6SystemFv
 801d0d58 Get2DScisH__6SystemFv
 801d139c expand__11KartGamePadFRCQ26PadMgr11KartPadData
+801d139c expand__11KartGamePadFRCUs
 801d1a9c Draw__6AppMgrFv
 801d1af4 Calc__6AppMgrFv
 801d2290 Call__12ErrorViewAppFl
@@ -528,6 +529,7 @@
 801dc140 Framework__6PadMgrFv
 801dc1c4 ProcessKartPad__6PadMgrFv
 801dc290 GetPadData__6PadMgrFUcbPQ26PadMgr11KartPadData
+801dc290 GetPadData__6PadMgrFUcbPUs
 801dc6cc __dt__11PadRecorderFv
 801dc900 line__11PadRecorderFUcPQ26PadMgr11KartPadData
 801dcacc framework__11PadRecorderFv

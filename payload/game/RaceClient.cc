@@ -21,9 +21,9 @@ u16 RaceClient::clientFrame() const {
     return m_clientFrame;
 }
 
-Optional<s32> RaceClient::drift() const {
+s32 RaceClient::drift() const {
     if (m_drifts.empty()) {
-        return Optional<s32>();
+        return 0;
     }
 
     return m_drift / static_cast<s32>(m_drifts.count());
@@ -37,6 +37,24 @@ void RaceClient::adjustDrift(s32 adjustment) {
     m_drift += adjustment * m_drifts.count();
     for (u32 i = 0; i < m_drifts.count(); i++) {
         m_drifts[i] += adjustment;
+    }
+}
+
+void RaceClient::updateInputs() {
+    const OnlineInfo &onlineInfo = OnlineInfo::Instance();
+    u32 frame = MinClientFrame + RaceMgr::Instance()->frame();
+    for (u32 i = 0; i < m_writeInfo.kartCount; i++) {
+        u32 kartIndex = onlineInfo.m_localKartIndices[i];
+        WriteInfo::Kart &kart = m_writeInfo.karts[i];
+        while (kart.inputs.count() >= frame - m_clientFrame) {
+            assert(kart.inputs.popFront());
+        }
+        assert(kart.inputs.pushBack());
+        WriteInfo::Inputs *inputs = kart.inputs.back();
+        inputs->inputCount = onlineInfo.m_karts[kartIndex].playerCount;
+        for (u32 j = 0; j < inputs->inputCount; j++) {
+            PadMgr::GetPadData(onlineInfo.m_padIndices[i][j], false, &inputs->inputs[j]);
+        }
     }
 }
 
@@ -69,7 +87,9 @@ void RaceClient::write() {
 
     m_writeInfo.frame = frame;
     for (u32 i = 0; i < m_writeInfo.kartCount; i++) {
-        const KartBody *kartBody = kartCtrl->getKartBody(onlineInfo.m_localKartIndices[i]);
+        u32 kartIndex = onlineInfo.m_localKartIndices[i];
+        WriteInfo::Kart &kart = m_writeInfo.karts[i];
+        const KartBody *kartBody = kartCtrl->getKartBody(kartIndex);
         f32 min = -32768.0f, max = 32768.0f;
         Vec3f pos = kartBody->m_pos;
         f32 posScale = 1.0f / 4.0f; // Between -131072 and 131072
@@ -79,13 +99,13 @@ void RaceClient::write() {
         assert(pos.x >= min && pos.x < max);
         assert(pos.y >= min && pos.y < max);
         assert(pos.z >= min && pos.z < max);
-        m_writeInfo.karts[i].posX = pos.x;
-        m_writeInfo.karts[i].posY = pos.y;
-        m_writeInfo.karts[i].posZ = pos.z;
+        kart.posX = pos.x;
+        kart.posY = pos.y;
+        kart.posZ = pos.z;
         f32 angle = atan2(kartBody->m_mtx[0][2], kartBody->m_mtx[0][0]);
         f32 angleScale = 128.0f / M_PI; // Between -π and π
         angle = floor(angle * angleScale);
-        m_writeInfo.karts[i].angle = static_cast<s32>(angle);
+        kart.angle = static_cast<s32>(angle);
         Vec3f vel = kartBody->m_vel;
         f32 velScale = 32.0f; // Between -1024 and 1024
         vel.x = floor(vel.x * velScale);
@@ -94,9 +114,9 @@ void RaceClient::write() {
         assert(vel.x >= min && vel.x < max);
         assert(vel.y >= min && vel.y < max);
         assert(vel.z >= min && vel.z < max);
-        m_writeInfo.karts[i].velX = vel.x;
-        m_writeInfo.karts[i].velY = vel.y;
-        m_writeInfo.karts[i].velZ = vel.z;
+        kart.velX = vel.x;
+        kart.velY = vel.y;
+        kart.velZ = vel.z;
     }
     CubeClient::Instance()->writeStateRace(m_writeInfo);
 }
@@ -114,8 +134,9 @@ RaceClient *RaceClient::Instance() {
     return s_instance;
 }
 
-RaceClient::RaceClient() : m_ok(true), m_frame(0), m_clientFrame(MinClientFrame), m_drift(0) {
+RaceClient::RaceClient() : m_ok(true), m_frame(0), m_clientFrame(MinClientFrame - 1), m_drift(0) {
     for (u32 i = 0; i < m_kartDiffs.count(); i++) {
+        m_kartDiffs[i].inputs.fill(0);
         m_kartDiffs[i].pos = Vec3f(0.0f, 0.0f, 0.0f);
         m_kartDiffs[i].angle = 0.0f;
         m_kartDiffs[i].vel = Vec3f(0.0f, 0.0f, 0.0f);
@@ -151,6 +172,7 @@ bool RaceClient::clientStateRace(const ClientStateRaceReadInfo &readInfo) {
     const OnlineInfo &onlineInfo = OnlineInfo::Instance();
     const RaceInfo &raceInfo = RaceInfo::Instance();
     u32 kartCount = raceInfo.getKartCount();
+    const KartCtrl *kartCtrl = KartCtrl::Instance();
     for (u32 i = 0, j = 0; i < kartCount && j < info->kartCount; i++) {
         if (!(info->kartFlags & 1 << i)) {
             continue;
@@ -174,7 +196,11 @@ bool RaceClient::clientStateRace(const ClientStateRaceReadInfo &readInfo) {
         while (kartStates.front() != kartState) {
             kartStates.popFront();
         }
+        if (kart.inputCount != onlineInfo.m_karts[i].playerCount) {
+            continue;
+        }
         KartDiff &kartDiff = m_kartDiffs[i];
+        kartDiff.inputs = kart.inputs;
         TVec3<f32> &posDiff = kartDiff.pos;
         f32 posScale = 4.0f;
         posDiff.x = Convert(kart.posX, posScale);
@@ -208,12 +234,15 @@ bool RaceClient::clientStateRace(const ClientStateRaceReadInfo &readInfo) {
         kartStates.popFront();
     }
     u32 consoleCount = raceInfo.getConsoleCount();
-    const KartCtrl *kartCtrl = KartCtrl::Instance();
     for (u32 i = 0; i < kartCount; i++) {
         if (onlineInfo.m_karts[i].local) {
             continue;
         }
         KartDiff &kartDiff = m_kartDiffs[i];
+        for (u32 j = 0; j < onlineInfo.m_karts[i].playerCount; j++) {
+            KartGamePad *pad = kartCtrl->getKartGamePad(i, j);
+            pad->expand(kartDiff.inputs[j]);
+        }
         // When oscillations happen, interpolation can help reduce their amplitude over time, yet
         // we use a high factor to keep things responsive. This also makes movements a bit more
         // natural by smoothing them a bit.

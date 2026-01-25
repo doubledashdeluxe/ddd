@@ -138,4 +138,6 @@ pub const KART_CHARACTER_COUNT: usize = 2;
 pub const PLAYER_NAME_LENGTH: usize = 3;
 pub const MODE_INDEX_COUNT: usize = 5;
 pub const MAX_ROOM_KART_COUNT: usize = 8;
+pub const MIN_KART_PLAYER_COUNT: usize = 1;
+pub const MAX_KART_PLAYER_COUNT: usize = 2;
 pub const MAX_TEAM_COUNT: usize = 4;

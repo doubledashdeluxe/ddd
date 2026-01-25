@@ -7,10 +7,11 @@
 
 class KartCtrl {
 public:
-    KartPad *getKartPad(u32 index) const;
-    KartBody *getKartBody(u32 index) const;
-    KartGamePad *getDriveCont(u32 index);
-    KartCam *getKartCam(u32 index) const;
+    KartGamePad *getKartGamePad(u32 kartIndex, u32 playerIndex) const;
+    KartPad *getKartPad(u32 kartIndex) const;
+    KartBody *getKartBody(u32 kartIndex) const;
+    KartGamePad *getDriveCont(u32 kartIndex);
+    KartCam *getKartCam(u32 kartIndex) const;
 
     void REPLACED(dynamicsInit)(bool r4);
     REPLACE void dynamicsInit(bool r4);
@@ -22,7 +23,8 @@ public:
 private:
     KartCtrl();
 
-    u8 _000[0x060 - 0x000];
+    u8 _000[0x020 - 0x000];
+    KartGamePad *m_kartGamePads[8][2];
     KartPad *m_kartPads[8];
     u8 _080[0x0a0 - 0x080];
     KartBody *m_kartBodies[8];

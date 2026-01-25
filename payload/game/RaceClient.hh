@@ -8,8 +8,9 @@ class RaceClient : private ClientReadHandler {
 public:
     bool ok() const;
     u16 clientFrame() const;
-    Optional<s32> drift() const;
+    s32 drift() const;
     void adjustDrift(s32 adjustment);
+    void updateInputs();
     void read();
     void write();
 
@@ -29,6 +30,7 @@ private:
     };
 
     struct KartDiff {
+        Array<u16, MaxKartPlayerCount> inputs;
         TVec3<f32> pos;
         f32 angle;
         Vec3f vel;

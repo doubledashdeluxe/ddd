@@ -1,15 +1,19 @@
 #include "KartCtrl.hh"
 
-KartPad *KartCtrl::getKartPad(u32 index) const {
-    return m_kartPads[index];
+KartGamePad *KartCtrl::getKartGamePad(u32 kartIndex, u32 playerIndex) const {
+    return m_kartGamePads[kartIndex][playerIndex];
 }
 
-KartBody *KartCtrl::getKartBody(u32 index) const {
-    return m_kartBodies[index];
+KartPad *KartCtrl::getKartPad(u32 kartIndex) const {
+    return m_kartPads[kartIndex];
 }
 
-KartCam *KartCtrl::getKartCam(u32 index) const {
-    return m_kartCams[index];
+KartBody *KartCtrl::getKartBody(u32 kartIndex) const {
+    return m_kartBodies[kartIndex];
+}
+
+KartCam *KartCtrl::getKartCam(u32 kartIndex) const {
+    return m_kartCams[kartIndex];
 }
 
 void KartCtrl::dynamicsInit(bool r4) {

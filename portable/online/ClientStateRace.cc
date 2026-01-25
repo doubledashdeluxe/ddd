@@ -135,6 +135,22 @@ void ClientStateRace::setKartFrame(u16 kartFrame) {
     m_readInfo.info.getOrEmplace().karts[m_kartIndex].frame = kartFrame;
 }
 
+bool ClientStateRace::isInputsCountValid(u32 /* inputsCount */) {
+    return true;
+}
+
+void ClientStateRace::setInputsCount(u32 inputsCount) {
+    m_readInfo.info.getOrEmplace().karts[m_kartIndex].inputCount = inputsCount;
+}
+
+bool ClientStateRace::isInputsElementValid(u32 /* i0 */, u16 /* inputsElement*/) {
+    return true;
+}
+
+void ClientStateRace::setInputsElement(u32 i0, u16 inputsElement) {
+    m_readInfo.info.getOrEmplace().karts[m_kartIndex].inputs[i0] = inputsElement;
+}
+
 bool ClientStateRace::isPosXValid(s16 /* posX */) {
     return true;
 }
@@ -206,6 +222,18 @@ u32 ClientStateRace::getKartsCount() {
 ClientRaceKartWriter &ClientStateRace::kartsElementWriter(u32 i0) {
     m_kartIndex = i0;
     return *this;
+}
+
+u32 ClientStateRace::getInputsCount() {
+    return m_writeInfo.karts[m_kartIndex].inputs.count();
+}
+
+u32 ClientStateRace::getInputsCount(u32 i0) {
+    return m_writeInfo.karts[m_kartIndex].inputs[i0].inputCount;
+}
+
+u16 ClientStateRace::getInputsElement(u32 i0, u32 i1) {
+    return m_writeInfo.karts[m_kartIndex].inputs[i0].inputs[i1];
 }
 
 s16 ClientStateRace::getPosX() {

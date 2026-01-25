@@ -8,6 +8,8 @@
 struct ClientStateRaceReadInfo {
     struct Kart {
         u16 frame;
+        u8 inputCount;
+        Array<u16, MaxKartPlayerCount> inputs;
         s16 posX;
         s16 posY;
         s16 posZ;

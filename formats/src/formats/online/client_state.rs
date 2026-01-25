@@ -195,6 +195,9 @@ pub fn client_state_race() -> impl ComplexDataType {
 }
 
 pub fn client_race_kart() -> impl ComplexDataType {
+    let input: SimpleDataType<u16> = SimpleDataType::new();
+    let inputs = ArrayType::new(input, MIN_KART_PLAYER_COUNT, MAX_KART_PLAYER_COUNT);
+    let inputs = ArrayType::new(inputs, 0, MAX_KART_INPUT_COUNT);
     let pos_x: SimpleDataType<i16> = SimpleDataType::new();
     let pos_y: SimpleDataType<i16> = SimpleDataType::new();
     let pos_z: SimpleDataType<i16> = SimpleDataType::new();
@@ -203,6 +206,7 @@ pub fn client_race_kart() -> impl ComplexDataType {
     let vel_y: SimpleDataType<i16> = SimpleDataType::new();
     let vel_z: SimpleDataType<i16> = SimpleDataType::new();
     StructType::new("ClientRaceKart")
+        .with_field("inputs", inputs)
         .with_field("pos_x", pos_x)
         .with_field("pos_y", pos_y)
         .with_field("pos_z", pos_z)
@@ -211,3 +215,5 @@ pub fn client_race_kart() -> impl ComplexDataType {
         .with_field("vel_y", vel_y)
         .with_field("vel_z", vel_z)
 }
+
+pub const MAX_KART_INPUT_COUNT: usize = 30;

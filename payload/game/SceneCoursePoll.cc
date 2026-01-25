@@ -307,7 +307,7 @@ bool SceneCoursePoll::clientStatePoll(const ClientStatePollReadInfo &readInfo) {
     }
 
     RaceInfo &raceInfo = RaceInfo::Instance();
-    for (u32 i = 0; i < m_kartCount; i++) {
+    for (u32 i = 0, remotePadCount = 0; i < m_kartCount; i++) {
         u32 kartIndex = kartIndices[i];
         const ClientStatePollReadInfo::Kart &kart = ready->karts[i];
         u8 frontCharacterID = kart.characterIDs[0];
@@ -337,8 +337,13 @@ bool SceneCoursePoll::clientStatePoll(const ClientStatePollReadInfo &readInfo) {
             }
         }
         if (!frontPad) {
-            frontPad = KartGamePad::KartPad(8 + i);
+            u32 localPadCount = onlineInfo.m_localPlayerCount;
+            frontPad = KartGamePad::KartPad(localPadCount + remotePadCount++);
             frontPad->m_padPort = KartGamePad::PadPort::Network;
+            if (onlineInfo.m_karts[kartIndex].playerCount == 2) {
+                backPad = KartGamePad::KartPad(localPadCount + remotePadCount++);
+                backPad->m_padPort = KartGamePad::PadPort::Network;
+            }
         }
         frontPad->m_padType = KartGamePad::PadType::Network;
         if (backPad) {

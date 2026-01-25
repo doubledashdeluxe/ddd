@@ -2,6 +2,7 @@
 
 #include "game/KartGamePad.hh"
 #include "game/PadRecorder.hh"
+#include "game/SequenceInfo.hh"
 #include "game/SystemRecord.hh"
 
 void PadMgr::SetRecorder(PadRecorder *recorder) {
@@ -17,13 +18,18 @@ void PadMgr::GetPadData(u8 port, bool remote, KartPadData *data) {
 }
 
 void PadMgr::ProcessKartPad() {
+    bool isOnline = SequenceInfo::Instance().m_isOnline;
     for (u32 i = 0; i < 16; i++) {
+        KartGamePad *pad = KartGamePad::KartPad(i);
+        if (isOnline && pad->padPort() == KartGamePad::PadPort::Network) {
+            continue;
+        }
         KartPadData data;
         REPLACED(GetPadData)(i, s_kartPadInput, &data);
         if (s_recorder) {
             s_recorder->line(i, &data);
         }
-        KartGamePad::KartPad(i)->expand(data);
+        pad->expand(data);
     }
     if (s_recorder) {
         s_recorder->framework();
