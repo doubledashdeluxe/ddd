@@ -191,7 +191,12 @@ pub fn client_course_index() -> impl ComplexDataType {
 pub fn client_state_race() -> impl ComplexDataType {
     let frame: SimpleDataType<u16> = SimpleDataType::new();
     let karts = ArrayType::new(client_race_kart(), 0, MAX_CLIENT_KART_COUNT);
-    StructType::new("ClientStateRace").with_field("frame", frame).with_field("karts", karts)
+    let item_count: SimpleDataType<u8> = SimpleDataType::new();
+    let item_counts = ArrayType::new(item_count, 16, 16);
+    StructType::new("ClientStateRace")
+        .with_field("frame", frame)
+        .with_field("karts", karts)
+        .with_field("item_counts", item_counts)
 }
 
 pub fn client_race_kart() -> impl ComplexDataType {
@@ -205,6 +210,9 @@ pub fn client_race_kart() -> impl ComplexDataType {
     let vel_x: SimpleDataType<i16> = SimpleDataType::new();
     let vel_y: SimpleDataType<i16> = SimpleDataType::new();
     let vel_z: SimpleDataType<i16> = SimpleDataType::new();
+    let item_frame: SimpleDataType<u16> = SimpleDataType::new();
+    let item_frames = ArrayType::new(item_frame, KART_CHARACTER_COUNT, KART_CHARACTER_COUNT);
+    let rank: SimpleDataType<u8> = SimpleDataType::new();
     StructType::new("ClientRaceKart")
         .with_field("inputs", inputs)
         .with_field("pos_x", pos_x)
@@ -214,6 +222,8 @@ pub fn client_race_kart() -> impl ComplexDataType {
         .with_field("vel_x", vel_x)
         .with_field("vel_y", vel_y)
         .with_field("vel_z", vel_z)
+        .with_field("item_frames", item_frames)
+        .with_field("rank", rank)
 }
 
 pub const MAX_KART_INPUT_COUNT: usize = 30;

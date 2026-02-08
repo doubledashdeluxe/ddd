@@ -40,7 +40,6 @@ pub fn room_options_battle() -> impl ComplexDataType {
         .with_field("battle", UnitType)
         .with_field("code_type", room_option_code_type())
         .with_field("format", room_option_format())
-        .with_field("item_mode", room_option_item_mode())
         .with_field("match_count", match_count)
         .with_field("course_selection", room_option_course_selection())
         .with_field("entry_index", entry_index)

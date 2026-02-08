@@ -1,3 +1,4 @@
+use std::array;
 use std::collections;
 use std::ops::{Deref, DerefMut};
 use std::sync::Arc;
@@ -31,12 +32,12 @@ impl Rooms {
     pub fn new() -> Rooms {
         let short_codes: collections::HashSet<_> = (0..1000).collect();
         Rooms {
-            rooms: Default::default(),
-            counts: Default::default(),
-            search_rooms: Default::default(),
-            mode_player_counts: Default::default(),
-            long_code_ids: Default::default(),
-            short_code_ids: Default::default(),
+            rooms: array::from_fn(|_| Arc::new(HashMap::new())),
+            counts: array::from_fn(|_| Arc::new(0.into())),
+            search_rooms: array::from_fn(|_| Arc::new(HashMap::new())),
+            mode_player_counts: array::from_fn(|_| Arc::new(array::from_fn(|_| 0.into()))),
+            long_code_ids: Arc::new(HashMap::new()),
+            short_code_ids: Arc::new(HashMap::new()),
             short_codes: Arc::new(short_codes.into_iter().collect()),
         }
     }

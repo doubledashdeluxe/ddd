@@ -483,9 +483,7 @@ bool ScenePersonalRoom::clientStateRoom(const ClientStateRoomReadInfo &readInfo)
             m_options[m_optionCount++] = RoomOption::Format;
             if (m_isRace) {
                 m_options[m_optionCount++] = RoomOption::EngineSize;
-            }
-            m_options[m_optionCount++] = RoomOption::ItemMode;
-            if (m_isRace) {
+                m_options[m_optionCount++] = RoomOption::ItemMode;
                 m_options[m_optionCount++] = RoomOption::LapCount;
                 m_options[m_optionCount++] = RoomOption::RaceCount;
                 m_options[m_optionCount++] = RoomOption::CourseSelection;

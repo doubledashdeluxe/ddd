@@ -75,7 +75,7 @@ mod tests {
     use crate::crypto::x25519::X25519;
 
     #[test]
-    fn test_invalid_server_pk() {
+    fn invalid_server_pk() {
         let client_k = X25519::genkey();
         let server_k = X25519::genkey();
         let invalid_server_pk = X25519::pubkey(&X25519::genkey());
@@ -87,7 +87,7 @@ mod tests {
     }
 
     #[test]
-    fn test_invalid_m1() -> Result<()> {
+    fn invalid_m1() -> Result<()> {
         let client_k = X25519::genkey();
         let server_k = X25519::genkey();
         let server_pk = X25519::pubkey(&server_k);
@@ -102,7 +102,7 @@ mod tests {
     }
 
     #[test]
-    fn test_invalid_m2() -> Result<()> {
+    fn invalid_m2() -> Result<()> {
         let client_k = X25519::genkey();
         let server_k = X25519::genkey();
         let server_pk = X25519::pubkey(&server_k);
@@ -118,7 +118,7 @@ mod tests {
     }
 
     #[test]
-    fn test_valid() -> Result<()> {
+    fn valid() -> Result<()> {
         let client_k = X25519::genkey();
         let server_k = X25519::genkey();
         let server_pk = X25519::pubkey(&server_k);

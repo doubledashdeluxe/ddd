@@ -12,6 +12,7 @@ use rand::{Rng, SeedableRng};
 
 use crate::crypto::{ChaCha20Rng, PublicKey};
 use crate::formats::online::*;
+use crate::item;
 use crate::kart::Kart;
 use crate::mmr::Mmr;
 use crate::pack::Pack;
@@ -40,23 +41,24 @@ impl Room {
         format: RoomOptionFormat,
         rng: &mut impl Rng,
     ) -> Self {
+        let host_karts = heapless::Vec::new();
         let (max_kart_count, max_client_kart_count, match_count) = match format {
             RoomOptionFormat::Duel => (2, 1, 5),
             _ => (MAX_ROOM_KART_COUNT, MAX_CLIENT_KART_COUNT, 0),
         };
-        let config = Config {
-            host_karts: heapless::Vec::new(),
+        let code_pair = None;
+        Self::new(
+            host_karts,
             max_kart_count,
             max_client_kart_count,
             mode_index,
             pack,
             id,
-            code_pair: None,
+            code_pair,
             format,
             match_count,
             rng,
-        };
-        Self::new(config)
+        )
     }
 
     pub fn new_personal(
@@ -67,24 +69,35 @@ impl Room {
         code_pair: CodePair,
         rng: &mut impl Rng,
     ) -> Self {
-        let config = Config {
+        let code_pair = Some(code_pair);
+        Self::new(
             host_karts,
-            max_kart_count: MAX_ROOM_KART_COUNT,
-            max_client_kart_count: MAX_CLIENT_KART_COUNT,
+            MAX_ROOM_KART_COUNT,
+            MAX_CLIENT_KART_COUNT,
             mode_index,
             pack,
             id,
-            code_pair: Some(code_pair),
-            format: RoomOptionFormat::FreeForAll,
-            match_count: DEFAULT_MATCH_COUNT,
+            code_pair,
+            RoomOptionFormat::FreeForAll,
+            DEFAULT_MATCH_COUNT,
             rng,
-        };
-        Self::new(config)
+        )
     }
 
-    fn new(config: Config<'_, impl Rng>) -> Room {
-        debug!("-> {}", config.id);
-        let is_race = match config.mode_index {
+    fn new(
+        host_karts: heapless::Vec<Kart, MAX_CLIENT_KART_COUNT>,
+        max_kart_count: usize,
+        max_client_kart_count: usize,
+        mode_index: ModeIndex,
+        pack: Pack,
+        id: u128,
+        code_pair: Option<CodePair>,
+        format: RoomOptionFormat,
+        match_count: u8,
+        rng: &mut impl Rng,
+    ) -> Room {
+        debug!("-> {}", id);
+        let is_race = match mode_index {
             ModeIndex::Versus => true,
             ModeIndex::Balloon => false,
             ModeIndex::Escape => false,
@@ -95,11 +108,11 @@ impl Room {
             let options = RoomOptionsRace {
                 race: (),
                 code_type: RoomOptionCodeType::Long,
-                format: config.format,
+                format,
                 engine_size: RoomOptionEngineSize::Large,
                 item_mode: RoomOptionItemMode::Recommended,
                 lap_count: 0,
-                match_count: config.match_count,
+                match_count,
                 course_selection: RoomOptionCourseSelection::Poll,
                 entry_index: 0,
             };
@@ -108,28 +121,27 @@ impl Room {
             let options = RoomOptionsBattle {
                 battle: (),
                 code_type: RoomOptionCodeType::Long,
-                format: config.format,
-                item_mode: RoomOptionItemMode::Recommended,
-                match_count: config.match_count,
+                format,
+                match_count,
                 course_selection: RoomOptionCourseSelection::Poll,
                 entry_index: 0,
             };
             ServerRoomOptions::BattleOptions(options)
         };
         Room {
-            host_pk: config.host_karts.first().map(Kart::client_pk).copied(),
-            karts: config.host_karts.into_iter().collect(),
+            host_pk: host_karts.first().map(Kart::client_pk).copied(),
+            karts: host_karts.into_iter().collect(),
             spectating_karts: HashMap::new(),
             spectator_count: 0,
-            max_kart_count: config.max_kart_count,
-            max_client_kart_count: config.max_client_kart_count,
-            mode_index: config.mode_index,
-            pack: config.pack,
-            id: config.id,
-            code_pair: config.code_pair,
+            max_kart_count,
+            max_client_kart_count,
+            mode_index,
+            pack,
+            id,
+            code_pair,
             options,
             state: State::new_room(),
-            rng: ChaCha20Rng::from_rng(config.rng),
+            rng: ChaCha20Rng::from_rng(rng),
         }
     }
 
@@ -271,7 +283,7 @@ impl Room {
         }
     }
 
-    pub fn race_state(&self, frame: u16) -> Option<ServerRaceStateMain> {
+    pub fn race_state(&self, client_pk: &PublicKey, frame: u16) -> Option<ServerRaceStateMain> {
         match &self.state {
             State::Room => None,
             State::Team { .. } => None,
@@ -279,6 +291,17 @@ impl Room {
             State::Race { states, .. } => {
                 let mut state = states.get(frame as usize)?.clone();
                 state.frame = states.len() as u16 - 1;
+                let mut j = 0;
+                for (i, kart) in self.karts.iter().enumerate() {
+                    if state.kart_flags & 1 << i == 0 {
+                        continue;
+                    }
+                    if !self.is_duel() && kart.client_pk() != client_pk {
+                        state.karts[j].item_frames.fill(MIN_CLIENT_FRAME);
+                        state.karts[j].item_ids.fill(ItemId::None);
+                    }
+                    j += 1;
+                }
                 Some(state)
             }
         }
@@ -535,7 +558,7 @@ impl Room {
     }
 
     pub fn set_race(&mut self, client_pk: &PublicKey, race: ClientStateRace) -> Result<()> {
-        let ClientStateRace { frame: client_frame, karts: client_karts } = race;
+        let ClientStateRace { frame: client_frame, karts: client_karts, item_counts } = race;
         anyhow::ensure!(client_frame >= MIN_CLIENT_FRAME);
         let kart_indices: heapless::Vec<_, MAX_CLIENT_KART_COUNT> = self
             .karts
@@ -546,7 +569,7 @@ impl Room {
             .collect();
         anyhow::ensure!(client_karts.len() == kart_indices.len());
         match &mut self.state {
-            State::Race { inputs, karts, states, .. } => {
+            State::Race { poll_state, inputs, karts, states, .. } => {
                 let server_frame = states.len() as u16;
                 if client_frame as i32 - server_frame as i32 > MAX_KART_INPUT_COUNT as i32 {
                     return Ok(());
@@ -563,13 +586,65 @@ impl Room {
                     for inputs in &client_kart.inputs {
                         anyhow::ensure!(inputs.len() == self.karts[kart_index].players().len());
                     }
+                    for (i, item_frame) in client_kart.item_frames.iter().enumerate() {
+                        let kart_item_frame =
+                            kart.map_or(MIN_CLIENT_FRAME, |kart| kart.item_frames[i]);
+                        anyhow::ensure!(*item_frame >= kart_item_frame);
+                        anyhow::ensure!(*item_frame <= client_frame);
+                    }
+                    anyhow::ensure!((client_kart.rank as usize) < self.karts.len());
                 }
-                for (client_kart, kart_index) in client_karts.into_iter().zip(kart_indices()) {
+                for item_count in &item_counts {
+                    anyhow::ensure!(*item_count <= 64);
+                }
+                for (mut client_kart, kart_index) in client_karts.into_iter().zip(kart_indices()) {
                     let inputs = &mut inputs[kart_index];
                     let input_count = (client_frame - MIN_CLIENT_FRAME) as usize - inputs.len();
                     let input_offset = client_kart.inputs.len() - input_count;
                     inputs.extend(client_kart.inputs[input_offset..].iter().cloned());
-                    let kart = ServerRaceKart {
+                    let kart = &karts[kart_index];
+                    let mut item_ids = kart.as_ref().map_or_else(
+                        || heapless::Vec::from([ItemId::None; 2]),
+                        |kart| kart.item_ids.clone(),
+                    );
+                    for (i, item_frame) in client_kart.item_frames.iter_mut().enumerate() {
+                        let kart_item_frame =
+                            kart.as_ref().map_or(MIN_CLIENT_FRAME, |kart| kart.item_frames[i]);
+                        if *item_frame >= kart_item_frame + 50 {
+                            let item_mode = match &self.options {
+                                ServerRoomOptions::RaceOptions(options) => options.item_mode,
+                                _ => RoomOptionItemMode::Recommended,
+                            };
+                            let character_ids = &poll_state.karts[kart_index].character_ids;
+                            let mut item_counts = item_counts.clone().into_array().unwrap();
+                            for kart in &*karts {
+                                let Some(kart) = kart else {
+                                    continue;
+                                };
+                                for item_id in &kart.item_ids {
+                                    let base_item_id = item_id.base();
+                                    if base_item_id != ItemId::None {
+                                        let count = item_id.count();
+                                        item_counts[base_item_id as usize] += count;
+                                    }
+                                }
+                            }
+                            item_ids[i] = item::choose(
+                                self.karts.len(),
+                                self.mode_index,
+                                item_mode,
+                                character_ids[i],
+                                character_ids[i ^ 1],
+                                client_kart.rank,
+                                item_ids[i ^ 1],
+                                item_counts,
+                                &mut self.rng,
+                            );
+                        } else {
+                            *item_frame = kart_item_frame;
+                        }
+                    }
+                    karts[kart_index] = Some(ServerRaceKart {
                         inputs: client_kart.inputs.last().unwrap().clone(),
                         kart_frame: client_frame,
                         pos_x: client_kart.pos_x,
@@ -579,8 +654,9 @@ impl Room {
                         vel_x: client_kart.vel_x,
                         vel_y: client_kart.vel_y,
                         vel_z: client_kart.vel_z,
-                    };
-                    karts[kart_index] = Some(kart);
+                        item_frames: client_kart.item_frames,
+                        item_ids,
+                    });
                 }
             }
             _ => anyhow::bail!("Invalid room state"),
@@ -714,19 +790,6 @@ impl Mmr for Room {
 pub struct CodePair {
     pub long: u64,
     pub short: u64,
-}
-
-struct Config<'a, R: Rng> {
-    host_karts: heapless::Vec<Kart, MAX_CLIENT_KART_COUNT>,
-    max_kart_count: usize,
-    max_client_kart_count: usize,
-    mode_index: ModeIndex,
-    pack: Pack,
-    id: u128,
-    code_pair: Option<CodePair>,
-    format: RoomOptionFormat,
-    match_count: u8,
-    rng: &'a mut R,
 }
 
 enum State {

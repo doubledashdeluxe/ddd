@@ -20,7 +20,7 @@ mod tests {
     use crate::unit_type::UnitType;
 
     #[test]
-    fn test_one_constant() {
+    fn one_constant() {
         let first: SimpleConstant<u32> = SimpleConstant::new("FIRST", 1);
         let one_constant = Format::new("OneConstant").with_constant(first);
         assert_eq_multiline(&one_constant.rs(), include_str!("one_constant.rs"));
@@ -29,7 +29,7 @@ mod tests {
     }
 
     #[test]
-    fn test_two_constants() {
+    fn two_constants() {
         let first: SimpleConstant<u32> = SimpleConstant::new("FIRST", 1);
         let second = StringConstant::new("SECOND", "2");
         let two_constants = Format::new("TwoConstants").with_constant(first).with_constant(second);
@@ -39,7 +39,7 @@ mod tests {
     }
 
     #[test]
-    fn test_one_variant() {
+    fn one_variant() {
         let first = || SimpleEnumType::new("First").with_variant("A").with_variant("B");
         let one_variant = EnumType::new("OneVariant").with_variant("First", first());
         let one_variant = Format::new("OneVariant").with_type(first()).with_type(one_variant);
@@ -49,7 +49,7 @@ mod tests {
     }
 
     #[test]
-    fn test_two_variants() {
+    fn two_variants() {
         let first_element: SimpleDataType<u32> = SimpleDataType::new();
         let first = ArrayType::new(first_element, 1, 3);
         let two_variants = EnumType::new("TwoVariants")
@@ -62,7 +62,7 @@ mod tests {
     }
 
     #[test]
-    fn test_one_field() {
+    fn one_field() {
         let first = || SimpleEnumType::new("First").with_variant("A").with_variant("B");
         let one_field = StructType::new("OneField").with_field("first", first());
         let one_field = Format::new("OneField").with_type(first()).with_type(one_field);
@@ -72,7 +72,7 @@ mod tests {
     }
 
     #[test]
-    fn test_two_fields() {
+    fn two_fields() {
         let first_element: SimpleDataType<u32> = SimpleDataType::new();
         let first = ArrayType::new(first_element, 1, 3);
         let two_fields =

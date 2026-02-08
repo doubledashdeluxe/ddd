@@ -411,7 +411,8 @@ impl Client {
             State::Race { room_info, frame: client_frame, .. } => {
                 let server_race_state = match room_info {
                     Some(room_info) => {
-                        let main = rooms.read(&room_info.id, |room| room.race_state(*client_frame));
+                        let main = rooms
+                            .read(&room_info.id, |room| room.race_state(&self.pk, *client_frame));
                         let Ok(Some(main)) = main else {
                             return Ok(None);
                         };

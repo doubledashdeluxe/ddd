@@ -1,6 +1,7 @@
 #include "RaceClient.hh"
 
 #include "game/ErrorViewApp.hh"
+#include "game/ItemObjMgr.hh"
 #include "game/KartCtrl.hh"
 #include "game/OnlineInfo.hh"
 #include "game/RaceInfo.hh"
@@ -58,6 +59,38 @@ void RaceClient::updateInputs() {
     }
 }
 
+void RaceClient::setHasItem(u32 kartIndex, u32 characterIndex) {
+    u32 frame = MinClientFrame + RaceMgr::Instance()->frame();
+    const OnlineInfo &onlineInfo = OnlineInfo::Instance();
+    for (u32 i = 0; i < m_writeInfo.kartCount; i++) {
+        if (onlineInfo.m_localKartIndices[i] == kartIndex) {
+            u16 &itemFrame = m_writeInfo.karts[i].itemFrames[characterIndex];
+            if (itemFrame + 50 <= frame) {
+                itemFrame = frame;
+            }
+            break;
+        }
+    }
+}
+
+bool RaceClient::hasItem(u32 kartIndex, u32 characterIndex) const {
+    const OnlineInfo &onlineInfo = OnlineInfo::Instance();
+    for (u32 i = 0; i < m_writeInfo.kartCount; i++) {
+        if (onlineInfo.m_localKartIndices[i] == kartIndex) {
+            u32 frame = m_writeInfo.karts[i].itemFrames[characterIndex];
+            if (frame != m_kartDiffs[kartIndex].itemFrames[characterIndex]) {
+                return false;
+            }
+            break;
+        }
+    }
+    return m_kartDiffs[kartIndex].itemIDs[characterIndex] != ItemID::None;
+}
+
+u32 RaceClient::itemID(u32 kartIndex, u32 characterIndex) const {
+    return m_kartDiffs[kartIndex].itemIDs[characterIndex];
+}
+
 void RaceClient::read() {
     CubeClient::Instance()->read(*this);
 }
@@ -67,7 +100,8 @@ void RaceClient::write() {
     const RaceInfo &raceInfo = RaceInfo::Instance();
     u32 kartCount = raceInfo.getKartCount();
     const KartCtrl *kartCtrl = KartCtrl::Instance();
-    u32 frame = MinClientFrame + RaceMgr::Instance()->frame();
+    const RaceMgr *raceMgr = RaceMgr::Instance();
+    u32 frame = MinClientFrame + raceMgr->frame();
     for (u32 i = 0; i < kartCount; i++) {
         Ring<KartState, 30> &kartStates = m_kartStates[i];
         // We only need one state per frame.
@@ -117,6 +151,12 @@ void RaceClient::write() {
         kart.velX = vel.x;
         kart.velY = vel.y;
         kart.velZ = vel.z;
+        const KartChecker *kartChecker = raceMgr->kartChecker(kartIndex);
+        kart.rank = kartChecker->rank() - 1;
+    }
+    const ItemObjMgr *itemObjMgr = ItemObjMgr::Instance();
+    for (u32 i = 0; i < m_writeInfo.itemCounts.count(); i++) {
+        m_writeInfo.itemCounts[i] = itemObjMgr->moveCount(i);
     }
     CubeClient::Instance()->writeStateRace(m_writeInfo);
 }
@@ -140,8 +180,14 @@ RaceClient::RaceClient() : m_ok(true), m_frame(0), m_clientFrame(MinClientFrame 
         m_kartDiffs[i].pos = Vec3f(0.0f, 0.0f, 0.0f);
         m_kartDiffs[i].angle = 0.0f;
         m_kartDiffs[i].vel = Vec3f(0.0f, 0.0f, 0.0f);
+        m_kartDiffs[i].itemFrames.fill(MinClientFrame);
+        m_kartDiffs[i].itemIDs.fill(ItemID::None);
     }
     m_writeInfo.kartCount = OnlineInfo::Instance().m_localKartCount;
+    for (u32 i = 0; i < m_writeInfo.kartCount; i++) {
+        WriteInfo::Kart &kart = m_writeInfo.karts[i];
+        kart.itemFrames.fill(MinClientFrame);
+    }
 }
 
 RaceClient::~RaceClient() {}
@@ -173,19 +219,30 @@ bool RaceClient::clientStateRace(const ClientStateRaceReadInfo &readInfo) {
     const RaceInfo &raceInfo = RaceInfo::Instance();
     u32 kartCount = raceInfo.getKartCount();
     const KartCtrl *kartCtrl = KartCtrl::Instance();
+    ItemObjMgr *itemObjMgr = ItemObjMgr::Instance();
     for (u32 i = 0, j = 0; i < kartCount && j < info->kartCount; i++) {
         if (!(info->kartFlags & 1 << i)) {
             continue;
         }
         const ReadInfo::Kart &kart = info->karts[j++];
+        KartDiff &kartDiff = m_kartDiffs[i];
+        if (onlineInfo.m_isDuel && !onlineInfo.m_karts[i].local) {
+            for (u32 k = 0; k < KartCharacterCount; k++) {
+                if (kart.itemFrames[k] >= kartDiff.itemFrames[k] + 60) {
+                    itemObjMgr->startItemShuffle(i, k);
+                }
+            }
+        }
+        kartDiff.itemFrames = kart.itemFrames;
+        kartDiff.itemIDs = kart.itemIDs;
         if (onlineInfo.m_karts[i].local) {
             continue;
         }
         Ring<KartState, 30> &kartStates = m_kartStates[i];
         const KartState *kartState = nullptr;
-        for (u32 i = kartStates.count(); i > 0; i--) {
-            if (kartStates[i - 1].frame == kart.frame) {
-                kartState = &kartStates[i - 1];
+        for (u32 k = kartStates.count(); k > 0; k--) {
+            if (kartStates[k - 1].frame == kart.frame) {
+                kartState = &kartStates[k - 1];
                 break;
             }
         }
@@ -199,7 +256,6 @@ bool RaceClient::clientStateRace(const ClientStateRaceReadInfo &readInfo) {
         if (kart.inputCount != onlineInfo.m_karts[i].playerCount) {
             continue;
         }
-        KartDiff &kartDiff = m_kartDiffs[i];
         kartDiff.inputs = kart.inputs;
         TVec3<f32> &posDiff = kartDiff.pos;
         f32 posScale = 4.0f;

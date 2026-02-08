@@ -11,6 +11,9 @@ public:
     s32 drift() const;
     void adjustDrift(s32 adjustment);
     void updateInputs();
+    void setHasItem(u32 kartIndex, u32 characterIndex);
+    bool hasItem(u32 kartIndex, u32 characterIndex) const;
+    u32 itemID(u32 kartIndex, u32 characterIndex) const;
     void read();
     void write();
 
@@ -34,6 +37,8 @@ private:
         TVec3<f32> pos;
         f32 angle;
         Vec3f vel;
+        Array<u16, KartCharacterCount> itemFrames;
+        Array<u8, KartCharacterCount> itemIDs;
     };
 
     RaceClient();

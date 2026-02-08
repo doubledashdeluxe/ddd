@@ -14,6 +14,8 @@ mod clients;
 mod connection;
 mod crypto;
 mod formats;
+mod item;
+mod item_weights;
 mod kart;
 mod listener;
 mod logger;

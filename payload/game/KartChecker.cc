@@ -11,3 +11,7 @@ bool KartChecker::raceEnd() const {
 s32 KartChecker::lap() const {
     return m_lap;
 }
+
+s32 KartChecker::rank() const {
+    return m_rank;
+}

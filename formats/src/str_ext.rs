@@ -59,19 +59,19 @@ mod tests {
     use crate::str_ext::StrExt;
 
     #[test]
-    fn test_to_ascii_camel_case() {
+    fn to_ascii_camel_case() {
         assert_eq!("camelCase".to_ascii_camel_case(), "camelCase");
         assert_eq!("snake_case".to_ascii_camel_case(), "snakeCase");
     }
 
     #[test]
-    fn test_to_ascii_sentence_case() {
+    fn to_ascii_sentence_case() {
         assert_eq!("camelCase".to_ascii_sentence_case(), "CamelCase");
         assert_eq!("snake_case".to_ascii_sentence_case(), "Snake_case");
     }
 
     #[test]
-    fn test_to_ascii_snake_case() {
+    fn to_ascii_snake_case() {
         assert_eq!("camelCase".to_ascii_snake_case(), "camel_case");
         assert_eq!("snake_case".to_ascii_snake_case(), "snake_case");
     }

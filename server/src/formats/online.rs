@@ -11,6 +11,7 @@ include!(concat!(env!("OUT_DIR"), "/online.rs"));
 
 pub type CharacterId = CharacterID;
 pub type KartId = KartID;
+pub type ItemId = ItemID;
 
 impl CharacterId {
     pub fn weight(self) -> Weight {
@@ -35,6 +36,31 @@ impl CharacterId {
             Self::Kinopico => Weight::Light,
             Self::Teresa => Weight::Heavy,
             Self::Pakkun => Weight::Heavy,
+        }
+    }
+
+    pub fn special_item(self) -> ItemId {
+        match self {
+            Self::BabyMario => ItemId::Chomp,
+            Self::BabyLuigi => ItemId::Chomp,
+            Self::Patapata => ItemId::TripleGreenShells,
+            Self::Nokonoko => ItemId::TripleGreenShells,
+            Self::Peach => ItemId::Heart,
+            Self::Daisy => ItemId::Heart,
+            Self::Mario => ItemId::Fireballs,
+            Self::Luigi => ItemId::Fireballs,
+            Self::Wario => ItemId::Bomb,
+            Self::Waluigi => ItemId::Bomb,
+            Self::Yoshi => ItemId::YoshiEgg,
+            Self::Catherine => ItemId::YoshiEgg,
+            Self::Donkey => ItemId::GiantBanana,
+            Self::Diddy => ItemId::GiantBanana,
+            Self::Koopa => ItemId::BowserShell,
+            Self::KoopaJr => ItemId::BowserShell,
+            Self::Kinopio => ItemId::GoldenMushroom,
+            Self::Kinopico => ItemId::GoldenMushroom,
+            Self::Teresa => ItemId::None,
+            Self::Pakkun => ItemId::None,
         }
     }
 }
@@ -129,6 +155,84 @@ impl Distribution<KartId> for StandardUniform {
             18 => KartId::Teresa,
             19 => KartId::Pakkun,
             _ => KartId::Extra,
+        }
+    }
+}
+
+impl ItemId {
+    pub fn is_special(self) -> bool {
+        match self {
+            Self::GreenShell => false,
+            Self::BowserShell => true,
+            Self::RedShell => false,
+            Self::Banana => false,
+            Self::GiantBanana => true,
+            Self::Mushroom => false,
+            Self::Star => false,
+            Self::Chomp => true,
+            Self::Bomb => true,
+            Self::MarioFireballs => false, // ?
+            Self::Lightning => false,
+            Self::YoshiEgg => true,
+            Self::GoldenMushroom => true,
+            Self::BlueShell => false,
+            Self::Heart => true,
+            Self::FakeItemBox => false,
+            Self::None => false,
+            Self::TripleGreenShells => true,
+            Self::TripleMushrooms => false,
+            Self::TripleRedShells => true,
+            Self::Bombs => false,
+            Self::Fireballs => true,
+        }
+    }
+
+    pub fn can_have_two(self) -> bool {
+        matches!(
+            self,
+            Self::GreenShell | Self::RedShell | Self::Banana | Self::Mushroom | Self::FakeItemBox
+        )
+    }
+
+    pub fn base(self) -> ItemId {
+        match self {
+            Self::TripleGreenShells => ItemId::GreenShell,
+            Self::TripleMushrooms => ItemId::Mushroom,
+            Self::TripleRedShells => ItemId::RedShell,
+            Self::Fireballs => ItemId::MarioFireballs,
+            _ => self,
+        }
+    }
+
+    pub fn count(self) -> u8 {
+        match self {
+            Self::TripleGreenShells => 3,
+            Self::TripleMushrooms => 3,
+            Self::TripleRedShells => 3,
+            Self::Fireballs => 5,
+            _ => 1,
+        }
+    }
+
+    pub fn max_count(self) -> u8 {
+        match self {
+            Self::GreenShell => 15,
+            Self::BowserShell => 4,
+            Self::RedShell => 15,
+            Self::Banana => 15,
+            Self::GiantBanana => 5,
+            Self::Mushroom => 11,
+            Self::Star => 3,
+            Self::Chomp => 1,
+            Self::Bomb => 5,
+            Self::MarioFireballs => 5,
+            Self::Lightning => 1,
+            Self::YoshiEgg => 4,
+            Self::GoldenMushroom => 2,
+            Self::BlueShell => 1,
+            Self::Heart => 2,
+            Self::FakeItemBox => 9,
+            _ => 0,
         }
     }
 }

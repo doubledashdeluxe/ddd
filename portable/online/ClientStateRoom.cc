@@ -26,10 +26,10 @@ ClientState &ClientStateRoom::read(ClientReadHandler &handler) {
 
     Optional<ReadInfo::Info> &info = m_readInfo.info;
     if (info) {
-        for (u32 j = 0; j < info->kartCount; j++) {
-            Kart &kart = info->karts[j];
-            for (u32 k = kart.playerCount; k < kart.players.count(); k++) {
-                Player &player = kart.players[k];
+        for (u32 i = 0; i < info->kartCount; i++) {
+            Kart &kart = info->karts[i];
+            for (u32 j = kart.playerCount; j < kart.players.count(); j++) {
+                Player &player = kart.players[j];
                 player.index = UINT8_MAX;
                 player.name = "   ";
             }

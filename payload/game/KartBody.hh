@@ -7,6 +7,7 @@ public:
     KartBody();
 
     u32 getGameStatus() const;
+    u8 getDriver() const;
     u8 getIndex() const;
 
 private:
@@ -37,7 +38,8 @@ public:
 private:
     u8 _3f0[0x578 - 0x3f0];
     u32 m_gameStatus;
-    u8 _57c[0x5b3 - 0x57c];
+    u8 _57c[0x5b2 - 0x57c];
+    u8 m_driver;
     u8 m_index;
     u8 _5b4[0x5c8 - 0x5b4];
 };
