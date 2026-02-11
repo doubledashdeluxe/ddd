@@ -44,7 +44,7 @@ The codebase is automatically formatted using `clang-format` (15), this will be 
 
 ## Links and resources
 
-- [Discord guild](https://discord.gg/h3phHpDHNu)
+- [Discord guild](https://discord.gg/h3phHpDHNu) (will close in March 2026)
 - Ghidra project: ask stebler on Discord for access
 - [MKDD decompilation](https://github.com/doldecomp/mkdd)
 - [MKDD Wiki](https://mkdd.org/wiki/Main_Page)
