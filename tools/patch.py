@@ -20,10 +20,10 @@ regular_symbols = []
 with open(args.in_elf_path, 'rb') as elf_file:
     elf = ELFFile(elf_file)
 
-    replacements_section_index = None
+    replacements_section_indices = set()
     for index, section in enumerate(elf.iter_sections()):
-        if section.name == 'replacements':
-            replacements_section_index = index
+        if section.name.startswith('replacements'):
+            replacements_section_indices.add(index)
 
     symtab = elf.get_section_by_name('.symtab')
 
@@ -33,7 +33,7 @@ with open(args.in_elf_path, 'rb') as elf_file:
             if 'thunk_replaced_' not in symbol.name:
                 continue
             replaced_symbols += [symbol.name]
-        elif symbol['st_shndx'] == replacements_section_index:
+        elif symbol['st_shndx'] in replacements_section_indices:
             if symbol_type != 'STT_FUNC':
                 continue
 

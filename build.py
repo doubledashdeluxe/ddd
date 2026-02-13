@@ -361,6 +361,13 @@ n.rule(
 )
 n.newline()
 
+n.rule(
+    'split',
+    command = 'cargo -q --color always run -r --bin ddd-split -- $in $out',
+    description = 'SPLIT $out',
+)
+n.newline()
+
 n.build(
     os.path.join('tools', 'cw', 'modified_mwcceppc.exe'),
     'patch_mwcceppc',
@@ -466,13 +473,12 @@ for target in code_in_files:
     for in_file in code_in_files[target]:
         _, ext = os.path.splitext(in_file)
         if in_file.startswith('$builddir'):
-            out_file = in_file + '.o'
+            tmp_file = in_file + '.o'
         else:
-            out_file = os.path.join('$builddir', in_file + '.o')
-        code_out_files[target] += [out_file]
+            tmp_file = os.path.join('$builddir', in_file + '.o')
         tool = ext[1:]
         n.build(
-            out_file,
+            tmp_file,
             tool,
             in_file,
             variables = {
@@ -482,6 +488,15 @@ for target in code_in_files:
             implicit=os.path.join('tools', 'cw', 'modified_mwcceppc.exe'),
         )
         n.newline()
+        base, _ = os.path.splitext(tmp_file)
+        out_file = base + '.split.o'
+        code_out_files[target] += [out_file]
+        n.build(
+            out_file,
+            'split',
+            tmp_file,
+            implicit = sorted(glob.glob(os.path.join('tools', 'split', '**'), recursive=True)),
+        )
 
 n.build(
     os.path.join('$builddir', 'payload', 'payload.o'),

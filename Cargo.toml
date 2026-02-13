@@ -2,6 +2,7 @@
 members = [
     "formats",
     "server",
+    "tools/split",
 ]
 resolver = "3"
 
