@@ -216,7 +216,6 @@ n.newline()
 n.variable('bin2c', os.path.join('tools', 'bin2c.py'))
 n.variable('cp', os.path.join('tools', 'cp.py'))
 n.variable('dir2arc', os.path.join('tools', 'dir2arc.py'))
-n.variable('elf2bin', os.path.join('tools', 'elf2bin.py'))
 n.variable('elf2dol', os.path.join('tools', 'elf2dol.py'))
 n.variable('file_patcher', os.path.join('tools', 'file_patcher.py'))
 if 'win' in sys.platform or 'msys' in sys.platform:
@@ -276,13 +275,6 @@ n.rule(
 n.newline()
 
 n.rule(
-    'elf2bin',
-    command = f'{sys.executable} $elf2bin $kind $in $out',
-    description = 'ELF2BIN $out',
-)
-n.newline()
-
-n.rule(
     'elf2dol',
     command = f'{sys.executable} $elf2dol $in $out',
     description = 'ELF2DOL $out',
@@ -331,6 +323,13 @@ n.rule(
     'mld',
     command = f'{mld} $flags $in -o $out',
     description = 'MLD $out',
+)
+n.newline()
+
+n.rule(
+    'obj2bin',
+    command = 'cargo -q --color always run -r --bin ddd-obj2bin -- -$kind $in $out',
+    description = 'OBJ2BIN $out',
 )
 n.newline()
 
@@ -600,12 +599,12 @@ for region in ['P', 'E', 'J']:
     for kind in ['I', 'D']:
         n.build(
             os.path.join('$builddir', 'payload', f'payload{region}{kind}.bin'),
-            'elf2bin',
+            'obj2bin',
             os.path.join('$builddir', 'payload', f'payload{region}.elf'),
             variables = {
-                'kind': kind,
+                'kind': kind.lower(),
             },
-            implicit = '$elf2bin',
+            implicit = sorted(glob.glob(os.path.join('tools', 'obj2bin', '**'), recursive=True)),
         )
         n.newline()
 
