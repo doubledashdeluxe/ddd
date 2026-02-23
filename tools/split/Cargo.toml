@@ -6,6 +6,6 @@ edition = "2024"
 workspace = true
 
 [dependencies]
-anyhow = "1.0.101"
+anyhow = "1.0.102"
 bpaf = "0.9.23"
 object = { version = "0.38.1", default-features = false, features = ["build_core", "elf"] }
