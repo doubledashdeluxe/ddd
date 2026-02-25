@@ -11,7 +11,6 @@ This is in an early state and not yet useful for regular players. As such, binar
 You need:
 
 - Python 3.11 or later
-- pyelftools
 - Ninja
 - cargo
 - LLVM 20

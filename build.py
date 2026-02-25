@@ -221,7 +221,6 @@ if 'win' in sys.platform or 'msys' in sys.platform:
     n.variable('mwcc', os.path.join('tools', 'cw', 'modified_mwcceppc'))
 else:
     n.variable('mwcc', os.path.join('tools', 'mwcc.py'))
-n.variable('patch', os.path.join('tools', 'patch.py'))
 n.variable('port', os.path.join('tools', 'port.py'))
 n.variable('script', os.path.join('tools', 'script.py'))
 n.newline()
@@ -334,7 +333,7 @@ n.newline()
 
 n.rule(
     'patch',
-    command = f'{sys.executable} $patch $in $out',
+    command = 'cargo -q --color always run -r --bin ddd-patch -- $in $out',
     description = 'PATCH $out'
 )
 n.newline()
@@ -525,7 +524,7 @@ n.build(
         os.path.join('$builddir', 'payload', f'payload.o'),
         os.path.join('payload', 'Symbols.txt'),
     ],
-    implicit = '$patch',
+    implicit = sorted(glob.glob(os.path.join('tools', 'patch', '**'), recursive=True)),
 )
 n.newline()
 

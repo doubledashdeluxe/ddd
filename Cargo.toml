@@ -2,6 +2,7 @@
 members = [
     "formats",
     "server",
+    "tools/patch",
     "tools/obj2bin",
     "tools/obj2dol",
     "tools/split",

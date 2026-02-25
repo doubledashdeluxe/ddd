@@ -90,6 +90,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "ddd-patch"
+version = "0.0.0"
+dependencies = [
+ "anyhow",
+ "bpaf",
+ "object",
+]
+
+[[package]]
 name = "ddd-server"
 version = "0.0.0"
 dependencies = [
