@@ -3,6 +3,7 @@ members = [
     "formats",
     "server",
     "tools/obj2bin",
+    "tools/obj2dol",
     "tools/split",
 ]
 resolver = "3"

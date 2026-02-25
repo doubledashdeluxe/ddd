@@ -216,7 +216,6 @@ n.newline()
 n.variable('bin2c', os.path.join('tools', 'bin2c.py'))
 n.variable('cp', os.path.join('tools', 'cp.py'))
 n.variable('dir2arc', os.path.join('tools', 'dir2arc.py'))
-n.variable('elf2dol', os.path.join('tools', 'elf2dol.py'))
 n.variable('file_patcher', os.path.join('tools', 'file_patcher.py'))
 if 'win' in sys.platform or 'msys' in sys.platform:
     n.variable('mwcc', os.path.join('tools', 'cw', 'modified_mwcceppc'))
@@ -275,13 +274,6 @@ n.rule(
 n.newline()
 
 n.rule(
-    'elf2dol',
-    command = f'{sys.executable} $elf2dol $in $out',
-    description = 'ELF2DOL $out',
-)
-n.newline()
-
-n.rule(
     'format',
     command = 'cargo -q --color always run -r --bin ddd-formats -- --$format --$ext --output $out',
     description = 'FORMAT $out',
@@ -330,6 +322,13 @@ n.rule(
     'obj2bin',
     command = 'cargo -q --color always run -r --bin ddd-obj2bin -- -$kind $in $out',
     description = 'OBJ2BIN $out',
+)
+n.newline()
+
+n.rule(
+    'obj2dol',
+    command = 'cargo -q --color always run -r --bin ddd-obj2dol -- $in $out',
+    description = 'OBJ2DOL $out',
 )
 n.newline()
 
@@ -657,9 +656,9 @@ n.newline()
 
 n.build(
     os.path.join('$builddir', 'channel', 'channel.dol'),
-    'elf2dol',
+    'obj2dol',
     os.path.join('$builddir', 'channel', 'channel.elf'),
-    implicit = '$elf2dol',
+    implicit = sorted(glob.glob(os.path.join('tools', 'obj2dol', '**'), recursive=True)),
 )
 n.newline()
 
@@ -710,9 +709,9 @@ n.newline()
 
 n.build(
     os.path.join('$outdir', 'boot.dol'),
-    'elf2dol',
+    'obj2dol',
     os.path.join('$builddir', 'bootstrap', 'bootstrap.elf'),
-    implicit = '$elf2dol',
+    implicit = sorted(glob.glob(os.path.join('tools', 'obj2dol', '**'), recursive=True)),
 )
 n.newline()
 
