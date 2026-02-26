@@ -2,17 +2,6 @@
 
 #include "cube/Arena.hh"
 
-extern "C" {
-#define NANOPRINTF_USE_FIELD_WIDTH_FORMAT_SPECIFIERS 1
-#define NANOPRINTF_USE_PRECISION_FORMAT_SPECIFIERS 1
-#define NANOPRINTF_USE_LARGE_FORMAT_SPECIFIERS 0
-#define NANOPRINTF_USE_FLOAT_FORMAT_SPECIFIERS 1
-#define NANOPRINTF_USE_BINARY_FORMAT_SPECIFIERS 1
-#define NANOPRINTF_USE_WRITEBACK_FORMAT_SPECIFIERS 0
-#define NANOPRINTF_VISIBILITY_STATIC
-#define NANOPRINTF_IMPLEMENTATION
-#include <nanoprintf.h>
-}
 #include <portable/Font.hh>
 
 extern "C" {
@@ -35,15 +24,17 @@ void Console::vprintf(Color bg, Color fg, const char *format, va_list vlist) {
 
     m_bg = bg;
     m_fg = fg;
-    npf_vpprintf(Putchar, this, format, vlist);
+    lwprintf_vprintf(format, vlist);
 }
 
 void Console::Init(VI *vi) {
     s_instance = new (MEM1Arena::Instance(), -0x4) Console(vi);
+    lwprintf_init(Putchar);
 }
 
 void Console::Init(Console *instance) {
     s_instance = instance;
+    lwprintf_init(Putchar);
 }
 
 Console *Console::Instance() {
@@ -55,6 +46,10 @@ Console::Console(VI *vi)
       m_rows(vi->getXFBHeight() / Font::GetGlyphHeight() - 1), m_col(0), m_row(0) {}
 
 void Console::putchar(int c) {
+    if (c == '\0') {
+        return;
+    }
+
     if (c == '\n') {
         m_col = 0;
         m_row++;
@@ -116,8 +111,9 @@ void Console::scroll() {
     }
 }
 
-void Console::Putchar(int c, void *ctx) {
-    static_cast<Console *>(ctx)->putchar(c);
+int Console::Putchar(int c, lwprintf_s * /* lwobj */) {
+    s_instance->putchar(c);
+    return c;
 }
 
 Console *Console::s_instance = nullptr;

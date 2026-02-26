@@ -3,6 +3,8 @@
 #include "cube/VI.hh"
 
 extern "C" {
+#include <lwprintf/lwprintf.h>
+
 #include <stdarg.h>
 }
 
@@ -37,7 +39,7 @@ private:
     void putchar(int c);
     void scroll();
 
-    static void Putchar(int c, void *ctx);
+    static int Putchar(int c, lwprintf_s *lwobj);
 
     VI *m_vi;
     u8 m_cols;

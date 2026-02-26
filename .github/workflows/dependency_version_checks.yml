@@ -34,14 +34,14 @@ jobs:
         include:
           - owner: benhoyt
             repo: inih
-          - owner: charlesnicholson
-            repo: nanoprintf
           - owner: llvm
             repo: llvm-project
           - owner: LoupVaillant
             repo: Monocypher
           - owner: MaJerle
             repo: lwjson
+          - owner: MaJerle
+            repo: lwprintf
           - owner: richgel999
             repo: miniz
           - owner: snitch-org
