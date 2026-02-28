@@ -13,6 +13,8 @@ import tempfile
 
 from vendor.ninja_syntax import Writer
 
+def is_windows():
+    return ('win' in sys.platform and sys.platform != 'darwin') or 'msys' in sys.platform
 
 def get_llvm_tool(tool, args):
     llvm_dir = args.llvm_dir
@@ -112,7 +114,7 @@ def get_flags(tool, platform, target, format_code_dirs, args):
             '-Wextra',
             '-Wimplicit-fallthrough',
         ]
-        if 'win' in sys.platform or 'msys' in sys.platform:
+        if is_windows():
             flags += [
                 '-D', '_CRT_SECURE_NO_WARNINGS',
             ]
@@ -172,10 +174,14 @@ def get_flags(tool, platform, target, format_code_dirs, args):
                 '-fsanitize=address,undefined',
             ]
         if platform == 'native':
-            if 'win' in sys.platform or 'msys' in sys.platform:
+            if is_windows():
                 flags += [
                     '-Wl,/opt:nolldtailmerge',
                     '-Wl,/opt:ref',
+                ]
+            elif sys.platform == 'darwin':
+                flags += [
+                    '-Wl,-dead_strip',
                 ]
             else:
                 flags += [
@@ -217,7 +223,7 @@ n.variable('bin2c', os.path.join('tools', 'bin2c.py'))
 n.variable('cp', os.path.join('tools', 'cp.py'))
 n.variable('dir2arc', os.path.join('tools', 'dir2arc.py'))
 n.variable('file_patcher', os.path.join('tools', 'file_patcher.py'))
-if 'win' in sys.platform or 'msys' in sys.platform:
+if is_windows():
     n.variable('mwcc', os.path.join('tools', 'cw', 'modified_mwcceppc'))
 else:
     n.variable('mwcc', os.path.join('tools', 'mwcc.py'))
@@ -232,7 +238,7 @@ n.rule(
 )
 n.newline()
 
-if 'win' in sys.platform or 'msys' in sys.platform:
+if is_windows():
     c_command = '$mwcc -MDfile $out.d $flags -c $in -o $out'
 else:
     c_command = f'{sys.executable} $mwcc -MDfile $out.d $flags -c $in -o $out'
@@ -245,7 +251,7 @@ n.rule(
 )
 n.newline()
 
-if 'win' in sys.platform or 'msys' in sys.platform:
+if is_windows():
     cc_command = '$mwcc -MDfile $out.d $flags -c $in -o $out'
 else:
     cc_command = f'{sys.executable} $mwcc -MDfile $out.d $flags -c $in -o $out'
@@ -280,7 +286,7 @@ n.rule(
 n.newline()
 
 ld = get_llvm_tool('ld.lld', args)
-if 'win' in sys.platform or 'msys' in sys.platform:
+if is_windows():
     ld += '.exe'
 n.rule(
     'ld',
@@ -790,7 +796,7 @@ for target in native_code_in_files:
         compile_commands += [compile_command]
 
 test_binary = os.path.join('$outdir', 'tests')
-if 'win' in sys.platform or 'msys' in sys.platform:
+if is_windows():
     test_binary += '.exe'
 n.build(
     test_binary,
@@ -821,7 +827,7 @@ for out_file in native_code_out_files['fuzzers']:
     base, _ = os.path.splitext(base)
     target = out_file.split(os.path.sep)[3]
     fuzzer_binary = os.path.join('$outdir', os.path.join(*base.split(os.path.sep)[2:]))
-    if 'win' in sys.platform or 'msys' in sys.platform:
+    if is_windows():
         fuzzer_binary += '.exe'
     fuzzer_binaries += [fuzzer_binary]
     n.build(
@@ -954,7 +960,7 @@ n.build(
 n.newline()
 
 default = ['ddd', 'tests', 'fuzzers']
-if 'win' not in sys.platform and 'msys' not in sys.platform:
+if not is_windows():
     default += ['checks']
 n.default(default)
 
