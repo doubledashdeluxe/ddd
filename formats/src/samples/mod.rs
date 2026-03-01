@@ -1,3 +1,5 @@
+#![allow(clippy::trivially_copy_pass_by_ref)]
+#![allow(clippy::unnecessary_wraps)]
 #![allow(dead_code)]
 
 mod one_constant;
@@ -85,7 +87,7 @@ mod tests {
 
     fn assert_eq_multiline(l: &str, r: &str) {
         let (mut l, mut r) = (l.lines(), r.lines());
-        for i in (1..).into_iter() {
+        for i in 1.. {
             match (l.next(), r.next()) {
                 (None, None) => return,
                 (l, r) => assert_eq!((i, l), (i, r)),

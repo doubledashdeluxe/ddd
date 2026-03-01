@@ -6,6 +6,7 @@ use crate::struct_type::field::Field;
 pub trait FieldList {
     fn min_len(&self) -> usize;
     fn max_len(&self) -> usize;
+    fn rs_const() -> &'static str;
     fn rs_fields(&self) -> String;
     fn rs_field_names(&self) -> String;
     fn rs_read(&self) -> String;
@@ -26,40 +27,44 @@ impl FieldList for () {
         0
     }
 
+    fn rs_const() -> &'static str {
+        " const"
+    }
+
     fn rs_fields(&self) -> String {
-        "".to_owned()
+        String::new()
     }
 
     fn rs_field_names(&self) -> String {
-        "".to_owned()
+        String::new()
     }
 
     fn rs_read(&self) -> String {
-        "".to_owned()
+        String::new()
     }
 
     fn rs_write(&self) -> String {
-        "".to_owned()
+        String::new()
     }
 
     fn hh_read_delegates(&self) -> String {
-        "".to_owned()
+        String::new()
     }
 
     fn hh_write_delegates(&self) -> String {
-        "".to_owned()
+        String::new()
     }
 
     fn cc_is_valid(&self) -> String {
-        "".to_owned()
+        String::new()
     }
 
     fn cc_read(&self) -> String {
-        "".to_owned()
+        String::new()
     }
 
     fn cc_write(&self) -> String {
-        "".to_owned()
+        String::new()
     }
 }
 
@@ -70,6 +75,10 @@ impl<L: FieldList, T: DataType> FieldList for (L, Field<T>) {
 
     fn max_len(&self) -> usize {
         self.0.max_len() + self.1.data_type().max_len()
+    }
+
+    fn rs_const() -> &'static str {
+        ""
     }
 
     fn rs_fields(&self) -> String {
@@ -89,7 +98,7 @@ impl<L: FieldList, T: DataType> FieldList for (L, Field<T>) {
         format!(
             concat!("{}", "        {}\n"),
             self.0.rs_read(),
-            self.1.data_type().rs_read(self.1.name()).replace("\n", "\n        "),
+            self.1.data_type().rs_read(self.1.name()).replace('\n', "\n        "),
         )
     }
 
@@ -97,7 +106,7 @@ impl<L: FieldList, T: DataType> FieldList for (L, Field<T>) {
         format!(
             concat!("{}", "        {}\n"),
             self.0.rs_write(),
-            self.1.data_type().rs_write(self.1.name()).replace("\n", "\n        "),
+            self.1.data_type().rs_write(self.1.name()).replace('\n', "\n        "),
         )
     }
 

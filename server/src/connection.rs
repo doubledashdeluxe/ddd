@@ -19,18 +19,13 @@ pub struct Connection {
 }
 
 impl Connection {
-    pub fn new(
-        server_k: Key,
-        now: Instant,
-        addr: SocketAddr,
-        message: &[u8],
-    ) -> Result<Connection> {
+    pub fn new(server_k: Key, now: Instant, addr: SocketAddr, message: &[u8]) -> Result<Self> {
         let expiration = now + Duration::from_secs(2);
         anyhow::ensure!(message.len() == kx::M1_SIZE);
         let mut m2 = [0u8; kx::M2_SIZE];
         let (client_pk, session) = kx::ik_2(server_k, message, &mut m2)?;
         let state = State::Kx { m2 };
-        let connection = Connection { expiration, addr, client_pk, session, state };
+        let connection = Self { expiration, addr, client_pk, session, state };
         Ok(connection)
     }
 
@@ -42,7 +37,7 @@ impl Connection {
         let mut plaintext = [0u8; 512];
         let plaintext = &mut plaintext[..plaintext_len];
         match self.session.decrypt(message, plaintext) {
-            Ok(_) => (),
+            Ok(()) => (),
             Err(_) => return Ok(()),
         }
         let mut client = match self.state {

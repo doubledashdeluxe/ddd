@@ -7,7 +7,7 @@ pub struct Blake2b(blake2b::Blake2b);
 
 impl Default for Blake2b {
     fn default() -> Self {
-        Blake2b(blake2b::Blake2b::new(64).unwrap())
+        Self(blake2b::Blake2b::new(64).unwrap())
     }
 }
 

@@ -60,7 +60,7 @@ pub fn choose(
             return 0;
         }
 
-        let weight = |i| weights[rank as usize][i] as u32;
+        let weight = |i| u32::from(weights[rank as usize][i]);
 
         let is_special = i >= 9;
         if is_special {
@@ -172,9 +172,7 @@ mod tests {
                 assert_eq!(
                     *count != 0,
                     items.iter().any(|item| *item as usize == i),
-                    "{} {}",
-                    i,
-                    count
+                    "{i} {count}"
                 );
             }
         }

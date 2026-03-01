@@ -1,3 +1,4 @@
+use std::iter;
 use std::net::UdpSocket;
 use std::num::NonZero;
 use std::panic;
@@ -19,13 +20,14 @@ use crate::rooms::Rooms;
 use crate::shard;
 use crate::updater;
 
-pub fn run(server_k: Key) -> Result<()> {
+pub fn run(server_k: &Key) -> Result<()> {
     let shard_count = thread::available_parallelism().map_or(1, NonZero::get);
     let socket = UdpSocket::bind(format!("0.0.0.0:{DEFAULT_PORT}"))?;
-    let sockets: result::Result<_, _> = (0..shard_count).map(|_| socket.try_clone()).collect();
+    let sockets: result::Result<_, _> =
+        iter::repeat_with(|| socket.try_clone()).take(shard_count).collect();
     let sockets: Vec<_> = sockets?;
     let (message_senders, message_receivers): (Vec<_>, Vec<_>) =
-        (0..shard_count).map(|_| mpsc::sync_channel(1000)).unzip();
+        iter::repeat_with(|| mpsc::sync_channel(1000)).take(shard_count).unzip();
     let buffer_count = 1000 * shard_count;
     let (buffer_sender, buffer_receiver) = mpsc::sync_channel(buffer_count);
     for _ in 0..buffer_count {
@@ -53,16 +55,16 @@ pub fn run(server_k: Key) -> Result<()> {
             let message_senders = message_senders.clone();
             let clients = clients.clone();
             let rooms = rooms.clone();
-            move || updater::run(message_senders, clients, rooms, frame_rate)
+            move || updater::run(&message_senders, &clients, &rooms, frame_rate)
         };
         handles.push(spawn(message_senders.clone(), run));
     }
 
     let run = {
         let message_senders = message_senders.clone();
-        || listener::run(socket, message_senders, buffer_receiver)
+        move || listener::run(&socket, &message_senders, &buffer_receiver)
     };
-    handles.push(spawn(message_senders.clone(), run));
+    handles.push(spawn(message_senders, run));
 
     let results: Vec<_> = handles
         .into_iter()

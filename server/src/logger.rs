@@ -37,6 +37,7 @@ impl Log for Logger {
     fn flush(&self) {}
 }
 
+#[expect(clippy::print_stderr)]
 fn log(file: impl Display, line: impl Display, args: impl Display) {
     eprintln!("[{file}:{line}] {args}");
 }

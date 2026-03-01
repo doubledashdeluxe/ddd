@@ -13,6 +13,7 @@ use crate::kart::Kart;
 use crate::mmr::Mmr;
 use crate::pack::Pack;
 use crate::player::Player;
+use crate::room::Room;
 use crate::rooms::{Rooms, Search};
 
 pub struct Client {
@@ -24,12 +25,12 @@ pub struct Client {
 }
 
 impl Client {
-    pub fn new(now: Instant, addr: SocketAddr, pk: PublicKey) -> Client {
+    pub fn new(now: Instant, addr: SocketAddr, pk: PublicKey) -> Self {
         debug!("-> {addr}");
         let expiration = now + Duration::from_secs(120);
         let state = State::Idle;
         let client_state = None;
-        Client { expiration, addr, pk, state, client_state }
+        Self { expiration, addr, pk, state, client_state }
     }
 
     pub fn set_addr(&mut self, addr: SocketAddr) {
@@ -37,7 +38,7 @@ impl Client {
         self.addr = addr;
     }
 
-    fn frame_rate(&self) -> Option<FrameRate> {
+    const fn frame_rate(&self) -> Option<FrameRate> {
         let identity = match &self.state {
             State::Server { identity: Some(identity) } => identity,
             State::Mode { identity } => identity,
@@ -64,7 +65,7 @@ impl Client {
         identity.players.len()
     }
 
-    pub fn room_id(&self) -> Option<u128> {
+    pub const fn room_id(&self) -> Option<u128> {
         let room_info = match &self.state {
             State::Room { room_info: Some(room_info), .. } => room_info,
             State::Team { room_info: Some(room_info), .. } => room_info,
@@ -222,36 +223,39 @@ impl Client {
                 State::Room { identity, room_info }
             }
             (ClientState::Team(team), Some(identity), room_info) => {
-                let room_info = match room_info {
-                    Some(room_info) => rooms.get(&room_info.id).and_then(|mut room| {
+                let room_info = room_info.map_or_else(
+                    || Err(anyhow!("Unexpected client team state")),
+                    |room_info| {
+                        let mut room = rooms.get(&room_info.id)?;
                         room.set_team_state(&self.pk, team.client_team_state)?;
                         Ok(room_info)
-                    }),
-                    None => Err(anyhow!("Unexpected client team state")),
-                };
+                    },
+                );
                 let room_info = room_info.ok();
                 State::Team { identity, room_info }
             }
             (ClientState::Poll(poll), Some(identity), room_info) => {
-                let room_info = match room_info {
-                    Some(room_info) => rooms.get(&room_info.id).and_then(|mut room| {
+                let room_info = room_info.map_or_else(
+                    || Err(anyhow!("Unexpected client poll state")),
+                    |room_info| {
+                        let mut room = rooms.get(&room_info.id)?;
                         room.set_poll_state(&self.pk, poll.client_poll_state)?;
                         Ok(room_info)
-                    }),
-                    None => Err(anyhow!("Unexpected client poll state")),
-                };
+                    },
+                );
                 let room_info = room_info.ok();
                 State::Poll { identity, room_info }
             }
             (ClientState::Race(race), Some(identity), room_info) => {
                 let frame = race.frame;
-                let room_info = match room_info {
-                    Some(room_info) => rooms.get(&room_info.id).and_then(|mut room| {
+                let room_info = room_info.map_or_else(
+                    || Err(anyhow!("Unexpected client race state")),
+                    |room_info| {
+                        let mut room = rooms.get(&room_info.id)?;
                         room.set_race(&self.pk, race)?;
                         Ok(room_info)
-                    }),
-                    None => Err(anyhow!("Unexpected client race state")),
-                };
+                    },
+                );
                 let room_info = room_info.ok();
                 State::Race { identity, room_info, frame }
             }
@@ -263,7 +267,7 @@ impl Client {
     pub fn read(&mut self, now: Instant, addr: SocketAddr, message: &[u8]) -> Result<()> {
         anyhow::ensure!(addr == self.addr);
         let (client_state, _) =
-            ClientState::read(message).map_err(|_| anyhow::anyhow!("Invalid client state"))?;
+            ClientState::read(message).map_err(|()| anyhow::anyhow!("Invalid client state"))?;
         self.client_state = Some(client_state);
         self.expiration = now + Duration::from_secs(120);
         Ok(())
@@ -287,7 +291,7 @@ impl Client {
                 let protocol_version = PROTOCOL_VERSION;
                 let version = heapless::Vec::try_from(version::VERSION.as_bytes()).unwrap();
                 let server_identity = if identity.is_some() {
-                    let motd = heapless::Vec::try_from("test motd".as_bytes()).unwrap();
+                    let motd = heapless::Vec::from(*b"test motd");
                     let player_count = player_count as u16;
                     let identity = ServerIdentitySpecified { motd, player_count };
                     ServerIdentity::Specified(identity)
@@ -387,7 +391,7 @@ impl Client {
                         let Ok(Some(main)) = main else {
                             return Ok(None);
                         };
-                        ServerTeamState::Main(main.clone())
+                        ServerTeamState::Main(main)
                     }
                     None => ServerTeamState::Error(()),
                 };
@@ -397,7 +401,7 @@ impl Client {
             State::Poll { room_info, .. } => {
                 let server_poll_state = match room_info {
                     Some(room_info) => {
-                        let poll_state = rooms.read(&room_info.id, |room| room.poll_state());
+                        let poll_state = rooms.read(&room_info.id, Room::poll_state);
                         let Ok(Some(poll_state)) = poll_state else {
                             return Ok(None);
                         };

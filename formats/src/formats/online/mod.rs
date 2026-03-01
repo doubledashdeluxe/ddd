@@ -8,6 +8,7 @@ mod client_state;
 mod common;
 mod server_state;
 
+#[expect(clippy::large_stack_frames)]
 pub fn format() -> Format<impl ConstantList, impl TypeList> {
     let default_port = SimpleConstant::new("DEFAULT_PORT", 3549u16);
     let protocol_version = SimpleConstant::new("PROTOCOL_VERSION", 13u32);

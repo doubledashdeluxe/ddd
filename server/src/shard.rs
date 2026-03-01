@@ -100,7 +100,7 @@ impl Shard {
                     v.insert((retain, connection));
                 }
             }
-            _ => (),
+            Entry::Vacant(_) => (),
         }
         Ok(())
     }

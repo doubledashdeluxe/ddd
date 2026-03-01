@@ -7,8 +7,8 @@ pub struct StringConstant {
 }
 
 impl StringConstant {
-    pub fn new(name: &'static str, value: &'static str) -> StringConstant {
-        StringConstant { name, value }
+    pub const fn new(name: &'static str, value: &'static str) -> Self {
+        Self { name, value }
     }
 }
 

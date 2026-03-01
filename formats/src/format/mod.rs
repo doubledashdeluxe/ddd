@@ -14,8 +14,8 @@ pub struct Format<CL: ConstantList, TL: TypeList> {
 }
 
 impl Format<(), ()> {
-    pub fn new(name: &'static str) -> Format<(), ()> {
-        Format { name, constant_list: (), type_list: () }
+    pub const fn new(name: &'static str) -> Self {
+        Self { name, constant_list: (), type_list: () }
     }
 }
 

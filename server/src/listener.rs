@@ -8,9 +8,9 @@ use crate::buffer::Buffer;
 use crate::message::Message;
 
 pub fn run(
-    socket: UdpSocket,
-    message_senders: Vec<SyncSender<Message>>,
-    buffer_receiver: Receiver<Buffer>,
+    socket: &UdpSocket,
+    message_senders: &[SyncSender<Message>],
+    buffer_receiver: &Receiver<Buffer>,
 ) -> Result<()> {
     let random_state = RandomState::new();
     loop {

@@ -8,8 +8,8 @@ pub trait VariantList {
     fn min_len(&self) -> usize;
     fn max_len(&self) -> usize;
     fn rs_variants(&self) -> String;
-    fn rs_read(&self, enum_name: &str) -> String;
-    fn rs_write(&self, enum_name: &str) -> String;
+    fn rs_read(&self) -> String;
+    fn rs_write(&self) -> String;
     fn hh_read_delegates(&self) -> String;
     fn hh_writer_decls(&self) -> String;
     fn hh_writer_defs(&self, enum_name: &str) -> String;
@@ -32,39 +32,39 @@ impl VariantList for () {
     }
 
     fn rs_variants(&self) -> String {
-        "".to_owned()
+        String::new()
     }
 
-    fn rs_read(&self, _: &str) -> String {
-        "".to_owned()
+    fn rs_read(&self) -> String {
+        String::new()
     }
 
-    fn rs_write(&self, _: &str) -> String {
-        "".to_owned()
+    fn rs_write(&self) -> String {
+        String::new()
     }
 
     fn hh_read_delegates(&self) -> String {
-        "".to_owned()
+        String::new()
     }
 
     fn hh_writer_decls(&self) -> String {
-        "".to_owned()
+        String::new()
     }
 
     fn hh_writer_defs(&self, _: &str) -> String {
-        "".to_owned()
+        String::new()
     }
 
     fn cc_is_valid(&self) -> String {
-        "".to_owned()
+        String::new()
     }
 
     fn cc_read(&self) -> String {
-        "".to_owned()
+        String::new()
     }
 
     fn cc_writers(&self, _: &str) -> String {
-        "".to_owned()
+        String::new()
     }
 }
 
@@ -90,42 +90,40 @@ impl<L: VariantList, T: DataType> VariantList for (L, Variant<T>) {
         )
     }
 
-    fn rs_read(&self, enum_name: &str) -> String {
+    fn rs_read(&self) -> String {
         let variable_name = self.1.name().to_ascii_snake_case();
         format!(
             concat!(
                 "{}",
                 "            {} => {{\n",
                 "                {}\n",
-                "                Ok(({}::{}({}), buf))\n",
+                "                Ok((Self::{}({}), buf))\n",
                 "            }}\n",
             ),
-            self.0.rs_read(enum_name),
+            self.0.rs_read(),
             L::count(),
-            self.1.data_type().rs_read(&variable_name).replace("\n", "\n                "),
-            enum_name,
+            self.1.data_type().rs_read(&variable_name).replace('\n', "\n                "),
             self.1.name(),
             &variable_name,
         )
     }
 
-    fn rs_write(&self, enum_name: &str) -> String {
+    fn rs_write(&self) -> String {
         let variable_name = self.1.name().to_ascii_snake_case();
         format!(
             concat!(
                 "{}",
-                "            {}::{}({}) => {{\n",
+                "            Self::{}({}) => {{\n",
                 "                *discriminant = {};\n",
                 "                {}\n",
                 "                Ok(buf)\n",
                 "            }}\n",
             ),
-            self.0.rs_write(enum_name),
-            enum_name,
+            self.0.rs_write(),
             self.1.name(),
             &variable_name,
             L::count(),
-            self.1.data_type().rs_write(&variable_name).replace("\n", "\n                "),
+            self.1.data_type().rs_write(&variable_name).replace('\n', "\n                "),
         )
     }
 
@@ -176,7 +174,7 @@ impl<L: VariantList, T: DataType> VariantList for (L, Variant<T>) {
             self.1
                 .data_type()
                 .cc_is_valid(self.1.name(), ArrayIndices::new(self.1.name()))
-                .replace("\n", "\n        "),
+                .replace('\n', "\n        "),
         )
     }
 
@@ -195,7 +193,7 @@ impl<L: VariantList, T: DataType> VariantList for (L, Variant<T>) {
             self.1
                 .data_type()
                 .cc_read(self.1.name(), ArrayIndices::new(self.1.name()))
-                .replace("\n", "\n        "),
+                .replace('\n', "\n        "),
         )
     }
 

@@ -12,8 +12,8 @@ pub struct EnumType<L: VariantList> {
 }
 
 impl EnumType<()> {
-    pub fn new(name: &'static str) -> EnumType<()> {
-        EnumType { name, list: () }
+    pub const fn new(name: &'static str) -> Self {
+        Self { name, list: () }
     }
 }
 
@@ -72,8 +72,8 @@ impl<L: VariantList> ComplexDataType for EnumType<L> {
             self.name,
             ComplexDataType::min_len(self),
             ComplexDataType::max_len(self),
-            self.list.rs_read(self.name),
-            self.list.rs_write(self.name),
+            self.list.rs_read(),
+            self.list.rs_write(),
         )
     }
 

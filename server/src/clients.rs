@@ -21,8 +21,8 @@ pub struct Clients {
 }
 
 impl Clients {
-    pub fn new() -> Clients {
-        Clients {
+    pub fn new() -> Self {
+        Self {
             clients: Arc::new(HashMap::new()),
             count: Arc::new(AtomicUsize::new(0)),
             player_count: Arc::new(AtomicUsize::new(0)),
@@ -52,7 +52,7 @@ impl Clients {
                 let client = Client::new(now, addr, pk);
                 v.insert_entry(client)
             }
-            _ => return Err(anyhow!("Reached capacity")),
+            Entry::Vacant(_) => return Err(anyhow!("Reached capacity")),
         };
         Ok(ClientRef { entry })
     }
@@ -85,9 +85,9 @@ pub struct ClientRef<'a> {
     entry: OccupiedEntry<'a, PublicKey, Client>,
 }
 
-impl ClientRef<'_> {
-    fn new(entry: OccupiedEntry<'_, PublicKey, Client>) -> ClientRef<'_> {
-        ClientRef { entry }
+impl<'a> ClientRef<'a> {
+    const fn new(entry: OccupiedEntry<'a, PublicKey, Client>) -> Self {
+        Self { entry }
     }
 }
 

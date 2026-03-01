@@ -1,4 +1,5 @@
 use std::array;
+use std::clone::Clone;
 use std::collections::hash_map::{Entry, HashMap};
 use std::iter;
 use std::ops::BitOr;
@@ -95,8 +96,8 @@ impl Room {
         format: RoomOptionFormat,
         match_count: u8,
         rng: &mut impl Rng,
-    ) -> Room {
-        debug!("-> {}", id);
+    ) -> Self {
+        debug!("-> {id}");
         let is_race = match mode_index {
             ModeIndex::Versus => true,
             ModeIndex::Balloon => false,
@@ -128,7 +129,7 @@ impl Room {
             };
             ServerRoomOptions::BattleOptions(options)
         };
-        Room {
+        Self {
             host_pk: host_karts.first().map(Kart::client_pk).copied(),
             karts: host_karts.into_iter().collect(),
             spectating_karts: HashMap::new(),
@@ -165,27 +166,27 @@ impl Room {
         self.spectating_karts.values().map(|karts| karts.len()).sum()
     }
 
-    pub fn spectator_count(&self) -> usize {
+    pub const fn spectator_count(&self) -> usize {
         self.spectator_count
     }
 
-    pub fn mode_index(&self) -> ModeIndex {
+    pub const fn mode_index(&self) -> ModeIndex {
         self.mode_index
     }
 
-    pub fn pack(&self) -> &Pack {
+    pub const fn pack(&self) -> &Pack {
         &self.pack
     }
 
-    pub fn id(&self) -> u128 {
+    pub const fn id(&self) -> u128 {
         self.id
     }
 
-    pub fn options(&self) -> &ServerRoomOptions {
+    pub const fn options(&self) -> &ServerRoomOptions {
         &self.options
     }
 
-    pub fn code(&self) -> Option<u64> {
+    pub const fn code(&self) -> Option<u64> {
         match (&self.code_pair, self.code_type()) {
             (Some(code_pair), RoomOptionCodeType::Long) => Some(code_pair.long),
             (Some(code_pair), RoomOptionCodeType::Short) => Some(code_pair.short),
@@ -193,18 +194,18 @@ impl Room {
         }
     }
 
-    fn code_type(&self) -> RoomOptionCodeType {
+    const fn code_type(&self) -> RoomOptionCodeType {
         match &self.options {
             ServerRoomOptions::RaceOptions(options) => options.code_type,
             ServerRoomOptions::BattleOptions(options) => options.code_type,
         }
     }
 
-    fn is_duel(&self) -> bool {
+    const fn is_duel(&self) -> bool {
         matches!(self.format(), RoomOptionFormat::Duel)
     }
 
-    fn has_teams(&self) -> bool {
+    const fn has_teams(&self) -> bool {
         matches!(self.format(), RoomOptionFormat::TeamsOf2 | RoomOptionFormat::TeamsOf4)
     }
 
@@ -232,14 +233,14 @@ impl Room {
         other_teams[..team_count].shuffle(&mut self.rng);
 
         let max_team_size = kart_count.div_ceil(team_count);
-        for kart in karts[..kart_count].iter() {
+        for kart in &karts[..kart_count] {
             let team = &mut teams[*kart];
             let team_size = team_sizes[*team as usize];
             if team_size <= max_team_size {
                 continue;
             }
 
-            for other_team in other_teams[..team_count].iter() {
+            for other_team in &other_teams[..team_count] {
                 let other_team_size = team_sizes[*other_team];
                 if other_team_size < max_team_size {
                     team_sizes[*team as usize] -= 1;
@@ -251,21 +252,21 @@ impl Room {
         }
     }
 
-    fn format(&self) -> RoomOptionFormat {
+    const fn format(&self) -> RoomOptionFormat {
         match &self.options {
             ServerRoomOptions::RaceOptions(options) => options.format,
             ServerRoomOptions::BattleOptions(options) => options.format,
         }
     }
 
-    fn course_selection(&self) -> RoomOptionCourseSelection {
+    const fn course_selection(&self) -> RoomOptionCourseSelection {
         match &self.options {
             ServerRoomOptions::RaceOptions(options) => options.course_selection,
             ServerRoomOptions::BattleOptions(options) => options.course_selection,
         }
     }
 
-    pub fn team_state(&self) -> Option<&ServerTeamStateMain> {
+    pub const fn team_state(&self) -> Option<&ServerTeamStateMain> {
         match &self.state {
             State::Room => None,
             State::Team { state, .. } => Some(state),
@@ -307,7 +308,7 @@ impl Room {
         }
     }
 
-    pub fn has_room_lock(&self) -> bool {
+    pub const fn has_room_lock(&self) -> bool {
         match self.state {
             State::Room => false,
             State::Team { .. } => true,
@@ -391,7 +392,7 @@ impl Room {
                 }
             }
             (ClientRoomOptions::None(()), _) => {
-                anyhow::ensure!(self.is_guest(client_pk))
+                anyhow::ensure!(self.is_guest(client_pk));
             }
             _ => anyhow::bail!("Invalid options"),
         }
@@ -447,7 +448,7 @@ impl Room {
                 if continuing != 0 {
                     let mut state = state.clone();
                     self.balance_teams(&mut state.teams);
-                    state.continuing = true as u8;
+                    state.continuing = u8::from(true);
                     self.state = State::new_poll(Some(state));
                 }
             }
@@ -571,7 +572,7 @@ impl Room {
         match &mut self.state {
             State::Race { poll_state, inputs, karts, states, .. } => {
                 let server_frame = states.len() as u16;
-                if client_frame as i32 - server_frame as i32 > MAX_KART_INPUT_COUNT as i32 {
+                if i32::from(client_frame) - i32::from(server_frame) > MAX_KART_INPUT_COUNT as i32 {
                     return Ok(());
                 }
                 let kart_indices = || kart_indices.iter().copied();
@@ -613,7 +614,9 @@ impl Room {
                         if *item_frame >= kart_item_frame + 50 {
                             let item_mode = match &self.options {
                                 ServerRoomOptions::RaceOptions(options) => options.item_mode,
-                                _ => RoomOptionItemMode::Recommended,
+                                ServerRoomOptions::BattleOptions(_) => {
+                                    RoomOptionItemMode::Recommended
+                                }
                             };
                             let character_ids = &poll_state.karts[kart_index].character_ids;
                             let mut item_counts = item_counts.clone().into_array().unwrap();
@@ -670,7 +673,7 @@ impl Room {
         };
 
         if !self.has_room_lock() {
-            self.karts.retain(|kart| present(kart.client_pk()))
+            self.karts.retain(|kart| present(kart.client_pk()));
         }
         self.spectating_karts.retain(|client_pk, _| present(client_pk));
 
@@ -712,7 +715,7 @@ impl Room {
             State::Team { state, deadline } if Instant::now() >= *deadline => {
                 let mut state = state.clone();
                 self.balance_teams(&mut state.teams);
-                state.continuing = true as u8;
+                state.continuing = u8::from(true);
                 self.state = State::new_poll(Some(state));
             }
             State::Poll { team_state, state, karts, host_course_index, deadline }
@@ -725,7 +728,7 @@ impl Room {
                         continue;
                     };
                     let character_ids: heapless::Vec<_, _> =
-                        (0..2).map(|_| self.rng.random()).collect();
+                        iter::repeat_with(|| self.rng.random()).take(2).collect();
                     let kart_id = loop {
                         let kart_id: KartId = self.rng.random();
                         if kart_id.compatible(&character_ids) {
@@ -756,9 +759,9 @@ impl Room {
                 let kart_flags = karts
                     .iter()
                     .enumerate()
-                    .map(|(i, kart)| (kart.is_some() as u8) << i)
+                    .map(|(i, kart)| u8::from(kart.is_some()) << i)
                     .fold(0, BitOr::bitor);
-                let karts = karts.iter().filter_map(|kart| kart.clone()).collect();
+                let karts = karts.iter().filter_map(Clone::clone).collect();
                 let state = ServerRaceStateMain {
                     frame: states.len() as u16,
                     client_frame: states.len() as u16,
@@ -815,7 +818,7 @@ enum State {
 }
 
 impl State {
-    fn new_room() -> Self {
+    const fn new_room() -> Self {
         Self::Room
     }
 
@@ -823,7 +826,7 @@ impl State {
         let state = ServerTeamStateMain {
             teams: iter::repeat_n(0, kart_count).collect(),
             entry_index: 0,
-            continuing: false as u8,
+            continuing: u8::from(false),
         };
         Self::Team { state, deadline }
     }

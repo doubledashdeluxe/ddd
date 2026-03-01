@@ -8,11 +8,11 @@ pub struct Player {
 }
 
 impl Player {
-    pub fn new(player: ServerPlayer, mmr: u16) -> Player {
-        Player { player, mmr }
+    pub const fn new(player: ServerPlayer, mmr: u16) -> Self {
+        Self { player, mmr }
     }
 
-    pub fn player(&self) -> &ServerPlayer {
+    pub const fn player(&self) -> &ServerPlayer {
         &self.player
     }
 }

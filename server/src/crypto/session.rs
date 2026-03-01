@@ -15,19 +15,19 @@ impl Session {
     pub const MAC_SIZE: usize = 16;
     pub const NONCE_SIZE: usize = 8;
 
-    pub fn new(read_k: Key, write_k: Key) -> Session {
+    pub const fn new(read_k: Key, write_k: Key) -> Self {
         let read_nonce = 0;
         let write_nonce = 0;
-        Session { read_k, read_nonce, write_k, write_nonce }
+        Self { read_k, read_nonce, write_k, write_nonce }
     }
 
     #[cfg(test)]
-    pub fn read_k(&self) -> &Key {
+    pub const fn read_k(&self) -> &Key {
         &self.read_k
     }
 
     #[cfg(test)]
-    pub fn write_k(&self) -> &Key {
+    pub const fn write_k(&self) -> &Key {
         &self.write_k
     }
 
@@ -36,7 +36,7 @@ impl Session {
         let nonce = u64::from_le_bytes(*nonce);
         anyhow::ensure!(nonce >= self.read_nonce && nonce != u64::MAX);
         ChaCha20Poly1305::decrypt(&self.read_k, nonce, &[], ciphertext, plaintext)
-            .map_err(|_| anyhow::anyhow!("Decryption failed"))?;
+            .map_err(|()| anyhow::anyhow!("Decryption failed"))?;
         self.read_nonce = nonce + 1;
         Ok(())
     }

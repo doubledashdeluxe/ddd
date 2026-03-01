@@ -6,15 +6,15 @@ pub struct Variant<T: DataType> {
 }
 
 impl<T: DataType> Variant<T> {
-    pub fn new(name: &'static str, data_type: T) -> Variant<T> {
-        Variant { name, data_type }
+    pub const fn new(name: &'static str, data_type: T) -> Self {
+        Self { name, data_type }
     }
 
-    pub fn name(&self) -> &'static str {
+    pub const fn name(&self) -> &'static str {
         self.name
     }
 
-    pub fn data_type(&self) -> &T {
+    pub const fn data_type(&self) -> &T {
         &self.data_type
     }
 }

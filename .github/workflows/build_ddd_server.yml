@@ -84,4 +84,4 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
       - name: Lint
-        run: cargo clippy
+        run: cargo clippy --all-targets

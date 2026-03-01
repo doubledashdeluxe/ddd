@@ -7,11 +7,11 @@ pub trait ConstantList {
 
 impl ConstantList for () {
     fn rs(&self) -> String {
-        "".to_owned()
+        String::new()
     }
 
     fn hh(&self) -> String {
-        "".to_owned()
+        String::new()
     }
 }
 

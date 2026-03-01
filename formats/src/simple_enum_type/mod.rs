@@ -13,8 +13,8 @@ pub struct SimpleEnumType<L: VariantList> {
 }
 
 impl SimpleEnumType<()> {
-    pub fn new(name: &'static str) -> SimpleEnumType<()> {
-        SimpleEnumType { name, list: () }
+    pub const fn new(name: &'static str) -> Self {
+        Self { name, list: () }
     }
 }
 
@@ -70,8 +70,8 @@ impl<L: VariantList> ComplexDataType for SimpleEnumType<L> {
             self.name,
             ComplexDataType::min_len(self),
             ComplexDataType::max_len(self),
-            self.list.rs_read(self.name),
-            self.list.rs_write(self.name),
+            self.list.rs_read(),
+            self.list.rs_write(),
         )
     }
 
@@ -97,7 +97,7 @@ impl<L: VariantList> ComplexDataType for SimpleEnumType<L> {
     }
 
     fn cc(&self) -> String {
-        "".to_owned()
+        String::new()
     }
 
     fn hh_read_delegate(&self, name: &str, array_indices: ArrayIndices) -> String {

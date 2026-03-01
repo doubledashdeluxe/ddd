@@ -23,11 +23,11 @@ impl TwoVariants {
                     first.push(first_element).unwrap();
                     Ok(buf)
                 })?;
-                Ok((TwoVariants::First(first), buf))
+                Ok((Self::First(first), buf))
             }
             1 => {
                 let second = ();
-                Ok((TwoVariants::Second(second), buf))
+                Ok((Self::Second(second), buf))
             }
             _ => Err(()),
         }
@@ -36,7 +36,7 @@ impl TwoVariants {
     pub fn write<'a>(&self, buf: &'a mut [u8]) -> Result<&'a mut [u8], ()> {
         let (discriminant, buf) = buf.split_first_mut().ok_or(())?;
         match self {
-            TwoVariants::First(first) => {
+            Self::First(first) => {
                 *discriminant = 0;
                 if first.is_empty() || first.len() > 3 {
                     return Err(());
@@ -50,9 +50,9 @@ impl TwoVariants {
                 })?;
                 Ok(buf)
             }
-            TwoVariants::Second(second) => {
+            Self::Second(second) => {
                 *discriminant = 1;
-                let _ = second;
+                let () = second;
                 Ok(buf)
             }
         }

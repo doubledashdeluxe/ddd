@@ -22,7 +22,7 @@ impl DataType for UnitType {
     }
 
     fn rs_write(&self, name: &str) -> String {
-        format!("let _ = {name};")
+        format!("let () = {name};")
     }
 
     fn hh_read_delegate(&self, name: &str, array_indices: ArrayIndices) -> String {

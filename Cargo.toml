@@ -2,9 +2,9 @@
 members = [
     "formats",
     "server",
-    "tools/patch",
     "tools/obj2bin",
     "tools/obj2dol",
+    "tools/patch",
     "tools/split",
 ]
 resolver = "3"
@@ -16,4 +16,57 @@ panic = "abort"
 panic = "abort"
 
 [workspace.lints.clippy]
+# complexity
 identity_op = "allow"
+# nursery
+nursery = { level = "warn", priority = -1 }
+# pedantic
+pedantic = { level = "warn", priority = -1 }
+cast_possible_truncation = "allow"
+cast_possible_wrap = "allow"
+match_same_arms = "allow"
+must_use_candidate = "allow"
+similar_names = "allow"
+struct_field_names = "allow"
+too_many_lines = "allow"
+wildcard_imports = "allow"
+# restriction
+absolute_paths = "warn"
+allow_attributes = "warn"
+assertions_on_result_states = "warn"
+dbg_macro = "warn"
+default_union_representation = "warn"
+deref_by_slicing = "warn"
+exit = "warn"
+filetype_is_file = "warn"
+float_cmp_const = "warn"
+fn_to_numeric_cast_any = "warn"
+get_unwrap = "warn"
+if_then_some_else_none = "warn"
+infinite_loop = "warn"
+lossy_float_literal = "warn"
+map_with_unused_argument_over_ranges = "warn"
+needless_raw_strings = "warn"
+non_zero_suggestions = "warn"
+print_stderr = "warn"
+print_stdout = "warn"
+redundant_test_prefix = "warn"
+redundant_type_annotations = "warn"
+ref_patterns = "warn"
+renamed_function_params = "warn"
+rest_pat_in_fully_bound_structs = "warn"
+return_and_then = "warn"
+self_named_module_files = "warn"
+str_to_string = "warn"
+string_add = "warn"
+tests_outside_test_module = "warn"
+todo = "warn"
+try_err = "warn"
+undocumented_unsafe_blocks = "warn"
+unnecessary_safety_comment = "warn"
+unnecessary_self_imports = "warn"
+unneeded_field_pattern = "warn"
+unused_result_ok = "warn"
+verbose_file_reads = "warn"
+# style
+match_like_matches_macro = "allow"

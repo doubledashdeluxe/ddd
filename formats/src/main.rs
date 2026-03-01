@@ -15,7 +15,8 @@ fn main() -> Result<(), io::Error> {
     };
     match options.output {
         Some(output) => fs::write(output, &format)?,
-        None => print!("{}", format),
+        #[expect(clippy::print_stdout)]
+        None => print!("{format}"),
     }
     Ok(())
 }

@@ -4,8 +4,8 @@ pub struct Buffer {
 }
 
 impl Buffer {
-    pub fn new() -> Buffer {
-        Buffer { buffer: Box::new([0; MAX_LEN]), len: MAX_LEN }
+    pub fn new() -> Self {
+        Self { buffer: Box::new([0; MAX_LEN]), len: MAX_LEN }
     }
 
     pub fn as_slice(&self) -> &[u8] {
@@ -16,11 +16,11 @@ impl Buffer {
         &mut self.buffer[0..self.len]
     }
 
-    pub fn set_len(&mut self, len: usize) {
+    pub const fn set_len(&mut self, len: usize) {
         self.len = len;
     }
 
-    pub fn reset_len(&mut self) {
+    pub const fn reset_len(&mut self) {
         self.set_len(MAX_LEN);
     }
 }

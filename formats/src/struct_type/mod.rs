@@ -13,8 +13,8 @@ pub struct StructType<L: FieldList> {
 }
 
 impl StructType<()> {
-    pub fn new(name: &'static str) -> StructType<()> {
-        StructType { name, list: () }
+    pub const fn new(name: &'static str) -> Self {
+        Self { name, list: () }
     }
 }
 
@@ -52,18 +52,18 @@ impl<L: FieldList> ComplexDataType for StructType<L> {
                 "    const MIN_LEN: usize = {};\n",
                 "    const MAX_LEN: usize = {};\n",
                 "\n",
-                "    pub fn read(buf: &[u8]) -> Result<(Self, &[u8]), ()> {{\n",
+                "    pub{} fn read(buf: &[u8]) -> Result<(Self, &[u8]), ()> {{\n",
                 "{}",
                 "        #[rustfmt::skip]\n",
-                "        let {} = {} {{\n",
+                "        let {} = Self {{\n",
                 "{}",
                 "        }};\n",
                 "        Ok(({}, buf))\n",
                 "    }}\n",
                 "\n",
-                "    pub fn write<'a>(&self, buf: &'a mut [u8]) -> Result<&'a mut [u8], ()> {{\n",
+                "    pub{} fn write<'a>(&self, buf: &'a mut [u8]) -> Result<&'a mut [u8], ()> {{\n",
                 "        #[rustfmt::skip]\n",
-                "        let {} {{\n",
+                "        let Self {{\n",
                 "{}",
                 "        }} = self;\n",
                 "{}",
@@ -76,12 +76,12 @@ impl<L: FieldList> ComplexDataType for StructType<L> {
             self.name,
             ComplexDataType::min_len(self),
             ComplexDataType::max_len(self),
+            L::rs_const(),
             self.list.rs_read(),
             self.name.to_ascii_snake_case(),
-            self.name,
             self.list.rs_field_names(),
             self.name.to_ascii_snake_case(),
-            self.name,
+            L::rs_const(),
             self.list.rs_field_names(),
             self.list.rs_write(),
         )

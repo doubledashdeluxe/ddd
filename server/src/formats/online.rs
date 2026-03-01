@@ -1,3 +1,5 @@
+#![allow(clippy::trivially_copy_pass_by_ref)]
+#![allow(clippy::unnecessary_wraps)]
 #![allow(dead_code)]
 
 use std::array;
@@ -14,7 +16,7 @@ pub type KartId = KartID;
 pub type ItemId = ItemID;
 
 impl CharacterId {
-    pub fn weight(self) -> Weight {
+    pub const fn weight(self) -> Weight {
         match self {
             Self::BabyMario => Weight::Light,
             Self::BabyLuigi => Weight::Light,
@@ -39,7 +41,7 @@ impl CharacterId {
         }
     }
 
-    pub fn special_item(self) -> ItemId {
+    pub const fn special_item(self) -> ItemId {
         match self {
             Self::BabyMario => ItemId::Chomp,
             Self::BabyLuigi => ItemId::Chomp,
@@ -93,7 +95,7 @@ impl Distribution<CharacterId> for StandardUniform {
 }
 
 impl KartId {
-    pub fn weight(self) -> Weight {
+    pub const fn weight(self) -> Weight {
         match self {
             Self::Mario => Weight::Medium,
             Self::Donkey => Weight::Heavy,
@@ -120,7 +122,7 @@ impl KartId {
     }
 
     pub fn compatible(self, character_ids: &[CharacterId]) -> bool {
-        if self == KartId::Extra {
+        if self == Self::Extra {
             return true;
         }
 
@@ -160,7 +162,7 @@ impl Distribution<KartId> for StandardUniform {
 }
 
 impl ItemId {
-    pub fn is_special(self) -> bool {
+    pub const fn is_special(self) -> bool {
         match self {
             Self::GreenShell => false,
             Self::BowserShell => true,
@@ -187,24 +189,28 @@ impl ItemId {
         }
     }
 
-    pub fn can_have_two(self) -> bool {
-        matches!(
-            self,
-            Self::GreenShell | Self::RedShell | Self::Banana | Self::Mushroom | Self::FakeItemBox
-        )
+    pub const fn can_have_two(self) -> bool {
+        match self {
+            Self::GreenShell => true,
+            Self::RedShell => true,
+            Self::Banana => true,
+            Self::Mushroom => true,
+            Self::FakeItemBox => true,
+            _ => false,
+        }
     }
 
-    pub fn base(self) -> ItemId {
+    pub const fn base(self) -> Self {
         match self {
-            Self::TripleGreenShells => ItemId::GreenShell,
-            Self::TripleMushrooms => ItemId::Mushroom,
-            Self::TripleRedShells => ItemId::RedShell,
-            Self::Fireballs => ItemId::MarioFireballs,
+            Self::TripleGreenShells => Self::GreenShell,
+            Self::TripleMushrooms => Self::Mushroom,
+            Self::TripleRedShells => Self::RedShell,
+            Self::Fireballs => Self::MarioFireballs,
             _ => self,
         }
     }
 
-    pub fn count(self) -> u8 {
+    pub const fn count(self) -> u8 {
         match self {
             Self::TripleGreenShells => 3,
             Self::TripleMushrooms => 3,
@@ -214,7 +220,7 @@ impl ItemId {
         }
     }
 
-    pub fn max_count(self) -> u8 {
+    pub const fn max_count(self) -> u8 {
         match self {
             Self::GreenShell => 15,
             Self::BowserShell => 4,

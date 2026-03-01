@@ -8,10 +8,10 @@ pub struct SimpleConstant<T> {
 
 impl<T> SimpleConstant<T>
 where
-    SimpleConstant<T>: Constant,
+    Self: Constant,
 {
-    pub fn new(name: &'static str, value: T) -> SimpleConstant<T> {
-        SimpleConstant { name, value }
+    pub const fn new(name: &'static str, value: T) -> Self {
+        Self { name, value }
     }
 }
 

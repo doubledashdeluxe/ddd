@@ -13,9 +13,9 @@ use crate::message::Message;
 use crate::rooms::Rooms;
 
 pub fn run(
-    message_senders: Vec<SyncSender<Message>>,
-    clients: Clients,
-    rooms: Rooms,
+    message_senders: &[SyncSender<Message>],
+    clients: &Clients,
+    rooms: &Rooms,
     frame_rate: FrameRate,
 ) -> Result<()> {
     let mut next_tick = Instant::now();
@@ -26,9 +26,9 @@ pub fn run(
         match next_tick.checked_duration_since(now) {
             Some(duration) if !duration.is_zero() => thread::sleep(duration),
             _ => {
-                clients.update(now, &mut client_room_ids, &rooms, &mut rng);
+                clients.update(now, &mut client_room_ids, rooms, &mut rng);
                 rooms.update(frame_rate, &client_room_ids);
-                for message_sender in &message_senders {
+                for message_sender in message_senders {
                     let message = Message::Write { frame_rate };
                     message_sender.send(message)?;
                 }

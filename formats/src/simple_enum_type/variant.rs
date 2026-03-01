@@ -3,11 +3,11 @@ pub struct Variant {
 }
 
 impl Variant {
-    pub fn new(name: &'static str) -> Variant {
-        Variant { name }
+    pub const fn new(name: &'static str) -> Self {
+        Self { name }
     }
 
-    pub fn name(&self) -> &'static str {
+    pub const fn name(&self) -> &'static str {
         self.name
     }
 }

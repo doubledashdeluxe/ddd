@@ -3,8 +3,8 @@ use crate::simple_enum_type::variant::Variant;
 pub trait VariantList {
     fn count() -> u8;
     fn rs_variants(&self) -> String;
-    fn rs_read(&self, enum_name: &str) -> String;
-    fn rs_write(&self, enum_name: &str) -> String;
+    fn rs_read(&self) -> String;
+    fn rs_write(&self) -> String;
     fn hh_variants(&self) -> String;
     fn cc_cases(&self) -> String;
 }
@@ -15,23 +15,23 @@ impl VariantList for () {
     }
 
     fn rs_variants(&self) -> String {
-        "".to_owned()
+        String::new()
     }
 
-    fn rs_read(&self, _: &str) -> String {
-        "".to_owned()
+    fn rs_read(&self) -> String {
+        String::new()
     }
 
-    fn rs_write(&self, _: &str) -> String {
-        "".to_owned()
+    fn rs_write(&self) -> String {
+        String::new()
     }
 
     fn hh_variants(&self) -> String {
-        "".to_owned()
+        String::new()
     }
 
     fn cc_cases(&self) -> String {
-        "".to_owned()
+        String::new()
     }
 }
 
@@ -44,21 +44,19 @@ impl<L: VariantList> VariantList for (L, Variant) {
         format!("{}    {},\n", self.0.rs_variants(), self.1.name())
     }
 
-    fn rs_read(&self, enum_name: &str) -> String {
+    fn rs_read(&self) -> String {
         format!(
-            concat!("{}", "            {} => Ok(({}::{}, buf)),\n"),
-            self.0.rs_read(enum_name),
+            concat!("{}", "            {} => Ok((Self::{}, buf)),\n"),
+            self.0.rs_read(),
             L::count(),
-            enum_name,
             self.1.name(),
         )
     }
 
-    fn rs_write(&self, enum_name: &str) -> String {
+    fn rs_write(&self) -> String {
         format!(
-            concat!("{}", "            {}::{} => {},\n"),
-            self.0.rs_write(enum_name),
-            enum_name,
+            concat!("{}", "            Self::{} => {},\n"),
+            self.0.rs_write(),
             self.1.name(),
             L::count(),
         )

@@ -29,9 +29,9 @@ pub struct Rooms {
 }
 
 impl Rooms {
-    pub fn new() -> Rooms {
+    pub fn new() -> Self {
         let short_codes: collections::HashSet<_> = (0..1000).collect();
-        Rooms {
+        Self {
             rooms: array::from_fn(|_| Arc::new(HashMap::new())),
             counts: array::from_fn(|_| Arc::new(0.into())),
             search_rooms: array::from_fn(|_| Arc::new(HashMap::new())),
@@ -109,18 +109,16 @@ impl Rooms {
             }
             true
         });
-        match best_room {
-            Some((room, _)) => Ok(room),
-            None => {
-                anyhow::ensure!(self.count(frame_rate) <= 1000);
-                let room_entry = self.vacant_room_entry(frame_rate, rng);
-                let id = *room_entry.key();
-                let room =
-                    Room::new_worldwide(search.mode_index, search.pack, id, search.format, rng);
-                let room = room_entry.insert_entry(room);
-                ids.insert_sync(id).unwrap();
-                Ok(RoomRef::new(room))
-            }
+        if let Some((room, _)) = best_room {
+            Ok(room)
+        } else {
+            anyhow::ensure!(self.count(frame_rate) <= 1000);
+            let room_entry = self.vacant_room_entry(frame_rate, rng);
+            let id = *room_entry.key();
+            let room = Room::new_worldwide(search.mode_index, search.pack, id, search.format, rng);
+            let room = room_entry.insert_entry(room);
+            ids.insert_sync(id).unwrap();
+            Ok(RoomRef::new(room))
         }
     }
 
@@ -194,7 +192,7 @@ impl Rooms {
         });
     }
 
-    fn rooms_by_frame_rate(&self, frame_rate: FrameRate) -> &Arc<HashMap<u128, Room>> {
+    const fn rooms_by_frame_rate(&self, frame_rate: FrameRate) -> &Arc<HashMap<u128, Room>> {
         &self.rooms[frame_rate as usize]
     }
 
@@ -240,9 +238,9 @@ pub struct RoomRef<'a> {
     entry: OccupiedEntry<'a, u128, Room>,
 }
 
-impl RoomRef<'_> {
-    pub fn new(entry: OccupiedEntry<'_, u128, Room>) -> RoomRef<'_> {
-        RoomRef { entry }
+impl<'a> RoomRef<'a> {
+    pub const fn new(entry: OccupiedEntry<'a, u128, Room>) -> Self {
+        Self { entry }
     }
 }
 

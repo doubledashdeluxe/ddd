@@ -87,7 +87,7 @@ impl<T: ComplexDataType> DataType for T {
     }
 
     fn rs_write(&self, name: &str) -> String {
-        format!("let buf = {}.write(buf)?;", name)
+        format!("let buf = {name}.write(buf)?;")
     }
 
     fn hh_read_delegate(&self, name: &str, array_indices: ArrayIndices) -> String {

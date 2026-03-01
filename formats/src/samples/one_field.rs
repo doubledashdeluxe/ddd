@@ -11,8 +11,8 @@ impl First {
     pub fn read(buf: &[u8]) -> Result<(Self, &[u8]), ()> {
         let (discriminant, buf) = buf.split_first().ok_or(())?;
         match discriminant {
-            0 => Ok((First::A, buf)),
-            1 => Ok((First::B, buf)),
+            0 => Ok((Self::A, buf)),
+            1 => Ok((Self::B, buf)),
             _ => Err(()),
         }
     }
@@ -20,8 +20,8 @@ impl First {
     pub fn write<'a>(&self, buf: &'a mut [u8]) -> Result<&'a mut [u8], ()> {
         let (discriminant, buf) = buf.split_first_mut().ok_or(())?;
         *discriminant = match self {
-            First::A => 0,
-            First::B => 1,
+            Self::A => 0,
+            Self::B => 1,
         };
         Ok(buf)
     }
@@ -39,7 +39,7 @@ impl OneField {
     pub fn read(buf: &[u8]) -> Result<(Self, &[u8]), ()> {
         let (first, buf) = First::read(buf)?;
         #[rustfmt::skip]
-        let one_field = OneField {
+        let one_field = Self {
             first,
         };
         Ok((one_field, buf))
@@ -47,7 +47,7 @@ impl OneField {
 
     pub fn write<'a>(&self, buf: &'a mut [u8]) -> Result<&'a mut [u8], ()> {
         #[rustfmt::skip]
-        let OneField {
+        let Self {
             first,
         } = self;
         let buf = first.write(buf)?;

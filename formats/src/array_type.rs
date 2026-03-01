@@ -8,10 +8,10 @@ pub struct ArrayType<T: DataType> {
 }
 
 impl<T: DataType> ArrayType<T> {
-    pub fn new(data_type: T, min_len: usize, max_len: usize) -> ArrayType<T> {
+    pub fn new(data_type: T, min_len: usize, max_len: usize) -> Self {
         assert!(min_len <= max_len);
-        assert!(max_len <= u8::MAX as usize);
-        ArrayType { data_type, min_len, max_len }
+        u8::try_from(max_len).unwrap();
+        Self { data_type, min_len, max_len }
     }
 }
 
@@ -53,7 +53,7 @@ impl<T: DataType> DataType for ArrayType<T> {
             len_check,
             name,
             name,
-            self.data_type.rs_read(&format!("{}_element", name)).replace("\n", "\n    "),
+            self.data_type.rs_read(&format!("{name}_element")).replace('\n', "\n    "),
             name,
             name,
         )
@@ -87,7 +87,7 @@ impl<T: DataType> DataType for ArrayType<T> {
             name,
             name,
             name,
-            self.data_type.rs_write(&format!("{}_element", name)).replace("\n", "\n    "),
+            self.data_type.rs_write(&format!("{name}_element")).replace('\n', "\n    "),
         )
     }
 
@@ -146,7 +146,7 @@ impl<T: DataType> DataType for ArrayType<T> {
             array_indices.index(),
             array_indices.count(),
             array_indices.index(),
-            self.data_type.cc_is_valid(name, array_indices.next()).replace("\n", "\n    "),
+            self.data_type.cc_is_valid(name, array_indices.next()).replace('\n', "\n    "),
         )
     }
 
@@ -167,7 +167,7 @@ impl<T: DataType> DataType for ArrayType<T> {
             array_indices.index(),
             array_indices.count(),
             array_indices.index(),
-            self.data_type.cc_read(name, array_indices.next()).replace("\n", "\n    "),
+            self.data_type.cc_read(name, array_indices.next()).replace('\n', "\n    "),
         )
     }
 
@@ -198,7 +198,7 @@ impl<T: DataType> DataType for ArrayType<T> {
             array_indices.index(),
             array_indices.count(),
             array_indices.index(),
-            self.data_type.cc_write(name, array_indices.next()).replace("\n", "\n    "),
+            self.data_type.cc_write(name, array_indices.next()).replace('\n', "\n    "),
         )
     }
 }
@@ -209,11 +209,11 @@ pub struct ArrayIndices<'a> {
 }
 
 impl<'a> ArrayIndices<'a> {
-    pub fn new(name: &'a str) -> ArrayIndices<'a> {
+    pub const fn new(name: &'a str) -> Self {
         ArrayIndices { name, count: 0 }
     }
 
-    pub fn delegate_suffix(&self) -> &'static str {
+    pub const fn delegate_suffix(&self) -> &'static str {
         match self.count {
             0 => "",
             _ => "Element",
@@ -221,17 +221,17 @@ impl<'a> ArrayIndices<'a> {
     }
 
     pub fn typed_args(&self, trailing_comma: bool) -> String {
-        let mut args: Vec<_> = (0..self.count).map(|i| format!("u32 i{}", i)).collect();
+        let mut args: Vec<_> = (0..self.count).map(|i| format!("u32 i{i}")).collect();
         if trailing_comma {
-            args.push("".to_owned());
+            args.push(String::new());
         }
         args.join(", ")
     }
 
     pub fn untyped_args(&self, trailing_comma: bool) -> String {
-        let mut args: Vec<_> = (0..self.count).map(|i| format!("i{}", i)).collect();
+        let mut args: Vec<_> = (0..self.count).map(|i| format!("i{i}")).collect();
         if trailing_comma {
-            args.push("".to_owned());
+            args.push(String::new());
         }
         args.join(", ")
     }
@@ -244,7 +244,7 @@ impl<'a> ArrayIndices<'a> {
         format!("i{}", self.count)
     }
 
-    fn next(self) -> ArrayIndices<'a> {
+    const fn next(self) -> Self {
         ArrayIndices { name: self.name, count: self.count + 1 }
     }
 }

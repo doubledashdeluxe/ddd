@@ -12,11 +12,11 @@ pub struct Kart {
 }
 
 impl Kart {
-    pub fn new(client_pk: PublicKey, players: Vec<Player, MAX_KART_PLAYER_COUNT>) -> Kart {
-        Kart { client_pk, players }
+    pub const fn new(client_pk: PublicKey, players: Vec<Player, MAX_KART_PLAYER_COUNT>) -> Self {
+        Self { client_pk, players }
     }
 
-    pub fn client_pk(&self) -> &PublicKey {
+    pub const fn client_pk(&self) -> &PublicKey {
         &self.client_pk
     }
 

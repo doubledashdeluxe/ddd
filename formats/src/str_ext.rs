@@ -6,7 +6,7 @@ pub trait StrExt {
 
 impl StrExt for str {
     fn to_ascii_camel_case(&self) -> String {
-        let mut s = "".to_owned();
+        let mut s = String::new();
         let mut chars = self.chars();
         let Some(c) = chars.next() else {
             return s;
@@ -25,7 +25,7 @@ impl StrExt for str {
     }
 
     fn to_ascii_sentence_case(&self) -> String {
-        let mut s = "".to_owned();
+        let mut s = String::new();
         let mut chars = self.chars();
         let Some(c) = chars.next() else {
             return s;
@@ -36,7 +36,7 @@ impl StrExt for str {
     }
 
     fn to_ascii_snake_case(&self) -> String {
-        let mut s = "".to_owned();
+        let mut s = String::new();
         let mut chars = self.chars();
         let Some(c) = chars.next() else {
             return s;

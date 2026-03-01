@@ -8,15 +8,15 @@ pub trait TypeList {
 
 impl TypeList for () {
     fn rs(&self) -> String {
-        "".to_owned()
+        String::new()
     }
 
     fn hh(&self) -> String {
-        "".to_owned()
+        String::new()
     }
 
     fn cc(&self) -> String {
-        "".to_owned()
+        String::new()
     }
 }
 

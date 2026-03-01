@@ -22,7 +22,7 @@ impl TwoFields {
         })?;
         let second = ();
         #[rustfmt::skip]
-        let two_fields = TwoFields {
+        let two_fields = Self {
             first,
             second,
         };
@@ -31,7 +31,7 @@ impl TwoFields {
 
     pub fn write<'a>(&self, buf: &'a mut [u8]) -> Result<&'a mut [u8], ()> {
         #[rustfmt::skip]
-        let TwoFields {
+        let Self {
             first,
             second,
         } = self;
@@ -45,7 +45,7 @@ impl TwoFields {
             *first_element_buf = first_element.to_be_bytes();
             Ok(buf)
         })?;
-        let _ = second;
+        let () = second;
         Ok(buf)
     }
 }

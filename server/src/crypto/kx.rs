@@ -50,7 +50,7 @@ pub fn ik_2(server_k: Key, m1: &[u8], m2: &mut [u8]) -> Result<(PublicKey, Sessi
 fn ik_3(client_state: ClientState, m2: &[u8]) -> Result<Session> {
     assert!(m2.len() == M2_SIZE);
     let mut handshake_state = client_state.handshake_state;
-    handshake_state.read_message(&m2, &mut [])?;
+    handshake_state.read_message(m2, &mut [])?;
     let (write_cipher, read_cipher) = handshake_state.get_ciphers();
     let (read_k, _) = read_cipher.extract();
     let (write_k, _) = write_cipher.extract();

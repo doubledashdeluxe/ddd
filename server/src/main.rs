@@ -1,3 +1,4 @@
+use std::fmt::Write as _;
 use std::fs::File;
 use std::io::{Read, Write};
 
@@ -35,24 +36,26 @@ fn main() -> Result<()> {
     let version = version::VERSION;
     info!("Double Dash Deluxe Server [{version}]");
 
-    let server_k = match File::open("k.bin") {
-        Ok(mut file) => {
-            let mut server_k = <X25519 as DH>::Key::new();
-            anyhow::ensure!(file.metadata()?.len() == server_k.len() as u64);
-            file.read_exact(server_k.as_mut())?;
-            server_k
-        }
-        Err(_) => {
-            let server_k = X25519::genkey();
-            let mut file = File::create_new("k.bin")?;
-            file.write_all(server_k.as_slice())?;
-            server_k
-        }
+    let server_k = if let Ok(mut file) = File::open("k.bin") {
+        let mut server_k = <X25519 as DH>::Key::new();
+        anyhow::ensure!(file.metadata()?.len() == server_k.len() as u64);
+        file.read_exact(server_k.as_mut())?;
+        server_k
+    } else {
+        let server_k = X25519::genkey();
+        let mut file = File::create_new("k.bin")?;
+        file.write_all(server_k.as_slice())?;
+        server_k
     };
 
     let server_pk = X25519::pubkey(&server_k);
-    let server_pk: String = server_pk.into_iter().map(|byte| format!("{byte:02x?}")).collect();
+    let server_pk: Result<_> =
+        server_pk.into_iter().try_fold(String::new(), |mut server_pk, byte| {
+            write!(server_pk, "{byte:02x?}")?;
+            Ok(server_pk)
+        });
+    let server_pk = server_pk?;
     info!("Server public key: {server_pk}");
 
-    server::run(server_k)
+    server::run(&server_k)
 }

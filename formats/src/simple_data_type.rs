@@ -10,10 +10,10 @@ pub struct SimpleDataType<T> {
 
 impl<T> SimpleDataType<T>
 where
-    SimpleDataType<T>: DataType,
+    Self: DataType,
 {
-    pub fn new() -> SimpleDataType<T> {
-        SimpleDataType { marker: PhantomData }
+    pub const fn new() -> Self {
+        Self { marker: PhantomData }
     }
 }
 

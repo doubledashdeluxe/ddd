@@ -6,8 +6,8 @@ use zeroize::{Zeroize, Zeroizing};
 pub struct Sensitive<A: U8Array + Zeroize>(Zeroizing<A>);
 
 impl<A: U8Array + Zeroize> Sensitive<A> {
-    pub fn from(a: Zeroizing<A>) -> Self {
-        Sensitive(a)
+    pub const fn from(a: Zeroizing<A>) -> Self {
+        Self(a)
     }
 }
 
@@ -30,15 +30,15 @@ where
     A: Zeroize + U8Array,
 {
     fn new() -> Self {
-        Sensitive::from(Zeroizing::new(A::new()))
+        Self::from(Zeroizing::new(A::new()))
     }
 
     fn new_with(v: u8) -> Self {
-        Sensitive::from(Zeroizing::new(A::new_with(v)))
+        Self::from(Zeroizing::new(A::new_with(v)))
     }
 
     fn from_slice(s: &[u8]) -> Self {
-        Sensitive::from(Zeroizing::new(A::from_slice(s)))
+        Self::from(Zeroizing::new(A::from_slice(s)))
     }
 
     fn len() -> usize {

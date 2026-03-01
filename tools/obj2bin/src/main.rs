@@ -23,7 +23,7 @@ fn main() -> Result<()> {
             }
         })
         .collect();
-    segments.sort_unstable_by_key(|segment| segment.address());
+    segments.sort_unstable_by_key(ObjectSegment::address);
 
     let mut address = None;
     let mut output = vec![];
