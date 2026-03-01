@@ -4,7 +4,7 @@
 
 // Based on https://github.com/extremscorner/libogc2/blob/master/lwip/netif/enc28j60if.c
 //
-// Copyright (C) 2023 Extrems
+// Copyright (C) 2023 - 2025 Extrems' Corner.org
 //
 // This software is provided 'as-is', without any express or implied
 // warranty.  In no event will the authors be held liable for any

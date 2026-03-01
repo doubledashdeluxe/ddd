@@ -1,8 +1,24 @@
-// clang-format off
+// Based on https://github.com/mkwcat/wii-ios-exploits/blob/master/source/ios_exploit_sha.c
 //
-// Based on https://github.com/mkwcat/saoirse/blob/master/channel/Main/IOSBoot.cpp
+// Copyright (c) 2026 Palapeli
 //
-// clang-format on
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 
 #include "KernelUID.hh"
 
@@ -26,6 +42,32 @@ bool KernelUID::ok() const {
     return m_ok;
 }
 
+// Exploit summary:
+//
+// /dev/sha ioctl 0 (SHA-1 Init) writes to the context vector (1) without checking the length at
+// all. If we pass a length of 0, the memory bounds check performed by the IOS kernel for all
+// requests will not fail here.
+//
+// The SHA-1 Init call will then write the following words to the destination without any security
+// checks:
+//
+// 00: 67452301
+// 04: EFCDAB89
+// 08: 98BADCFE
+// 0C: 10325476
+// 10: C3D2E1F0
+// 14: 00000000
+// 18: 00000000
+//
+// The zero words are useful here, because due to a flaw in the design of IOS, 0 and NULL always
+// point to the beginning of MEM1, an area controlled by the PPC side. Most exploits utilize this by
+// overwriting the LR on the stack to jump to the beginning of MEM1, but we can go a step further...
+//
+// For whatever reason the thread that handles /dev/sha runs in ARM system mode. This means that all
+// kernel-only or read-only memory is now mapped as read/write. We can use this to instead attack
+// the context of the idle thread, which is always located at 0xFFFE0000 in every version of IOS and
+// also runs in system mode, making the exploit much more stable. This exploit works universally
+// across all IOS versions.
 bool KernelUID::Acquire(bool again) {
     if (Platform::IsDolphin()) {
         return true;
@@ -55,13 +97,18 @@ bool KernelUID::Acquire(bool again) {
     alignas(0x20) Resource::IoctlvPair pairs[4];
     pairs[0].data = nullptr;
     pairs[0].size = 0;
+    // We want to write one of the 0 words to the stored PC at 0xFFFE0040, so here we subtract that
+    // by 0x18, trashing various other registers that don't matter in the process. Note: if using
+    // IOS_Ioctlv provided by the SDK instead of libogc, this address should be changed to
+    // 0x7FFE0028 to account for the IPC library's address conversion.
     pairs[1].data = Memory::PhysicalToCached<void>(0x7ffe0028);
     pairs[1].size = 0;
-    // Unused vector utilized for cache safety
+    // This vector is unused by this specific call, so we will utilize it for invalidating the data
+    // cache on the IOS side.
     pairs[2].data = Memory::PhysicalToCached<void>(0x00000000);
     pairs[2].size = 0x40;
 
-    // This should never return an error if the exploit succeeded
+    // The exploit realistically couldn't have run if the result is less than zero.
     if (sha.ioctlv(0, 1, 2, pairs) < 0) {
         return false;
     }

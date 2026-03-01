@@ -1,7 +1,7 @@
 #include "UTF8.hh"
 
 extern "C" {
-#include <utf8decode.h>
+#include <utf8decode/utf8decode.h>
 
 #include <ctype.h>
 }

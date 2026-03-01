@@ -728,12 +728,33 @@ n.build(
 )
 n.newline()
 
+license_out_files = []
+for in_file in sorted(glob.glob(os.path.join('vendor', '*', 'LICEN[CS]E*'))):
+    out_file = os.path.join('$outdir', 'licenses', os.path.relpath(in_file, 'vendor'))
+    license_out_files += [out_file]
+    n.build(
+        out_file,
+        'cp',
+        in_file,
+        implicit = '$cp',
+    )
+out_file = os.path.join('$outdir', 'licenses', 'ddd', 'LICENSE')
+license_out_files += [out_file]
+n.build(
+    out_file,
+    'cp',
+    os.path.join('LICENSE'),
+    implicit = '$cp',
+)
+n.newline()
+
 n.build(
     'ddd',
     'phony',
     [
         os.path.join('$outdir', 'boot.dol'),
         os.path.join('$outdir', 'meta.xml'),
+        *license_out_files,
     ],
 )
 n.newline()
