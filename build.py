@@ -325,21 +325,21 @@ n.newline()
 
 n.rule(
     'obj2bin',
-    command = 'cargo -q --color always run -r --bin ddd-obj2bin -- -$kind $in $out',
+    command = 'cargo -q --color always run -r --bin obj2bin -- -$kind $in $out',
     description = 'OBJ2BIN $out',
 )
 n.newline()
 
 n.rule(
     'obj2dol',
-    command = 'cargo -q --color always run -r --bin ddd-obj2dol -- $in $out',
+    command = 'cargo -q --color always run -r --bin obj2dol -- $in $out',
     description = 'OBJ2DOL $out',
 )
 n.newline()
 
 n.rule(
     'patch',
-    command = 'cargo -q --color always run -r --bin ddd-patch -- $in $out',
+    command = 'cargo -q --color always run -r --bin patch -- $in $out',
     description = 'PATCH $out'
 )
 n.newline()
@@ -366,7 +366,7 @@ n.newline()
 
 n.rule(
     'split',
-    command = 'cargo -q --color always run -r --bin ddd-split -- $in $out',
+    command = 'cargo -q --color always run -r --bin split -- $in $out',
     description = 'SPLIT $out',
 )
 n.newline()

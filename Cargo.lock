@@ -77,34 +77,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "ddd-obj2bin"
-version = "0.0.0"
-dependencies = [
- "anyhow",
- "bpaf",
- "miniz_oxide",
- "object",
-]
-
-[[package]]
-name = "ddd-obj2dol"
-version = "0.0.0"
-dependencies = [
- "anyhow",
- "bpaf",
- "object",
-]
-
-[[package]]
-name = "ddd-patch"
-version = "0.0.0"
-dependencies = [
- "anyhow",
- "bpaf",
- "object",
-]
-
-[[package]]
 name = "ddd-server"
 version = "0.0.0"
 dependencies = [
@@ -121,11 +93,12 @@ dependencies = [
 ]
 
 [[package]]
-name = "ddd-split"
+name = "ddd-tools"
 version = "0.0.0"
 dependencies = [
  "anyhow",
  "bpaf",
+ "miniz_oxide",
  "object",
 ]
 
