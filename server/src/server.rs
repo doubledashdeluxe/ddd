@@ -1,13 +1,11 @@
 use std::iter;
 use std::net::UdpSocket;
 use std::num::NonZero;
-use std::panic;
 use std::result;
-use std::sync::mpsc::{self, SyncSender};
-use std::thread::{self, JoinHandle};
+use std::sync::mpsc;
+use std::thread::{self, Builder};
 
 use anyhow::Result;
-use log::error;
 use noise_protocol::U8Array;
 
 use crate::buffer::Buffer;
@@ -15,7 +13,6 @@ use crate::clients::Clients;
 use crate::crypto::Key;
 use crate::formats::online::{DEFAULT_PORT, FrameRate};
 use crate::listener;
-use crate::message::Message;
 use crate::rooms::Rooms;
 use crate::shard;
 use crate::updater;
@@ -36,59 +33,28 @@ pub fn run(server_k: &Key) -> Result<()> {
     let clients = Clients::new();
     let rooms = Rooms::new();
 
-    let mut handles: Vec<_> = sockets
-        .into_iter()
-        .zip(message_receivers)
-        .map(|(socket, message_receiver)| {
-            let server_k = server_k.clone();
-            let buffer_sender = buffer_sender.clone();
-            let clients = clients.clone();
-            let rooms = rooms.clone();
-            let run =
-                || shard::run(server_k, socket, message_receiver, buffer_sender, clients, rooms);
-            spawn(message_senders.clone(), run)
-        })
-        .collect();
-
-    for frame_rate in [FrameRate::SixtyHz, FrameRate::FiftyHz] {
-        let run = {
-            let message_senders = message_senders.clone();
-            let clients = clients.clone();
-            let rooms = rooms.clone();
-            move || updater::run(&message_senders, &clients, &rooms, frame_rate)
-        };
-        handles.push(spawn(message_senders.clone(), run));
+    for (i, (socket, message_receiver)) in sockets.into_iter().zip(message_receivers).enumerate() {
+        let server_k = server_k.clone();
+        let buffer_sender = buffer_sender.clone();
+        let clients = clients.clone();
+        let rooms = rooms.clone();
+        Builder::new().name(format!("shard/{i}")).spawn(move || {
+            shard::run(&server_k, &socket, &message_receiver, &buffer_sender, &clients, &rooms);
+        })?;
     }
 
-    let run = {
+    for (i, frame_rate) in [FrameRate::SixtyHz, FrameRate::FiftyHz].into_iter().enumerate() {
         let message_senders = message_senders.clone();
-        move || listener::run(&socket, &message_senders, &buffer_receiver)
-    };
-    handles.push(spawn(message_senders, run));
+        let clients = clients.clone();
+        let rooms = rooms.clone();
+        Builder::new()
+            .name(format!("updater/{i}"))
+            .spawn(move || updater::run(&message_senders, &clients, &rooms, frame_rate))?;
+    }
 
-    let results: Vec<_> = handles
-        .into_iter()
-        .map(|handle| match handle.join() {
-            Ok(r) => r,
-            Err(e) => panic::resume_unwind(e),
-        })
-        .collect();
-    results.into_iter().collect()
-}
-
-fn spawn(
-    message_senders: Vec<SyncSender<Message>>,
-    f: impl FnOnce() -> Result<()> + Send + 'static,
-) -> JoinHandle<Result<()>> {
-    thread::spawn(|| {
-        let r = f();
-        if let Err(e) = &r {
-            error!("{e}");
-        }
-        for message_sender in message_senders {
-            let message = Message::Stop;
-            let _ = message_sender.send(message);
-        }
-        r
-    })
+    let handle = Builder::new()
+        .name("listener".to_owned())
+        .spawn(move || listener::run(&socket, &message_senders, &buffer_receiver))?;
+    handle.join().unwrap();
+    Ok(())
 }

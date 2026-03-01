@@ -3,7 +3,6 @@ use std::sync::mpsc::SyncSender;
 use std::thread;
 use std::time::{Duration, Instant};
 
-use anyhow::Result;
 use rand::SeedableRng;
 
 use crate::clients::Clients;
@@ -17,7 +16,7 @@ pub fn run(
     clients: &Clients,
     rooms: &Rooms,
     frame_rate: FrameRate,
-) -> Result<()> {
+) -> ! {
     let mut next_tick = Instant::now();
     let mut client_room_ids = HashMap::new();
     let mut rng = ChaCha20Rng::from_os_rng();
@@ -30,7 +29,7 @@ pub fn run(
                 rooms.update(frame_rate, &client_room_ids);
                 for message_sender in message_senders {
                     let message = Message::Write { frame_rate };
-                    message_sender.send(message)?;
+                    message_sender.send(message).unwrap();
                 }
                 let tick_duration = match frame_rate {
                     FrameRate::SixtyHz => 16_683_333,

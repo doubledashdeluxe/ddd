@@ -5,6 +5,7 @@ use std::sync::mpsc::{Receiver, SyncSender};
 use std::time::Instant;
 
 use anyhow::Result;
+use log::error;
 use noise_protocol::U8Array;
 
 use crate::buffer::Buffer;
@@ -16,13 +17,13 @@ use crate::message::Message;
 use crate::rooms::Rooms;
 
 pub fn run(
-    server_k: Key,
-    socket: UdpSocket,
-    message_receiver: Receiver<Message>,
-    buffer_sender: SyncSender<Buffer>,
-    clients: Clients,
-    rooms: Rooms,
-) -> Result<()> {
+    server_k: &Key,
+    socket: &UdpSocket,
+    message_receiver: &Receiver<Message>,
+    buffer_sender: &SyncSender<Buffer>,
+    clients: &Clients,
+    rooms: &Rooms,
+) -> ! {
     let shard = Shard {
         server_k,
         socket,
@@ -33,39 +34,41 @@ pub fn run(
         clients,
         rooms,
     };
-    shard.run()
+    shard.run();
 }
 
-struct Shard {
-    server_k: Key,
-    socket: UdpSocket,
-    message_receiver: Receiver<Message>,
-    buffer_sender: SyncSender<Buffer>,
+struct Shard<'a> {
+    server_k: &'a Key,
+    socket: &'a UdpSocket,
+    message_receiver: &'a Receiver<Message>,
+    buffer_sender: &'a SyncSender<Buffer>,
     random_state: RandomState,
     connections: HashMap<SocketAddr, (bool, Connection)>,
-    clients: Clients,
-    rooms: Rooms,
+    clients: &'a Clients,
+    rooms: &'a Rooms,
 }
 
-impl Shard {
-    fn run(mut self) -> Result<()> {
+impl Shard<'_> {
+    fn run(mut self) -> ! {
         let mut tick_counter = 0;
         loop {
-            let message = self.message_receiver.recv()?;
+            let message = self.message_receiver.recv().unwrap();
             let now = Instant::now();
             match message {
                 Message::Read { addr, buffer } => {
-                    self.read(now, tick_counter, addr, buffer.as_slice())?;
-                    self.buffer_sender.send(buffer)?;
+                    if let Err(e) = self.read(now, tick_counter, addr, buffer.as_slice()) {
+                        error!("{e}");
+                    }
+                    self.buffer_sender.send(buffer).unwrap();
                 }
                 Message::Write { frame_rate } => {
-                    self.write(now, frame_rate)?;
+                    if let Err(e) = self.write(now, frame_rate) {
+                        error!("{e}");
+                    }
                     tick_counter += 1;
                 }
-                Message::Stop => break,
             }
         }
-        Ok(())
     }
 
     fn read(
@@ -79,7 +82,7 @@ impl Shard {
         match self.connections.entry(addr) {
             Entry::Occupied(mut o) => {
                 let (_, connection) = o.get_mut();
-                if connection.read(now, message, &self.clients).is_err() {
+                if connection.read(now, message, self.clients).is_err() {
                     o.remove();
                 }
             }
@@ -113,9 +116,9 @@ impl Shard {
                 now,
                 frame_rate,
                 &mut message,
-                &self.clients,
+                self.clients,
                 player_count,
-                &self.rooms,
+                self.rooms,
             );
             let Ok(message_len) = message_len else {
                 *retain = false;
