@@ -3,7 +3,7 @@ name: Build DDD
 on: [push, pull_request]
 
 env:
-  llvm-version: 21.1.8
+  llvm-version: 22.1.0
 
 defaults:
   run:
@@ -100,7 +100,7 @@ jobs:
           python-version: '3.11'
       - name: Setup ASan
         if: runner.os == 'Windows'
-        run: echo tools/llvm/lib/clang/21/lib/windows >> $GITHUB_PATH
+        run: echo tools/llvm/lib/clang/22/lib/windows >> $GITHUB_PATH
       - name: Test
         run: |
           python build.py --ci --llvm-dir tools/llvm -- tests
@@ -132,7 +132,7 @@ jobs:
           python-version: '3.11'
       - name: Setup ASan
         if: runner.os == 'Windows'
-        run: echo tools/llvm/lib/clang/21/lib/windows >> $GITHUB_PATH
+        run: echo tools/llvm/lib/clang/22/lib/windows >> $GITHUB_PATH
       - name: Fuzz
         run: |
           python build.py --ci --llvm-dir tools/llvm -- fuzzers

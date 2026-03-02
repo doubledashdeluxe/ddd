@@ -114,10 +114,6 @@ def get_flags(tool, platform, target, format_code_dirs, args):
             '-Wextra',
             '-Wimplicit-fallthrough',
         ]
-        if is_windows():
-            flags += [
-                '-D', '_CRT_SECURE_NO_WARNINGS',
-            ]
         if platform == 'cube':
             flags += [
                 '-D', 'CUBE',
@@ -132,6 +128,11 @@ def get_flags(tool, platform, target, format_code_dirs, args):
             flags += [
                 '-fsanitize=address,fuzzer,undefined',
             ]
+            if is_windows():
+                flags += [
+                    '-D', '_CRT_SECURE_NO_WARNINGS',
+                    '-D', '_DISABLE_STL_ANNOTATION',
+                ]
         if target == 'payload':
             flags += [
                 '-iquote', 'payload',
