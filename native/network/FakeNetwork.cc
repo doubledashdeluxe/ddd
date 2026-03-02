@@ -15,3 +15,7 @@ const char *FakeNetwork::name() const {
 u32 FakeNetwork::address() const {
     return 10 << 24 | 10 << 16 | 10 << 8 | 10 << 0;
 }
+
+Array<u32, 2> FakeNetwork::resolvers() const {
+    return (0);
+}

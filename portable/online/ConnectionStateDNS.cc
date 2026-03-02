@@ -32,7 +32,7 @@ ConnectionState &ConnectionStateDNS::write(ClientStateWriter & /* writer */, u8 
     ok = false;
 
     Address address;
-    if (!m_platform.dns.resolve(m_name.values(), address.address)) {
+    if (!m_platform.dns.resolve(m_platform.network.resolvers(), m_name.values(), address.address)) {
         return *this;
     }
 

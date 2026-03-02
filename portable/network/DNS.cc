@@ -15,7 +15,7 @@ extern "C" {
 #include <string.h>
 }
 
-bool DNS::resolve(const char *name, u32 &address) {
+bool DNS::resolve(const Array<u32, 2> &resolvers, const char *name, u32 &address) {
     if (!strcmp(name, "localhost")) {
         address = 127 << 24 | 0 << 16 | 0 << 8 | 1 << 0;
         return true;
@@ -31,6 +31,11 @@ bool DNS::resolve(const char *name, u32 &address) {
     if (!m_socket.ok()) {
         m_queries.reset();
         m_socket.open();
+    }
+
+    if (resolvers != m_resolvers) {
+        m_queries.reset();
+        m_resolvers = resolvers;
     }
 
     Response response;
@@ -82,10 +87,8 @@ bool DNS::resolve(const char *name, u32 &address) {
 }
 
 DNS::DNS(UDPSocket &socket) : m_socket(socket), m_id(0) {
-    m_resolvers[0].address = 8 << 24 | 8 << 16 | 8 << 8 | 8 << 0; // Google
-    m_resolvers[1].address = 1 << 24 | 1 << 16 | 1 << 8 | 1 << 0; // Cloudflare
     for (u32 i = 0; i < m_resolvers.count(); i++) {
-        m_resolvers[i].port = 53;
+        m_resolvers[i] = 127 << 24 | 0 << 16 | 0 << 8 | 1 << 0;
     }
 }
 
@@ -105,7 +108,7 @@ bool DNS::readResponse(Response &response) {
 
     bool hasValidResolver = false;
     for (u32 i = 0; i < m_resolvers.count(); i++) {
-        if (m_resolvers[i] == resolver) {
+        if (m_resolvers[i] == resolver.address && 53 == resolver.port) {
             hasValidResolver = true;
             break;
         }
@@ -197,7 +200,8 @@ bool DNS::writeQuery(const Query &query) {
     Bytes::WriteBE<u16>(buffer.values(), 0x00c + nameLength + 0x004, 1); // QCLASS
 
     for (u32 i = 0; i < m_resolvers.count(); i++) {
-        m_socket.sendTo(buffer.values(), 0x00c + nameLength + 0x006, m_resolvers[i]);
+        Address resolver = {m_resolvers[i], 53};
+        m_socket.sendTo(buffer.values(), 0x00c + nameLength + 0x006, resolver);
     }
 
     if (m_queries.full()) {

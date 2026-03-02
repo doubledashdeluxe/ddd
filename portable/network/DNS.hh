@@ -2,12 +2,11 @@
 
 #include "portable/Array.hh"
 #include "portable/Ring.hh"
-#include "portable/network/Address.hh"
 #include "portable/network/UDPSocket.hh"
 
 class DNS {
 public:
-    bool resolve(const char *name, u32 &address);
+    bool resolve(const Array<u32, 2> &resolvers, const char *name, u32 &address);
 
 protected:
     DNS(UDPSocket &socket);
@@ -33,7 +32,7 @@ private:
     bool writeQuery(const Query &query);
 
     UDPSocket &m_socket;
-    Array<Address, 2> m_resolvers;
+    Array<u32, 2> m_resolvers;
     u16 m_id;
     Ring<Query, 32> m_queries;
     Ring<Response, 256> m_responses;

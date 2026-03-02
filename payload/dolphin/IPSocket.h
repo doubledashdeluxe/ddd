@@ -29,6 +29,7 @@ enum {
     SO_CONFIG_MAC_ADDRESS = 0x1004,
     SO_CONFIG_LINK_STATE = 0x1005,
     SO_CONFIG_IP_ADDR_TABLE = 0x4003,
+    SO_CONFIG_DNS_SERVER_TABLE = 0xb003,
 };
 
 typedef struct {
@@ -53,6 +54,8 @@ typedef struct {
 } SOPollFD;
 size_assert(SOPollFD, 0x8);
 
+s32 REPLACED(SOGetResolver)(u32 *main, u32 *backup);
+REPLACE s32 SOGetResolver(u32 *main, u32 *backup);
 void REPLACED(SOInit)(void);
 REPLACE void SOInit(void);
 s32 REPLACED(SOStartup)(SOConfig *config);

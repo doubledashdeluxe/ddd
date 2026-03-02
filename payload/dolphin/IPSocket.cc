@@ -114,6 +114,26 @@ static void *Run(void * /* param */) {
     }
 }
 
+s32 SOGetResolver(u32 *main, u32 *backup) {
+    if (!s_isVirtual) {
+        return REPLACED(SOGetResolver)(main, backup);
+    }
+
+    u32 table[2];
+    s32 optlen = sizeof(table);
+    s32 result = SOGetInterfaceOpt(SO_CONFIG_DNS_SERVER_TABLE, table, &optlen);
+    if (result < 0) {
+        return result;
+    }
+    if (main) {
+        *main = table[0];
+    }
+    if (backup) {
+        *backup = table[1];
+    }
+    return result;
+}
+
 void SOInit() {
     REPLACED(SOInit)();
     s_isVirtual = false;

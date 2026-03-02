@@ -207,6 +207,7 @@
 800cd6c4 LinkCheckHandler
 800cd764 IFInit
 800cd974 IFMute
+800d76cc SOGetResolver
 800d79e8 SOInit
 800d7a68 SOStartup
 800d7f64 SOCleanup

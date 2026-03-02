@@ -12,10 +12,11 @@ TEST_CASE("DNS") {
     servers[{"ddd", "gg"}] = expectedAddress;
     DNSFakeUDPSocket socket(servers);
     FakeDNS dns(socket);
+    Array<u32, 2> resolvers(0);
     u32 actualAddress;
-    CHECK_FALSE(dns.resolve("ddd.gg", actualAddress));
-    CHECK(dns.resolve("ddd.gg", actualAddress));
+    CHECK_FALSE(dns.resolve(resolvers, "ddd.gg", actualAddress));
+    CHECK(dns.resolve(resolvers, "ddd.gg", actualAddress));
     CHECK(actualAddress == expectedAddress);
-    CHECK_FALSE(dns.resolve("doubledashde.luxe", actualAddress));
-    CHECK_FALSE(dns.resolve("doubledashde.luxe", actualAddress));
+    CHECK_FALSE(dns.resolve(resolvers, "doubledashde.luxe", actualAddress));
+    CHECK_FALSE(dns.resolve(resolvers, "doubledashde.luxe", actualAddress));
 }
