@@ -201,8 +201,8 @@ pub fn client_state_race() -> impl ComplexDataType {
 
 pub fn client_race_kart() -> impl ComplexDataType {
     let input: SimpleDataType<u16> = SimpleDataType::new();
-    let inputs = ArrayType::new(input, MIN_KART_PLAYER_COUNT, MAX_KART_PLAYER_COUNT);
-    let inputs = ArrayType::new(inputs, 0, MAX_KART_INPUT_COUNT);
+    let inputs = ArrayType::new(input, 0, MAX_KART_INPUT_COUNT);
+    let inputs = ArrayType::new(inputs, MIN_KART_PLAYER_COUNT, MAX_KART_PLAYER_COUNT);
     let pos_x: SimpleDataType<i16> = SimpleDataType::new();
     let pos_y: SimpleDataType<i16> = SimpleDataType::new();
     let pos_z: SimpleDataType<i16> = SimpleDataType::new();

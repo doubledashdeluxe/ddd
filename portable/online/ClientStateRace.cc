@@ -261,15 +261,15 @@ u8 ClientStateRace::getItemCountsElement(u32 i0) {
 }
 
 u32 ClientStateRace::getInputsCount() {
+    return m_writeInfo.karts[m_kartIndex].inputCount;
+}
+
+u32 ClientStateRace::getInputsCount(u32 /* i0 */) {
     return m_writeInfo.karts[m_kartIndex].inputs.count();
 }
 
-u32 ClientStateRace::getInputsCount(u32 i0) {
-    return m_writeInfo.karts[m_kartIndex].inputs[i0].inputCount;
-}
-
 u16 ClientStateRace::getInputsElement(u32 i0, u32 i1) {
-    return m_writeInfo.karts[m_kartIndex].inputs[i0].inputs[i1];
+    return m_writeInfo.karts[m_kartIndex].inputs[i1][i0];
 }
 
 s16 ClientStateRace::getPosX() {

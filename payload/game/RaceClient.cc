@@ -45,16 +45,14 @@ void RaceClient::updateInputs() {
     const OnlineInfo &onlineInfo = OnlineInfo::Instance();
     u32 frame = MinClientFrame + RaceMgr::Instance()->frame();
     for (u32 i = 0; i < m_writeInfo.kartCount; i++) {
-        u32 kartIndex = onlineInfo.m_localKartIndices[i];
         WriteInfo::Kart &kart = m_writeInfo.karts[i];
         while (kart.inputs.count() >= frame - m_clientFrame) {
             assert(kart.inputs.popFront());
         }
         assert(kart.inputs.pushBack());
         WriteInfo::Inputs *inputs = kart.inputs.back();
-        inputs->inputCount = onlineInfo.m_karts[kartIndex].playerCount;
-        for (u32 j = 0; j < inputs->inputCount; j++) {
-            PadMgr::GetPadData(onlineInfo.m_padIndices[i][j], false, &inputs->inputs[j]);
+        for (u32 j = 0; j < kart.inputCount; j++) {
+            PadMgr::GetPadData(onlineInfo.m_padIndices[i][j], false, &(*inputs)[j]);
         }
     }
 }
@@ -183,9 +181,12 @@ RaceClient::RaceClient() : m_ok(true), m_frame(0), m_clientFrame(MinClientFrame 
         m_kartDiffs[i].itemFrames.fill(MinClientFrame);
         m_kartDiffs[i].itemIDs.fill(ItemID::None);
     }
-    m_writeInfo.kartCount = OnlineInfo::Instance().m_localKartCount;
+    const OnlineInfo &onlineInfo = OnlineInfo::Instance();
+    m_writeInfo.kartCount = onlineInfo.m_localKartCount;
     for (u32 i = 0; i < m_writeInfo.kartCount; i++) {
+        u32 kartIndex = onlineInfo.m_localKartIndices[i];
         WriteInfo::Kart &kart = m_writeInfo.karts[i];
+        kart.inputCount = onlineInfo.m_karts[kartIndex].playerCount;
         kart.itemFrames.fill(MinClientFrame);
     }
 }

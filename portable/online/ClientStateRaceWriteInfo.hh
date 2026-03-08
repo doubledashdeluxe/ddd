@@ -6,12 +6,10 @@
 #include <formats/Online.hh>
 
 struct ClientStateRaceWriteInfo {
-    struct Inputs {
-        u8 inputCount;
-        Array<u16, MaxKartPlayerCount> inputs;
-    };
+    typedef Array<u16, MaxKartPlayerCount> Inputs;
 
     struct Kart {
+        u8 inputCount;
         Ring<Inputs, MaxKartInputCount> inputs;
         s16 posX;
         s16 posY;

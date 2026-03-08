@@ -548,6 +548,7 @@ impl Room {
                         state,
                         server_karts,
                         *host_course_index,
+                        &self.karts,
                         &mut self.rng,
                     );
                 }
@@ -583,9 +584,12 @@ impl Room {
                         return Ok(());
                     }
                     let min_input_count = client_frame - kart_frame;
-                    anyhow::ensure!(client_kart.inputs.len() >= min_input_count as usize);
-                    for inputs in &client_kart.inputs {
-                        anyhow::ensure!(inputs.len() == self.karts[kart_index].players().len());
+                    let client_inputs = &client_kart.inputs;
+                    let inputs = &inputs[kart_index];
+                    anyhow::ensure!(client_inputs.len() == inputs.len());
+                    anyhow::ensure!(client_inputs[0].len() >= min_input_count as usize);
+                    for client_inputs in client_inputs.windows(2) {
+                        anyhow::ensure!(client_inputs[0].len() == client_inputs[1].len());
                     }
                     for (i, item_frame) in client_kart.item_frames.iter().enumerate() {
                         let kart_item_frame =
@@ -599,10 +603,13 @@ impl Room {
                     anyhow::ensure!(*item_count <= 64);
                 }
                 for (mut client_kart, kart_index) in client_karts.into_iter().zip(kart_indices()) {
+                    let client_inputs = client_kart.inputs;
                     let inputs = &mut inputs[kart_index];
-                    let input_count = (client_frame - MIN_CLIENT_FRAME) as usize - inputs.len();
-                    let input_offset = client_kart.inputs.len() - input_count;
-                    inputs.extend(client_kart.inputs[input_offset..].iter().cloned());
+                    for (client_inputs, inputs) in client_inputs.iter().zip(inputs.iter_mut()) {
+                        let input_count = (client_frame - MIN_CLIENT_FRAME) as usize - inputs.len();
+                        let input_offset = client_inputs.len() - input_count;
+                        inputs.extend(client_inputs[input_offset..].iter());
+                    }
                     let kart = &karts[kart_index];
                     let mut item_ids = kart.as_ref().map_or_else(
                         || heapless::Vec::from([ItemId::None; 2]),
@@ -647,8 +654,10 @@ impl Room {
                             *item_frame = kart_item_frame;
                         }
                     }
+                    let inputs =
+                        client_inputs.iter().map(|inputs| *inputs.last().unwrap()).collect();
                     karts[kart_index] = Some(ServerRaceKart {
-                        inputs: client_kart.inputs.last().unwrap().clone(),
+                        inputs,
                         kart_frame: client_frame,
                         pos_x: client_kart.pos_x,
                         pos_y: client_kart.pos_y,
@@ -752,6 +761,7 @@ impl Room {
                     state,
                     karts,
                     *host_course_index,
+                    &self.karts,
                     &mut self.rng,
                 );
             }
@@ -811,7 +821,7 @@ enum State {
     Race {
         team_state: Option<ServerTeamStateMain>,
         poll_state: ServerPollStateReady,
-        inputs: heapless::Vec<Vec<Inputs>, MAX_ROOM_KART_COUNT>,
+        inputs: heapless::Vec<Inputs, MAX_ROOM_KART_COUNT>,
         karts: heapless::Vec<Option<ServerRaceKart>, MAX_ROOM_KART_COUNT>,
         states: Vec<ServerRaceStateMain>,
     },
@@ -844,12 +854,20 @@ impl State {
     fn new_race(
         team_state: Option<ServerTeamStateMain>,
         state: &ServerPollStatePending,
-        karts: &mut LinearMap<u8, ServerPollKart, MAX_ROOM_KART_COUNT>,
+        server_karts: &mut LinearMap<u8, ServerPollKart, MAX_ROOM_KART_COUNT>,
         host_course_index: Option<u8>,
+        karts: &heapless::Vec<Kart, MAX_ROOM_KART_COUNT>,
         rng: &mut impl Rng,
     ) -> Self {
-        let mut karts: heapless::Vec<_, _> =
-            state.kart_indices.iter().map(|kart_index| karts.remove(kart_index).unwrap()).collect();
+        let inputs = karts
+            .iter()
+            .map(|kart| iter::repeat_n(vec![], kart.players().len()).collect())
+            .collect();
+        let mut karts: heapless::Vec<_, _> = state
+            .kart_indices
+            .iter()
+            .map(|kart_index| server_karts.remove(kart_index).unwrap())
+            .collect();
         let kart_count = karts.len();
         let selected_kart_index = rng.random_range(..kart_count as u8);
         if let Some(host_course_index) = host_course_index {
@@ -858,11 +876,11 @@ impl State {
         Self::Race {
             team_state,
             poll_state: ServerPollStateReady { karts, selected_kart_index },
-            inputs: iter::repeat_n(vec![], kart_count).collect(),
+            inputs,
             karts: iter::repeat_n(None, kart_count).collect(),
             states: vec![],
         }
     }
 }
 
-type Inputs = heapless::Vec<u16, MAX_KART_PLAYER_COUNT>;
+type Inputs = heapless::Vec<Vec<u16>, MAX_KART_PLAYER_COUNT>;
