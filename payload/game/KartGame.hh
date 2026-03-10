@@ -1,8 +1,7 @@
 #pragma once
 
-#include "game/KartBody.hh"
-
 #include <payload/Replace.hh>
+#include <portable/Types.hh>
 
 class KartGame {
 public:
@@ -14,7 +13,13 @@ public:
     REPLACE void doChange();
 
 private:
-    KartBody *m_body;
-    u8 _04[0x44 - 0x04];
+    class KartBody *m_body;
+    u8 _04[0x0b - 0x04];
+
+public:
+    u8 m_changeTimer;
+
+private:
+    u8 _0c[0x44 - 0x0c];
 };
 size_assert(KartGame, 0x44);

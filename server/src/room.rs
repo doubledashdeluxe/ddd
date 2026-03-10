@@ -657,8 +657,9 @@ impl Room {
                     let inputs =
                         client_inputs.iter().map(|inputs| *inputs.last().unwrap()).collect();
                     karts[kart_index] = Some(ServerRaceKart {
-                        inputs,
                         kart_frame: client_frame,
+                        inputs,
+                        driver: client_kart.driver,
                         pos_x: client_kart.pos_x,
                         pos_y: client_kart.pos_y,
                         pos_z: client_kart.pos_z,

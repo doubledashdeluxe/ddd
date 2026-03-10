@@ -151,6 +151,14 @@ void ClientStateRace::setInputsElement(u32 i0, u16 inputsElement) {
     m_readInfo.info.getOrEmplace().karts[m_kartIndex].inputs[i0] = inputsElement;
 }
 
+bool ClientStateRace::isDriverValid(u8 /* driver */) {
+    return true;
+}
+
+void ClientStateRace::setDriver(u8 driver) {
+    m_readInfo.info.getOrEmplace().karts[m_kartIndex].driver = driver;
+}
+
 bool ClientStateRace::isPosXValid(s16 /* posX */) {
     return true;
 }
@@ -270,6 +278,10 @@ u32 ClientStateRace::getInputsCount(u32 /* i0 */) {
 
 u16 ClientStateRace::getInputsElement(u32 i0, u32 i1) {
     return m_writeInfo.karts[m_kartIndex].inputs[i1][i0];
+}
+
+u8 ClientStateRace::getDriver() {
+    return m_writeInfo.karts[m_kartIndex].driver;
 }
 
 s16 ClientStateRace::getPosX() {

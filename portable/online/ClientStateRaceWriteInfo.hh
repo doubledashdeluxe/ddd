@@ -11,6 +11,7 @@ struct ClientStateRaceWriteInfo {
     struct Kart {
         u8 inputCount;
         Ring<Inputs, MaxKartInputCount> inputs;
+        u8 driver;
         s16 posX;
         s16 posY;
         s16 posZ;

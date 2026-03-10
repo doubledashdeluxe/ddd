@@ -58,6 +58,8 @@ private:
     void setInputsCount(u32 inputsCount) override;
     bool isInputsElementValid(u32 i0, u16 inputsElement) override;
     void setInputsElement(u32 i0, u16 inputsElement) override;
+    bool isDriverValid(u8 driver) override;
+    void setDriver(u8 driver) override;
     bool isPosXValid(s16 posX) override;
     void setPosX(s16 posX) override;
     bool isPosYValid(s16 posY) override;
@@ -92,6 +94,7 @@ private:
     u32 getInputsCount() override;
     u32 getInputsCount(u32 i0) override;
     u16 getInputsElement(u32 i0, u32 i1) override;
+    u8 getDriver() override;
     s16 getPosX() override;
     s16 getPosY() override;
     s16 getPosZ() override;

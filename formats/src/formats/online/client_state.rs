@@ -203,6 +203,7 @@ pub fn client_race_kart() -> impl ComplexDataType {
     let input: SimpleDataType<u16> = SimpleDataType::new();
     let inputs = ArrayType::new(input, 0, MAX_KART_INPUT_COUNT);
     let inputs = ArrayType::new(inputs, MIN_KART_PLAYER_COUNT, MAX_KART_PLAYER_COUNT);
+    let driver: SimpleDataType<u8> = SimpleDataType::new();
     let pos_x: SimpleDataType<i16> = SimpleDataType::new();
     let pos_y: SimpleDataType<i16> = SimpleDataType::new();
     let pos_z: SimpleDataType<i16> = SimpleDataType::new();
@@ -215,6 +216,7 @@ pub fn client_race_kart() -> impl ComplexDataType {
     let rank: SimpleDataType<u8> = SimpleDataType::new();
     StructType::new("ClientRaceKart")
         .with_field("inputs", inputs)
+        .with_field("driver", driver)
         .with_field("pos_x", pos_x)
         .with_field("pos_y", pos_y)
         .with_field("pos_z", pos_z)

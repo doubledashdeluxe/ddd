@@ -122,6 +122,7 @@ void RaceClient::write() {
         u32 kartIndex = onlineInfo.m_localKartIndices[i];
         WriteInfo::Kart &kart = m_writeInfo.karts[i];
         const KartBody *kartBody = kartCtrl->getKartBody(kartIndex);
+        kart.driver = kartBody->getDriver();
         f32 min = -32768.0f, max = 32768.0f;
         Vec3f pos = kartBody->m_pos;
         f32 posScale = 1.0f / 4.0f; // Between -131072 and 131072
@@ -175,6 +176,7 @@ RaceClient *RaceClient::Instance() {
 RaceClient::RaceClient() : m_ok(true), m_frame(0), m_clientFrame(MinClientFrame - 1), m_drift(0) {
     for (u32 i = 0; i < m_kartDiffs.count(); i++) {
         m_kartDiffs[i].inputs.fill(0);
+        m_kartDiffs[i].driver = 0;
         m_kartDiffs[i].pos = Vec3f(0.0f, 0.0f, 0.0f);
         m_kartDiffs[i].angle = 0.0f;
         m_kartDiffs[i].vel = Vec3f(0.0f, 0.0f, 0.0f);
@@ -258,6 +260,10 @@ bool RaceClient::clientStateRace(const ClientStateRaceReadInfo &readInfo) {
             continue;
         }
         kartDiff.inputs = kart.inputs;
+        for (u32 k = 0; k < kart.inputCount; k++) {
+            kartDiff.inputs[k] &= ~(1 << 7 | 1 << 6); // ~(START | Z)
+        }
+        kartDiff.driver = !!kart.driver;
         TVec3<f32> &posDiff = kartDiff.pos;
         f32 posScale = 4.0f;
         posDiff.x = Convert(kart.posX, posScale);
@@ -300,11 +306,15 @@ bool RaceClient::clientStateRace(const ClientStateRaceReadInfo &readInfo) {
             KartGamePad *pad = kartCtrl->getKartGamePad(i, j);
             pad->expand(kartDiff.inputs[j]);
         }
+        KartBody *kartBody = kartCtrl->getKartBody(i);
+        if (kartBody->getDriver() != kartDiff.driver) {
+            KartGame *kartGame = kartBody->getGame();
+            kartGame->m_changeTimer = Max<u8>(kartGame->m_changeTimer, 2);
+        }
         // When oscillations happen, interpolation can help reduce their amplitude over time, yet
         // we use a high factor to keep things responsive. This also makes movements a bit more
         // natural by smoothing them a bit.
         f32 t = 0.8f;
-        KartBody *kartBody = kartCtrl->getKartBody(i);
         TVec3<f32> posDiff = t * kartDiff.pos;
         kartBody->m_pos += posDiff;
         kartBody->m_mtx[0][3] += posDiff.x;

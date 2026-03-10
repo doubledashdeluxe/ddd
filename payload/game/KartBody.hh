@@ -1,17 +1,22 @@
 #pragma once
 
+#include "game/KartGame.hh"
+
 #include <jsystem/TVec3.hh>
 
 class KartBody {
 public:
     KartBody();
 
+    KartGame *getGame() const;
     u32 getGameStatus() const;
     u8 getDriver() const;
     u8 getIndex() const;
 
 private:
-    u8 _000[0x110 - 0x000];
+    u8 _000[0x0f0 - 0x000];
+    KartGame *m_game;
+    u8 _0f4[0x110 - 0x0f4];
 
 public:
     Mtx34 m_mtx;

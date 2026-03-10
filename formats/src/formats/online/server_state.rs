@@ -212,6 +212,7 @@ pub fn server_race_kart() -> impl ComplexDataType {
     let kart_frame: SimpleDataType<u16> = SimpleDataType::new();
     let input: SimpleDataType<u16> = SimpleDataType::new();
     let inputs = ArrayType::new(input, MIN_KART_PLAYER_COUNT, MAX_KART_PLAYER_COUNT);
+    let driver: SimpleDataType<u8> = SimpleDataType::new();
     let pos_x: SimpleDataType<i16> = SimpleDataType::new();
     let pos_y: SimpleDataType<i16> = SimpleDataType::new();
     let pos_z: SimpleDataType<i16> = SimpleDataType::new();
@@ -225,6 +226,7 @@ pub fn server_race_kart() -> impl ComplexDataType {
     StructType::new("ServerRaceKart")
         .with_field("kart_frame", kart_frame)
         .with_field("inputs", inputs)
+        .with_field("driver", driver)
         .with_field("pos_x", pos_x)
         .with_field("pos_y", pos_y)
         .with_field("pos_z", pos_z)

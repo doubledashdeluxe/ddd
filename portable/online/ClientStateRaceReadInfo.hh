@@ -10,6 +10,7 @@ struct ClientStateRaceReadInfo {
         u16 frame;
         u8 inputCount;
         Array<u16, MaxKartPlayerCount> inputs;
+        u8 driver;
         s16 posX;
         s16 posY;
         s16 posZ;

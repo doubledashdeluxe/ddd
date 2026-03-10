@@ -34,6 +34,7 @@ private:
 
     struct KartDiff {
         Array<u16, MaxKartPlayerCount> inputs;
+        u8 driver;
         TVec3<f32> pos;
         f32 angle;
         Vec3f vel;

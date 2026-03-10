@@ -1,5 +1,9 @@
 #include "KartBody.hh"
 
+KartGame *KartBody::getGame() const {
+    return m_game;
+}
+
 u32 KartBody::getGameStatus() const {
     return m_gameStatus;
 }
