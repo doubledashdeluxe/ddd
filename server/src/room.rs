@@ -588,8 +588,8 @@ impl Room {
                     let inputs = &inputs[kart_index];
                     anyhow::ensure!(client_inputs.len() == inputs.len());
                     anyhow::ensure!(client_inputs[0].len() >= min_input_count as usize);
-                    for client_inputs in client_inputs.windows(2) {
-                        anyhow::ensure!(client_inputs[0].len() == client_inputs[1].len());
+                    for [ci0, ci1] in client_inputs.array_windows() {
+                        anyhow::ensure!(ci0.len() == ci1.len());
                     }
                     for (i, item_frame) in client_kart.item_frames.iter().enumerate() {
                         let kart_item_frame =
@@ -713,7 +713,7 @@ impl Room {
                     }
                     retain
                 });
-                if self.karts.windows(2).any(|karts| karts[0].client_pk() != karts[1].client_pk()) {
+                if self.karts.array_windows().any(|[k0, k1]| k0.client_pk() != k1.client_pk()) {
                     if self.has_teams() {
                         let deadline = Instant::now();
                         self.state = State::new_team(self.karts.len(), deadline);
