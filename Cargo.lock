@@ -81,6 +81,7 @@ name = "ddd-server"
 version = "0.0.0"
 dependencies = [
  "anyhow",
+ "bpaf",
  "colored",
  "ddd-formats",
  "heapless",

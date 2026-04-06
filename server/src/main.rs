@@ -3,6 +3,7 @@ use std::fs::File;
 use std::io::{Read, Write};
 
 use anyhow::Result;
+use bpaf::{OptionParser, Parser};
 use log::info;
 use noise_protocol::{DH, U8Array};
 
@@ -36,6 +37,8 @@ fn main() -> Result<()> {
     let version = version::VERSION;
     info!("Double Dash Deluxe Server [{version}]");
 
+    let options = options().run();
+
     let server_k = if let Ok(mut file) = File::open("k.bin") {
         let mut server_k = <X25519 as DH>::Key::new();
         anyhow::ensure!(file.metadata()?.len() == server_k.len() as u64);
@@ -57,5 +60,15 @@ fn main() -> Result<()> {
     let server_pk = server_pk?;
     info!("Server public key: {server_pk}");
 
-    server::run(&server_k)
+    server::run(options.net_sim, &server_k)
+}
+
+fn options() -> OptionParser<Options> {
+    let net_sim = bpaf::short('n').long("net-sim").switch();
+
+    bpaf::construct!(Options { net_sim }).to_options()
+}
+
+struct Options {
+    net_sim: bool,
 }

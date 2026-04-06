@@ -4,6 +4,6 @@ use crate::buffer::Buffer;
 use crate::formats::online::FrameRate;
 
 pub enum Message {
-    Read { addr: SocketAddr, buffer: Buffer },
+    Read { buffer: Buffer, addr: SocketAddr },
     Write { frame_rate: FrameRate },
 }

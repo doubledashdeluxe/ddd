@@ -26,7 +26,7 @@ pub fn run(
         };
         buffer.set_len(len);
         let index = random_state.hash_one(addr) as usize % message_senders.len();
-        let message = Message::Read { addr, buffer };
+        let message = Message::Read { buffer, addr };
         message_senders[index].send(message).unwrap();
     }
 }
