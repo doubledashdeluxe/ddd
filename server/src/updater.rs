@@ -3,8 +3,6 @@ use std::sync::mpsc::SyncSender;
 use std::thread;
 use std::time::{Duration, Instant};
 
-use rand::SeedableRng;
-
 use crate::clients::Clients;
 use crate::crypto::ChaCha20Rng;
 use crate::formats::online::FrameRate;
@@ -19,7 +17,7 @@ pub fn run(
 ) -> ! {
     let mut next_tick = Instant::now();
     let mut client_room_ids = HashMap::new();
-    let mut rng = ChaCha20Rng::from_os_rng();
+    let mut rng: ChaCha20Rng = rand::make_rng();
     loop {
         let now = Instant::now();
         match next_tick.checked_duration_since(now) {

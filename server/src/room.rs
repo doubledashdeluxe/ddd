@@ -9,7 +9,7 @@ use anyhow::Result;
 use heapless::linear_map::{self, LinearMap};
 use log::debug;
 use rand::seq::SliceRandom;
-use rand::{Rng, SeedableRng};
+use rand::{Rng, RngExt, SeedableRng};
 
 use crate::crypto::{ChaCha20Rng, PublicKey};
 use crate::formats::online::*;

@@ -7,7 +7,7 @@ use std::time::{Duration, Instant};
 
 use log::error;
 use noise_protocol::U8Array;
-use rand::{Rng, SeedableRng};
+use rand::RngExt;
 
 use crate::buffer::Buffer;
 use crate::clients::Clients;
@@ -34,7 +34,7 @@ pub fn run(
         buffers: vec![Buffer::new(); 5000],
         events: BTreeMap::new(),
         event_index: 0,
-        rng: ChaCha20Rng::from_os_rng(),
+        rng: rand::make_rng(),
     };
     let shard = Shard {
         server_k,

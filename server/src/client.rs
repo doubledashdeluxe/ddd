@@ -4,7 +4,7 @@ use std::time::{Duration, Instant};
 
 use anyhow::{Result, anyhow};
 use log::debug;
-use rand::Rng;
+use rand::{Rng, RngExt};
 
 use crate::crypto::PublicKey;
 use crate::formats::online::*;

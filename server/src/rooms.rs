@@ -6,7 +6,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 
 use anyhow::{Context, Result};
 use heapless::Vec;
-use rand::Rng;
+use rand::{Rng, RngExt};
 use scc::hash_map::{Entry, HashMap, OccupiedEntry, VacantEntry};
 use scc::{HashSet, Queue};
 

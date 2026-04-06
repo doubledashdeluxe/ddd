@@ -1,6 +1,6 @@
 use std::array;
 
-use rand::Rng;
+use rand::{Rng, RngExt};
 
 use crate::formats::online::{CharacterId, ItemId, ModeIndex, RoomOptionItemMode};
 use crate::item_weights::*;

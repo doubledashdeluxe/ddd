@@ -4,8 +4,8 @@
 
 use std::array;
 
-use rand::Rng;
 use rand::distr::{Distribution, StandardUniform};
+use rand::{Rng, RngExt};
 
 use crate::weight::Weight;
 
