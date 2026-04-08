@@ -290,7 +290,7 @@ impl Room {
             State::Team { .. } => None,
             State::Poll { .. } => None,
             State::Race { states, .. } => {
-                let mut state = states.get(frame as usize)?.clone();
+                let mut state = states.get(frame as usize).or_else(|| states.last())?.clone();
                 state.frame = states.len() as u16 - 1;
                 let mut j = 0;
                 for (i, kart) in self.karts.iter().enumerate() {
