@@ -78,7 +78,6 @@ fn main() -> Result<()> {
 fn options() -> OptionParser<Options> {
     let input = bpaf::positional("input");
     let output = bpaf::positional("output");
-
     bpaf::construct!(Options { input, output }).to_options()
 }
 

@@ -13,11 +13,12 @@ use crate::clients::Clients;
 use crate::crypto::Key;
 use crate::formats::online::{DEFAULT_PORT, FrameRate};
 use crate::listener;
+use crate::options::NetSimOptions;
 use crate::rooms::Rooms;
 use crate::shard;
 use crate::updater;
 
-pub fn run(net_sim: bool, server_k: &Key) -> Result<()> {
+pub fn run(net_sim_options: NetSimOptions, server_k: &Key) -> Result<()> {
     let shard_count = thread::available_parallelism().map_or(1, NonZero::get);
     let socket = UdpSocket::bind(format!("0.0.0.0:{DEFAULT_PORT}"))?;
     let sockets: result::Result<_, _> =
@@ -40,7 +41,7 @@ pub fn run(net_sim: bool, server_k: &Key) -> Result<()> {
         let rooms = rooms.clone();
         Builder::new().name(format!("shard/{i}")).spawn(move || {
             shard::run(
-                net_sim,
+                net_sim_options,
                 &server_k,
                 &socket,
                 &message_receiver,

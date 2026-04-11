@@ -3,7 +3,6 @@ use std::fs::File;
 use std::io::{Read, Write};
 
 use anyhow::Result;
-use bpaf::{OptionParser, Parser};
 use log::info;
 use noise_protocol::{DH, U8Array};
 
@@ -23,6 +22,7 @@ mod listener;
 mod logger;
 mod message;
 mod mmr;
+mod options;
 mod pack;
 mod player;
 mod room;
@@ -37,7 +37,10 @@ fn main() -> Result<()> {
     let version = version::VERSION;
     info!("Double Dash Deluxe Server [{version}]");
 
-    let options = options().run();
+    let options = options::options().run();
+    anyhow::ensure!((0.0..=1.0).contains(&options.net_sim.drops));
+    anyhow::ensure!(options.net_sim.latency <= 1000);
+    anyhow::ensure!(options.net_sim.jitter <= 1000);
 
     let server_k = if let Ok(mut file) = File::open("k.bin") {
         let mut server_k = <X25519 as DH>::Key::new();
@@ -61,14 +64,4 @@ fn main() -> Result<()> {
     info!("Server public key: {server_pk}");
 
     server::run(options.net_sim, &server_k)
-}
-
-fn options() -> OptionParser<Options> {
-    let net_sim = bpaf::short('n').long("net-sim").switch();
-
-    bpaf::construct!(Options { net_sim }).to_options()
-}
-
-struct Options {
-    net_sim: bool,
 }

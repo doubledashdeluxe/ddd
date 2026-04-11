@@ -15,10 +15,11 @@ use crate::connection::Connection;
 use crate::crypto::{ChaCha20Rng, Key};
 use crate::formats::online::FrameRate;
 use crate::message::Message;
+use crate::options::NetSimOptions;
 use crate::rooms::Rooms;
 
 pub fn run(
-    net_sim: bool,
+    net_sim_options: NetSimOptions,
     server_k: &Key,
     socket: &UdpSocket,
     message_receiver: &Receiver<Message>,
@@ -27,7 +28,9 @@ pub fn run(
     rooms: &Rooms,
 ) -> ! {
     let link = Link {
-        net_sim,
+        drops: 1.0 - (1.0 - net_sim_options.drops).sqrt(),
+        latency: net_sim_options.latency / 2,
+        jitter: net_sim_options.jitter / 2,
         socket,
         message_receiver,
         buffer_sender,
@@ -132,7 +135,9 @@ impl Shard<'_> {
 }
 
 struct Link<'a> {
-    net_sim: bool,
+    drops: f64,
+    latency: u64,
+    jitter: u64,
     socket: &'a UdpSocket,
     message_receiver: &'a Receiver<Message>,
     buffer_sender: &'a SyncSender<Buffer>,
@@ -166,12 +171,20 @@ impl Link<'_> {
             message => message.unwrap(),
         };
         match message {
-            Message::Read { buffer, addr } if self.net_sim => {
-                let event = Event::Read { buffer, addr };
-                self.insert_event(now, event);
+            Message::Read { buffer, .. } if self.dropped() => {
+                self.send(buffer);
                 None
             }
-            _ => Some(message),
+            Message::Read { buffer, addr } => {
+                if let Some(event_key) = self.event_key(now) {
+                    let event = Event::Read { buffer, addr };
+                    self.events.insert(event_key, event);
+                    None
+                } else {
+                    Some(Message::Read { buffer, addr })
+                }
+            }
+            Message::Write { .. } => Some(message),
         }
     }
 
@@ -180,32 +193,34 @@ impl Link<'_> {
     }
 
     fn send_to(&mut self, now: Instant, buf: &[u8], addr: SocketAddr) {
-        if self.net_sim {
+        if self.dropped() {
+            return;
+        }
+        if let Some(event_key) = self.event_key(now) {
             if let Some(mut buffer) = self.buffers.pop() {
                 buffer.copy_from(buf);
                 let event = Event::Write { buffer, addr };
-                self.insert_event(now, event);
+                self.events.insert(event_key, event);
             }
         } else if let Err(e) = self.socket.send_to(buf, addr) {
             error!("{e}");
         }
     }
 
-    fn insert_event(&mut self, now: Instant, event: Event) {
-        if self.rng.random_bool(0.2) {
-            match event {
-                Event::Read { buffer, .. } => self.send(buffer),
-                Event::Write { buffer, .. } => self.buffers.push(buffer),
-            }
-        } else {
-            let delay = 50;
-            let jitter = 15;
-            let delay = delay - jitter + self.rng.random_range(..jitter * 2u64);
-            let instant = now + Duration::from_millis(delay);
-            let index = self.event_index;
-            self.events.insert((instant, index), event);
-            self.event_index += 1;
-        }
+    fn dropped(&mut self) -> bool {
+        self.rng.random_bool(self.drops)
+    }
+
+    fn event_key(&mut self, now: Instant) -> Option<(Instant, usize)> {
+        let latency = self
+            .latency
+            .checked_add(self.rng.random_range(..=self.jitter * 2))?
+            .checked_sub(self.jitter)
+            .filter(|latency| *latency > 0)?;
+        let instant = now + Duration::from_millis(latency);
+        let index = self.event_index;
+        self.event_index += 1;
+        Some((instant, index))
     }
 }
 
