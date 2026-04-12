@@ -342,7 +342,11 @@ bool RaceClient::clientStateRace(const ClientStateRaceReadInfo &readInfo) {
         TVec3<f32> velDiff = t * kartDiff.vel;
         Vec3f &vel = kartBody->m_vel;
         vel += velDiff;
-        kartBody->m_speed = sqrt(vel.x * vel.x + vel.y * vel.y + vel.z * vel.z);
+        f32 speedScale = kartBody->m_speedScale;
+        kartBody->m_xzSpeed = speedScale * sqrt(vel.x * vel.x + vel.z * vel.z);
+        kartBody->m_xyzSpeed = speedScale * sqrt(vel.x * vel.x + vel.y * vel.y + vel.z * vel.z);
+        kartBody->m_bodySpeed = kartBody->m_xyzSpeed * 2.16f;
+        kartBody->m_speed = kartBody->m_bodySpeed;
         kartDiff.vel -= velDiff;
         // Corrections should only be applied once even if a diff is reported for multiple frames.
         Ring<KartState, 30> &kartStates = m_kartStates[i];

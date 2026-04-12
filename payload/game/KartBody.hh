@@ -41,7 +41,26 @@ public:
     f32 m_speed;
 
 private:
-    u8 _3f0[0x578 - 0x3f0];
+    u8 _3f0[0x444 - 0x3f0];
+
+public:
+    f32 m_xzSpeed;
+    f32 m_xyzSpeed;
+
+private:
+    u8 _44c[0x454 - 0x44c];
+
+public:
+    f32 m_bodySpeed;
+
+private:
+    u8 _458[0x470 - 0x458];
+
+public:
+    f32 m_speedScale;
+
+private:
+    u8 _474[0x578 - 0x474];
     u32 m_gameStatus;
     u8 _57c[0x5b2 - 0x57c];
     u8 m_driver;
