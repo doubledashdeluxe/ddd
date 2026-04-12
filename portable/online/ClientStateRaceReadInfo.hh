@@ -16,7 +16,6 @@ struct ClientStateRaceReadInfo {
         s16 posZ;
         s8 angle;
         s16 velX;
-        s16 velY;
         s16 velZ;
         Array<u16, KartCharacterCount> itemFrames;
         Array<u8, KartCharacterCount> itemIDs;

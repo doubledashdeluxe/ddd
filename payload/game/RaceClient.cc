@@ -142,13 +142,10 @@ void RaceClient::write() {
         Vec3f vel = kartBody->m_vel;
         f32 velScale = 32.0f; // Between -1024 and 1024
         vel.x = floor(vel.x * velScale);
-        vel.y = floor(vel.y * velScale);
         vel.z = floor(vel.z * velScale);
         assert(vel.x >= min && vel.x < max);
-        assert(vel.y >= min && vel.y < max);
         assert(vel.z >= min && vel.z < max);
         kart.velX = vel.x;
-        kart.velY = vel.y;
         kart.velZ = vel.z;
         const KartChecker *kartChecker = raceMgr->kartChecker(kartIndex);
         kart.rank = kartChecker->rank() - 1;
@@ -287,11 +284,10 @@ bool RaceClient::clientStateRace(const ClientStateRaceReadInfo &readInfo) {
         TVec3<f32> &velDiff = kartDiff.vel;
         f32 velScale = 1.0f / 32.0f;
         velDiff.x = Convert(kart.velX, velScale);
-        velDiff.y = Convert(kart.velY, velScale);
         velDiff.z = Convert(kart.velZ, velScale);
-        velDiff -= kartState->vel;
+        velDiff.x -= kartState->vel.x;
+        velDiff.z -= kartState->vel.z;
         velDiff.x = TruncateDiff(velDiff.x, velScale);
-        velDiff.y = TruncateDiff(velDiff.y, velScale);
         velDiff.z = TruncateDiff(velDiff.z, velScale);
         // Each state should only be processed once.
         kartStates.popFront();
@@ -312,9 +308,9 @@ bool RaceClient::clientStateRace(const ClientStateRaceReadInfo &readInfo) {
             kartGame->m_changeTimer = Max<u8>(kartGame->m_changeTimer, 2);
         }
         // When oscillations happen, interpolation can help reduce their amplitude over time, yet
-        // we use a high factor to keep things responsive. This also makes movements a bit more
-        // natural by smoothing them a bit.
-        f32 t = 0.8f;
+        // we use a somewhat high factor to keep things responsive. This also smoothes corrective
+        // movements to make them more natural.
+        f32 t = 0.4f;
         TVec3<f32> posDiff = t * kartDiff.pos;
         kartBody->m_pos += posDiff;
         kartBody->m_mtx[0][3] += posDiff.x;

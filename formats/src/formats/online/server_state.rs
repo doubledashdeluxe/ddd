@@ -218,7 +218,6 @@ pub fn server_race_kart() -> impl ComplexDataType {
     let pos_z: SimpleDataType<i16> = SimpleDataType::new();
     let angle: SimpleDataType<i8> = SimpleDataType::new();
     let vel_x: SimpleDataType<i16> = SimpleDataType::new();
-    let vel_y: SimpleDataType<i16> = SimpleDataType::new();
     let vel_z: SimpleDataType<i16> = SimpleDataType::new();
     let item_frame: SimpleDataType<u16> = SimpleDataType::new();
     let item_frames = ArrayType::new(item_frame, KART_CHARACTER_COUNT, KART_CHARACTER_COUNT);
@@ -232,7 +231,6 @@ pub fn server_race_kart() -> impl ComplexDataType {
         .with_field("pos_z", pos_z)
         .with_field("angle", angle)
         .with_field("vel_x", vel_x)
-        .with_field("vel_y", vel_y)
         .with_field("vel_z", vel_z)
         .with_field("item_frames", item_frames)
         .with_field("item_ids", item_ids)

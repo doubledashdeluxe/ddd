@@ -665,7 +665,6 @@ impl Room {
                         pos_z: client_kart.pos_z,
                         angle: client_kart.angle,
                         vel_x: client_kart.vel_x,
-                        vel_y: client_kart.vel_y,
                         vel_z: client_kart.vel_z,
                         item_frames: client_kart.item_frames,
                         item_ids,

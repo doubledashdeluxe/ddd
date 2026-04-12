@@ -199,14 +199,6 @@ void ClientStateRace::setVelX(s16 velX) {
     m_readInfo.info.getOrEmplace().karts[m_kartIndex].velX = velX;
 }
 
-bool ClientStateRace::isVelYValid(s16 /* velY */) {
-    return true;
-}
-
-void ClientStateRace::setVelY(s16 velY) {
-    m_readInfo.info.getOrEmplace().karts[m_kartIndex].velY = velY;
-}
-
 bool ClientStateRace::isVelZValid(s16 /* velZ */) {
     return true;
 }
@@ -302,10 +294,6 @@ s8 ClientStateRace::getAngle() {
 
 s16 ClientStateRace::getVelX() {
     return m_writeInfo.karts[m_kartIndex].velX;
-}
-
-s16 ClientStateRace::getVelY() {
-    return m_writeInfo.karts[m_kartIndex].velY;
 }
 
 s16 ClientStateRace::getVelZ() {

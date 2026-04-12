@@ -70,8 +70,6 @@ private:
     void setAngle(s8 angle) override;
     bool isVelXValid(s16 posX) override;
     void setVelX(s16 posX) override;
-    bool isVelYValid(s16 posY) override;
-    void setVelY(s16 posY) override;
     bool isVelZValid(s16 posZ) override;
     void setVelZ(s16 posZ) override;
     bool isItemFramesCountValid(u32 itemFramesCount) override;
@@ -100,7 +98,6 @@ private:
     s16 getPosZ() override;
     s8 getAngle() override;
     s16 getVelX() override;
-    s16 getVelY() override;
     s16 getVelZ() override;
     u32 getItemFramesCount() override;
     u16 getItemFramesElement(u32 i0) override;

@@ -157,7 +157,6 @@ ClientState &FakeClient::writeStateRace() {
     writeInfo.karts[0].posZ = 0;
     writeInfo.karts[0].angle = 0;
     writeInfo.karts[0].velX = 0;
-    writeInfo.karts[0].velY = 0;
     writeInfo.karts[0].velZ = 0;
     writeInfo.karts[0].itemFrames[0] = MinClientFrame;
     writeInfo.karts[0].itemFrames[1] = MinClientFrame;
