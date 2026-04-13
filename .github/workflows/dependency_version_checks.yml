@@ -55,7 +55,7 @@ jobs:
         uses: actions/checkout@v6
       - name: Get version
         id: get-version
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         env:
           OWNER: ${{ matrix.owner }}
           REPO: ${{ matrix.repo }}
