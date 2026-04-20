@@ -37,9 +37,7 @@ KartLoader *RaceMgr::kartLoader(u32 index) const {
 }
 
 void RaceMgr::calcRace(s32 adjustment) {
-    if (adjustment >= 0) {
-        m_raceDirector->calc();
-    }
+    m_raceDirector->calc(adjustment);
     if (adjustment <= 0) {
         MotorManager::Instance()->exec();
         J2DManager::Instance()->calc();

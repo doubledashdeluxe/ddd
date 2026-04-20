@@ -1,5 +1,6 @@
 #include "RaceDirector.hh"
 
+#include "game/PauseManager.hh"
 #include "game/RaceClient.hh"
 #include "game/RacePhase.hh"
 #include "game/SequenceInfo.hh"
@@ -10,6 +11,58 @@ u32 RaceDirector::racePhase() const {
 
 bool RaceDirector::isFrameRenewal() const {
     return m_isFrameRenewal;
+}
+
+void RaceDirector::calc(s32 adjustment) {
+    PauseManager *pauseManager = PauseManager::Instance();
+    bool raceEnd = false;
+    if (adjustment >= 0) {
+        if (m_racePhase == RacePhase::Running) {
+            raceEnd = checkRaceEnd();
+            if (raceEnd) {
+                pauseManager->m_pauseEnd = true;
+            }
+        }
+    }
+    if (adjustment <= 0) {
+        pauseManager->exec();
+    }
+    if (adjustment >= 0) {
+        if (pauseManager->paused()) {
+            KartGamePad *pad = KartGamePad::GamePad(0);
+            pad->expand(0);
+        }
+    }
+    m_isFrameRenewal = true;
+    switch (m_racePhase) {
+    case RacePhase::CourseDemo:
+        doCourseDemo();
+        break;
+    case RacePhase::NoCourseDemo:
+        doNoCourseDemo();
+        break;
+    case RacePhase::Reset:
+    case RacePhase::Restart:
+    case RacePhase::Replay:
+        doReset();
+        break;
+    case RacePhase::Safety:
+        doSafety();
+        break;
+    case RacePhase::Running:
+        if (adjustment >= 0) {
+            doRunning(raceEnd);
+        } else {
+            checkPauseChoice();
+        }
+        break;
+    case RacePhase::Wait:
+        doWait();
+        break;
+    case RacePhase::Ending:
+        doEnding();
+        break;
+    }
 }
 
 void RaceDirector::resetCommon() {

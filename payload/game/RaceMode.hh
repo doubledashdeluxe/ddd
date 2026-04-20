@@ -13,6 +13,7 @@ public:
         Bomb = 0x6,
         Escape = 0x7,
         Award = 0x8,
+        StaffRoll = 0x9,
     };
 
     static bool IsRace(u32 raceMode);

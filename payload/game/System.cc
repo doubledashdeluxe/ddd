@@ -133,6 +133,10 @@ JKRTask *System::GetLoadTask() {
     return s_loadTask;
 }
 
+J2DOrthoGraph *System::GetJ2DOrtho() {
+    return s_j2dOrtho;
+}
+
 void System::SetAspectRatio(u32 index) {
     f32 aspectRatios[AspectRatio::Count];
     aspectRatios[0] = s_defaultAspectRatio;

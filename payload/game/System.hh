@@ -26,6 +26,7 @@ public:
     static JFWDisplay *GetDisplay();
     static JKRHeap *GetAppHeap();
     static JKRTask *GetLoadTask();
+    static J2DOrthoGraph *GetJ2DOrtho();
     static f32 Get3DVpX();
     static f32 Get3DVpW();
     static f32 Get3DVpDiv2X(u8 index);

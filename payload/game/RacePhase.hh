@@ -10,7 +10,10 @@ public:
         Replay = 5,
         Title = 6,
         // ...
+        Safety = 16,
         Running = 17,
+        Wait = 18,
+        Ending = 19,
         // ...
     };
 

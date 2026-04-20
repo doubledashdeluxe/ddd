@@ -8,6 +8,7 @@ public:
     u32 racePhase() const;
     bool isFrameRenewal() const;
     void calc();
+    void calc(s32 adjustment);
 
 private:
     class Race2DMode {
@@ -23,9 +24,17 @@ private:
 
     void REPLACED(resetCommon)();
     REPLACE void resetCommon();
+    void doCourseDemo();
+    void doNoCourseDemo();
+    void doReset();
+    void doSafety();
     void REPLACED(doRunning)(bool r4);
     REPLACE void doRunning(bool r4);
+    void doWait();
+    void doEnding();
+    void checkPauseChoice();
     void setPhaseWait(u32 nextPhase, bool fadeDisplay, bool fadeAudio, s32 duration);
+    bool checkRaceEnd() const;
 
     u8 _00[0x04 - 0x00];
     u32 m_race2DMode;
