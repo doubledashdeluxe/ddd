@@ -12,7 +12,7 @@ log = { version = "0.4.29", features = ["max_level_debug", "std"] }
 noise-protocol = "0.2.1"
 orion = "0.17.13"
 rand = { version = "0.10.1", default-features = false, features = ["sys_rng"] }
-scc = "3.6.12"
+scc = "3.7.0"
 zeroize = "1.8.1"
 
 [build-dependencies]
