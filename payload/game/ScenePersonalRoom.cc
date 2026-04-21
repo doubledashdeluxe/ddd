@@ -589,6 +589,7 @@ bool ScenePersonalRoom::clientStateRoom(const ClientStateRoomReadInfo &readInfo)
     u32 consoleCount = statusCount == 3 ? 4 : statusCount;
     raceInfo.setRace(raceMode, m_kartCount, m_kartCount, consoleCount, statusCount);
     raceInfo.setRaceLevel(info->options.engineSize);
+    raceInfo.m_lanLapNum = info->options.lapCount;
     for (u32 i = 0; i < consoleCount; i++) {
         const Kart &kart = onlineInfo.m_karts[i];
         bool spectating = isDuel ? !kart.local : info->spectating || i >= statusCount;

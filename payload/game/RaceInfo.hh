@@ -40,9 +40,9 @@ private:
 
 public:
     u16 m_vsLapNum;
+    u16 m_lanLapNum;
 
 private:
-    u8 _01a[0x01c - 0x01a];
     s16 m_kartCount;
     u8 _01e[0x020 - 0x01e];
     s16 m_consoleCount;
