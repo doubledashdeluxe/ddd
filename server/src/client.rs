@@ -27,7 +27,7 @@ pub struct Client {
 impl Client {
     pub fn new(now: Instant, addr: SocketAddr, pk: PublicKey) -> Self {
         debug!("-> {addr}");
-        let expiration = now + Duration::from_secs(120);
+        let expiration = now + Duration::from_mins(2);
         let state = State::Idle;
         let client_state = None;
         Self { expiration, addr, pk, state, client_state }
@@ -269,7 +269,7 @@ impl Client {
         let (client_state, _) =
             ClientState::read(message).map_err(|()| anyhow::anyhow!("Invalid client state"))?;
         self.client_state = Some(client_state);
-        self.expiration = now + Duration::from_secs(120);
+        self.expiration = now + Duration::from_mins(2);
         Ok(())
     }
 
