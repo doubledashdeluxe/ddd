@@ -37,7 +37,9 @@ void StorageScanner::unlock() {
 }
 
 StorageScanner::StorageScanner()
-    : m_currIsLocked(false), m_nextIsLocked(false), m_hasChanged(true) {
+    : m_currIsLocked(false)
+    , m_nextIsLocked(false)
+    , m_hasChanged(true) {
     OSInitMessageQueue(&m_queue, m_messages.values(), m_messages.count());
     OSInitMessageQueue(&m_initQueue, m_initMessages.values(), m_initMessages.count());
 }

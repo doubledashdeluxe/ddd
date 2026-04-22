@@ -43,7 +43,8 @@ Storage::StorageHandle::StorageHandle(const char *path) : m_storage(nullptr), m_
 }
 
 Storage::StorageHandle::StorageHandle(const FileHandle &file)
-    : m_storage(nullptr), m_prefix(nullptr) {
+    : m_storage(nullptr)
+    , m_prefix(nullptr) {
     Lock<NoInterrupts> lock;
     acquireWithoutLocking(file);
     if (m_storage) {
@@ -52,7 +53,8 @@ Storage::StorageHandle::StorageHandle(const FileHandle &file)
 }
 
 Storage::StorageHandle::StorageHandle(const DirHandle &dir)
-    : m_storage(nullptr), m_prefix(nullptr) {
+    : m_storage(nullptr)
+    , m_prefix(nullptr) {
     Lock<NoInterrupts> lock;
     acquireWithoutLocking(dir);
     if (m_storage) {

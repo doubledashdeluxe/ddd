@@ -63,8 +63,9 @@ CubeClient *CubeClient::Instance() {
 }
 
 CubeClient::CubeClient(SOConfig &config, JKRHeap *heap)
-    : m_config(config), m_allocator(heap),
-      m_platform(m_allocator, *CubeRandom::Instance(), CubeNetwork::Instance(),
+    : m_config(config)
+    , m_allocator(heap)
+    , m_platform(m_allocator, *CubeRandom::Instance(), CubeNetwork::Instance(),
               *CubeDNS::Instance(), m_socket, *CubeServerManager::Instance(), ClientK::Get()) {
     reset();
 }

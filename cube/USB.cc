@@ -56,7 +56,8 @@ void USB::Handler::pollAdd() {
 }
 
 USB::Device::Device()
-    : m_handler(nullptr), m_transfer(new (MEM2Arena::Instance(), 0x20) Transfer) {}
+    : m_handler(nullptr)
+    , m_transfer(new (MEM2Arena::Instance(), 0x20) Transfer) {}
 
 USB::Device::~Device() {}
 
@@ -83,7 +84,8 @@ bool USB::Device::bulkTransfer(void *data, u16 length, u8 endpointDirection, u8 
 }
 
 USB::Resource::Resource(const char *name, Buffer &buffer)
-    : IOS::Resource(name, IOS::Mode::None), m_buffer(buffer.buffer) {}
+    : IOS::Resource(name, IOS::Mode::None)
+    , m_buffer(buffer.buffer) {}
 
 USB::Resource::~Resource() {}
 

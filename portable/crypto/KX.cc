@@ -14,9 +14,13 @@ extern "C" {
 
 KX::ClientState::ClientState(const Key &clientK, const Key &clientEphemeralK,
         const PublicKey &serverPK)
-    : m_hasM1(false), m_hasM2(false), m_hasClientSession(false),
-      m_state(&ClientState::statePrologue), m_clientK(clientK),
-      m_clientEphemeralK(clientEphemeralK), m_serverPK(serverPK) {}
+    : m_hasM1(false)
+    , m_hasM2(false)
+    , m_hasClientSession(false)
+    , m_state(&ClientState::statePrologue)
+    , m_clientK(clientK)
+    , m_clientEphemeralK(clientEphemeralK)
+    , m_serverPK(serverPK) {}
 
 KX::ClientState::~ClientState() {
     crypto_wipe(m_clientEphemeralK.values(), m_clientEphemeralK.count());
@@ -136,9 +140,12 @@ void KX::ClientState::stateSession() {
 }
 
 KX::ServerState::ServerState(const Key &serverK, const Key &serverEphemeralK)
-    : m_hasM1(false), m_hasM2(false), m_hasServerSession(false),
-      m_state(&ServerState::statePrologue), m_serverK(serverK),
-      m_serverEphemeralK(serverEphemeralK) {}
+    : m_hasM1(false)
+    , m_hasM2(false)
+    , m_hasServerSession(false)
+    , m_state(&ServerState::statePrologue)
+    , m_serverK(serverK)
+    , m_serverEphemeralK(serverEphemeralK) {}
 
 KX::ServerState::~ServerState() {
     crypto_wipe(m_serverEphemeralK.values(), m_serverEphemeralK.count());

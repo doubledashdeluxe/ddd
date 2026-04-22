@@ -7,7 +7,8 @@
 
 ClientStateMode::ClientStateMode(const ClientPlatform &platform, Connection &connection,
         u8 playerCount)
-    : ClientState(platform), m_playerCount(playerCount) {
+    : ClientState(platform)
+    , m_playerCount(playerCount) {
     m_connections.pushBack();
     m_connections.back()->reset(&connection);
 }

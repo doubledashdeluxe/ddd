@@ -2,5 +2,10 @@
 
 ClientPlatform::ClientPlatform(Allocator &allocator, Random &random, Network &network, DNS &dns,
         UDPSocket &socket, ServerManager &serverManager, const Key &clientK)
-    : allocator(allocator), random(random), network(network), dns(dns), socket(socket),
-      serverManager(serverManager), clientK(clientK) {}
+    : allocator(allocator)
+    , random(random)
+    , network(network)
+    , dns(dns)
+    , socket(socket)
+    , serverManager(serverManager)
+    , clientK(clientK) {}

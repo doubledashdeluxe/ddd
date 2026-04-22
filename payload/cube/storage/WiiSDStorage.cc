@@ -17,8 +17,8 @@ void WiiSDStorage::Init() {
 }
 
 WiiSDStorage::WiiSDStorage()
-    : IOS::Resource("/dev/sdio/slot0", IOS::Mode::None),
-      SDStorage(new (MEM2Arena::Instance(), 0x4) Mutex) {
+    : IOS::Resource("/dev/sdio/slot0", IOS::Mode::None)
+    , SDStorage(new (MEM2Arena::Instance(), 0x4) Mutex) {
     Array<OSMessage, 1> *messages = new (MEM2Arena::Instance(), 0x4) Array<OSMessage, 1>;
     OSInitMessageQueue(&s_queue, messages->values(), messages->count());
     notify();

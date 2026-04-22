@@ -23,6 +23,7 @@ BitFieldColonSpacing: Both
 BreakBeforeBinaryOperators: None
 BreakBeforeBraces: Attach
 BreakBeforeTernaryOperators: False
+BreakConstructorInitializers: BeforeComma
 BreakInheritanceList: BeforeComma
 BreakStringLiterals: True
 ColumnLimit: 100
@@ -37,6 +38,7 @@ InsertBraces: True
 KeepEmptyLinesAtTheStartOfBlocks: False
 MaxEmptyLinesToKeep: 1
 Language: Cpp
+PackConstructorInitializers: CurrentLine
 PointerAlignment: Right
 SortIncludes: CaseSensitive
 SpaceAfterCStyleCast: False

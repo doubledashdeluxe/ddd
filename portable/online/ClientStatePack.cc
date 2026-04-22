@@ -6,7 +6,9 @@
 
 ClientStatePack::ClientStatePack(const ClientPlatform &platform, Connection &connection,
         const ClientStatePackWriteInfo &writeInfo)
-    : ClientState(platform), m_writeInfo(writeInfo), m_packIndex(0) {
+    : ClientState(platform)
+    , m_writeInfo(writeInfo)
+    , m_packIndex(0) {
     m_connections.pushBack();
     m_connections.back()->reset(&connection);
 }

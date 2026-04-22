@@ -42,8 +42,12 @@ Console *Console::Instance() {
 }
 
 Console::Console(VI *vi)
-    : m_isActive(true), m_vi(vi), m_cols(vi->getXFBWidth() / Font::GetGlyphWidth() - 1),
-      m_rows(vi->getXFBHeight() / Font::GetGlyphHeight() - 1), m_col(0), m_row(0) {}
+    : m_isActive(true)
+    , m_vi(vi)
+    , m_cols(vi->getXFBWidth() / Font::GetGlyphWidth() - 1)
+    , m_rows(vi->getXFBHeight() / Font::GetGlyphHeight() - 1)
+    , m_col(0)
+    , m_row(0) {}
 
 void Console::putchar(int c) {
     if (c == '\0') {

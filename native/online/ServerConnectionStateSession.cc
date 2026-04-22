@@ -2,7 +2,8 @@
 
 ServerConnectionStateSession::ServerConnectionStateSession(const ServerPlatform &platform,
         Session session)
-    : ServerConnectionState(platform), m_session(session) {}
+    : ServerConnectionState(platform)
+    , m_session(session) {}
 
 ServerConnectionStateSession::~ServerConnectionStateSession() = default;
 

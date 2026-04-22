@@ -6,7 +6,10 @@ void *SZSCourseLoader::Load(ZIPFile &zipFile, const char *filePath, JKRHeap *hea
 }
 
 SZSCourseLoader::SZSCourseLoader(ZIPFile &zipFile, const char *filePath, JKRHeap *heap, u32 *size)
-    : m_reader(zipFile, filePath), m_heap(heap), m_size(size), m_offset(0) {}
+    : m_reader(zipFile, filePath)
+    , m_heap(heap)
+    , m_size(size)
+    , m_offset(0) {}
 
 SZSCourseLoader::~SZSCourseLoader() {}
 

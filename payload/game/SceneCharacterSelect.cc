@@ -32,7 +32,8 @@ extern "C" {
 }
 
 SceneCharacterSelect::SceneCharacterSelect(JKRArchive *archive, JKRHeap *heap)
-    : Scene(archive, heap), m_parentHeap(heap) {
+    : Scene(archive, heap)
+    , m_parentHeap(heap) {
     for (u32 i = 0; i < m_mainScreens.count(); i++) {
         Array<char, 32> file;
         snprintf(file.values(), file.count(), "select_character%lu.blo", i + 1);

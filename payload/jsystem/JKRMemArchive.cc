@@ -5,8 +5,10 @@ extern "C" {
 }
 
 JKRMemArchive::JKRMemArchive(s32 entrynum, Archive archive, u32 mountDirection, bool ownsMemory)
-    : JKRArchive(entrynum, MountMode::Mem), m_archive(archive.get()), m_files(archive.getFiles()),
-      m_ownsMemory(ownsMemory) {
+    : JKRArchive(entrynum, MountMode::Mem)
+    , m_archive(archive.get())
+    , m_files(archive.getFiles())
+    , m_ownsMemory(ownsMemory) {
     m_mountDirection = mountDirection;
     Archive::Tree tree = archive.getTree();
     m_tree = tree.get();

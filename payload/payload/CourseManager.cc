@@ -54,7 +54,8 @@ Hash CourseManager::Course::archiveHash() const {
 
 CourseManager::DefaultPack::DefaultPack(Ring<u8, MaxCourseCount> courseIndices,
         Array<char, 32> name)
-    : Pack(courseIndices), m_name(name) {}
+    : Pack(courseIndices)
+    , m_name(name) {}
 
 CourseManager::DefaultPack::~DefaultPack() {}
 
@@ -77,7 +78,10 @@ const char *CourseManager::DefaultPack::version() const {
 
 CourseManager::CustomPack::CustomPack(Ring<u8, MaxCourseCount> courseIndices, Array<char, 32> name,
         Array<char, 32> author, Array<char, 32> version)
-    : Pack(courseIndices), m_name(name), m_author(author), m_version(version) {}
+    : Pack(courseIndices)
+    , m_name(name)
+    , m_author(author)
+    , m_version(version) {}
 
 CourseManager::CustomPack::~CustomPack() {}
 
@@ -95,7 +99,10 @@ const char *CourseManager::CustomPack::version() const {
 
 CourseManager::DefaultCourse::DefaultCourse(Hash archiveHash, u32 courseID, const char *thumbnail,
         const char *nameImage)
-    : Course(archiveHash), m_courseID(courseID), m_thumbnail(thumbnail), m_nameImage(nameImage) {}
+    : Course(archiveHash)
+    , m_courseID(courseID)
+    , m_thumbnail(thumbnail)
+    , m_nameImage(nameImage) {}
 
 CourseManager::DefaultCourse::~DefaultCourse() {}
 
@@ -181,8 +188,14 @@ bool CourseManager::DefaultCourse::isCustom() const {
 CourseManager::CustomCourse::CustomCourse(Hash archiveHash, u32 musicID, Array<char, 32> name,
         Array<char, 32> author, Array<char, 32> version, Optional<MinimapConfig> minimapConfig,
         Array<char, 128> path, Array<char, 128> prefix)
-    : Course(archiveHash), m_musicID(musicID), m_name(name), m_author(author), m_version(version),
-      m_minimapConfig(minimapConfig), m_path(path), m_prefix(prefix) {}
+    : Course(archiveHash)
+    , m_musicID(musicID)
+    , m_name(name)
+    , m_author(author)
+    , m_version(version)
+    , m_minimapConfig(minimapConfig)
+    , m_path(path)
+    , m_prefix(prefix) {}
 
 CourseManager::CustomCourse::~CustomCourse() {}
 

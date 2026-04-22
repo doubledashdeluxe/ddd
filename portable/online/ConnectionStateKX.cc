@@ -11,8 +11,10 @@ extern "C" {
 
 ConnectionStateKX::ConnectionStateKX(const ClientPlatform &platform, const Key &clientEphemeralK,
         PublicKey serverPK, Address address)
-    : ConnectionState(platform, serverPK), m_address(address), m_cookie(0),
-      m_clientState(platform.clientK, clientEphemeralK, serverPK) {}
+    : ConnectionState(platform, serverPK)
+    , m_address(address)
+    , m_cookie(0)
+    , m_clientState(platform.clientK, clientEphemeralK, serverPK) {}
 
 ConnectionStateKX::~ConnectionStateKX() {}
 

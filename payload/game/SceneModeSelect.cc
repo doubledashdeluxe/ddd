@@ -150,7 +150,8 @@ void SceneModeSelect::calc() {
 }
 
 SceneModeSelect::DescText::DescText(SceneModeSelect &scene, u32 descIndex)
-    : m_scene(scene), m_descIndex(descIndex) {}
+    : m_scene(scene)
+    , m_descIndex(descIndex) {}
 
 SceneModeSelect::DescText::~DescText() {}
 

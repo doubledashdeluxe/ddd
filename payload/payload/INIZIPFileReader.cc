@@ -9,8 +9,9 @@ bool INIZIPFileReader::Read(u32 fieldCount, Field *fields, u32 localizedFieldCou
 
 INIZIPFileReader::INIZIPFileReader(u32 fieldCount, Field *fields, u32 localizedFieldCount,
         LocalizedField *localizedFields, ZIPFile &zipFile, const char *filePath)
-    : INIReader(fieldCount, fields, localizedFieldCount, localizedFields), m_ok(true),
-      m_reader(zipFile, filePath) {}
+    : INIReader(fieldCount, fields, localizedFieldCount, localizedFields)
+    , m_ok(true)
+    , m_reader(zipFile, filePath) {}
 
 INIZIPFileReader::~INIZIPFileReader() {}
 

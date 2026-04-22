@@ -8,7 +8,8 @@ extern "C" {
 }
 
 JKRAramArchive::JKRAramArchive(s32 entrynum, Archive archive, u32 mountDirection)
-    : JKRArchive(entrynum, MountMode::Aram), m_archive(archive.get()) {
+    : JKRArchive(entrynum, MountMode::Aram)
+    , m_archive(archive.get()) {
     m_mountDirection = mountDirection;
     m_expandSizes = nullptr;
     m_block.reset(JKRAram::GetHeap()->alloc(archive.getFilesSize(), m_mountDirection - 1));

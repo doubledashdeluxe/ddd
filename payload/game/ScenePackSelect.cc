@@ -238,7 +238,8 @@ void ScenePackSelect::calc() {
 }
 
 ScenePackSelect::DescText::DescText(ScenePackSelect &scene, u32 descIndex)
-    : m_scene(scene), m_descIndex(descIndex) {}
+    : m_scene(scene)
+    , m_descIndex(descIndex) {}
 
 ScenePackSelect::DescText::~DescText() {}
 

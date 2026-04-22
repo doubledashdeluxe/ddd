@@ -6,7 +6,9 @@
 
 ServerConnectionStateKX::ServerConnectionStateKX(const ServerPlatform &platform,
         const std::array<u8, KX::M2Size> &m2, const Session &session)
-    : ServerConnectionState(platform), m_m2(m2), m_session(session) {}
+    : ServerConnectionState(platform)
+    , m_m2(m2)
+    , m_session(session) {}
 
 ServerConnectionStateKX::~ServerConnectionStateKX() = default;
 

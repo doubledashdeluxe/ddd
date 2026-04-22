@@ -10,7 +10,9 @@ extern "C" {
 
 ConnectionStateSession::ConnectionStateSession(const ClientPlatform &platform, PublicKey serverPK,
         Address address, Session session)
-    : ConnectionState(platform, serverPK), m_address(address), m_session(session) {}
+    : ConnectionState(platform, serverPK)
+    , m_address(address)
+    , m_session(session) {}
 
 ConnectionStateSession::~ConnectionStateSession() {}
 

@@ -11,8 +11,11 @@ extern "C" {
 
 ArchiveSwapper::ArchiveSwapper(const char *bare, Archive &archive, JKRHeap *heap, u32 minSwapSize,
         u32 maxSwapSize)
-    : m_bare(bare), m_archive(archive), m_heap(heap), m_minSwapSize(minSwapSize),
-      m_maxSwapSize(maxSwapSize) {}
+    : m_bare(bare)
+    , m_archive(archive)
+    , m_heap(heap)
+    , m_minSwapSize(minSwapSize)
+    , m_maxSwapSize(maxSwapSize) {}
 
 void ArchiveSwapper::setIsSwappable(const char *path, bool isSwappable) {
     Archive::Tree tree = m_archive.getTree();

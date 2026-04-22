@@ -8,7 +8,8 @@
 
 ClientStateTeam::ClientStateTeam(const ClientPlatform &platform, Connection &connection,
         const ClientStateTeamWriteInfo &writeInfo)
-    : ClientState(platform), m_writeInfo(writeInfo) {
+    : ClientState(platform)
+    , m_writeInfo(writeInfo) {
     m_connections.pushBack();
     m_connections.back()->reset(&connection);
     m_readInfo.ok = true;

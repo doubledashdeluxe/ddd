@@ -8,7 +8,9 @@ extern "C" {
 
 ConnectionStateDNS::ConnectionStateDNS(const ClientPlatform &platform, PublicKey serverPK,
         Array<char, 32> name, u16 port)
-    : ConnectionState(platform, serverPK), m_name(name), m_port(port) {}
+    : ConnectionState(platform, serverPK)
+    , m_name(name)
+    , m_port(port) {}
 
 ConnectionStateDNS::~ConnectionStateDNS() {}
 

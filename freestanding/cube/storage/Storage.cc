@@ -19,12 +19,14 @@ Storage::StorageHandle::StorageHandle(const char *path) : m_storage(nullptr), m_
 }
 
 Storage::StorageHandle::StorageHandle(const FileHandle &file)
-    : m_storage(nullptr), m_prefix(nullptr) {
+    : m_storage(nullptr)
+    , m_prefix(nullptr) {
     acquireWithoutLocking(file);
 }
 
 Storage::StorageHandle::StorageHandle(const DirHandle &dir)
-    : m_storage(nullptr), m_prefix(nullptr) {
+    : m_storage(nullptr)
+    , m_prefix(nullptr) {
     acquireWithoutLocking(dir);
 }
 

@@ -10,8 +10,10 @@ extern "C" {
 
 INIReader::INIReader(u32 fieldCount, Field *fields, u32 localizedFieldCount,
         LocalizedField *localizedFields)
-    : m_fieldCount(fieldCount), m_fields(fields), m_localizedFieldCount(localizedFieldCount),
-      m_localizedFields(localizedFields) {}
+    : m_fieldCount(fieldCount)
+    , m_fields(fields)
+    , m_localizedFieldCount(localizedFieldCount)
+    , m_localizedFields(localizedFields) {}
 
 INIReader::~INIReader() {}
 

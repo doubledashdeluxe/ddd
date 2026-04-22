@@ -25,7 +25,8 @@
 #include <portable/Algorithm.hh>
 
 SceneMapSelect::SceneMapSelect(JKRArchive *archive, JKRHeap *heap)
-    : Scene(archive, heap), m_heap(heap) {
+    : Scene(archive, heap)
+    , m_heap(heap) {
     SceneFactory *sceneFactory = SceneFactory::Instance();
     JKRArchive *backgroundArchive = sceneFactory->archive(SceneFactory::ArchiveType::Background);
     JKRArchive *titleLineArchive = sceneFactory->archive(SceneFactory::ArchiveType::TitleLine);

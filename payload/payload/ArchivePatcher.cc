@@ -27,8 +27,12 @@ bool ArchivePatcher::Patch(const char *bare, Archive &archive, u32 archiveSize, 
 
 ArchivePatcher::ArchivePatcher(const char *bare, Archive &archive, u32 archiveSize, JKRHeap *heap,
         s32 alignment, bool &ownsMemory)
-    : m_bare(bare), m_archive(archive), m_archiveSize(archiveSize), m_heap(heap),
-      m_alignment(alignment), m_ownsMemory(ownsMemory) {
+    : m_bare(bare)
+    , m_archive(archive)
+    , m_archiveSize(archiveSize)
+    , m_heap(heap)
+    , m_alignment(alignment)
+    , m_ownsMemory(ownsMemory) {
     if (m_ownsMemory) {
         u8 *tree = archive.getTree().get();
         u32 treeSize = archive.getTreeSize();

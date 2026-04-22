@@ -223,7 +223,8 @@ void SceneServerSelect::calc() {
 }
 
 SceneServerSelect::DescText::DescText(SceneServerSelect &scene, u32 descIndex)
-    : m_scene(scene), m_descIndex(descIndex) {}
+    : m_scene(scene)
+    , m_descIndex(descIndex) {}
 
 SceneServerSelect::DescText::~DescText() {}
 

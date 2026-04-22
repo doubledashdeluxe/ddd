@@ -1,7 +1,8 @@
 #include "OnlineFakeUDPSocket.hh"
 
 OnlineFakeUDPSocket::OnlineFakeUDPSocket(const ServerPlatform &platform)
-    : FakeUDPSocket(m_data), m_connection(platform) {}
+    : FakeUDPSocket(m_data)
+    , m_connection(platform) {}
 
 OnlineFakeUDPSocket::~OnlineFakeUDPSocket() = default;
 

@@ -3,7 +3,8 @@
 #include <cube/Arena.hh>
 
 WiiSDStorage::WiiSDStorage()
-    : IOS::Resource("/dev/sdio/slot0", IOS::Mode::None), SDStorage(nullptr) {
+    : IOS::Resource("/dev/sdio/slot0", IOS::Mode::None)
+    , SDStorage(nullptr) {
     notify();
 }
 

@@ -17,10 +17,12 @@ void EXISDStorage::Init() {
 }
 
 EXISDStorage::EXISDStorage(u32 index)
-    : SDStorage(new (MEM1Arena::Instance(), 0x4) Mutex), m_index(index),
-      m_channel(IndexToChannel(index)), m_device(IndexToDevice(index)),
-      m_queue(new (MEM1Arena::Instance(), 0x4) OSMessageQueue),
-      m_transferQueue(new (MEM1Arena::Instance(), 0x4) OSMessageQueue) {
+    : SDStorage(new (MEM1Arena::Instance(), 0x4) Mutex)
+    , m_index(index)
+    , m_channel(IndexToChannel(index))
+    , m_device(IndexToDevice(index))
+    , m_queue(new (MEM1Arena::Instance(), 0x4) OSMessageQueue)
+    , m_transferQueue(new (MEM1Arena::Instance(), 0x4) OSMessageQueue) {
     Array<OSMessage, 1> *transferMessages = new (MEM1Arena::Instance(), 0x4) Array<OSMessage, 1>;
     OSInitMessageQueue(m_transferQueue, transferMessages->values(), transferMessages->count());
     void *param = this;

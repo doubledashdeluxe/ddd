@@ -136,7 +136,9 @@ void PerfOverlay::TimeBar::end() {
 }
 
 PerfOverlay::PerfOverlay()
-    : m_frameStart(OSGetSystemTime()), m_prevThread(nullptr), m_prevThreadIndex(0) {
+    : m_frameStart(OSGetSystemTime())
+    , m_prevThread(nullptr)
+    , m_prevThreadIndex(0) {
     if (VIGetTvFormat() == VI_PAL) {
         m_frameDuration = Clock::MicrosecondsToTicks(20000);
     } else {

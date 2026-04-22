@@ -23,7 +23,8 @@
 #include <payload/online/CubeServerManager.hh>
 
 SceneTitle::SceneTitle(JKRArchive *archive, JKRHeap *heap)
-    : Scene(archive, heap), m_printMemoryCard(heap) {
+    : Scene(archive, heap)
+    , m_printMemoryCard(heap) {
     m_screen.set("Title.blo", 0x40000, m_archive);
 
     for (u32 i = 0; i < Entry::Count; i++) {

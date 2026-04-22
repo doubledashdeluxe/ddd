@@ -18,7 +18,8 @@ extern "C" {
 }
 
 SceneOption::SceneOption(JKRArchive *archive, JKRHeap *heap)
-    : Scene(archive, heap), m_titleLine(archive, heap, "option_title_line") {
+    : Scene(archive, heap)
+    , m_titleLine(archive, heap, "option_title_line") {
     m_entryIndex = 0;
     m_rowIndex = 0;
 

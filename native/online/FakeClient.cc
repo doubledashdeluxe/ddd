@@ -5,11 +5,13 @@
 FakeClient::FakeClient(const std::map<std::vector<std::string>, u32> &dnsServers,
         const Key &serverK, const std::vector<u8> &data,
         const Ring<ServerManager::Server, MaxServerCount> &servers, const Key &clientK)
-    : m_dnsSocket(dnsServers), m_dns(m_dnsSocket),
-      m_serverPlatform(m_allocator, m_random, serverK, data), m_socket(m_serverPlatform),
-      m_serverManager(servers),
-      m_platform(m_allocator, m_random, m_network, m_dns, m_socket, m_serverManager, clientK),
-      m_state(new (m_platform.allocator) ClientStateIdle(m_platform)) {}
+    : m_dnsSocket(dnsServers)
+    , m_dns(m_dnsSocket)
+    , m_serverPlatform(m_allocator, m_random, serverK, data)
+    , m_socket(m_serverPlatform)
+    , m_serverManager(servers)
+    , m_platform(m_allocator, m_random, m_network, m_dns, m_socket, m_serverManager, clientK)
+    , m_state(new (m_platform.allocator) ClientStateIdle(m_platform)) {}
 
 FakeClient::~FakeClient() = default;
 

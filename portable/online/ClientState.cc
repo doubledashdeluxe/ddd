@@ -3,7 +3,9 @@
 #include "portable/online/ClientStateError.hh"
 
 ClientState::ClientState(const ClientPlatform &platform)
-    : m_platform(platform), m_readIndex(0), m_writeIndex(0) {}
+    : m_platform(platform)
+    , m_readIndex(0)
+    , m_writeIndex(0) {}
 
 ClientState::~ClientState() {}
 

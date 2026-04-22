@@ -8,8 +8,9 @@ bool INIFileReader::Read(u32 fieldCount, Field *fields, u32 localizedFieldCount,
 
 INIFileReader::INIFileReader(u32 fieldCount, Field *fields, u32 localizedFieldCount,
         LocalizedField *localizedFields, const char *path)
-    : INIReader(fieldCount, fields, localizedFieldCount, localizedFields), m_ok(true),
-      m_file(path, Storage::Mode::Read) {}
+    : INIReader(fieldCount, fields, localizedFieldCount, localizedFields)
+    , m_ok(true)
+    , m_file(path, Storage::Mode::Read) {}
 
 INIFileReader::~INIFileReader() {}
 

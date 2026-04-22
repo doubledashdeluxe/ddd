@@ -24,7 +24,8 @@
 #include <payload/online/CubeClient.hh>
 
 SceneCoursePoll::SceneCoursePoll(JKRArchive *archive, JKRHeap *heap)
-    : Scene(archive, heap), m_heap(heap) {
+    : Scene(archive, heap)
+    , m_heap(heap) {
     SceneFactory *sceneFactory = SceneFactory::Instance();
     JKRArchive *lanEntryArchive = sceneFactory->archive(SceneFactory::ArchiveType::LanEntry);
 

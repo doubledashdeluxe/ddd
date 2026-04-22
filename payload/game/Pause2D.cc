@@ -15,8 +15,9 @@ extern "C" {
 }
 
 Pause2D::Pause2D(JKRHeap *heap)
-    : m_hioNode(new (heap, 0) Pause2DHioNode), m_graphContext(System::GetJ2DOrtho()),
-      m_screen(new (heap, 0) J2DScreen) {
+    : m_hioNode(new (heap, 0) Pause2DHioNode)
+    , m_graphContext(System::GetJ2DOrtho())
+    , m_screen(new (heap, 0) J2DScreen) {
     m_hioNode->isVisible = true;
 
     u32 count;
