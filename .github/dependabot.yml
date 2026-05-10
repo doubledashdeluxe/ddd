@@ -1,11 +1,12 @@
 version: 2
 updates:
-  - package-ecosystem: "cargo"
-    directory: "/"
+  - package-ecosystem: cargo
+    directory: /
     schedule:
-      interval: "weekly"
-
-  - package-ecosystem: "github-actions"
-    directory: "/"
+      interval: weekly
+    allow:
+      - dependency-type: all
+  - package-ecosystem: github-actions
+    directory: /
     schedule:
-      interval: "weekly"
+      interval: weekly
