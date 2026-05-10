@@ -13,7 +13,7 @@ You need:
 - Python 3.11 or later
 - Ninja
 - cargo
-- LLVM 20
+- LLVM 22
 
 The used compiler is [NXP 'CodeWarrior Special Edition' for MPC55xx/MPC56xx v2.10](https://www.nxp.com/lgfiles/devsuites/PowerPC/CW55xx_v2_10_SE.exe). You can run `tools/prepare.sh` which will extract the relevant files from the installer with 7-Zip, or do the same manually. To use the compiler on non-Windows platforms, a Wine installation is needed.
 
@@ -29,13 +29,20 @@ You can then simply run `build.py` to build the project. The `out` directory wil
 
 You can launch `out/tests` to run all tests.
 
+## Formatting
+
+```bash
+format.py # C++
+cargo fmt # Rust
+```
+
 ## Contributing
 
-If you are working on something, please comment on the relevant issue (or open a new one if necessary).
+AI-generated contributions are not accepted.
 
-For new code running on console, C++ and the `REPLACE`/`REPLACED` patching system should generally be used. Standard library and SDK patches can optionally be written in C, and for low-level code, assembly can sometimes be used.
+If you are working on something, please comment on the relevant issue or open a new one if necessary.
 
-The codebase is automatically formatted using `clang-format` (15), this will be checked by CI and must be run before merge.
+C++ is preferred over C and assembly for new code running on console. This does not apply to dependencies.
 
 ## Docs
 
@@ -43,7 +50,7 @@ The codebase is automatically formatted using `clang-format` (15), this will be 
 
 ## Links and resources
 
-- [Discord guild](https://discord.gg/h3phHpDHNu) (will close in March 2026)
+- [Discord guild](https://discord.gg/h3phHpDHNu) (will close in the second part of 2026)
 - Ghidra project: ask stebler on Discord for access
 - [MKDD decompilation](https://github.com/doldecomp/mkdd)
 - [MKDD Wiki](https://mkdd.org/wiki/Main_Page)
