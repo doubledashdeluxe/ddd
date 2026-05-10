@@ -1,6 +1,6 @@
 # Double Dash Deluxe
 
-Double Dash Deluxe is a work-in-progress open-source (Expat License), cross-platform (GameCube, Wii, vWii, Dolphin Emulator) mod for MKDD aiming to provide a variety of features and improvements over the base game, including online gameplay.
+Double Dash Deluxe is a work-in-progress open-source (AGPLv3), cross-platform (GameCube, Wii, vWii, Dolphin Emulator) mod for MKDD aiming to provide a variety of features and improvements over the base game, including online gameplay.
 
 ## Disclaimer
 
@@ -47,6 +47,8 @@ The codebase is automatically formatted using `clang-format` (15), this will be 
 - Ghidra project: ask stebler on Discord for access
 - [MKDD decompilation](https://github.com/doldecomp/mkdd)
 - [MKDD Wiki](https://mkdd.org/wiki/Main_Page)
+
+## [Licensing](NOTICE.md)
 
 ## Credits
 

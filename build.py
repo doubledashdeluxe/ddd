@@ -739,14 +739,15 @@ for in_file in sorted(glob.glob(os.path.join('vendor', '*', 'LICEN[CS]E*'))):
         in_file,
         implicit = '$cp',
     )
-out_file = os.path.join('$outdir', 'licenses', 'ddd', 'LICENSE')
-license_out_files += [out_file]
-n.build(
-    out_file,
-    'cp',
-    os.path.join('LICENSE'),
-    implicit = '$cp',
-)
+for in_file in ['LICENSE.md', 'NOTICE.md']:
+    out_file = os.path.join('$outdir', 'licenses', 'ddd', in_file)
+    license_out_files += [out_file]
+    n.build(
+        out_file,
+        'cp',
+        in_file,
+        implicit = '$cp',
+    )
 n.newline()
 
 n.build(
