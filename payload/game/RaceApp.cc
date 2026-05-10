@@ -1,6 +1,7 @@
 #include "RaceApp.hh"
 
 #include "game/ForceEffectMgr.hh"
+#include "game/OnlineTimer.hh"
 #include "game/RaceClient.hh"
 #include "game/RaceInfo.hh"
 #include "game/RaceMode.hh"
@@ -23,6 +24,7 @@ RaceApp *RaceApp::Instance() {
 }
 
 RaceApp::~RaceApp() {
+    OnlineTimer::Destroy();
     if (SequenceInfo::Instance().m_isOnline) {
         RaceClient::Destroy();
     }

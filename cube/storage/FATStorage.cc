@@ -269,8 +269,8 @@ extern "C" DRESULT disk_ioctl(BYTE pdrv, BYTE cmd, void *buff) {
             const LBA_t *args = static_cast<LBA_t *>(buff);
             LBA_t firstSector = args[0];
             LBA_t sectorCount = args[1] - args[0] + 1;
-            return FATStorage::s_volumes[pdrv]->erase(firstSector, sectorCount) ? RES_OK :
-                                                                                  RES_ERROR;
+            return FATStorage::s_volumes[pdrv]->erase(firstSector, sectorCount) ? RES_OK
+                                                                                : RES_ERROR;
         }
     default:
         PANIC("Invalid ioctl");

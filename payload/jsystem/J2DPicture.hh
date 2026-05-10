@@ -11,7 +11,10 @@ extern "C" {
 class J2DPicture : public J2DPane {
 public:
     struct CornerColors {
-        u8 _00[0x10 - 0x00];
+        GXColor topLeft;
+        GXColor topRight;
+        GXColor bottomLeft;
+        GXColor bottomRight;
     };
     size_assert(CornerColors, 0x10);
 

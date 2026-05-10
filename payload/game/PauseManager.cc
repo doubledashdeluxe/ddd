@@ -1,19 +1,49 @@
 #include "PauseManager.hh"
 
 #include "game/GameAudioMain.hh"
+#include "game/Goal2D.hh"
+#include "game/KartCtrl.hh"
 #include "game/KartGamePad.hh"
+#include "game/NetGameMgr.hh"
+#include "game/OnlineTimer.hh"
+#include "game/RaceInfo.hh"
 #include "game/RaceMgr.hh"
+#include "game/ResMgr.hh"
+#include "game/SequenceInfo.hh"
 #include "game/System.hh"
 #include "game/WipeManager.hh"
 
 #include <portable/Algorithm.hh>
 
-bool PauseManager::paused() const {
-    return m_paused;
+PauseManager::PauseManager(JKRHeap *heap)
+    : m_isLAN(NetGameMgr::Instance()->isActive())
+    , m_isOnline(SequenceInfo::Instance().m_isOnline)
+    , m_archive(ResMgr::GetArchive(ResMgr::ArchiveID::MRAMLoc))
+    , m_printMemoryCard(new (heap, 0) PrintMemoryCard(heap))
+    , m_isDemo(true)
+    , m_isVisible(false)
+    , m_exec(false)
+    , m_pause2D(new (heap, 0) Pause2D(heap, m_archive))
+    , m_result2D(m_isOnline ? new (heap, 0) Result2D(heap, Result2D::Online())
+                            : new (heap, 0) Result2D(heap))
+    , m_graphContext(System::GetJ2DOrtho()) {
+    u32 kartCount = RaceInfo::Instance().getKartCount();
+    const KartCtrl *kartCtrl = KartCtrl::Instance();
+    const SequenceInfo &sequenceInfo = SequenceInfo::Instance();
+    for (u32 i = 0; i < kartCount; i++) {
+        for (u32 j = 0; j < 2; j++) {
+            const KartGamePad *pad = kartCtrl->getKartGamePad(i, j);
+            if (sequenceInfo.padPlayer(pad) != -1) {
+                m_isDemo = false;
+            }
+        }
+    }
+    s_instance = this;
+    reset();
 }
 
-JKRArchive *PauseManager::archive() const {
-    return m_archive;
+bool PauseManager::paused() const {
+    return m_paused;
 }
 
 void PauseManager::reset() {
@@ -31,7 +61,8 @@ void PauseManager::draw() {
         m_result2D->draw();
     }
 
-    if (m_isDemo || (!m_resultStart && !RaceMgr::Instance()->isReplay())) {
+    if (m_isDemo || (!m_resultStart && !RaceMgr::Instance()->isReplay()) ||
+            SequenceInfo::Instance().m_isOnline) {
         m_pause2D->draw();
     }
 
@@ -61,17 +92,27 @@ void PauseManager::draw() {
 }
 
 void PauseManager::exec() {
+    if (m_frame >= 0) {
+        m_frame++;
+    }
+
     if (m_hasPrintMemoryCard) {
         m_printMemoryCard->calc();
         s32 choice = m_printMemoryCard->getFinalChoice();
         if (choice == 0) {
             m_hasPrintMemoryCard = false;
-            Pause2D::SetState(Pause2D::State::SlideOut);
+            if (m_paused) {
+                Pause2D::SetState(Pause2D::State::SlideOut);
+            } else {
+                m_resultEndFrame = 1;
+                m_result2D->end();
+            }
         } else if (choice == 1) {
             m_hasPrintMemoryCard = false;
             m_printMemoryCard->ack();
             m_printMemoryCard->init(0x28);
         }
+        OnlineTimer::Instance()->calc();
         return;
     }
 
@@ -82,12 +123,55 @@ void PauseManager::exec() {
         m_wipeOutFrame++;
     }
 
-    if (m_pauseEnd) {
+    const KartGamePad *pad = KartGamePad::GamePad(0);
+    if (m_resultEndFrame > 0) {
+        if (m_resultEndFrame < 11) {
+            m_resultEndFrame++;
+        } else {
+            s_pauseChoice = Result2D::GetSelector();
+        }
+        m_result2D->calc(pad);
         return;
     }
 
-    const KartGamePad *pad = KartGamePad::GamePad(0);
+    if (m_frame < 120) {
+        return;
+    }
+
     const JUTGamePad::CButton &button = pad->button();
+    if (!m_paused && m_resultStart && Goal2D::End()) {
+        m_result2D->calc(pad);
+
+        if (!(button.risingEdge() & PAD_BUTTON_A) && !OnlineTimer::Instance()->hasExpired()) {
+            return;
+        }
+
+        if (Result2D::GetState() != Result2D::State::Selector) {
+            return;
+        }
+
+        if (!m_result2D->getAnmEnd()) {
+            return;
+        }
+
+        switch (Result2D::GetSelector()) {
+        case 8:
+            m_hasPrintMemoryCard = true;
+            m_printMemoryCard->init(0x27);
+            m_printMemoryCard->calc();
+            break;
+        default:
+            m_resultEndFrame = 1;
+            m_result2D->end();
+            GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE);
+            break;
+        }
+    }
+
+    if (!m_paused && m_pauseEnd) {
+        return;
+    }
+
     if (!m_paused) {
         if (!(button.risingEdge() & PAD_BUTTON_START)) {
             return;
@@ -103,16 +187,16 @@ void PauseManager::exec() {
 
     m_pause2D->calc(pad);
 
-    switch (Pause2D::State()) {
+    switch (Pause2D::GetState()) {
     case Pause2D::State::Reset:
-        s_pauseChoice = m_wasCanceled ? 0 : Pause2D::Selector();
+        s_pauseChoice = m_wasCanceled ? 0 : Pause2D::GetSelector();
         if (s_pauseChoice == 0) {
             m_paused = false;
         }
         break;
     case Pause2D::State::Idle:
         if (button.risingEdge() & PAD_BUTTON_A) {
-            switch (Pause2D::Selector()) {
+            switch (Pause2D::GetSelector()) {
             case 0:
                 Pause2D::SetState(Pause2D::State::SlideOut);
                 GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_PAUSE_OFF);
@@ -123,7 +207,7 @@ void PauseManager::exec() {
                 m_printMemoryCard->calc();
                 break;
             }
-        } else if (button.risingEdge() & PAD_BUTTON_START) {
+        } else if (button.risingEdge() & PAD_BUTTON_START || m_pauseEnd) {
             m_wasCanceled = true;
             Pause2D::SetState(Pause2D::State::SlideOut);
             GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_PAUSE_OFF);

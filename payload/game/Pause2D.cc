@@ -14,8 +14,8 @@ extern "C" {
 #include <stdio.h>
 }
 
-Pause2D::Pause2D(JKRHeap *heap)
-    : m_hioNode(new (heap, 0) Pause2DHioNode)
+Pause2D::Pause2D(JKRHeap *heap, JKRArchive *archive)
+    : m_hioNode(new (heap, 0) HioNode)
     , m_graphContext(System::GetJ2DOrtho())
     , m_screen(new (heap, 0) J2DScreen) {
     m_hioNode->isVisible = true;
@@ -53,8 +53,6 @@ Pause2D::Pause2D(JKRHeap *heap)
         }
         break;
     }
-
-    JKRArchive *archive = PauseManager::Instance()->archive();
 
     Array<char, 32> file;
     snprintf(file.values(), file.count(), "pause%" PRIu32 ".blo", count);
@@ -111,7 +109,7 @@ void Pause2D::draw() {
     }
 }
 
-u32 Pause2D::State() {
-    u32 state = REPLACED(State)();
+u32 Pause2D::GetState() {
+    u32 state = REPLACED(GetState)();
     return state == State::Cooldown ? State::Idle : state;
 }

@@ -23,6 +23,7 @@ public:
     REPLACE void drawCourse();
     void REPLACED(calc)();
     REPLACE void calc();
+    J2DPicture *rankPicture(u32 console, u32 rank) const;
 
     static Race2D *Instance();
     static GXColor GetPlayerNumberColor(u32 index);

@@ -11,6 +11,15 @@ const TBox2<f32> &J2DPane::getGlobalBox() const {
     return m_globalBox;
 }
 
+const TVec2<f32> &J2DPane::getScale() const {
+    return m_scale;
+}
+
+void J2DPane::scale(const TVec2<f32> &scale) {
+    m_scale = scale;
+    calcMtx();
+}
+
 J2DPane *J2DPane::search(const char *format, ...) {
     va_list vlist;
     va_start(vlist, format);

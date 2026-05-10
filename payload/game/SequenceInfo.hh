@@ -1,12 +1,13 @@
 #pragma once
 
-#include <portable/Types.hh>
+#include "game/KartGamePad.hh"
 
 class SequenceInfo {
 public:
     u32 getBattleMode() const;
     const char *modeIconTextureName() const;
     const char *modeNameTextureName() const;
+    s32 padPlayer(const KartGamePad *pad) const;
 
     void init();
 
@@ -31,7 +32,15 @@ public:
     u32 m_mapIndex;
 
 private:
-    u8 _040[0x44c - 0x040];
+    u8 _040[0x298 - 0x040];
+
+public:
+    u32 m_points[8];
+    u32 m_raceRankedKartIndices[8];
+    u32 m_gpRankedKartIndices[8];
+
+private:
+    u8 _2f8[0x44c - 0x2f8];
 
     static SequenceInfo s_instance;
 };

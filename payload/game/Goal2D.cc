@@ -33,3 +33,7 @@ void Goal2D::init() {
 
     REPLACED(init)();
 }
+
+bool Goal2D::End() {
+    return s_end;
+}

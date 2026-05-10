@@ -22,25 +22,25 @@ public:
         State();
     };
 
-    REPLACE Pause2D(JKRHeap *heap);
+    Pause2D(JKRHeap *heap, JKRArchive *archive);
     void init();
     void REPLACED(draw)();
     REPLACE void draw();
     void calc(const KartGamePad *pad);
 
-    static u32 REPLACED(State)();
-    REPLACE static u32 State();
+    static u32 REPLACED(GetState)();
+    REPLACE static u32 GetState();
     static void SetState(u32 state);
-    static u32 Selector();
+    static u32 GetSelector();
 
 private:
-    struct Pause2DHioNode {
+    struct HioNode {
         u8 _00[0x48 - 0x00];
         u8 : 7;
         bool isVisible : 1;
         u8 _49[0x4c - 0x49];
     };
-    size_assert(Pause2DHioNode, 0x4c);
+    size_assert(HioNode, 0x4c);
 
     struct Line {
         J2DAnmBase *anmTransform;
@@ -49,20 +49,20 @@ private:
     };
     size_assert(Line, 0xc);
 
-    typedef void (Pause2D::*SelectorFunc)(KartGamePad *pad);
+    typedef void (Pause2D::*SelectorFunc)(const KartGamePad *pad);
     typedef void (Pause2D::*SetDrawFunc)();
 
     void setPadText();
-    void selectorTA(KartGamePad *pad);
-    void selectorGP(KartGamePad *pad);
-    void selectorVS(KartGamePad *pad);
-    void selectorMG(KartGamePad *pad);
+    void selectorTA(const KartGamePad *pad);
+    void selectorGP(const KartGamePad *pad);
+    void selectorVS(const KartGamePad *pad);
+    void selectorMG(const KartGamePad *pad);
     void setDrawTA();
     void setDrawGP();
     void setDrawVS();
     void setDrawMG();
 
-    Pause2DHioNode *m_hioNode;
+    HioNode *m_hioNode;
     J2DGraphContext *m_graphContext;
     J2DScreen *m_screen;
     J2DAnmBase *m_anmTransform;

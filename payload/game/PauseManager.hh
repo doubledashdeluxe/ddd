@@ -8,8 +8,8 @@
 
 class PauseManager {
 public:
+    REPLACE PauseManager(JKRHeap *heap);
     bool paused() const;
-    JKRArchive *archive() const;
     void REPLACED(reset)();
     REPLACE void reset();
     REPLACE void draw();
@@ -19,9 +19,9 @@ public:
 
 private:
     bool m_isLAN;
+    bool m_isOnline;    // Added (was padding)
     bool m_paused;      // Added (was padding)
     bool m_wasCanceled; // Added (was padding)
-    u8 _03[0x04 - 0x03];
     JKRArchive *m_archive;
     PrintMemoryCard *m_printMemoryCard;
     bool m_hasPrintMemoryCard;
@@ -30,7 +30,8 @@ private:
     u8 _0f[0x11 - 0x0f];
     bool m_isDemo;
     bool m_isVisible;
-    u8 _13[0x18 - 0x13];
+    bool m_exec;
+    s32 m_frame;
 
 public:
     bool m_pauseEnd;
@@ -39,11 +40,12 @@ private:
     u8 _19[0x1c - 0x19];
     Pause2D *m_pause2D;
     Result2D *m_result2D;
-    u8 _24[0x28 - 0x24];
+    J2DGraphContext *m_graphContext;
     s32 m_marioFrame;
     s32 m_wipeOutFrame;
     s32 m_wipeOutDuration;
-    u8 _34[0x3c - 0x34];
+    s32 m_resultEndFrame;
+    u8 _38[0x3c - 0x38];
 
     static PauseManager *s_instance;
     static s32 s_pauseChoice;

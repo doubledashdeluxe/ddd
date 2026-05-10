@@ -78,7 +78,9 @@ public:
 
     const TBox2<f32> &getBox() const;
     const TBox2<f32> &getGlobalBox() const;
-    void rotate(f32 w, f32 h, char axis, float angle);
+    void rotate(f32 w, f32 h, char axis, f32 angle);
+    const TVec2<f32> &getScale() const;
+    void scale(const TVec2<f32> &scale);
     J2DPane *getFirstChildPane();
     J2DPane *getNextChildPane();
     J2DPane *search(const char *format, ...);
@@ -139,9 +141,10 @@ public:
     u8 m_alpha;
 
 private:
-    u8 _0b3[0x0d4 - 0x0b3];
+    u8 _0b3[0x0cc - 0x0b3];
 
 public:
+    TVec2<f32> m_scale;
     TVec2<f32> m_offset;
 
 private:
