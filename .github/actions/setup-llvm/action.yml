@@ -9,7 +9,7 @@ runs:
   steps:
     - name: Cache
       id: cache
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: tools/llvm
         key: ${{ runner.os }}-llvm-${{ inputs.llvm-version }}
