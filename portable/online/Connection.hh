@@ -8,8 +8,8 @@
 
 class Connection {
 public:
-    Connection(const ClientPlatform &clientPlatform, PublicKey serverPK,
-            const Array<char, 32> &name, u16 port);
+    Connection(const ClientPlatform &clientPlatform, PublicKey serverPK, const DNS::Name &name,
+            Optional<u16> port);
     ~Connection();
     Optional<Address> address() const;
     void reset();

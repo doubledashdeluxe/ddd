@@ -2,13 +2,23 @@
 
 #include "native/network/FakeUDPSocket.hh"
 
+#include <portable/network/DNS.hh>
+
 #include <map>
 #include <string>
 #include <vector>
 
 class DNSFakeUDPSocket final : public FakeUDPSocket {
 public:
-    DNSFakeUDPSocket(const std::map<std::vector<std::string>, u32> &servers);
+    struct Target {
+        u16 port;
+        std::string name;
+    };
+
+    using AEntries = std::map<std::string, u32>;
+    using SRVEntries = std::map<std::string, Target>;
+
+    DNSFakeUDPSocket(const AEntries &aEntries, const SRVEntries &srvEntries);
     ~DNSFakeUDPSocket();
 
     s32 sendTo(const void *buffer, u32 size, const Address &address) override;
@@ -16,18 +26,21 @@ public:
 private:
     struct Query {
         u16 id;
-        std::vector<std::string> parts;
+        DNS::Name name;
+        u16 qtype;
     };
 
     struct Response {
         u16 id;
-        std::vector<std::string> parts;
-        std::optional<u32> address;
+        DNS::Name name;
+        u16 type;
+        std::optional<std::vector<u8>> data;
     };
 
     std::optional<Query> readQuery(const u8 *buffer, u32 size);
     void writeResponse(const Response &response);
 
     std::vector<u8> m_data;
-    const std::map<std::vector<std::string>, u32> &m_servers;
+    const AEntries &m_aEntries;
+    const SRVEntries &m_srvEntries;
 };

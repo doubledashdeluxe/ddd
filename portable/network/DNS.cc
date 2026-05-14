@@ -8,82 +8,92 @@
 #include "DNS.hh"
 
 #include "portable/Algorithm.hh"
-#include "portable/Bytes.hh"
 
-extern "C" {
-#include <stdio.h>
-#include <string.h>
+bool DNS::resolveA(const Resolvers &resolvers, const char *name, Optional<u32> &address) {
+    return resolve(resolvers, name, address, m_aEntries, A);
 }
 
-bool DNS::resolve(const Array<u32, 2> &resolvers, const char *name, u32 &address) {
-    if (!strcmp(name, "localhost")) {
-        address = 127 << 24 | 0 << 16 | 0 << 8 | 1 << 0;
-        return true;
-    }
+bool DNS::resolveSRV(const Resolvers &resolvers, const char *name, Optional<Target> &target) {
+    return resolve(resolvers, name, target, m_srvEntries, SRV);
+}
 
-    const char *pattern = "%hhu.%hhu.%hhu.%hhu";
-    Array<u8, 4> parts;
-    if (sscanf(name, pattern, &parts[0], &parts[1], &parts[2], &parts[3]) == 4) {
-        address = parts[0] << 24 | parts[1] << 16 | parts[2] << 8 | parts[3] << 0;
-        return true;
-    }
-
-    if (!m_socket.ok()) {
-        m_queries.reset();
-        m_socket.open();
-    }
-
-    if (resolvers != m_resolvers) {
-        m_queries.reset();
-        m_resolvers = resolvers;
-    }
-
-    Response response;
-    if (readResponse(response)) {
-        if (!strcmp(response.name.values(), name)) {
-            address = response.address;
-            return true;
-        }
-    }
-
-    for (u32 i = 0; i < m_responses.count(); i++) {
-        if (strcmp(m_responses[i].name.values(), name)) {
-            continue;
-        }
-
-        if (m_responses[i].expirationTime < getMonotonicTicks()) {
-            m_responses.swapRemoveFront(i);
-            break;
-        } else {
-            address = m_responses[i].address;
-            return true;
-        }
-    }
-
-    for (u32 i = 0; i < m_queries.count(); i++) {
-        if (strcmp(m_queries[i].name.values(), name)) {
-            continue;
-        }
-
-        if (m_queries[i].expirationTime < getMonotonicTicks()) {
-            m_queries.swapRemoveFront(i);
-            break;
-        } else {
+bool DNS::ReadName(const u8 *buffer, u32 size, u32 &offset, Name &name, u32 &nameLength) {
+    nameLength = 0;
+    for (u32 partOffset = offset;;) {
+        if (partOffset >= size) {
             return false;
         }
-    }
 
-    Query query;
-    query.id = m_id;
-    query.expirationTime = getMonotonicTicks() + secondsToTicks(2);
-    s32 nameLength = snprintf(query.name.values(), query.name.count(), "%s", name);
-    if (nameLength < 0 || static_cast<u32>(nameLength) >= query.name.count()) {
-        return false;
+        u8 partLength = buffer[partOffset++];
+        offset = Max(offset, partOffset);
+        if ((partLength & 0xc0) == 0xc0) {
+            if (partOffset >= size) {
+                return false;
+            }
+
+            size = partOffset - 1;
+            offset = Max(offset, partOffset + 1);
+            partOffset = (partLength & ~0xc0) << 8 | buffer[partOffset++] << 0;
+            continue;
+        }
+
+        if (partLength >= 64) {
+            return false;
+        }
+
+        if (partLength == 0) {
+            if (nameLength == 0) {
+                return false;
+            }
+
+            name[--nameLength] = '\0';
+            return true;
+        }
+
+        if (nameLength + partLength >= name.count()) {
+            return false;
+        }
+
+        if (partOffset + partLength >= size) {
+            return false;
+        }
+
+        for (u32 i = 0; i < partLength; i++) {
+            char c = buffer[partOffset + i];
+            if (c == '\0' || c == '.') {
+                return false;
+            }
+
+            name[nameLength + i] = c;
+        }
+        nameLength += partLength;
+        name[nameLength++] = '.';
+        partOffset += partLength;
     }
-    if (writeQuery(query)) {
-        m_id++;
+}
+
+bool DNS::WriteName(u8 *buffer, u32 size, u32 &offset, const Name &name, u32 &nameLength) {
+    u32 partOffset;
+    for (nameLength = 0, partOffset = 0; name[nameLength]; nameLength++) {
+        if (name[nameLength] == '.') {
+            if (nameLength == partOffset || nameLength - partOffset >= 64) {
+                return false;
+            }
+
+            buffer[offset + partOffset] = nameLength - partOffset;
+            partOffset = nameLength + 1;
+        } else {
+            if (offset + 0x001 + nameLength >= size) {
+                return false;
+            }
+
+            buffer[offset + 0x001 + nameLength] = name[nameLength];
+        }
     }
-    return false;
+    buffer[offset + partOffset] = nameLength - partOffset;
+    buffer[offset + nameLength + 0x001] = 0;
+    offset += nameLength + 0x002;
+    return true;
 }
 
 DNS::DNS(UDPSocket &socket) : m_socket(socket), m_id(0) {
@@ -94,120 +104,139 @@ DNS::DNS(UDPSocket &socket) : m_socket(socket), m_id(0) {
 
 DNS::~DNS() {}
 
-bool DNS::readResponse(Response &response) {
-    if (m_queries.empty()) {
-        return false;
+void DNS::checkSocket() {
+    if (!m_socket.ok()) {
+        resetEntries();
+        m_socket.open();
     }
+}
 
-    Array<u8, 512> buffer;
+void DNS::checkResolvers(const Resolvers &resolvers) {
+    if (resolvers != m_resolvers) {
+        resetEntries();
+        m_resolvers = resolvers;
+    }
+}
+
+void DNS::resetEntries() {
+    ResetQueries(m_aEntries);
+    ResetQueries(m_srvEntries);
+}
+
+bool DNS::readResponse(s64 now) {
+    u8 buffer[512];
     Address resolver;
-    s32 result = m_socket.recvFrom(buffer.values(), buffer.count(), resolver);
+    s32 result = m_socket.recvFrom(buffer, Count(buffer), resolver);
     if (result < 0x00c) {
         return false;
     }
 
-    bool hasValidResolver = false;
-    for (u32 i = 0; i < m_resolvers.count(); i++) {
-        if (m_resolvers[i] == resolver.address && 53 == resolver.port) {
-            hasValidResolver = true;
-            break;
-        }
-    }
-    if (!hasValidResolver) {
+    if (!hasResolver(resolver)) {
         return false;
     }
 
-    bool hasValidID = false;
-    u32 queryIndex;
-    u16 id = Bytes::ReadBE<u16>(buffer.values(), 0x000);
-    for (queryIndex = 0; queryIndex < m_queries.count(); queryIndex++) {
-        if (m_queries[queryIndex].id == id) {
-            hasValidID = true;
-            break;
-        }
-    }
-    if (!hasValidID) {
+    u16 id = Bytes::ReadBE<u16>(buffer, 0x000);
+
+    u16 qdcount = Bytes::ReadBE<u16>(buffer, 0x004);
+    u16 ancount = Bytes::ReadBE<u16>(buffer, 0x006);
+    u16 nscount = Bytes::ReadBE<u16>(buffer, 0x008);
+    if (qdcount != 1 || nscount != 0) {
         return false;
     }
 
     u16 flags = 0;
-    flags |= 1 << 15; // QR
-    flags |= 1 << 8;  // RD
-    flags |= 1 << 7;  // RA
-    if (Bytes::ReadBE<u16>(buffer.values(), 0x002) != flags) {
+    flags |= 1 << 15;                // QR
+    flags |= 1 << 8;                 // RD
+    flags |= 1 << 7;                 // RA
+    flags |= (ancount ? 0 : 3) << 0; // RCODE
+    if (Bytes::ReadBE<u16>(buffer, 0x002) != flags) {
         return false;
     }
 
-    u16 qdcount = Bytes::ReadBE<u16>(buffer.values(), 0x004);
-    u16 ancount = Bytes::ReadBE<u16>(buffer.values(), 0x006);
-    u16 nscount = Bytes::ReadBE<u16>(buffer.values(), 0x008);
-    u16 arcount = Bytes::ReadBE<u16>(buffer.values(), 0x00a);
-    if (qdcount != 1 || ancount == 0 || nscount != 0 || arcount != 0) {
-        return false;
-    }
-    if (result < 0x00c + qdcount * (0x002 + 0x004) + ancount * (0x002 + 0x00e)) {
+    u32 size = result, offset = 0x00c, nameLength;
+    Name name;
+    if (!ReadName(buffer, size, offset, name, nameLength)) {
         return false;
     }
 
-    u32 ttl = Max<u32>(Bytes::ReadBE<u32>(buffer.values(), result - 0x00a), 5);
-    u16 rdlength = Bytes::ReadBE<u16>(buffer.values(), result - 0x006);
+    if (offset + 0x004 > size) {
+        return false;
+    }
+    u16 qtype = Bytes::ReadBE<u16>(buffer, offset + 0x000);
+    u16 qclass = Bytes::ReadBE<u16>(buffer, offset + 0x002);
+    if (qclass != 1) {
+        return false;
+    }
+    offset += 0x004;
+
+    switch (qtype) {
+    case A:
+        return readResponse(now, buffer, size, offset, id, ancount, m_aEntries);
+    case SRV:
+        return readResponse(now, buffer, size, offset, id, ancount, m_srvEntries);
+    default:
+        return false;
+    }
+}
+
+bool DNS::hasResolver(const Address &resolver) const {
+    for (u32 i = 0; i < m_resolvers.count(); i++) {
+        if (m_resolvers[i] == resolver.address && 53 == resolver.port) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool DNS::readResponse(const u8 *buffer, u32 offset, AEntry &entry, u16 rdlength) {
     if (rdlength != 4) {
         return false;
     }
 
-    response.expirationTime = getMonotonicTicks() + secondsToTicks(ttl);
-    response.name = m_queries[queryIndex].name;
-    response.address = Bytes::ReadBE<u32>(buffer.values(), result - 0x004);
-
-    m_queries.swapRemoveFront(queryIndex);
-
-    if (ttl != 0) {
-        if (m_responses.full()) {
-            m_responses.popFront();
-        }
-        m_responses.pushBack(response);
-    }
+    entry.data = Bytes::ReadBE<u32>(buffer, offset + 0x000);
     return true;
 }
 
-bool DNS::writeQuery(const Query &query) {
-    Array<u8, 512> buffer;
+bool DNS::readResponse(const u8 *buffer, u32 offset, SRVEntry &entry, u16 rdlength) {
+    if (rdlength < 6) {
+        return false;
+    }
+
+    u16 port = Bytes::ReadBE<u16>(buffer, offset + 0x004);
+    offset += 0x006;
+
+    Name name;
+    u32 nameLength;
+    if (!ReadName(buffer, offset - 6 + rdlength, offset, name, nameLength)) {
+        return false;
+    }
+
+    entry.data = (Target){port, name};
+    return true;
+}
+
+bool DNS::writeQuery(const Name &name, u16 qtype) {
+    u8 buffer[512];
     u16 flags = 0;
     flags |= 1 << 8; // RD
-    Bytes::WriteBE<u16>(buffer.values(), 0x000, m_id);
-    Bytes::WriteBE<u16>(buffer.values(), 0x002, flags);
-    Bytes::WriteBE<u16>(buffer.values(), 0x004, 1); // QDCOUNT
-    Bytes::WriteBE<u16>(buffer.values(), 0x006, 0); // ANCOUNT
-    Bytes::WriteBE<u16>(buffer.values(), 0x008, 0); // NSCOUNT
-    Bytes::WriteBE<u16>(buffer.values(), 0x00a, 0); // ARCOUNT
+    Bytes::WriteBE<u16>(buffer, 0x000, m_id);
+    Bytes::WriteBE<u16>(buffer, 0x002, flags);
+    Bytes::WriteBE<u16>(buffer, 0x004, 1); // QDCOUNT
+    Bytes::WriteBE<u16>(buffer, 0x006, 0); // ANCOUNT
+    Bytes::WriteBE<u16>(buffer, 0x008, 0); // NSCOUNT
+    Bytes::WriteBE<u16>(buffer, 0x00a, 0); // ARCOUNT
 
-    u32 nameLength, partOffset;
-    for (nameLength = 0, partOffset = 0; query.name[nameLength]; nameLength++) {
-        if (query.name[nameLength] == '.') {
-            if (nameLength == partOffset || nameLength - partOffset >= 64) {
-                return false;
-            }
-            buffer[0x00c + partOffset] = nameLength - partOffset;
-            partOffset = nameLength + 1;
-        } else {
-            buffer[0x00c + 0x001 + nameLength] = query.name[nameLength];
-        }
+    u32 offset = 0x00c, nameLength;
+    if (!WriteName(buffer, Count(buffer), offset, name, nameLength)) {
+        return false;
     }
-    buffer[0x00c + partOffset] = nameLength - partOffset;
-    buffer[0x00c + nameLength + 0x001] = 0;
 
-    Bytes::WriteBE<u16>(buffer.values(), 0x00c + nameLength + 0x002, 1); // QTYPE
-    Bytes::WriteBE<u16>(buffer.values(), 0x00c + nameLength + 0x004, 1); // QCLASS
+    Bytes::WriteBE<u16>(buffer, offset + 0x000, qtype);
+    Bytes::WriteBE<u16>(buffer, offset + 0x002, 1); // QCLASS
 
     for (u32 i = 0; i < m_resolvers.count(); i++) {
         Address resolver = {m_resolvers[i], 53};
-        m_socket.sendTo(buffer.values(), 0x00c + nameLength + 0x006, resolver);
+        m_socket.sendTo(buffer, offset + 0x004, resolver);
     }
-
-    if (m_queries.full()) {
-        m_queries.popFront();
-    }
-    m_queries.pushBack(query);
-
     return true;
 }

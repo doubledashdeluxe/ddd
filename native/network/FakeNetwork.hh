@@ -10,5 +10,5 @@ public:
     bool isRunning() const override;
     const char *name() const override;
     u32 address() const override;
-    Array<u32, 2> resolvers() const override;
+    DNS::Resolvers resolvers() const override;
 };

@@ -19,8 +19,8 @@ u32 CubeNetwork::address() const {
     return Bytes::ReadBE<u32>(addr, 0);
 }
 
-Array<u32, 2> CubeNetwork::resolvers() const {
-    Array<u32, 2> resolvers(127 << 24 | 0 << 16 | 0 << 8 | 1 << 0);
+DNS::Resolvers CubeNetwork::resolvers() const {
+    DNS::Resolvers resolvers(127 << 24 | 0 << 16 | 0 << 8 | 1 << 0);
     SOGetResolver(&resolvers[0], &resolvers[1]);
     return resolvers;
 }

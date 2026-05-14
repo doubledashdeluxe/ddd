@@ -5,8 +5,8 @@
 
 class ConnectionStateDNS : public ConnectionState {
 public:
-    ConnectionStateDNS(const ClientPlatform &platform, PublicKey serverPK, Array<char, 32> name,
-            u16 port);
+    ConnectionStateDNS(const ClientPlatform &platform, PublicKey serverPK, DNS::Name name,
+            Optional<u16> port);
     ~ConnectionStateDNS() override;
     Optional<Address> address() const override;
     ConnectionState &reset() override;
@@ -16,6 +16,8 @@ public:
             bool &ok) override;
 
 private:
-    Array<char, 32> m_name;
-    u16 m_port;
+    bool resolve(Address &address) const;
+
+    DNS::Name m_name;
+    Optional<u16> m_port;
 };

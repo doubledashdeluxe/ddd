@@ -2,10 +2,10 @@
 
 #include <portable/online/ClientStateIdle.hh>
 
-FakeClient::FakeClient(const std::map<std::vector<std::string>, u32> &dnsServers,
-        const Key &serverK, const std::vector<u8> &data,
-        const Ring<ServerManager::Server, MaxServerCount> &servers, const Key &clientK)
-    : m_dnsSocket(dnsServers)
+FakeClient::FakeClient(const AEntries &aEntries, const SRVEntries &srvEntries, const Key &serverK,
+        const std::vector<u8> &data, const Ring<ServerManager::Server, MaxServerCount> &servers,
+        const Key &clientK)
+    : m_dnsSocket(aEntries, srvEntries)
     , m_dns(m_dnsSocket)
     , m_serverPlatform(m_allocator, m_random, serverK, data)
     , m_socket(m_serverPlatform)

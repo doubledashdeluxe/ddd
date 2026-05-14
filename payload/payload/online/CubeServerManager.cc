@@ -108,14 +108,15 @@ void CubeServerManager::addServer(const Array<char, 256> &path) {
 
     ServerName name;
     snprintf(name.values(), name.count(), "%s", nameField.values());
-    Array<char, 32> address;
-    u16 port = DefaultPort;
+    Array<char, 80> address;
+    Optional<u16> port;
     const char *tail = strrchr(addressField.values(), ':');
-    if (tail && sscanf(tail, ":%hu", &port) == 1) {
+    if (tail && sscanf(tail, ":%hu", &port.emplace()) == 1) {
         snprintf(address.values(), address.count(), "%.*s",
                 static_cast<int>(tail - addressField.values()), addressField.values());
     } else {
-        snprintf(address.values(), address.count(), "%s", addressField.values());
+        address = addressField;
+        port.reset();
     }
 
     DEBUG("Adding server %s...", path.values());

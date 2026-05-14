@@ -1,6 +1,7 @@
 #pragma once
 
 #include "portable/Array.hh"
+#include "portable/Optional.hh"
 #include "portable/Ring.hh"
 #include "portable/crypto/Types.hh"
 
@@ -13,18 +14,18 @@ class ServerManager {
 public:
     class Server {
     public:
-        Server(ServerName name, Array<char, 32> address, u16 port, PublicKey publicKey);
+        Server(ServerName name, Array<char, 80> address, Optional<u16> port, PublicKey publicKey);
         ~Server();
 
         const ServerName &name() const;
-        const Array<char, 32> &address() const;
-        u16 port() const;
+        const Array<char, 80> &address() const;
+        Optional<u16> port() const;
         const PublicKey &publicKey() const;
 
     private:
         ServerName m_name;
-        Array<char, 32> m_address;
-        u16 m_port;
+        Array<char, 80> m_address;
+        Optional<u16> m_port;
         PublicKey m_publicKey;
     };
 

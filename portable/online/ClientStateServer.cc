@@ -231,8 +231,8 @@ void ClientStateServer::checkConnections() {
             m_connections.pushBack();
             const ServerManager::Server &server = m_platform.serverManager.server(i);
             const PublicKey &publicK = server.publicKey();
-            const Array<char, 32> &name = server.address();
-            u16 port = server.port();
+            const DNS::Name &name = server.address();
+            Optional<u16> port = server.port();
             Connection *connection =
                     new (m_platform.allocator) Connection(m_platform, publicK, name, port);
             m_connections.back()->reset(connection);

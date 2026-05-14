@@ -8,8 +8,10 @@ extern "C" {
 #include <algorithm>
 
 extern "C" int LLVMFuzzerTestOneInput(const u8 *data, size_t size) {
-    std::map<std::vector<std::string>, u32> dnsServers;
-    dnsServers[{"test", "ddd", "gg"}] = 192 << 24 | 0 << 16 | 2 << 8 | 0 << 0;
+    FakeClient::AEntries aEntries;
+    aEntries["test.ddd.gg"] = 192 << 24 | 0 << 16 | 2 << 8 | 0 << 0;
+    FakeClient::SRVEntries srvEntries;
+    srvEntries["_ddd._udp.ddd.gg"] = {3549, "ddd.ddd.gg"};
 
     Key clientK, serverK;
     PublicKey serverPK;
@@ -20,14 +22,14 @@ extern "C" int LLVMFuzzerTestOneInput(const u8 *data, size_t size) {
 
     ServerName name;
     snprintf(name.values(), name.count(), "Test server");
-    Array<char, 32> address;
+    Array<char, 80> address;
     snprintf(address.values(), address.count(), "test.ddd.gg");
-    ServerManager::Server server(name, address, DefaultPort, serverPK);
+    ServerManager::Server server(name, address, {}, serverPK);
     Ring<ServerManager::Server, MaxServerCount> servers;
     servers.pushBack(server);
 
     std::vector<u8> chunk;
-    FakeClient client(dnsServers, serverK, chunk, servers, clientK);
+    FakeClient client(aEntries, srvEntries, serverK, chunk, servers, clientK);
     while (size > 2) {
         u16 chunkSize = Bytes::ReadLE<u16>(data, 0);
         data += 2;

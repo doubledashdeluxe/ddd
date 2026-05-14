@@ -2,21 +2,34 @@
 #include <native/network/FakeDNS.hh>
 #include <snitch/snitch_all.hpp>
 
-#include <map>
-#include <string>
-#include <vector>
-
 TEST_CASE("DNS") {
     u32 expectedAddress = 192 << 24 | 0 << 16 | 2 << 8 | 0 << 0;
-    std::map<std::vector<std::string>, u32> servers;
-    servers[{"ddd", "gg"}] = expectedAddress;
-    DNSFakeUDPSocket socket(servers);
+    DNSFakeUDPSocket::AEntries aEntries;
+    aEntries["ddd.gg"] = expectedAddress;
+
+    DNSFakeUDPSocket::Target expectedTarget = {3549, "ddd.ddd.gg"};
+    DNSFakeUDPSocket::SRVEntries srvEntries;
+    srvEntries["_ddd._udp.ddd.gg"] = expectedTarget;
+
+    DNSFakeUDPSocket socket(aEntries, srvEntries);
     FakeDNS dns(socket);
-    Array<u32, 2> resolvers(0);
-    u32 actualAddress;
-    CHECK_FALSE(dns.resolve(resolvers, "ddd.gg", actualAddress));
-    CHECK(dns.resolve(resolvers, "ddd.gg", actualAddress));
+    DNS::Resolvers resolvers(0);
+
+    Optional<u32> actualAddress;
+    CHECK_FALSE(dns.resolveA(resolvers, "ddd.gg", actualAddress));
+    CHECK(dns.resolveA(resolvers, "ddd.gg", actualAddress));
     CHECK(actualAddress == expectedAddress);
-    CHECK_FALSE(dns.resolve(resolvers, "doubledashde.luxe", actualAddress));
-    CHECK_FALSE(dns.resolve(resolvers, "doubledashde.luxe", actualAddress));
+    CHECK_FALSE(dns.resolveA(resolvers, "doubledashde.luxe", actualAddress));
+    CHECK(dns.resolveA(resolvers, "doubledashde.luxe", actualAddress));
+    CHECK_FALSE(actualAddress);
+
+    Optional<DNS::Target> actualTarget;
+    CHECK_FALSE(dns.resolveSRV(resolvers, "_ddd._udp.ddd.gg", actualTarget));
+    CHECK(dns.resolveSRV(resolvers, "_ddd._udp.ddd.gg", actualTarget));
+    CHECK(actualTarget);
+    CHECK(actualTarget->port == expectedTarget.port);
+    CHECK(actualTarget->name.values() == expectedTarget.name);
+    CHECK_FALSE(dns.resolveSRV(resolvers, "_ddd._udp.doubledashde.luxe", actualTarget));
+    CHECK(dns.resolveSRV(resolvers, "_ddd._udp.doubledashde.luxe", actualTarget));
+    CHECK_FALSE(actualTarget);
 }

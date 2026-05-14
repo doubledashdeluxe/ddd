@@ -252,8 +252,8 @@ bool SceneServerSelect::clientStateServer(const ClientStateServerReadInfo &readI
     const CubeServerManager *serverManager = CubeServerManager::Instance();
     for (u32 i = 0; i < readInfo.servers.count(); i++) {
         const ServerManager::Server &server = serverManager->server(i);
-        const Array<char, 32> &name = server.address();
-        u16 port = server.port();
+        const Array<char, 80> &name = server.address();
+        Optional<u16> port = server.port();
         const ClientStateServerReadInfo::Server &serverInfo = readInfo.servers[i];
         const Optional<Address> &address = serverInfo.address;
         const Optional<u32> &protocolVersion = serverInfo.protocolVersion;
@@ -270,9 +270,11 @@ bool SceneServerSelect::clientStateServer(const ClientStateServerReadInfo &readI
                     version->values(), *protocolVersion);
         } else if (protocolVersion && version) {
             snprintf(desc.values(), desc.count(), "%s", String(7));
-        } else if (networkAddress && address) {
-            snprintf(desc.values(), desc.count(), "%s%s:%u%s", String(5), name.values(), port,
+        } else if (networkAddress && address && port) {
+            snprintf(desc.values(), desc.count(), "%s%s:%u%s", String(5), name.values(), *port,
                     String(6));
+        } else if (networkAddress && address) {
+            snprintf(desc.values(), desc.count(), "%s%s%s", String(5), name.values(), String(6));
         } else if (networkAddress) {
             snprintf(desc.values(), desc.count(), "%s%s%s", String(3), server.address().values(),
                     String(4));

@@ -9,7 +9,7 @@ extern "C" int LLVMFuzzerTestOneInput(const u8 *data, size_t size) {
     std::vector<u8> chunk;
     FakeUDPSocket socket(chunk);
     FakeDNS dns(socket);
-    Array<u32, 2> resolvers(0);
+    DNS::Resolvers resolvers(0);
     while (size > 2) {
         u16 chunkSize = Bytes::ReadLE<u16>(data, 0);
         data += 2;
@@ -21,8 +21,10 @@ extern "C" int LLVMFuzzerTestOneInput(const u8 *data, size_t size) {
         data += chunkSize;
         size -= chunkSize;
 
-        u32 address;
-        dns.resolve(resolvers, "ddd.gg", address);
+        Optional<u32> address;
+        dns.resolveA(resolvers, "ddd.gg", address);
+        Optional<DNS::Target> target;
+        dns.resolveSRV(resolvers, "ddd.gg", target);
     }
     return 0;
 }
