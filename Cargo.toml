@@ -6,11 +6,9 @@ members = [
 ]
 resolver = "3"
 
-[profile.release]
-panic = "abort"
-
-[profile.dev]
-panic = "abort"
+[workspace.package]
+edition = "2024"
+license = "AGPL-3.0-or-later"
 
 [workspace.lints.clippy]
 # complexity
@@ -67,3 +65,9 @@ unused_result_ok = "warn"
 verbose_file_reads = "warn"
 # style
 match_like_matches_macro = "allow"
+
+[profile.release]
+panic = "abort"
+
+[profile.dev]
+panic = "abort"

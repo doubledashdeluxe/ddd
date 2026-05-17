@@ -1,6 +1,7 @@
 [package]
 name = "ddd-server"
-edition = "2024"
+edition.workspace = true
+license.workspace = true
 default-run = "ddd-server"
 
 [dependencies]
