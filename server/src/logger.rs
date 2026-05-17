@@ -1,10 +1,16 @@
 use std::fmt::Display;
+use std::io::{self, IsTerminal};
 
 use anyhow::Result;
-use colored::{ColoredString, Colorize};
 use log::{Level, LevelFilter, Log, Metadata, Record};
+use yansi::{Condition, Paint};
 
 pub fn init() -> Result<()> {
+    let stderr = io::stderr();
+    let condition = Condition::clicolor() && Condition::no_color() && stderr.is_terminal();
+    let condition = Condition::cached(condition);
+    yansi::whenever(condition);
+
     log::set_boxed_logger(Box::new(Logger))?;
     log::set_max_level(LevelFilter::Trace);
     Ok(())
@@ -20,13 +26,13 @@ impl Log for Logger {
     fn log(&self, record: &Record) {
         let file = record.file().unwrap_or("?");
         let line = record.line();
-        let args: ColoredString = record.args().to_string().into();
+        let args = record.args();
         let args = match record.level() {
-            Level::Error => args.red(),
-            Level::Warn => args.yellow(),
+            Level::Error => args.red().bold(),
+            Level::Warn => args.yellow().bold(),
             Level::Info => args.bold(),
-            Level::Debug => args,
-            Level::Trace => args.dimmed(),
+            Level::Debug => args.white(),
+            Level::Trace => args.dim(),
         };
         match line {
             Some(line) => log(file, line, args),

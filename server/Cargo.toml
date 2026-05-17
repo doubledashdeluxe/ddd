@@ -6,13 +6,13 @@ default-run = "ddd-server"
 [dependencies]
 anyhow = "1.0.102"
 bpaf = "0.9.26"
-colored = "3.1.1"
 heapless = "0.9.3"
 log = { version = "0.4.30", features = ["max_level_debug", "std"] }
 noise-protocol = "0.2.1"
 orion = "0.17.14"
 rand = { version = "0.10.1", default-features = false, features = ["sys_rng"] }
 scc = "3.7.1"
+yansi = { version = "1.0.1", features = ["detect-env"] }
 zeroize = "1.8.1"
 
 [build-dependencies]
