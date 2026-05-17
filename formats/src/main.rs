@@ -31,7 +31,7 @@ fn options() -> OptionParser<Options> {
     let cc = bpaf::long("cc").req_flag(Extension::Cc);
     let extension = bpaf::construct!([rs, hh, cc]);
 
-    let output = bpaf::long("output").argument("output").optional();
+    let output = bpaf::long("output").argument("OUTPUT").optional();
 
     bpaf::construct!(Options { format, extension, output }).to_options()
 }
