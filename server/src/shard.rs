@@ -19,7 +19,7 @@ use crate::options::NetSimOptions;
 use crate::rooms::Rooms;
 
 pub fn run(
-    net_sim_options: NetSimOptions,
+    net_sim_options: &NetSimOptions,
     server_k: &Key,
     socket: &UdpSocket,
     message_receiver: &Receiver<Message>,

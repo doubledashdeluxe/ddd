@@ -41,7 +41,7 @@ pub fn run(net_sim_options: NetSimOptions, server_k: &Key) -> Result<()> {
         let rooms = rooms.clone();
         Builder::new().name(format!("shard/{i}")).spawn(move || {
             shard::run(
-                net_sim_options,
+                &net_sim_options,
                 &server_k,
                 &socket,
                 &message_receiver,
