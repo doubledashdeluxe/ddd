@@ -61,7 +61,7 @@ fn main() -> Result<()> {
             Ok(server_pk)
         });
     let server_pk = server_pk?;
-    info!("Server public key: {server_pk}");
+    info!("Public key: {server_pk}");
 
     server::run(options.net_sim, &server_k)
 }

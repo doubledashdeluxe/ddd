@@ -2,6 +2,7 @@ use std::fmt::Display;
 use std::io::{self, IsTerminal};
 
 use anyhow::Result;
+use jiff::Zoned;
 use log::{Level, LevelFilter, Log, Metadata, Record};
 use yansi::{Condition, Paint};
 
@@ -24,7 +25,8 @@ impl Log for Logger {
     }
 
     fn log(&self, record: &Record) {
-        let file = record.file().unwrap_or("?");
+        let time = Zoned::now().time();
+        let file = record.file().and_then(|file| Some(file.rsplit_once('/')?.1)).unwrap_or("?");
         let line = record.line();
         let args = record.args();
         let args = match record.level() {
@@ -35,8 +37,8 @@ impl Log for Logger {
             Level::Trace => args.dim(),
         };
         match line {
-            Some(line) => log(file, line, args),
-            None => log(file, '?', args),
+            Some(line) => log(time, file, line, args),
+            None => log(time, file, '?', args),
         }
     }
 
@@ -44,6 +46,6 @@ impl Log for Logger {
 }
 
 #[expect(clippy::print_stderr)]
-fn log(file: impl Display, line: impl Display, args: impl Display) {
-    eprintln!("[{file}:{line}] {args}");
+fn log(time: impl Display, file: impl Display, line: impl Display, args: impl Display) {
+    eprintln!("[{time:.3}] [{file}:{line}] {args}");
 }
