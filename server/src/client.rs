@@ -6,6 +6,7 @@ use anyhow::{Result, anyhow};
 use log::debug;
 use rand::{Rng, RngExt};
 
+use crate::config::Config;
 use crate::crypto::PublicKey;
 use crate::formats::online::*;
 use crate::formats::version;
@@ -76,7 +77,13 @@ impl Client {
         Some(room_info.id)
     }
 
-    pub fn update(&mut self, now: Instant, rooms: &Rooms, rng: &mut impl Rng) -> Result<()> {
+    pub fn update(
+        &mut self,
+        now: Instant,
+        config: &Config,
+        rooms: &Rooms,
+        rng: &mut impl Rng,
+    ) -> Result<()> {
         anyhow::ensure!(now < self.expiration);
         let client_state = self.client_state.take();
         let Some(client_state) = client_state else {
@@ -154,11 +161,11 @@ impl Client {
                             Pack { course_count: search.pack_course_count, hash: search.pack_hash };
                         let format = search.format;
                         let search = Search { mode_index, pack, format };
-                        let room = rooms.search(frame_rate, &karts, search, rng);
+                        let room = rooms.search(config, frame_rate, &karts, search, rng);
                         room.and_then(|mut room| {
                             let id = room.id();
                             let spectating_counter = 0;
-                            let spectating = room.insert(karts)?;
+                            let spectating = room.insert(config, karts)?;
                             let continuing = room.has_room_lock();
                             Ok(RoomInfo { counter, id, spectating_counter, spectating, continuing })
                         })
@@ -175,7 +182,7 @@ impl Client {
                         let mode_index = new.mode_index;
                         let pack =
                             Pack { course_count: new.pack_course_count, hash: new.pack_hash };
-                        let id = rooms.insert(frame_rate, karts, mode_index, pack, rng);
+                        let id = rooms.insert(config, frame_rate, karts, mode_index, pack, rng);
                         id.map(|id| {
                             let counter = new.room_counter;
                             let spectating_counter = 0;
@@ -198,7 +205,7 @@ impl Client {
                             let id = room.id();
                             let spectating_counter = 0;
                             let karts = karts();
-                            let spectating = room.insert(karts)?;
+                            let spectating = room.insert(config, karts)?;
                             let continuing = room.has_room_lock();
                             Ok(RoomInfo { counter, id, spectating_counter, spectating, continuing })
                         })
@@ -278,6 +285,7 @@ impl Client {
         frame_rate: FrameRate,
         addr: SocketAddr,
         message: &mut [u8],
+        config: &Config,
         player_count: usize,
         rooms: &Rooms,
     ) -> Result<Option<usize>> {
@@ -291,9 +299,10 @@ impl Client {
                 let protocol_version = PROTOCOL_VERSION;
                 let version = heapless::Vec::try_from(version::VERSION.as_bytes()).unwrap();
                 let server_identity = if identity.is_some() {
-                    let motd = heapless::Vec::from(*b"test motd");
-                    let player_count = player_count as u16;
-                    let identity = ServerIdentitySpecified { motd, player_count };
+                    let identity = ServerIdentitySpecified {
+                        motd: config.motd.clone().into_bytes(),
+                        player_count: player_count as u16,
+                    };
                     ServerIdentity::Specified(identity)
                 } else {
                     let identity = ServerIdentityUnspecified {};

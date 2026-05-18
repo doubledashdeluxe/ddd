@@ -26,6 +26,7 @@ fn net_sim_options() -> impl Parser<NetSimOptions> {
         "Sets the simulated network jitter in milliseconds",
     );
     bpaf::construct!(NetSimOptions { drops, latency, jitter })
+        .group_help("Network simulation options:")
 }
 
 fn net_sim_option<T>(

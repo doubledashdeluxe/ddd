@@ -11,6 +11,7 @@ use log::debug;
 use rand::seq::SliceRandom;
 use rand::{Rng, RngExt, SeedableRng};
 
+use crate::config::Config;
 use crate::crypto::{ChaCha20Rng, PublicKey};
 use crate::formats::online::*;
 use crate::item;
@@ -319,6 +320,7 @@ impl Room {
 
     pub fn insert(
         &mut self,
+        config: &Config,
         guest_karts: heapless::Vec<Kart, MAX_CLIENT_KART_COUNT>,
     ) -> Result<bool> {
         anyhow::ensure!(guest_karts.len() <= self.max_client_kart_count);
@@ -326,7 +328,7 @@ impl Room {
             self.karts.extend(guest_karts);
             Ok(false)
         } else {
-            anyhow::ensure!(self.spectating_karts.len() < 1000);
+            anyhow::ensure!(self.spectating_karts.len() < config.max_spectators_per_room);
             let guest_pk = *guest_karts[0].client_pk();
             self.spectating_karts.insert(guest_pk, guest_karts);
             Ok(true)

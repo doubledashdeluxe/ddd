@@ -10,6 +10,7 @@ use rand::{Rng, RngExt};
 use scc::hash_map::{Entry, HashMap, OccupiedEntry, VacantEntry};
 use scc::{HashSet, Queue};
 
+use crate::config::Config;
 use crate::crypto::PublicKey;
 use crate::formats::online::*;
 use crate::kart::Kart;
@@ -30,7 +31,7 @@ pub struct Rooms {
 
 impl Rooms {
     pub fn new() -> Self {
-        let short_codes: collections::HashSet<_> = (0..1000).collect();
+        let short_codes: collections::HashSet<_> = (0..32768).collect();
         Self {
             rooms: array::from_fn(|_| Arc::new(HashMap::new())),
             counts: array::from_fn(|_| Arc::new(0.into())),
@@ -85,6 +86,7 @@ impl Rooms {
 
     pub fn search(
         &self,
+        config: &Config,
         frame_rate: FrameRate,
         karts: &[Kart],
         search: Search,
@@ -112,7 +114,7 @@ impl Rooms {
         if let Some((room, _)) = best_room {
             Ok(room)
         } else {
-            anyhow::ensure!(self.count(frame_rate) <= 1000);
+            anyhow::ensure!(self.count(frame_rate) <= config.max_rooms);
             let room_entry = self.vacant_room_entry(frame_rate, rng);
             let id = *room_entry.key();
             let room = Room::new_worldwide(search.mode_index, search.pack, id, search.format, rng);
@@ -124,6 +126,7 @@ impl Rooms {
 
     pub fn insert(
         &self,
+        config: &Config,
         frame_rate: FrameRate,
         karts: Vec<Kart, MAX_CLIENT_KART_COUNT>,
         mode_index: ModeIndex,
@@ -131,7 +134,7 @@ impl Rooms {
         rng: &mut impl Rng,
     ) -> Result<u128> {
         anyhow::ensure!(pack.course_count != 0);
-        anyhow::ensure!(self.count(frame_rate) <= 1000);
+        anyhow::ensure!(self.count(frame_rate) <= config.max_rooms);
         let room_entry = self.vacant_room_entry(frame_rate, rng);
         let long_code_id_entry = self.long_code_id_entry(rng);
         let id = *room_entry.key();

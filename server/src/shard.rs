@@ -5,12 +5,14 @@ use std::net::{SocketAddr, UdpSocket};
 use std::sync::mpsc::{Receiver, RecvTimeoutError, SyncSender};
 use std::time::{Duration, Instant};
 
+use arc_swap::Cache;
 use log::error;
 use noise_protocol::U8Array;
 use rand::RngExt;
 
 use crate::buffer::Buffer;
 use crate::clients::Clients;
+use crate::config::{Config, SharedConfig};
 use crate::connection::Connection;
 use crate::crypto::{ChaCha20Rng, Key};
 use crate::formats::online::FrameRate;
@@ -18,60 +20,64 @@ use crate::message::Message;
 use crate::options::NetSimOptions;
 use crate::rooms::Rooms;
 
-pub fn run(
-    net_sim_options: &NetSimOptions,
-    server_k: &Key,
-    socket: &UdpSocket,
-    message_receiver: &Receiver<Message>,
-    buffer_sender: &SyncSender<Buffer>,
-    clients: &Clients,
-    rooms: &Rooms,
-) -> ! {
-    let link = Link {
-        drops: 1.0 - (1.0 - net_sim_options.drops).sqrt(),
-        latency: net_sim_options.latency / 2,
-        jitter: net_sim_options.jitter / 2,
-        socket,
-        message_receiver,
-        buffer_sender,
-        buffers: vec![Buffer::new(); 5000],
-        events: BTreeMap::new(),
-        event_index: 0,
-        rng: rand::make_rng(),
-    };
-    let shard = Shard {
-        server_k,
-        link,
-        random_state: RandomState::new(),
-        connections: HashMap::new(),
-        clients,
-        rooms,
-    };
-    shard.run()
-}
-
-struct Shard<'a> {
-    server_k: &'a Key,
-    link: Link<'a>,
+pub struct Shard {
+    config: SharedConfig,
+    server_k: Key,
+    link: Link,
     random_state: RandomState,
     connections: HashMap<SocketAddr, Connection>,
-    clients: &'a Clients,
-    rooms: &'a Rooms,
+    clients: Clients,
+    rooms: Rooms,
 }
 
-impl Shard<'_> {
-    fn run(mut self) -> ! {
+impl Shard {
+    pub fn new(
+        net_sim_options: NetSimOptions,
+        config: SharedConfig,
+        server_k: Key,
+        socket: UdpSocket,
+        message_receiver: Receiver<Message>,
+        buffer_sender: SyncSender<Buffer>,
+        clients: Clients,
+        rooms: Rooms,
+    ) -> Self {
+        let link = Link {
+            drops: 1.0 - (1.0 - net_sim_options.drops).sqrt(),
+            latency: net_sim_options.latency / 2,
+            jitter: net_sim_options.jitter / 2,
+            socket,
+            message_receiver,
+            buffer_sender,
+            buffers: vec![Buffer::new(); config.load().buffers_per_shard * 5],
+            events: BTreeMap::new(),
+            event_index: 0,
+            rng: rand::make_rng(),
+        };
+        Self {
+            config,
+            server_k,
+            link,
+            random_state: RandomState::new(),
+            connections: HashMap::new(),
+            clients,
+            rooms,
+        }
+    }
+
+    pub fn run(mut self) -> ! {
+        let mut config = Cache::new(self.config.clone());
         let mut tick_counter = 0;
         let mut message = None;
         loop {
             let now = Instant::now();
+            let config = config.load();
             match message {
                 Some(Message::Read { buffer, addr }) => {
-                    self.read(now, tick_counter, addr, buffer.as_slice());
+                    self.read(now, config, tick_counter, addr, buffer.as_slice());
                     self.link.send(buffer);
                 }
                 Some(Message::Write { frame_rate }) => {
-                    self.write(now, frame_rate);
+                    self.write(now, config, frame_rate);
                     tick_counter += 1;
                 }
                 None => (),
@@ -80,16 +86,24 @@ impl Shard<'_> {
         }
     }
 
-    fn read(&mut self, now: Instant, tick_counter: u64, addr: SocketAddr, message: &[u8]) {
-        let is_full = self.connections.len() >= 1000;
+    fn read(
+        &mut self,
+        now: Instant,
+        config: &Config,
+        tick_counter: u64,
+        addr: SocketAddr,
+        message: &[u8],
+    ) {
+        let connection_count = self.connections.len();
+        let is_full = || connection_count >= self.config.load().max_connections_per_shard;
         match self.connections.entry(addr) {
             Entry::Occupied(mut o) => {
                 let connection = o.get_mut();
-                if connection.read(now, message, self.clients).is_err() {
+                if connection.read(now, config, message, &self.clients).is_err() {
                     o.remove();
                 }
             }
-            Entry::Vacant(v) if !is_full => {
+            Entry::Vacant(v) if !is_full() => {
                 let Some((client_cookie, message)) = message.split_first_chunk() else {
                     return;
                 };
@@ -109,17 +123,18 @@ impl Shard<'_> {
         }
     }
 
-    fn write(&mut self, now: Instant, frame_rate: FrameRate) {
+    fn write(&mut self, now: Instant, config: &Config, frame_rate: FrameRate) {
         let player_count = self.clients.player_count();
         self.connections.retain(|addr, connection| {
             let mut message = [0u8; 512];
             let message_len = connection.write(
                 now,
+                config,
                 frame_rate,
                 &mut message,
-                self.clients,
+                &self.clients,
                 player_count,
-                self.rooms,
+                &self.rooms,
             );
             match message_len {
                 Ok(Some(message_len)) => {
@@ -134,20 +149,20 @@ impl Shard<'_> {
     }
 }
 
-struct Link<'a> {
+struct Link {
     drops: f64,
     latency: u64,
     jitter: u64,
-    socket: &'a UdpSocket,
-    message_receiver: &'a Receiver<Message>,
-    buffer_sender: &'a SyncSender<Buffer>,
+    socket: UdpSocket,
+    message_receiver: Receiver<Message>,
+    buffer_sender: SyncSender<Buffer>,
     buffers: Vec<Buffer>,
     events: BTreeMap<(Instant, usize), Event>,
     event_index: usize,
     rng: ChaCha20Rng,
 }
 
-impl Link<'_> {
+impl Link {
     fn recv(&mut self, now: Instant) -> Option<Message> {
         for (_, event) in self.events.extract_if(..(now, usize::MAX), |_, _| true) {
             match event {

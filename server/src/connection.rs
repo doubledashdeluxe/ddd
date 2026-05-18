@@ -4,6 +4,7 @@ use std::time::{Duration, Instant};
 use anyhow::{Context, Result};
 
 use crate::clients::Clients;
+use crate::config::Config;
 use crate::crypto::kx;
 use crate::crypto::session::Session;
 use crate::crypto::{Key, PublicKey};
@@ -29,7 +30,13 @@ impl Connection {
         Ok(connection)
     }
 
-    pub fn read(&mut self, now: Instant, message: &[u8], clients: &Clients) -> Result<()> {
+    pub fn read(
+        &mut self,
+        now: Instant,
+        config: &Config,
+        message: &[u8],
+        clients: &Clients,
+    ) -> Result<()> {
         let plaintext_len = message
             .len()
             .checked_sub(Session::MAC_SIZE + Session::NONCE_SIZE)
@@ -44,7 +51,7 @@ impl Connection {
             State::Kx { .. } => {
                 // Any MITM can trivially replay M1, thus we need to wait for a valid session
                 // message to consider the client to be authenticated.
-                clients.insert(now, self.addr, self.client_pk)
+                clients.insert(now, config, self.addr, self.client_pk)
             }
             State::Session => clients.get(&self.client_pk),
         }?;
@@ -56,6 +63,7 @@ impl Connection {
     pub fn write(
         &mut self,
         now: Instant,
+        config: &Config,
         frame_rate: FrameRate,
         message: &mut [u8],
         clients: &Clients,
@@ -75,7 +83,7 @@ impl Connection {
             State::Session => {
                 let mut plaintext = [0u8; 512];
                 let plaintext_len = clients.read(&self.client_pk, |client| {
-                    client.write(frame_rate, self.addr, &mut plaintext, player_count, rooms)
+                    client.write(frame_rate, self.addr, &mut plaintext, config, player_count, rooms)
                 })??;
                 let Some(plaintext_len) = plaintext_len else {
                     return Ok(None);

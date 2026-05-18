@@ -10,6 +10,7 @@ use rand::Rng;
 use scc::hash_map::{Entry, HashMap, OccupiedEntry};
 
 use crate::client::Client;
+use crate::config::Config;
 use crate::crypto::PublicKey;
 use crate::rooms::Rooms;
 
@@ -41,8 +42,14 @@ impl Clients {
         self.clients.get_sync(pk).map(ClientRef::new).context("Client not found")
     }
 
-    pub fn insert(&self, now: Instant, addr: SocketAddr, pk: PublicKey) -> Result<ClientRef<'_>> {
-        let is_full = || self.count.load(Ordering::Relaxed) >= 1000;
+    pub fn insert(
+        &self,
+        now: Instant,
+        config: &Config,
+        addr: SocketAddr,
+        pk: PublicKey,
+    ) -> Result<ClientRef<'_>> {
+        let is_full = || self.count.load(Ordering::Relaxed) >= config.max_clients;
         let entry = match self.clients.entry_sync(pk) {
             Entry::Occupied(mut o) => {
                 o.get_mut().set_addr(addr);
@@ -60,6 +67,7 @@ impl Clients {
     pub fn update(
         &self,
         now: Instant,
+        config: &Config,
         client_room_ids: &mut collections::HashMap<PublicKey, Option<u128>>,
         rooms: &Rooms,
         rng: &mut impl Rng,
@@ -68,7 +76,7 @@ impl Clients {
         let mut count = 0;
         let mut player_count = 0;
         self.clients.retain_sync(|pk, client| {
-            let retain = client.update(now, rooms, rng).is_ok();
+            let retain = client.update(now, config, rooms, rng).is_ok();
             if retain {
                 count += 1;
                 player_count += client.player_count();
