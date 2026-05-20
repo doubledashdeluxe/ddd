@@ -5,7 +5,7 @@ default-run = "ddd-server"
 
 [dependencies]
 anyhow = "1.0.102"
-bpaf = "0.9.25"
+bpaf = "0.9.26"
 colored = "3.1.1"
 heapless = "0.9.3"
 log = { version = "0.4.29", features = ["max_level_debug", "std"] }

@@ -7,6 +7,6 @@ workspace = true
 
 [dependencies]
 anyhow = "1.0.102"
-bpaf = "0.9.25"
+bpaf = "0.9.26"
 miniz_oxide = "0.9.1"
 object = { version = "0.39.1", default-features = false, features = ["build_core", "elf", "read_core"] }

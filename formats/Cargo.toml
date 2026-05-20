@@ -3,7 +3,7 @@ name = "ddd-formats"
 edition = "2024"
 
 [dependencies]
-bpaf = "0.9.25"
+bpaf = "0.9.26"
 heapless = "0.9.3"
 
 [lints]
