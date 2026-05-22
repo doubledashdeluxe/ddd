@@ -18,7 +18,7 @@ pub struct Config {
     pub buffers_per_shard: usize,
     pub max_connections_per_shard: usize,
     pub max_clients: usize,
-    pub max_rooms: usize,
+    pub max_rooms_per_frame_rate: usize,
     pub max_spectators_per_room: usize,
 }
 
@@ -30,7 +30,7 @@ impl Config {
             buffers_per_shard: 1000,
             max_connections_per_shard: 2000,
             max_clients: 10000,
-            max_rooms: 10000,
+            max_rooms_per_frame_rate: 10000,
             max_spectators_per_room: 1000,
         }
     }
@@ -87,7 +87,7 @@ impl Ini for Config {
             "buffers_per_shard" => self.buffers_per_shard = parse_number(65536)?,
             "max_connections_per_shard" => self.max_connections_per_shard = parse_number(65536)?,
             "max_clients" => self.max_clients = parse_number(65536)?,
-            "max_rooms" => self.max_rooms = parse_number(32768)?,
+            "max_rooms_per_frame_rate" => self.max_rooms_per_frame_rate = parse_number(32768)?,
             "max_spectators_per_room" => self.max_spectators_per_room = parse_number(65536)?,
             _ => anyhow::bail!("Unexpected key \"{key}\""),
         }

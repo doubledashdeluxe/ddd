@@ -81,10 +81,15 @@ impl Client {
         &mut self,
         now: Instant,
         config: &Config,
+        frame_rate: FrameRate,
         rooms: &Rooms,
+        room_slots: &mut usize,
         rng: &mut impl Rng,
     ) -> Result<()> {
         anyhow::ensure!(now < self.expiration);
+        if frame_rate != self.frame_rate().unwrap_or(FrameRate::SixtyHz) {
+            return Ok(());
+        }
         let client_state = self.client_state.take();
         let Some(client_state) = client_state else {
             return Ok(());
@@ -161,7 +166,7 @@ impl Client {
                             Pack { course_count: search.pack_course_count, hash: search.pack_hash };
                         let format = search.format;
                         let search = Search { mode_index, pack, format };
-                        let room = rooms.search(config, frame_rate, &karts, search, rng);
+                        let room = rooms.search(room_slots, frame_rate, &karts, search, rng);
                         room.and_then(|mut room| {
                             let id = room.id();
                             let spectating_counter = 0;
@@ -182,7 +187,7 @@ impl Client {
                         let mode_index = new.mode_index;
                         let pack =
                             Pack { course_count: new.pack_course_count, hash: new.pack_hash };
-                        let id = rooms.insert(config, frame_rate, karts, mode_index, pack, rng);
+                        let id = rooms.insert(room_slots, frame_rate, karts, mode_index, pack, rng);
                         id.map(|id| {
                             let counter = new.room_counter;
                             let spectating_counter = 0;

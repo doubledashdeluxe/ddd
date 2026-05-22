@@ -22,7 +22,7 @@ impl Listener {
         Self { socket, message_senders, buffer_receiver }
     }
 
-    pub fn run(&self) -> ! {
+    pub fn run(self) -> ! {
         let random_state = RandomState::new();
         loop {
             let mut buffer = self.buffer_receiver.recv().unwrap();

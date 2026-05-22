@@ -33,9 +33,9 @@ impl Connection {
     pub fn read(
         &mut self,
         now: Instant,
-        config: &Config,
         message: &[u8],
         clients: &Clients,
+        client_slots: &mut usize,
     ) -> Result<()> {
         let plaintext_len = message
             .len()
@@ -51,7 +51,7 @@ impl Connection {
             State::Kx { .. } => {
                 // Any MITM can trivially replay M1, thus we need to wait for a valid session
                 // message to consider the client to be authenticated.
-                clients.insert(now, config, self.addr, self.client_pk)
+                clients.insert(now, client_slots, self.addr, self.client_pk)
             }
             State::Session => clients.get(&self.client_pk),
         }?;

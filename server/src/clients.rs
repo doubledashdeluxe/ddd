@@ -12,6 +12,7 @@ use scc::hash_map::{Entry, HashMap, OccupiedEntry};
 use crate::client::Client;
 use crate::config::Config;
 use crate::crypto::PublicKey;
+use crate::formats::online::FrameRate;
 use crate::rooms::Rooms;
 
 #[derive(Clone, Default)]
@@ -30,6 +31,10 @@ impl Clients {
         }
     }
 
+    pub fn count(&self) -> usize {
+        self.count.load(Ordering::Relaxed)
+    }
+
     pub fn player_count(&self) -> usize {
         self.player_count.load(Ordering::Relaxed)
     }
@@ -45,17 +50,17 @@ impl Clients {
     pub fn insert(
         &self,
         now: Instant,
-        config: &Config,
+        client_slots: &mut usize,
         addr: SocketAddr,
         pk: PublicKey,
     ) -> Result<ClientRef<'_>> {
-        let is_full = || self.count.load(Ordering::Relaxed) >= config.max_clients;
         let entry = match self.clients.entry_sync(pk) {
             Entry::Occupied(mut o) => {
                 o.get_mut().set_addr(addr);
                 o
             }
-            Entry::Vacant(v) if !is_full() => {
+            Entry::Vacant(v) if *client_slots != 0 => {
+                *client_slots -= 1;
                 let client = Client::new(now, addr, pk);
                 v.insert_entry(client)
             }
@@ -68,15 +73,17 @@ impl Clients {
         &self,
         now: Instant,
         config: &Config,
+        frame_rate: FrameRate,
         client_room_ids: &mut collections::HashMap<PublicKey, Option<u128>>,
         rooms: &Rooms,
+        room_slots: &mut usize,
         rng: &mut impl Rng,
     ) {
         client_room_ids.clear();
         let mut count = 0;
         let mut player_count = 0;
         self.clients.retain_sync(|pk, client| {
-            let retain = client.update(now, config, rooms, rng).is_ok();
+            let retain = client.update(now, config, frame_rate, rooms, room_slots, rng).is_ok();
             if retain {
                 count += 1;
                 player_count += client.player_count();

@@ -27,6 +27,7 @@ pub struct Shard {
     random_state: RandomState,
     connections: HashMap<SocketAddr, Connection>,
     clients: Clients,
+    client_slots: usize,
     rooms: Rooms,
 }
 
@@ -60,6 +61,7 @@ impl Shard {
             random_state: RandomState::new(),
             connections: HashMap::new(),
             clients,
+            client_slots: 0,
             rooms,
         }
     }
@@ -76,8 +78,9 @@ impl Shard {
                     self.read(now, config, tick_counter, addr, buffer.as_slice());
                     self.link.send(buffer);
                 }
-                Some(Message::Write { frame_rate }) => {
+                Some(Message::Write { frame_rate, client_slots }) => {
                     self.write(now, config, frame_rate);
+                    self.client_slots = client_slots;
                     tick_counter += 1;
                 }
                 None => (),
@@ -95,15 +98,14 @@ impl Shard {
         message: &[u8],
     ) {
         let connection_count = self.connections.len();
-        let is_full = || connection_count >= self.config.load().max_connections_per_shard;
         match self.connections.entry(addr) {
             Entry::Occupied(mut o) => {
                 let connection = o.get_mut();
-                if connection.read(now, config, message, &self.clients).is_err() {
+                if connection.read(now, message, &self.clients, &mut self.client_slots).is_err() {
                     o.remove();
                 }
             }
-            Entry::Vacant(v) if !is_full() => {
+            Entry::Vacant(v) if connection_count < config.max_connections_per_shard => {
                 let Some((client_cookie, message)) = message.split_first_chunk() else {
                     return;
                 };

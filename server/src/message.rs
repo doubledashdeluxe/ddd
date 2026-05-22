@@ -5,5 +5,5 @@ use crate::formats::online::FrameRate;
 
 pub enum Message {
     Read { buffer: Buffer, addr: SocketAddr },
-    Write { frame_rate: FrameRate },
+    Write { frame_rate: FrameRate, client_slots: usize },
 }
