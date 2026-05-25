@@ -1,5 +1,16 @@
 #include "JFWDisplay.hh"
 
+#include "jsystem/J2DOrthoGraph.hh"
+
+#include <cube/VI.hh>
+
+void JFWDisplay::endDraw() {
+    VI *vi = VI::Instance();
+    J2DOrthoGraph orthoGraph(0.0f, 0.0f, vi->getXFBWidth(), vi->getXFBHeight(), -1.0f, 1.0f);
+    orthoGraph.setViewport();
+    m_fader->REPLACED(control)();
+}
+
 u32 JFWDisplay::getFaderStatus() const {
     if (!m_fader) {
         return JUTFader::Status::In;

@@ -27,7 +27,6 @@ SceneRoomCodeEnter::SceneRoomCodeEnter(JKRArchive *archive, JKRHeap *heap) : Sce
     for (u32 i = 0; i < m_charScreens.count(); i++) {
         m_mainScreen.search("Char%u", i)->appendChild(&m_charScreens[i]);
     }
-
     m_tandemScreen.search("Cstok_pb")->m_isVisible = false;
     m_tandemScreen.search("Cstok_p")->m_isVisible = false;
 

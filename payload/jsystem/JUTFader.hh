@@ -3,6 +3,7 @@
 extern "C" {
 #include <dolphin/GX.h>
 }
+#include <payload/Replace.hh>
 
 class JUTFader {
 public:
@@ -26,6 +27,8 @@ public:
 
     u32 getStatus() const;
     void setColor(u8 r, u8 g, u8 b);
+    void REPLACED(control)();
+    REPLACE void control();
 
 private:
     u32 m_status;

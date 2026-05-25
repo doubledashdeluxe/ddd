@@ -22,7 +22,9 @@ private:
             Records = 1,
             Options = 2,
             Remote = 3,
-            Count = 4,
+            Replays = 4,
+            About = 5,
+            Count = 6,
         };
 
     private:
@@ -50,6 +52,9 @@ private:
     void stateNextScene();
     void stateNextRace();
     void stateNextMovie();
+
+    static u32 NextScene(u32 entryIndex);
+    static u32 SoundID(u32 entryIndex);
 
     State m_state;
     u32 m_timeBeforeDemo;

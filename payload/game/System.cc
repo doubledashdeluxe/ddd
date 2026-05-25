@@ -97,6 +97,7 @@ void System::Run() {
         }
         netGameMgr->framework();
         AppMgr::Draw();
+        s_display->endDraw();
         perfOverlay->endDraw();
 
         perfOverlay->beginCalc();

@@ -45,7 +45,6 @@ SceneTeamSelect::SceneTeamSelect(JKRArchive *archive, JKRHeap *heap) : Scene(arc
     for (u32 i = 0; i < m_entryScreens.count(); i++) {
         m_mainScreen.search("Player%u", i)->appendChild(&m_entryScreens[i]);
     }
-
     J2DScreen &okScreen = m_entryScreens[MaxEntryCount - 1];
     okScreen.search("L0")->m_isVisible = false;
     okScreen.search("R0")->m_isVisible = false;

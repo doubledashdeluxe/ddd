@@ -687,23 +687,23 @@ void SceneMapSelect::refreshSpin() {
     if (m_rowCount >= 2 && m_spinRowIndex == m_rowCount - 1) {
         m_spinRowIndex--;
     }
-    Array<u32, 12> mapIndices;
+    Array<u32, 12> nextMapIndices;
     for (u32 i = 0; i < 6; i++) {
-        mapIndices[0 + i] = m_rowIndex * 3 + i;
+        nextMapIndices[0 + i] = m_rowIndex * 3 + i;
     }
     for (u32 i = 0; i < 6; i++) {
-        mapIndices[6 + i] = m_spinRowIndex * 3 + i;
+        nextMapIndices[6 + i] = m_spinRowIndex * 3 + i;
     }
-    refreshMaps(mapIndices);
+    refreshMaps(nextMapIndices);
 }
 
 void SceneMapSelect::refreshMaps() {
-    Array<u32, 12> mapIndices;
-    u32 rowIndex = m_rowIndex == 0 ? 0 : m_rowIndex - 1;
-    for (u32 i = 0; i < mapIndices.count(); i++) {
-        mapIndices[i] = rowIndex * 3 + i;
+    Array<u32, 12> nextMapIndices;
+    u32 rowIndex = Max<u32>(m_rowIndex, 1) - 1;
+    for (u32 i = 0; i < nextMapIndices.count(); i++) {
+        nextMapIndices[i] = rowIndex * 3 + i;
     }
-    refreshMaps(mapIndices);
+    refreshMaps(nextMapIndices);
 }
 
 void SceneMapSelect::refreshMaps(const Array<u32, 12> &nextMapIndices) {

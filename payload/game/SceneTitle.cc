@@ -294,39 +294,23 @@ void SceneTitle::stateStart() {
         if (m_entryIndex == Entry::Remote && m_lanIsEnabled) {
             startLAN();
         } else {
+            m_nextScene = NextScene(m_entryIndex);
             GameAudio::Main::Instance()->fadeOutAll(15);
-            switch (m_entryIndex) {
-            case Entry::Local:
-                m_nextScene = SceneType::Menu;
-                GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_TITLE_TO_SELECT);
-                break;
-            case Entry::Records:
-                m_nextScene = SceneType::Record;
-                GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE);
-                break;
-            case Entry::Options:
-                m_nextScene = SceneType::Option;
-                GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE);
-                break;
-            case Entry::Remote:
-                m_nextScene = SceneType::HowManyPlayers;
-                GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_TITLE_TO_SELECT);
+            GameAudio::Main::Instance()->startSystemSe(SoundID(m_entryIndex));
+            if (m_entryIndex == Entry::Remote) {
                 SequenceInfo::Instance().m_isOnline = true;
-                break;
             }
             fadeOut();
         }
     } else if (button.repeat() & JUTGamePad::PAD_MSTICK_UP) {
-        m_entryIndex = (m_entryIndex - 1) % Entry::Count;
+        m_entryIndex = m_entryIndex == 0 ? Entry::Count - 1 : m_entryIndex - 1;
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CURSOL);
     } else if (button.repeat() & JUTGamePad::PAD_MSTICK_DOWN) {
-        m_entryIndex = (m_entryIndex + 1) % Entry::Count;
+        m_entryIndex = m_entryIndex == Entry::Count - 1 ? 0 : m_entryIndex + 1;
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CURSOL);
     } else if (button.risingEdge() & PAD_TRIGGER_Z) {
-        if (m_entryIndex == Entry::Remote) {
-            GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_ATTENTION);
-            m_lanIsEnabled = !m_lanIsEnabled;
-        }
+        GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_ATTENTION);
+        m_lanIsEnabled = !m_lanIsEnabled;
     }
 }
 
@@ -362,5 +346,32 @@ void SceneTitle::stateNextRace() {
 }
 
 void SceneTitle::stateNextMovie() {}
+
+u32 SceneTitle::NextScene(u32 entryIndex) {
+    switch (entryIndex) {
+    case Entry::Local:
+        return SceneType::Menu;
+    case Entry::Records:
+        return SceneType::Record;
+    case Entry::Options:
+        return SceneType::Option;
+    case Entry::Remote:
+        return SceneType::HowManyPlayers;
+    case Entry::Replays:
+        return SceneType::Replay;
+    default:
+        return SceneType::Title;
+    }
+}
+
+u32 SceneTitle::SoundID(u32 entryIndex) {
+    switch (entryIndex) {
+    case Entry::Local:
+    case Entry::Remote:
+        return SoundID::JA_SE_TR_TITLE_TO_SELECT;
+    default:
+        return SoundID::JA_SE_TR_DECIDE;
+    }
+}
 
 u32 SceneTitle::s_demoType = 1;

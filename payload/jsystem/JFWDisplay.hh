@@ -8,6 +8,8 @@ public:
     virtual void endRender();
     virtual void endFrame();
 
+    void endDraw();
+
     u32 getFaderStatus() const;
     void setFaderColor(u8 r, u8 g, u8 b);
     bool startFadeIn(s32 duration);

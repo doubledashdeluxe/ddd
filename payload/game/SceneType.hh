@@ -29,7 +29,8 @@ public:
         CharacterSelect = 0x19, // Added
         MapSelect = 0x1a,       // Moved
         CoursePoll = 0x1b,      // Added
-        Count = 0x1c,
+        Replay = 0x1c,          // Added
+        Count = 0x1d,
     };
 
 private:

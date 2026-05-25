@@ -52,12 +52,12 @@ ScenePackSelect::ScenePackSelect(JKRArchive *archive, JKRHeap *heap) : Scene(arc
 
     m_mainAnmTransform = J2DAnmLoaderDataBase::Load("SelectPackLayout.bck", m_archive);
     m_mainScreen.setAnimation(m_mainAnmTransform);
-    m_modeAnmTransform = J2DAnmLoaderDataBase::Load("SelectMapLayout.bck", mapSelectArchive);
-    m_modeScreen.search("NSlMap")->setAnimation(m_modeAnmTransform);
     m_arrowAnmTransform = J2DAnmLoaderDataBase::Load("SelectPackLayout.bck", m_archive);
     for (u32 i = 0; i < 2; i++) {
         m_mainScreen.search("MArrow%02u", i + 1)->setAnimation(m_arrowAnmTransform);
     }
+    m_modeAnmTransform = J2DAnmLoaderDataBase::Load("SelectMapLayout.bck", mapSelectArchive);
+    m_modeScreen.search("NSlMap")->setAnimation(m_modeAnmTransform);
     m_onlineAnmTransform = J2DAnmLoaderDataBase::Load("Line.bck", m_archive);
     for (u32 i = 0; i < 6; i++) {
         m_packScreens[i].search("CIcon")->setAnimation(m_onlineAnmTransform);
@@ -176,8 +176,8 @@ void ScenePackSelect::calc() {
     }
 
     m_mainAnmTransform->m_frame = m_mainAnmTransformFrame;
-    m_modeAnmTransform->m_frame = m_modeAnmTransformFrame;
     m_arrowAnmTransform->m_frame = m_arrowAnmTransformFrame;
+    m_modeAnmTransform->m_frame = m_modeAnmTransformFrame;
     m_onlineAnmTransform->m_frame = m_onlineAnmTransformFrame;
     for (u32 i = 0; i < m_packAnmTransforms.count(); i++) {
         m_packAnmTransforms[i]->m_frame = m_packAnmTransformFrames[i];
@@ -479,7 +479,7 @@ void ScenePackSelect::refreshPacks() {
     Kart2DCommon *kart2DCommon = Kart2DCommon::Instance();
     CourseManager *courseManager = CourseManager::Instance();
     const RaceInfo &raceInfo = RaceInfo::Instance();
-    for (u32 i = 0; i < 6; i++) {
+    for (u32 i = 0; i < m_packScreens.count(); i++) {
         u32 packIndex = m_rowIndex + i;
         if (packIndex >= m_packCount) {
             break;

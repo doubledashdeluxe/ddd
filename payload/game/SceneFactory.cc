@@ -13,6 +13,7 @@
 #include "game/ScenePersonalRoom.hh"
 #include "game/ScenePlayerList.hh"
 #include "game/SceneProfileSelect.hh"
+#include "game/SceneReplay.hh"
 #include "game/SceneRoomCodeEnter.hh"
 #include "game/SceneRoomTypeSelect.hh"
 #include "game/SceneServerSelect.hh"
@@ -112,6 +113,12 @@ void SceneFactory::loadData(s32 sceneType, JKRHeap *heap) {
         REPLACED(loadData)(SceneType::LanEntry, heap);
         loadLocalizedArchive(ArchiveType::CourseSelect, "CourseSelect", heap);
         return;
+    case SceneType::Replay:
+        REPLACED(loadData)(SceneType::Menu, heap);
+        REPLACED(loadData)(SceneType::PackSelect, heap);
+        REPLACED(loadData)(SceneType::LanEntry, heap);
+        loadLocalizedArchive(ArchiveType::GhostData, "GhostData", heap);
+        return;
     }
 
     REPLACED(loadData)(sceneType, heap);
@@ -193,6 +200,10 @@ Scene *SceneFactory::createScene(s32 sceneType, JKRHeap *heap) {
     case SceneType::CoursePoll:
         sysDebug->setHeapGroup("CoursePoll", heap);
         scene = new (heap, 0x0) SceneCoursePoll(m_archives[ArchiveType::MapSelect], heap);
+        break;
+    case SceneType::Replay:
+        sysDebug->setHeapGroup("Replay", heap);
+        scene = new (heap, 0x0) SceneReplay(m_archives[ArchiveType::GhostData], heap);
         break;
     default:
         return REPLACED(createScene)(sceneType, heap);

@@ -9,3 +9,5 @@ void JUTFader::setColor(u8 r, u8 g, u8 b) {
     m_color.g = g;
     m_color.b = b;
 }
+
+void JUTFader::control() {}

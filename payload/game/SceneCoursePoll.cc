@@ -277,10 +277,10 @@ bool SceneCoursePoll::clientStatePoll(const ClientStatePollReadInfo &readInfo) {
         J2DScreen &screen = m_courseScreens[m_nameCount];
         const Kart &kart = onlineInfo.m_karts[kartIndex];
         for (u32 i = 0; i < 2; i++) {
-            Array<char, 32> prefix;
-            snprintf(prefix.values(), prefix.count(), "PName%" PRIu32, i);
+            char prefix[32];
+            snprintf(prefix, Count(prefix), "PName%" PRIu32, i);
             const Player &player = kart.players[i];
-            kart2DCommon->changeUnicodeTexture(player.name.values(), 3, screen, prefix.values());
+            kart2DCommon->changeUnicodeTexture(player.name.values(), 3, screen, prefix);
         }
         m_playerNameAnmTransformFrames[m_nameCount] = kart.playerCount == 2 ? 0 : 6;
         u32 colorIndex = kartIndex;
