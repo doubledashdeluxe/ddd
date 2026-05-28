@@ -1,13 +1,14 @@
+use std::convert::Infallible;
 use std::fs;
 use std::io::ErrorKind;
 use std::str::FromStr;
 use std::sync::Arc;
 
-use anyhow::{Context, Error};
+use anyhow::Error;
 use arc_swap::ArcSwap;
 use cini::{Callback, CallbackKind, Ini};
 use heapless::String;
-use log::debug;
+use log::{debug, warn};
 
 use crate::formats::online;
 
@@ -51,7 +52,7 @@ impl Config {
 }
 
 impl FromStr for Config {
-    type Err = Error;
+    type Err = Infallible;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut config = Self::new();
@@ -61,48 +62,54 @@ impl FromStr for Config {
 }
 
 impl Ini for Config {
-    type Err = Error;
+    type Err = Infallible;
 
     fn callback(&mut self, cb: Callback) -> Result<(), Self::Err> {
-        let (key, value) = match cb.kind {
-            CallbackKind::Section(section) => {
-                anyhow::ensure!(section == "Config");
-                return Ok(());
+        let CallbackKind::Directive(Some("Config"), key, value) = cb.kind else {
+            if let CallbackKind::Section(section) = cb.kind
+                && section != "Config"
+            {
+                warn!("Unexpected section \"{section}\"");
             }
-            CallbackKind::Directive(_, key, value) => (key, value),
+            return Ok(());
         };
 
-        let parse_motd = || parse(key, value, |value| Ok(value.parse()?));
-        let parse_number = |limit| {
-            parse(key, value, |value| {
+        let parse_motd = |field| parse(field, key, value, |value| Ok(value.parse()?));
+        let parse_number = |field, limit| {
+            parse(field, key, value, |value| {
                 let value = value.parse()?;
                 anyhow::ensure!(value <= limit);
                 Ok(value)
-            })
+            });
         };
 
         match key {
-            "motd" => self.motd = parse_motd()?,
-            "shards" => self.shards = parse_number(4096)?,
-            "buffers_per_shard" => self.buffers_per_shard = parse_number(65536)?,
-            "max_connections_per_shard" => self.max_connections_per_shard = parse_number(65536)?,
-            "max_clients" => self.max_clients = parse_number(65536)?,
-            "max_rooms_per_frame_rate" => self.max_rooms_per_frame_rate = parse_number(32768)?,
-            "max_spectators_per_room" => self.max_spectators_per_room = parse_number(65536)?,
-            _ => anyhow::bail!("Unexpected key \"{key}\""),
+            "motd" => parse_motd(&mut self.motd),
+            "shards" => parse_number(&mut self.shards, 4096),
+            "buffers_per_shard" => parse_number(&mut self.buffers_per_shard, 65536),
+            "max_connections_per_shard" => parse_number(&mut self.max_connections_per_shard, 65536),
+            "max_clients" => parse_number(&mut self.max_clients, 65536),
+            "max_rooms_per_frame_rate" => parse_number(&mut self.max_rooms_per_frame_rate, 32768),
+            "max_spectators_per_room" => parse_number(&mut self.max_spectators_per_room, 65536),
+            _ => warn!("Unexpected key \"{key}\""),
         }
         Ok(())
     }
 }
 
-fn parse<P, V>(key: &str, value: Option<&str>, parse: P) -> Result<V, Error>
+fn parse<V, P>(field: &mut V, key: &str, value: Option<&str>, parse: P)
 where
     P: Fn(&str) -> Result<V, Error>,
 {
     let Some(value) = value else {
-        anyhow::bail!("Unexpected empty value for key \"{key}\"");
+        warn!("Unexpected empty value for key \"{key}\"");
+        return;
     };
-    parse(value).with_context(|| format!("Unexpected value \"{value}\" for key \"{key}\""))
+
+    match parse(value) {
+        Ok(value) => *field = value,
+        Err(e) => warn!("Unexpected value \"{value}\" for key \"{key}\": {e}"),
+    }
 }
 
 pub type SharedConfig = Arc<ArcSwap<Config>>;
