@@ -11,7 +11,7 @@ bpaf = "0.9.26"
 cini = "1.0.0"
 heapless = "0.9.3"
 jiff = "0.2.24"
-log = { version = "0.4.30", features = ["max_level_debug", "std"] }
+log = { version = "0.4.31", features = ["max_level_debug", "std"] }
 noise-protocol = "0.2.1"
 orion = "0.17.14"
 rand = { version = "0.10.1", default-features = false, features = ["sys_rng"] }
