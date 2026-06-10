@@ -34,8 +34,6 @@ private:
     ServerStatePollReader *pollReader() override;
     ServerStateRaceReader *raceReader() override;
 
-    bool isModesCountValid(u32 modesCount) override;
-    void setModesCount(u32 modesCount) override;
     ServerModeReader *modesElementReader(u32 i0) override;
 
     bool isMmrsCountValid(u32 mmrsCount) override;

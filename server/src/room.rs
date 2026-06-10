@@ -613,10 +613,8 @@ impl Room {
                         inputs.extend(client_inputs[input_offset..].iter());
                     }
                     let kart = &karts[kart_index];
-                    let mut item_ids = kart.as_ref().map_or_else(
-                        || heapless::Vec::from([ItemId::None; 2]),
-                        |kart| kart.item_ids.clone(),
-                    );
+                    let mut item_ids =
+                        kart.as_ref().map_or([ItemId::None; 2], |kart| kart.item_ids);
                     for (i, item_frame) in client_kart.item_frames.iter_mut().enumerate() {
                         let kart_item_frame =
                             kart.as_ref().map_or(MIN_CLIENT_FRAME, |kart| kart.item_frames[i]);
@@ -628,7 +626,7 @@ impl Room {
                                 }
                             };
                             let character_ids = &poll_state.karts[kart_index].character_ids;
-                            let mut item_counts = item_counts.clone().into_array().unwrap();
+                            let mut item_counts = item_counts;
                             for kart in &*karts {
                                 let Some(kart) = kart else {
                                     continue;
@@ -738,8 +736,7 @@ impl Room {
                     let linear_map::Entry::Vacant(v) = karts.entry(kart_index) else {
                         continue;
                     };
-                    let character_ids: heapless::Vec<_, _> =
-                        iter::repeat_with(|| self.rng.random()).take(2).collect();
+                    let character_ids = array::from_fn(|_| self.rng.random());
                     let kart_id = loop {
                         let kart_id: KartId = self.rng.random();
                         if kart_id.compatible(&character_ids) {

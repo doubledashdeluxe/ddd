@@ -217,10 +217,6 @@ u8 ClientStateServer::getProfile() {
     return m_writeInfo->players[m_playerIndex].profile;
 }
 
-u32 ClientStateServer::getNameCount() {
-    return 3;
-}
-
 u8 ClientStateServer::getNameElement(u32 i0) {
     return m_writeInfo->players[m_playerIndex].name[i0];
 }

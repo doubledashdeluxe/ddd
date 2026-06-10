@@ -77,12 +77,6 @@ ServerStateRaceReader *ClientStateMode::raceReader() {
     return nullptr;
 }
 
-bool ClientStateMode::isModesCountValid(u32 /* modesCount */) {
-    return true;
-}
-
-void ClientStateMode::setModesCount(u32 /* modesCount */) {}
-
 ServerModeReader *ClientStateMode::modesElementReader(u32 i0) {
     m_modeIndex = i0;
     return this;

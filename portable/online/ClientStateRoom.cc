@@ -29,10 +29,14 @@ ClientState &ClientStateRoom::read(ClientReadHandler &handler) {
     if (info) {
         for (u32 i = 0; i < info->kartCount; i++) {
             Kart &kart = info->karts[i];
-            for (u32 j = kart.playerCount; j < kart.players.count(); j++) {
+            for (u32 j = 0; j < kart.players.count(); j++) {
                 Player &player = kart.players[j];
-                player.index = UINT8_MAX;
-                player.name = "   ";
+                if (j < kart.playerCount) {
+                    player.name[PlayerNameLength] = '\0';
+                } else {
+                    player.index = UINT8_MAX;
+                    player.name = "   ";
+                }
             }
         }
     }
@@ -174,12 +178,6 @@ void ClientStateRoom::setPackCourseCount(u8 packCourseCount) {
     m_readInfo.info.getOrEmplace().packCourseCount = packCourseCount;
 }
 
-bool ClientStateRoom::isPackHashCountValid(u32 /* packHashCount */) {
-    return true;
-}
-
-void ClientStateRoom::setPackHashCount(u32 /* packHashCount */) {}
-
 bool ClientStateRoom::isPackHashElementValid(u32 i0, u8 packHashElement) {
     if (m_writeInfo.isSearch || m_writeInfo.isHost) {
         return packHashElement == m_writeInfo.packHash[i0];
@@ -279,14 +277,6 @@ bool ClientStateRoom::isIndexValid(u8 index) {
 
 void ClientStateRoom::setIndex(u8 index) {
     m_readInfo.info.getOrEmplace().karts[m_kartIndex].players[m_playerIndex].index = index;
-}
-
-bool ClientStateRoom::isNameCountValid(u32 /* nameCount */) {
-    return true;
-}
-
-void ClientStateRoom::setNameCount(u32 nameCount) {
-    m_readInfo.info.getOrEmplace().karts[m_kartIndex].players[m_playerIndex].name[nameCount] = '\0';
 }
 
 bool ClientStateRoom::isNameElementValid(u32 /* i0 */, u8 nameElement) {
@@ -475,10 +465,6 @@ u8 ClientStateRoom::getModeIndex() {
 
 u8 ClientStateRoom::getPackCourseCount() {
     return m_writeInfo.packCourseCount;
-}
-
-u32 ClientStateRoom::getPackHashCount() {
-    return m_writeInfo.packHash.count();
 }
 
 u8 ClientStateRoom::getPackHashElement(u32 i0) {

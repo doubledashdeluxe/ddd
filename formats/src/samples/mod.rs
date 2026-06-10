@@ -76,7 +76,7 @@ mod tests {
     #[test]
     fn two_fields() {
         let first_element: SimpleDataType<u32> = SimpleDataType::new();
-        let first = ArrayType::new(first_element, 1, 3);
+        let first = ArrayType::new(first_element, 3, 3);
         let two_fields =
             StructType::new("TwoFields").with_field("first", first).with_field("second", UnitType);
         let two_fields = Format::new("TwoFields").with_type(two_fields);

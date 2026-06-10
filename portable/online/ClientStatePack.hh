@@ -39,8 +39,6 @@ private:
     void setPackIndex(u8 packIndex) override;
     bool isPlayerCountValid(u16 playerCount) override;
     void setPlayerCount(u16 playerCount) override;
-    bool isFormatPlayerCountsCountValid(u32 formatPlayerCountsCount) override;
-    void setFormatPlayerCountsCount(u32 formatPlayerCountsCount) override;
     bool isFormatPlayerCountsElementValid(u32 i0, u16 formatPlayerCountsElement) override;
     void setFormatPlayerCountsElement(u32 i0, u16 formatPlayerCountsElement) override;
 
@@ -49,7 +47,6 @@ private:
     u8 getModeIndex() override;
     u8 getPackIndex() override;
     u8 getPackCourseCount() override;
-    u32 getPackHashCount() override;
     u8 getPackHashElement(u32 i0) override;
 
     ReadInfo m_readInfo;

@@ -8,8 +8,6 @@ public:
     void read(const u8 *buffer, u32 &offset);
 
 private:
-    virtual bool isFirstCountValid(u32 firstCount) = 0;
-    virtual void setFirstCount(u32 firstCount) = 0;
     virtual bool isFirstElementValid(u32 i0, u32 firstElement) = 0;
     virtual void setFirstElement(u32 i0, u32 firstElement) = 0;
     virtual bool isSecondValid() = 0;
@@ -21,7 +19,6 @@ public:
     bool write(u8 *buffer, u32 size, u32 &offset);
 
 private:
-    virtual u32 getFirstCount() = 0;
     virtual u32 getFirstElement(u32 i0) = 0;
     virtual void getSecond() = 0;
 };

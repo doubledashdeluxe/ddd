@@ -160,12 +160,6 @@ void ClientStatePoll::setKartIndex(u8 kartIndex) {
     m_readInfo.kartIndices[m_kartIndex] = kartIndex;
 }
 
-bool ClientStatePoll::isCharacterIdsCountValid(u32 /* characterIdsCount */) {
-    return true;
-}
-
-void ClientStatePoll::setCharacterIdsCount(u32 /* characterIdsCount */) {}
-
 bool ClientStatePoll::isCharacterIdsElementValid(u32 /* i0 */, u8 /* characterIdsElement */) {
     return true;
 }
@@ -223,10 +217,6 @@ ClientCourseIndexWriter &ClientStatePoll::courseIndexWriter() {
     } else {
         return Upcast<ClientCourseIndexWriter::Unspecified>(*this);
     }
-}
-
-u32 ClientStatePoll::getCharacterIdsCount() {
-    return m_writeInfo.ready->karts[m_kartIndex].characterIDs.count();
 }
 
 u8 ClientStatePoll::getCharacterIdsElement(u32 i0) {

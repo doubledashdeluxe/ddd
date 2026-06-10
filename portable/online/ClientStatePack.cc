@@ -106,12 +106,6 @@ void ClientStatePack::setPlayerCount(u16 playerCount) {
     m_readInfo.packs[m_packIndex].emplace().playerCount = playerCount;
 }
 
-bool ClientStatePack::isFormatPlayerCountsCountValid(u32 /* formatPlayerCountsCount */) {
-    return true;
-}
-
-void ClientStatePack::setFormatPlayerCountsCount(u32 /* formatPlayerCountsCount */) {}
-
 bool ClientStatePack::isFormatPlayerCountsElementValid(u32 /* i0 */,
         u16 /* formatPlayerCountsElement */) {
     return true;
@@ -135,10 +129,6 @@ u8 ClientStatePack::getPackIndex() {
 
 u8 ClientStatePack::getPackCourseCount() {
     return m_writeInfo.packs[m_packIndex].courseCount;
-}
-
-u32 ClientStatePack::getPackHashCount() {
-    return m_writeInfo.packs[m_packIndex].hash.count();
 }
 
 u8 ClientStatePack::getPackHashElement(u32 i0) {

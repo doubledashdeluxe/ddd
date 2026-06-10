@@ -208,12 +208,6 @@ void ClientStateRace::setVelZ(s16 velZ) {
     m_readInfo.info.getOrEmplace().karts[m_kartIndex].velZ = velZ;
 }
 
-bool ClientStateRace::isItemFramesCountValid(u32 /* itemFramesCount */) {
-    return true;
-}
-
-void ClientStateRace::setItemFramesCount(u32 /* itemFramesCount */) {}
-
 bool ClientStateRace::isItemFramesElementValid(u32 /* i0 */, u16 itemFramesElement) {
     return itemFramesElement >= MinClientFrame;
 }
@@ -221,12 +215,6 @@ bool ClientStateRace::isItemFramesElementValid(u32 /* i0 */, u16 itemFramesEleme
 void ClientStateRace::setItemFramesElement(u32 i0, u16 itemFramesElement) {
     m_readInfo.info.getOrEmplace().karts[m_kartIndex].itemFrames[i0] = itemFramesElement;
 }
-
-bool ClientStateRace::isItemIdsCountValid(u32 /* itemIdsCount */) {
-    return true;
-}
-
-void ClientStateRace::setItemIdsCount(u32 /* itemIdsCount */) {}
 
 bool ClientStateRace::isItemIdsElementValid(u32 /* i0 */, u8 /* itemIdsElement */) {
     return true;
@@ -251,10 +239,6 @@ u32 ClientStateRace::getKartsCount() {
 ClientRaceKartWriter &ClientStateRace::kartsElementWriter(u32 i0) {
     m_kartIndex = i0;
     return *this;
-}
-
-u32 ClientStateRace::getItemCountsCount() {
-    return m_writeInfo.itemCounts.count();
 }
 
 u8 ClientStateRace::getItemCountsElement(u32 i0) {
@@ -299,10 +283,6 @@ s16 ClientStateRace::getVelX() {
 
 s16 ClientStateRace::getVelZ() {
     return m_writeInfo.karts[m_kartIndex].velZ;
-}
-
-u32 ClientStateRace::getItemFramesCount() {
-    return m_writeInfo.karts[m_kartIndex].itemFrames.count();
 }
 
 u16 ClientStateRace::getItemFramesElement(u32 i0) {

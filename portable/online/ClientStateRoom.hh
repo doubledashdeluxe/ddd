@@ -70,8 +70,6 @@ private:
     void setModeIndex(u8 modeIndex) override;
     bool isPackCourseCountValid(u8 packCourseCount) override;
     void setPackCourseCount(u8 packCourseCount) override;
-    bool isPackHashCountValid(u32 packHashCount) override;
-    void setPackHashCount(u32 packHashCount) override;
     bool isPackHashElementValid(u32 i0, u8 packHashElement) override;
     void setPackHashElement(u32 i0, u8 packHashElement) override;
     bool isRoomCounterValid(u32 roomCounter) override;
@@ -96,8 +94,6 @@ private:
 
     bool isIndexValid(u8 index) override;
     void setIndex(u8 index) override;
-    bool isNameCountValid(u32 nameCount) override;
-    void setNameCount(u32 nameCount) override;
     bool isNameElementValid(u32 i0, u8 nameElement) override;
     void setNameElement(u32 i0, u8 nameElement) override;
 
@@ -136,7 +132,6 @@ private:
 
     u8 getModeIndex() override;
     u8 getPackCourseCount() override;
-    u32 getPackHashCount() override;
     u8 getPackHashElement(u32 i0) override;
     u8 getFormat() override;
     u32 getRoomCounter() override;

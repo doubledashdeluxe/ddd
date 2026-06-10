@@ -72,12 +72,8 @@ private:
     void setVelX(s16 posX) override;
     bool isVelZValid(s16 posZ) override;
     void setVelZ(s16 posZ) override;
-    bool isItemFramesCountValid(u32 itemFramesCount) override;
-    void setItemFramesCount(u32 itemFramesCount) override;
     bool isItemFramesElementValid(u32 i0, u16 itemFramesElement) override;
     void setItemFramesElement(u32 i0, u16 itemFramesElement) override;
-    bool isItemIdsCountValid(u32 itemIdsCount) override;
-    void setItemIdsCount(u32 itemIdsCount) override;
     bool isItemIdsElementValid(u32 i0, u8 itemIdsElement) override;
     void setItemIdsElement(u32 i0, u8 itemIdsElement) override;
 
@@ -86,7 +82,6 @@ private:
     u16 getFrame() override;
     u32 getKartsCount() override;
     ClientRaceKartWriter &kartsElementWriter(u32 i0) override;
-    u32 getItemCountsCount() override;
     u8 getItemCountsElement(u32 i0) override;
 
     u32 getInputsCount() override;
@@ -99,7 +94,6 @@ private:
     s8 getAngle() override;
     s16 getVelX() override;
     s16 getVelZ() override;
-    u32 getItemFramesCount() override;
     u16 getItemFramesElement(u32 i0) override;
     u8 getRank() override;
 

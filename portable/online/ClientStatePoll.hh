@@ -63,8 +63,6 @@ private:
 
     bool isKartIndexValid(u8 kartIndex) override;
     void setKartIndex(u8 kartIndex) override;
-    bool isCharacterIdsCountValid(u32 characterIdsCount) override;
-    void setCharacterIdsCount(u32 characterIdsCount) override;
     bool isCharacterIdsElementValid(u32 i0, u8 characterIdsElement) override;
     void setCharacterIdsElement(u32 i0, u8 characterIdsElement) override;
     bool isKartIdValid(u8 kartId) override;
@@ -83,7 +81,6 @@ private:
     ClientPollKartWriter &kartsElementWriter(u32 i0) override;
     ClientCourseIndexWriter &courseIndexWriter() override;
 
-    u32 getCharacterIdsCount() override;
     u8 getCharacterIdsElement(u32 i0) override;
     u8 getKartId() override;
 

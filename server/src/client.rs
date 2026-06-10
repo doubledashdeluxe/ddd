@@ -1,3 +1,4 @@
+use std::array;
 use std::mem;
 use std::net::SocketAddr;
 use std::time::{Duration, Instant};
@@ -133,7 +134,7 @@ impl Client {
                             let mut player = |i| {
                                 let index = i as u8;
                                 let player: &ClientPlayer = &players[i];
-                                let name = player.name.clone();
+                                let name = player.name;
                                 let player = ServerPlayer { index, name };
                                 let mmr = rng.random_range(..=9999);
                                 Player::new(player, mmr)
@@ -318,16 +319,11 @@ impl Client {
                 ServerState::Server(server_state_server)
             }
             State::Mode { identity } => {
-                let modes = rooms
-                    .mode_player_counts(frame_rate)
-                    .iter()
-                    .enumerate()
-                    .map(|(i, player_count)| {
-                        let mmrs =
-                            (0..identity.players.len()).map(|j| (i * 4 + j) as u16 * 179).collect();
-                        ServerMode { mmrs, player_count: *player_count as u16 }
-                    })
-                    .collect();
+                let mode_player_counts = rooms.mode_player_counts(frame_rate);
+                let modes = array::from_fn(|i| ServerMode {
+                    mmrs: (0..identity.players.len()).map(|j| (i * 4 + j) as u16 * 179).collect(),
+                    player_count: mode_player_counts[i] as u16,
+                });
                 let mode = ServerStateMode { modes };
                 ServerState::Mode(mode)
             }
@@ -340,15 +336,11 @@ impl Client {
                     RoomOptionFormat::TeamsOf4,
                     RoomOptionFormat::Duel,
                 ];
-                let format_player_counts: heapless::Vec<_, _> = formats
-                    .into_iter()
-                    .map(|format| {
-                        let pack =
-                            Pack { course_count: pack_course_count, hash: pack_hash.clone() };
-                        let search = Search { mode_index, pack, format };
-                        rooms.search_player_count(frame_rate, &search) as u16
-                    })
-                    .collect();
+                let format_player_counts = formats.map(|format| {
+                    let pack = Pack { course_count: pack_course_count, hash: pack_hash };
+                    let search = Search { mode_index, pack, format };
+                    rooms.search_player_count(frame_rate, &search) as u16
+                });
                 let player_count = format_player_counts.iter().sum();
                 let pack =
                     ServerStatePack { mode_index, pack_index, player_count, format_player_counts };
@@ -379,7 +371,7 @@ impl Client {
                                 spectator_count: room.spectator_count() as u16,
                                 mode_index: room.mode_index(),
                                 pack_course_count: pack.course_count,
-                                pack_hash: pack.hash.clone(),
+                                pack_hash: pack.hash,
                                 room_counter: room_info.counter,
                                 room_code: room.code().unwrap_or(u64::MAX),
                                 spectating_counter: room_info.spectating_counter,

@@ -72,7 +72,6 @@ private:
     u8 getKartCount() override;
 
     u8 getProfile() override;
-    u32 getNameCount() override;
     u8 getNameElement(u32 i0) override;
 
     void checkConnections();

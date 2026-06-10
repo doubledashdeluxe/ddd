@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <climits>
+#include <functional>
 #include <random>
 
 NativeRandom::NativeRandom() {
