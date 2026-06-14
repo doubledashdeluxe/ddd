@@ -81,8 +81,7 @@ private:
         if (entries.full()) {
             entries.popFront();
         }
-        entries.pushBack();
-        Entry<D> *entry = entries.back();
+        Entry<D> *entry = entries.emplaceBack();
         entry->id = m_id;
         entry->expirationTime = now + secondsToTicks(2);
         u32 nameLength = snprintf(entry->name.values(), entry->name.count(), "%s", name);

@@ -116,8 +116,10 @@
 800a9608 PPCMtmsr
 800a96cc PPCMfhid2
 800a9774 PSMTXConcat
+800a9890 PSMTXInverse
 800a9988 PSMTXRotRad
 800a9d6c C_MTXLookAt
+800aa04c PSMTXMultVec
 800aaacc Read
 800aafb4 DVDLowReadDiskID
 800ab170 DVDLowInquiry
@@ -603,14 +605,16 @@
 801e0b04 selectOut__Q215NameEntryHelper13NameEntryDrumFv
 80208528 clearKartItemUseTriggerList__10ItemObjMgrFv
 802090bc stockItemToKart__10ItemObjMgrFUlUlUlbUc
+802090f0 equipItemToKart__10ItemObjMgrFUlUlUlbUc
 80209578 getKind__7ItemObjCFv
-802099e8 getKartEquipItem__10ItemObjMgrFUlUl
-80209a00 getKartEquipItem__10ItemObjMgrFUl
+802099e8 getKartEquipItem__10ItemObjMgrCFUlUl
+80209a00 getKartEquipItem__10ItemObjMgrCFUl
 8020b7d0 startItemShuffleSingle__10ItemObjMgrFUlb
 8020b8a4 startItemShuffleDouble__10ItemObjMgrFUl
 8020b9d4 getRobberyItemNum__10ItemObjMgrFUlUl
 8020c9b8 slotItem__14ItemShuffleMgrFUlUl
 8020cbac doShuffle__14ItemShuffleMgrFUlUl
+8021a1f8 getHandOffsetPos__7ItemObjFv
 8026712c GetScreenPos__6SiUtilFlRC5Vec3fR5Vec2f
 802953dc setPosition__11ZCaptureMgrFUlUlss
 80295410 getZValue__11ZCaptureMgrFUlUl
@@ -622,9 +626,14 @@
 802aaf34 doChange__8KartGameFv
 802afcb0 doStatus__8KartGameFv
 802b1284 getBodyPos__8KartCtrlCFUlR5Vec3f
-802b14a0 getDriveCont__8KartCtrlFUl
+802b14a0 getDriveCont__8KartCtrlCFUl
+802b1520 getCoDriveCont__8KartCtrlCFUl
 802b33c8 setPtr__7KartCamFv
 802b60a0 initOutView__7KartCamFv
+802b8b6c isGetItemAnime__9KartAnimeCFUl
+802bc378 doTandemItemAnime__8KartItemFv
+802bc998 doTandemItemRelease__8KartItemFv
+802bd478 doHorn__9KartSoundFv
 
 80333a20 __ptmf_null
 

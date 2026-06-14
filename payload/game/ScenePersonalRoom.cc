@@ -453,6 +453,7 @@ bool ScenePersonalRoom::clientStateRoom(const ClientStateRoomReadInfo &readInfo)
     for (u32 i = 0; i < m_kartCount; i++) {
         const Kart &kart = onlineInfo.m_karts[i];
         if (kart.local) {
+            onlineInfo.m_kartLocalIndices[i] = localKartCount;
             onlineInfo.m_localKartIndices[localKartCount++] = i;
             localPlayerCount += kart.playerCount;
         }

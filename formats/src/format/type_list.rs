@@ -20,7 +20,7 @@ impl TypeList for () {
     }
 }
 
-impl<L: TypeList, T: ComplexDataType> TypeList for (L, T) {
+impl<T: ComplexDataType> TypeList for (Box<dyn TypeList>, T) {
     fn rs(&self) -> String {
         format!("{}\n{}", self.0.rs(), self.1.rs())
     }

@@ -2,6 +2,7 @@
 
 #include "portable/Array.hh"
 #include "portable/Ring.hh"
+#include "portable/online/ItemEvent.hh"
 
 #include <formats/Online.hh>
 
@@ -19,6 +20,8 @@ struct ClientStateRaceWriteInfo {
         s16 velX;
         s16 velZ;
         Array<u16, KartCharacterCount> itemFrames;
+        u8 itemEventCounter;
+        Ring<ItemEvent, MaxItemEventCount> itemEvents;
         u8 rank;
     };
 

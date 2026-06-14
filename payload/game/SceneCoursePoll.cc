@@ -327,11 +327,9 @@ bool SceneCoursePoll::clientStatePoll(const ClientStatePollReadInfo &readInfo) {
             }
         }
         KartGamePad *frontPad = nullptr, *backPad = nullptr;
-        for (u32 j = 0; j < onlineInfo.m_localKartCount; j++) {
-            if (onlineInfo.m_localKartIndices[j] != kartIndex) {
-                continue;
-            }
-            const Array<u8, 2> &padIndices = onlineInfo.m_padIndices[j];
+        if (onlineInfo.m_karts[kartIndex].local) {
+            u32 kartLocalIndex = onlineInfo.m_kartLocalIndices[kartIndex];
+            const Array<u8, 2> &padIndices = onlineInfo.m_padIndices[kartLocalIndex];
             frontPad = KartGamePad::GamePad(padIndices[0]);
             if (padIndices[1] != padIndices[0]) {
                 backPad = KartGamePad::GamePad(padIndices[1]);

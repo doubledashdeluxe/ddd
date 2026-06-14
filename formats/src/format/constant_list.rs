@@ -15,7 +15,7 @@ impl ConstantList for () {
     }
 }
 
-impl<L: ConstantList, C: Constant> ConstantList for (L, C) {
+impl<C: Constant> ConstantList for (Box<dyn ConstantList>, C) {
     fn rs(&self) -> String {
         format!("{}{}", self.0.rs(), self.1.rs())
     }

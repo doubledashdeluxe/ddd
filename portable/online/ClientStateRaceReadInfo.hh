@@ -2,6 +2,7 @@
 
 #include "portable/Array.hh"
 #include "portable/Optional.hh"
+#include "portable/online/ItemEvent.hh"
 
 #include <formats/Online.hh>
 
@@ -19,6 +20,9 @@ struct ClientStateRaceReadInfo {
         s16 velZ;
         Array<u16, KartCharacterCount> itemFrames;
         Array<u8, KartCharacterCount> itemIDs;
+        u8 itemEventCounter;
+        u8 itemEventCount;
+        Array<ItemEvent, MaxItemEventCount> itemEvents;
     };
 
     struct Info {

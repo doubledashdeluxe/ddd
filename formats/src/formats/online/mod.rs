@@ -1,4 +1,4 @@
-use crate::format::{ConstantList, Format, TypeList};
+use crate::format::Format;
 use crate::formats::online::client_state::*;
 use crate::formats::online::common::*;
 use crate::formats::online::server_state::*;
@@ -8,10 +8,9 @@ mod client_state;
 mod common;
 mod server_state;
 
-#[expect(clippy::large_stack_frames)]
-pub fn format() -> Format<impl ConstantList, impl TypeList> {
+pub fn format() -> Format {
     let default_port = SimpleConstant::new("DEFAULT_PORT", 3549u16);
-    let protocol_version = SimpleConstant::new("PROTOCOL_VERSION", 17u32);
+    let protocol_version = SimpleConstant::new("PROTOCOL_VERSION", 18u32);
     let max_lap_count = SimpleConstant::new("MAX_LAP_COUNT", 9u8);
     let min_match_count = SimpleConstant::new("MIN_MATCH_COUNT", 1u8);
     let max_match_count = SimpleConstant::new("MAX_MATCH_COUNT", 96u8);
@@ -33,6 +32,9 @@ pub fn format() -> Format<impl ConstantList, impl TypeList> {
     let max_kart_player_count = SimpleConstant::new("MAX_KART_PLAYER_COUNT", MAX_KART_PLAYER_COUNT);
     let min_client_frame = SimpleConstant::new("MIN_CLIENT_FRAME", 360u16);
     let max_kart_input_count = SimpleConstant::new("MAX_KART_INPUT_COUNT", MAX_KART_INPUT_COUNT);
+    let max_item_event_count = SimpleConstant::new("MAX_ITEM_EVENT_COUNT", MAX_ITEM_EVENT_COUNT);
+    let min_stick_y = SimpleConstant::new("MIN_STICK_Y", -3i8);
+    let max_stick_y = SimpleConstant::new("MAX_STICK_Y", 3i8);
     Format::new("Online")
         .with_constant(default_port)
         .with_constant(protocol_version)
@@ -55,6 +57,9 @@ pub fn format() -> Format<impl ConstantList, impl TypeList> {
         .with_constant(max_kart_player_count)
         .with_constant(min_client_frame)
         .with_constant(max_kart_input_count)
+        .with_constant(max_item_event_count)
+        .with_constant(min_stick_y)
+        .with_constant(max_stick_y)
         .with_type(frame_rate())
         .with_type(mode_index())
         .with_type(room_option_code_type())
@@ -66,6 +71,8 @@ pub fn format() -> Format<impl ConstantList, impl TypeList> {
         .with_type(room_options_battle())
         .with_type(character_id())
         .with_type(kart_id())
+        .with_type(item_id())
+        .with_type(item_event())
         .with_type(client_identity_unspecified())
         .with_type(client_player())
         .with_type(client_identity_specified())
@@ -113,7 +120,6 @@ pub fn format() -> Format<impl ConstantList, impl TypeList> {
         .with_type(server_poll_state_ready())
         .with_type(server_poll_state())
         .with_type(server_state_poll())
-        .with_type(item_id())
         .with_type(server_race_kart())
         .with_type(server_race_state_main())
         .with_type(server_race_state())

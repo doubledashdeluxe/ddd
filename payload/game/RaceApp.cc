@@ -62,6 +62,9 @@ void RaceApp::calc() {
     }
     raceClient->adjustDrift(adjustment);
     do {
+        if (adjustment >= 0) {
+            raceClient->calcBefore();
+        }
         m_raceMgr->calcRace(adjustment);
         ctrlRecorder();
         if (adjustment >= 0) {
@@ -71,7 +74,7 @@ void RaceApp::calc() {
             ctrlRace();
         }
         if (adjustment >= 0) {
-            raceClient->updateInputs();
+            raceClient->calcAfter();
         }
     } while (adjustment-- > 0);
 

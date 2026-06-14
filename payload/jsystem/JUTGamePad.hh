@@ -32,10 +32,23 @@ public:
     };
     size_assert(CButton, 0x30);
 
+    class CStick {
+    public:
+        f32 x() const;
+        f32 y() const;
+
+    private:
+        f32 m_x;
+        f32 m_y;
+        u8 _08[0x10 - 0x08];
+    };
+    size_assert(CStick, 0x10);
+
     JUTGamePad(s32 padPort);
     virtual ~JUTGamePad();
 
     const CButton &button() const;
+    const CStick &mainStick() const;
 
     void startMotor();
     void stopMotor(bool hard);
@@ -53,7 +66,8 @@ private:
 
     u8 _04[0x18 - 0x04];
     CButton m_button;
-    u8 _48[0x68 - 0x48];
+    CStick m_mainStick;
+    u8 _58[0x68 - 0x58];
     CRumble m_rumble;
     s16 m_chan;
     u8 _7e[0xa8 - 0x7e];

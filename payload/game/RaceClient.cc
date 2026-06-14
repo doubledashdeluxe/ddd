@@ -41,45 +41,23 @@ void RaceClient::adjustDrift(s32 adjustment) {
     }
 }
 
-void RaceClient::updateInputs() {
-    const OnlineInfo &onlineInfo = OnlineInfo::Instance();
-    u32 frame = MinClientFrame + RaceMgr::Instance()->frame();
-    for (u32 i = 0; i < m_writeInfo.kartCount; i++) {
-        WriteInfo::Kart &kart = m_writeInfo.karts[i];
-        while (kart.inputs.count() >= frame - m_clientFrame) {
-            assert(kart.inputs.popFront());
-        }
-        assert(kart.inputs.pushBack());
-        WriteInfo::Inputs *inputs = kart.inputs.back();
-        for (u32 j = 0; j < kart.inputCount; j++) {
-            PadMgr::GetPadData(onlineInfo.m_padIndices[i][j], false, &(*inputs)[j]);
-        }
-    }
-}
-
 void RaceClient::setHasItem(u32 kartIndex, u32 characterIndex) {
-    u32 frame = MinClientFrame + RaceMgr::Instance()->frame();
+    u32 frame = Frame() + 1;
     const OnlineInfo &onlineInfo = OnlineInfo::Instance();
-    for (u32 i = 0; i < m_writeInfo.kartCount; i++) {
-        if (onlineInfo.m_localKartIndices[i] == kartIndex) {
-            u16 &itemFrame = m_writeInfo.karts[i].itemFrames[characterIndex];
-            if (itemFrame + 50 <= frame) {
-                itemFrame = frame;
-            }
-            break;
-        }
+    u32 kartLocalIndex = onlineInfo.m_kartLocalIndices[kartIndex];
+    u16 &itemFrame = m_writeInfo.karts[kartLocalIndex].itemFrames[characterIndex];
+    if (itemFrame + 50 <= frame) {
+        itemFrame = frame;
     }
 }
 
 bool RaceClient::hasItem(u32 kartIndex, u32 characterIndex) const {
     const OnlineInfo &onlineInfo = OnlineInfo::Instance();
-    for (u32 i = 0; i < m_writeInfo.kartCount; i++) {
-        if (onlineInfo.m_localKartIndices[i] == kartIndex) {
-            u32 frame = m_writeInfo.karts[i].itemFrames[characterIndex];
-            if (frame != m_kartDiffs[kartIndex].itemFrames[characterIndex]) {
-                return false;
-            }
-            break;
+    if (onlineInfo.m_karts[kartIndex].local) {
+        u32 kartLocalIndex = onlineInfo.m_kartLocalIndices[kartIndex];
+        u32 frame = m_writeInfo.karts[kartLocalIndex].itemFrames[characterIndex];
+        if (frame != m_kartDiffs[kartIndex].itemFrames[characterIndex]) {
+            return false;
         }
     }
     return m_kartDiffs[kartIndex].itemIDs[characterIndex] != ItemID::None;
@@ -87,6 +65,59 @@ bool RaceClient::hasItem(u32 kartIndex, u32 characterIndex) const {
 
 u32 RaceClient::itemID(u32 kartIndex, u32 characterIndex) const {
     return m_kartDiffs[kartIndex].itemIDs[characterIndex];
+}
+
+void RaceClient::pushItemEvent(u32 kartIndex, const ItemEvent &itemEvent) {
+    const OnlineInfo &onlineInfo = OnlineInfo::Instance();
+    u32 kartLocalIndex = onlineInfo.m_kartLocalIndices[kartIndex];
+    WriteInfo::Kart &kart = m_writeInfo.karts[kartLocalIndex];
+    if (kart.itemEventCounter == UINT8_MAX) {
+        return;
+    }
+    ::ItemEvent *kartItemEvent = kart.itemEvents.emplaceFront();
+    if (!kartItemEvent) {
+        return;
+    }
+    kartItemEvent->frame = itemEvent.frame;
+    kartItemEvent->stickY = itemEvent.stickY;
+    kartItemEvent->itemID = itemEvent.itemID;
+    kartItemEvent->posX = ConvertPos(itemEvent.pos.x);
+    kartItemEvent->posZ = ConvertPos(itemEvent.pos.z);
+    kart.itemEventCounter++;
+}
+
+const RaceClient::ItemEvent *RaceClient::itemEvent(u32 kartIndex) const {
+    return m_kartDiffs[kartIndex].itemEvents.back();
+}
+
+void RaceClient::popItemEvent(u32 kartIndex) {
+    m_kartDiffs[kartIndex].itemEvents.popBack();
+}
+
+void RaceClient::calcBefore() {
+    const RaceInfo &raceInfo = RaceInfo::Instance();
+    u32 kartCount = raceInfo.getKartCount();
+    for (u32 i = 0; i < kartCount; i++) {
+        UpdateItemEvents(m_kartDiffs[i].itemEvents);
+    }
+}
+
+void RaceClient::calcAfter() {
+    const OnlineInfo &onlineInfo = OnlineInfo::Instance();
+    u32 frame = Frame();
+    for (u32 i = 0; i < m_writeInfo.kartCount; i++) {
+        WriteInfo::Kart &kart = m_writeInfo.karts[i];
+        while (kart.inputs.count() >= frame - m_clientFrame) {
+            assert(kart.inputs.popFront());
+        }
+        WriteInfo::Inputs *inputs = kart.inputs.emplaceBack();
+        assert(inputs);
+        for (u32 j = 0; j < kart.inputCount; j++) {
+            PadMgr::GetPadData(onlineInfo.m_padIndices[i][j], false, &(*inputs)[j]);
+        }
+
+        UpdateItemEvents(kart.itemEvents);
+    }
 }
 
 void RaceClient::read() {
@@ -98,8 +129,7 @@ void RaceClient::write() {
     const RaceInfo &raceInfo = RaceInfo::Instance();
     u32 kartCount = raceInfo.getKartCount();
     const KartCtrl *kartCtrl = KartCtrl::Instance();
-    const RaceMgr *raceMgr = RaceMgr::Instance();
-    u32 frame = MinClientFrame + raceMgr->frame();
+    u32 frame = Frame();
     for (u32 i = 0; i < kartCount; i++) {
         Ring<KartState, 30> &kartStates = m_kartStates[i];
         // We only need one state per frame.
@@ -107,7 +137,7 @@ void RaceClient::write() {
             if (kartStates.full()) {
                 kartStates.popFront();
             }
-            kartStates.pushBack();
+            kartStates.emplaceBack();
         }
         KartState &kartState = *kartStates.back();
         kartState.frame = frame;
@@ -117,36 +147,22 @@ void RaceClient::write() {
         kartState.vel = kartBody->m_vel;
     }
 
+    const RaceMgr *raceMgr = RaceMgr::Instance();
     m_writeInfo.frame = frame;
     for (u32 i = 0; i < m_writeInfo.kartCount; i++) {
         u32 kartIndex = onlineInfo.m_localKartIndices[i];
         WriteInfo::Kart &kart = m_writeInfo.karts[i];
         const KartBody *kartBody = kartCtrl->getKartBody(kartIndex);
         kart.driver = kartBody->getDriver();
-        f32 min = -32768.0f, max = 32768.0f;
-        Vec3f pos = kartBody->m_pos;
-        f32 posScale = 1.0f / 4.0f; // Between -131072 and 131072
-        pos.x = floor(pos.x * posScale);
-        pos.y = floor(pos.y * posScale);
-        pos.z = floor(pos.z * posScale);
-        assert(pos.x >= min && pos.x < max);
-        assert(pos.y >= min && pos.y < max);
-        assert(pos.z >= min && pos.z < max);
-        kart.posX = pos.x;
-        kart.posY = pos.y;
-        kart.posZ = pos.z;
+        const Vec3f &pos = kartBody->m_pos;
+        kart.posX = ConvertPos(pos.x);
+        kart.posY = ConvertPos(pos.y);
+        kart.posZ = ConvertPos(pos.z);
         f32 angle = atan2(kartBody->m_mtx[0][2], kartBody->m_mtx[0][0]);
-        f32 angleScale = 128.0f / M_PI; // Between -π and π
-        angle = floor(angle * angleScale);
-        kart.angle = static_cast<s32>(angle);
-        Vec3f vel = kartBody->m_vel;
-        f32 velScale = 32.0f; // Between -1024 and 1024
-        vel.x = floor(vel.x * velScale);
-        vel.z = floor(vel.z * velScale);
-        assert(vel.x >= min && vel.x < max);
-        assert(vel.z >= min && vel.z < max);
-        kart.velX = vel.x;
-        kart.velZ = vel.z;
+        kart.angle = ConvertAngle(angle);
+        const Vec3f &vel = kartBody->m_vel;
+        kart.velX = ConvertVel(vel.x);
+        kart.velZ = ConvertVel(vel.z);
         const KartChecker *kartChecker = raceMgr->kartChecker(kartIndex);
         kart.rank = kartChecker->rank() - 1;
     }
@@ -170,7 +186,15 @@ RaceClient *RaceClient::Instance() {
     return s_instance;
 }
 
-RaceClient::RaceClient() : m_ok(true), m_frame(0), m_clientFrame(MinClientFrame - 1), m_drift(0) {
+u32 RaceClient::Frame() {
+    return MinClientFrame + RaceMgr::Instance()->frame();
+}
+
+RaceClient::RaceClient()
+    : m_ok(true)
+    , m_serverFrame(0)
+    , m_clientFrame(MinClientFrame - 1)
+    , m_drift(0) {
     for (u32 i = 0; i < m_kartDiffs.count(); i++) {
         m_kartDiffs[i].inputs.fill(0);
         m_kartDiffs[i].driver = 0;
@@ -179,6 +203,7 @@ RaceClient::RaceClient() : m_ok(true), m_frame(0), m_clientFrame(MinClientFrame 
         m_kartDiffs[i].vel = Vec3f(0.0f, 0.0f, 0.0f);
         m_kartDiffs[i].itemFrames.fill(MinClientFrame);
         m_kartDiffs[i].itemIDs.fill(ItemID::None);
+        m_kartDiffs[i].itemEventCounter = 0;
     }
     const OnlineInfo &onlineInfo = OnlineInfo::Instance();
     m_writeInfo.kartCount = onlineInfo.m_localKartCount;
@@ -187,6 +212,7 @@ RaceClient::RaceClient() : m_ok(true), m_frame(0), m_clientFrame(MinClientFrame 
         WriteInfo::Kart &kart = m_writeInfo.karts[i];
         kart.inputCount = onlineInfo.m_karts[kartIndex].playerCount;
         kart.itemFrames.fill(MinClientFrame);
+        kart.itemEventCounter = 0;
     }
 }
 
@@ -203,7 +229,7 @@ bool RaceClient::clientStateRace(const ClientStateRaceReadInfo &readInfo) {
         return true;
     }
 
-    for (u32 i = 0; i < info->frame - m_frame; i++) {
+    for (u32 i = 0; i < info->frame - m_serverFrame; i++) {
         if (m_drifts.full()) {
             m_drift -= *m_drifts.front();
             m_drifts.popFront();
@@ -212,7 +238,7 @@ bool RaceClient::clientStateRace(const ClientStateRaceReadInfo &readInfo) {
         m_drift += drift;
         m_drifts.pushBack(drift);
     }
-    m_frame = info->frame;
+    m_serverFrame = info->frame;
     m_clientFrame = info->clientFrame;
 
     const OnlineInfo &onlineInfo = OnlineInfo::Instance();
@@ -238,6 +264,26 @@ bool RaceClient::clientStateRace(const ClientStateRaceReadInfo &readInfo) {
         if (onlineInfo.m_karts[i].local) {
             continue;
         }
+        if (kart.itemEventCounter < kartDiff.itemEventCounter) {
+            continue;
+        }
+        u32 itemEventCount = kart.itemEventCounter - kartDiff.itemEventCounter;
+        if (itemEventCount > kart.itemEventCount) {
+            itemEventCount = kart.itemEventCount;
+        }
+        for (u32 k = itemEventCount; k > 0; k--) {
+            ItemEvent *itemEvent = kartDiff.itemEvents.emplaceFront();
+            if (!itemEvent) {
+                break;
+            }
+            const ::ItemEvent &kartItemEvent = kart.itemEvents[k - 1];
+            itemEvent->frame = 0;
+            itemEvent->stickY = kartItemEvent.stickY;
+            itemEvent->itemID = kartItemEvent.itemID;
+            itemEvent->pos.x = ConvertPos(kartItemEvent.posX);
+            itemEvent->pos.z = ConvertPos(kartItemEvent.posZ);
+            kartDiff.itemEventCounter++;
+        }
         Ring<KartState, 30> &kartStates = m_kartStates[i];
         const KartState *kartState = nullptr;
         for (u32 k = kartStates.count(); k > 0; k--) {
@@ -262,16 +308,14 @@ bool RaceClient::clientStateRace(const ClientStateRaceReadInfo &readInfo) {
         }
         kartDiff.driver = !!kart.driver;
         TVec3<f32> &posDiff = kartDiff.pos;
-        f32 posScale = 4.0f;
-        posDiff.x = Convert(kart.posX, posScale);
-        posDiff.y = Convert(kart.posY, posScale);
-        posDiff.z = Convert(kart.posZ, posScale);
+        posDiff.x = ConvertPos(kart.posX);
+        posDiff.y = ConvertPos(kart.posY);
+        posDiff.z = ConvertPos(kart.posZ);
         posDiff -= kartState->pos;
-        posDiff.x = TruncateDiff(posDiff.x, posScale);
-        posDiff.y = TruncateDiff(posDiff.y, posScale);
-        posDiff.z = TruncateDiff(posDiff.z, posScale);
-        f32 angleScale = M_PI / 128.0f;
-        kartDiff.angle = Convert(kart.angle, angleScale);
+        posDiff.x = TruncatePosDiff(posDiff.x);
+        posDiff.y = TruncatePosDiff(posDiff.y);
+        posDiff.z = TruncatePosDiff(posDiff.z);
+        kartDiff.angle = ConvertAngle(kart.angle);
         kartDiff.angle -= kartState->angle;
         // We have to keep the angle in range because the correction is interpolated.
         if (kartDiff.angle < -M_PI) {
@@ -280,15 +324,14 @@ bool RaceClient::clientStateRace(const ClientStateRaceReadInfo &readInfo) {
         if (kartDiff.angle >= M_PI) {
             kartDiff.angle -= 2.0f * M_PI;
         }
-        kartDiff.angle = TruncateDiff(kartDiff.angle, angleScale);
+        kartDiff.angle = TruncateAngleDiff(kartDiff.angle);
         TVec3<f32> &velDiff = kartDiff.vel;
-        f32 velScale = 1.0f / 32.0f;
-        velDiff.x = Convert(kart.velX, velScale);
-        velDiff.z = Convert(kart.velZ, velScale);
+        velDiff.x = ConvertVel(kart.velX);
+        velDiff.z = ConvertVel(kart.velZ);
         velDiff.x -= kartState->vel.x;
         velDiff.z -= kartState->vel.z;
-        velDiff.x = TruncateDiff(velDiff.x, velScale);
-        velDiff.z = TruncateDiff(velDiff.z, velScale);
+        velDiff.x = TruncateVelDiff(velDiff.x);
+        velDiff.z = TruncateVelDiff(velDiff.z);
         // Each state should only be processed once.
         kartStates.popFront();
     }
@@ -359,9 +402,43 @@ void RaceClient::clientStateError() {
     ErrorViewApp::Call(6);
 }
 
+f32 RaceClient::Convert(f32 value, f32 scale) {
+    return floor(value * scale);
+}
+
 f32 RaceClient::Convert(s32 value, f32 scale) {
     // We need to cancel the 0.5 error introduced by the floor operation.
     return (value + 0.5f) * scale;
+}
+
+s16 RaceClient::ConvertPos(f32 value) {
+    value = Convert(value, PosScale);
+    f32 min = -32768.0f, max = 32768.0f;
+    assert(value >= min && value < max);
+    return value;
+}
+
+f32 RaceClient::ConvertPos(s16 value) {
+    return Convert(static_cast<s32>(value), 1.0f / PosScale);
+}
+
+s8 RaceClient::ConvertAngle(f32 value) {
+    return Convert(value, AngleScale);
+}
+
+f32 RaceClient::ConvertAngle(s8 value) {
+    return Convert(static_cast<s32>(value), 1.0f / AngleScale);
+}
+
+s16 RaceClient::ConvertVel(f32 value) {
+    value = Convert(value, VelScale);
+    f32 min = -32768.0f, max = 32768.0f;
+    assert(value >= min && value < max);
+    return value;
+}
+
+f32 RaceClient::ConvertVel(s16 value) {
+    return Convert(static_cast<s32>(value), 1.0f / VelScale);
 }
 
 f32 RaceClient::TruncateDiff(f32 diff, f32 scale) {
@@ -377,4 +454,20 @@ f32 RaceClient::TruncateDiff(f32 diff, f32 scale) {
     return 0.0f;
 }
 
+f32 RaceClient::TruncatePosDiff(f32 diff) {
+    return TruncateDiff(diff, 1.0f / PosScale);
+}
+
+f32 RaceClient::TruncateAngleDiff(f32 diff) {
+    return TruncateDiff(diff, 1.0f / AngleScale);
+}
+
+f32 RaceClient::TruncateVelDiff(f32 diff) {
+    return TruncateDiff(diff, 1.0f / VelScale);
+}
+
 RaceClient *RaceClient::s_instance = nullptr;
+
+const f32 RaceClient::PosScale = 1.0f / 4.0f;     // Between -131072 and 131072
+const f32 RaceClient::AngleScale = 128.0f / M_PI; // Between -π and π
+const f32 RaceClient::VelScale = 32.0f;           // Between -1024 and 1024

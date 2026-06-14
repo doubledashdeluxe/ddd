@@ -12,9 +12,11 @@ class ClientStateRace
     , private ServerRaceStateReader
     , private ServerRaceStateMainReader
     , private ServerRaceKartReader
+    , private ItemEventReader
     , private ClientStateWriter::Race
     , private ClientStateRaceWriter
-    , private ClientRaceKartWriter {
+    , private ClientRaceKartWriter
+    , private ItemEventWriter {
 public:
     ClientStateRace(const ClientPlatform &platform, Connection &connection,
             const ClientStateRaceWriteInfo &writeInfo);
@@ -76,6 +78,22 @@ private:
     void setItemFramesElement(u32 i0, u16 itemFramesElement) override;
     bool isItemIdsElementValid(u32 i0, u8 itemIdsElement) override;
     void setItemIdsElement(u32 i0, u8 itemIdsElement) override;
+    bool isItemEventCounterValid(u8 itemEventCounter) override;
+    void setItemEventCounter(u8 itemEventCounter) override;
+    bool isItemEventsCountValid(u32 itemEventsCount) override;
+    void setItemEventsCount(u32 itemEventsCount) override;
+    ItemEventReader *itemEventsElementReader(u32 i0) override;
+
+    bool isEventFrameValid(u8 itemFrame) override;
+    void setEventFrame(u8 itemFrame) override;
+    bool isEventStickYValid(s8 eventStickY) override;
+    void setEventStickY(s8 eventStickY) override;
+    bool isEventItemIdValid(u8 eventItemId) override;
+    void setEventItemId(u8 eventItemId) override;
+    bool isEventPosXValid(s16 eventPosX) override;
+    void setEventPosX(s16 eventPosX) override;
+    bool isEventPosZValid(s16 eventPosZ) override;
+    void setEventPosZ(s16 eventPosZ) override;
 
     ClientStateRaceWriter &raceWriter() override;
 
@@ -95,9 +113,19 @@ private:
     s16 getVelX() override;
     s16 getVelZ() override;
     u16 getItemFramesElement(u32 i0) override;
+    u8 getItemEventCounter() override;
+    u32 getItemEventsCount() override;
+    ItemEventWriter &itemEventsElementWriter(u32 i0) override;
     u8 getRank() override;
 
+    u8 getEventFrame() override;
+    s8 getEventStickY() override;
+    u8 getEventItemId() override;
+    s16 getEventPosX() override;
+    s16 getEventPosZ() override;
+
     u32 m_kartIndex;
+    u32 m_itemEventIndex;
     ReadInfo m_readInfo;
     WriteInfo m_writeInfo;
 };

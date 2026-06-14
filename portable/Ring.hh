@@ -24,12 +24,28 @@ public:
         return m_count;
     }
 
+    const T *front() const {
+        if (empty()) {
+            return nullptr;
+        }
+
+        return &(*this)[0];
+    }
+
     T *front() {
         if (empty()) {
             return nullptr;
         }
 
         return &(*this)[0];
+    }
+
+    const T *back() const {
+        if (empty()) {
+            return nullptr;
+        }
+
+        return &(*this)[m_count - 1];
     }
 
     T *back() {
@@ -48,46 +64,46 @@ public:
         return reinterpret_cast<T *>(m_buffer)[(m_front + index) % N];
     }
 
-    bool pushFront() {
+    T *emplaceFront() {
         if (full()) {
-            return false;
+            return nullptr;
         }
 
         m_front = (m_front - 1) % N;
         new (&reinterpret_cast<T *>(m_buffer)[m_front]) T;
         m_count++;
-        return true;
+        return &(*this)[0];
     }
 
-    bool pushFront(T value) {
+    T *emplaceBack() {
         if (full()) {
-            return false;
+            return nullptr;
+        }
+
+        new (&reinterpret_cast<T *>(m_buffer)[(m_front + m_count) % N]) T;
+        m_count++;
+        return &(*this)[m_count - 1];
+    }
+
+    T *pushFront(T value) {
+        if (full()) {
+            return nullptr;
         }
 
         m_front = (m_front - 1) % N;
         new (&reinterpret_cast<T *>(m_buffer)[m_front]) T(value);
         m_count++;
-        return true;
+        return &(*this)[0];
     }
 
-    bool pushBack() {
+    T *pushBack(T value) {
         if (full()) {
-            return false;
-        }
-
-        new (&reinterpret_cast<T *>(m_buffer)[(m_front + m_count) % N]) T;
-        m_count++;
-        return true;
-    }
-
-    bool pushBack(T value) {
-        if (full()) {
-            return false;
+            return nullptr;
         }
 
         new (&reinterpret_cast<T *>(m_buffer)[(m_front + m_count) % N]) T(value);
         m_count++;
-        return true;
+        return &(*this)[m_count - 1];
     }
 
     bool popFront() {

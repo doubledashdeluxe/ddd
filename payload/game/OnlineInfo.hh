@@ -22,6 +22,7 @@ public:
     u32 m_roomCounter;
     u64 m_roomCode;
     Array<Kart, MaxRoomKartCount> m_karts;
+    Array<u8, MaxRoomKartCount> m_kartLocalIndices;
     Array<u8, MaxClientKartCount> m_localKartIndices;
     u8 m_localKartCount;
     u8 m_localPlayerCount;

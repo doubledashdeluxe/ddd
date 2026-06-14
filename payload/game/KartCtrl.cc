@@ -8,6 +8,10 @@ KartPad *KartCtrl::getKartPad(u32 kartIndex) const {
     return m_kartPads[kartIndex];
 }
 
+KartAnime *KartCtrl::getKartAnime(u32 kartIndex) const {
+    return m_kartAnimes[kartIndex];
+}
+
 KartBody *KartCtrl::getKartBody(u32 kartIndex) const {
     return m_kartBodies[kartIndex];
 }

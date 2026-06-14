@@ -9,6 +9,7 @@ public:
     KartBody();
 
     KartGame *getGame() const;
+    bool isChange() const;
     u32 getGameStatus() const;
     u8 getDriver() const;
     u8 getIndex() const;
@@ -60,9 +61,21 @@ public:
     f32 m_speedScale;
 
 private:
-    u8 _474[0x578 - 0x474];
+    u8 _474[0x574 - 0x474];
+    u32 : 24;
+    bool m_isChange : 1;
+    u32 : 7;
     u32 m_gameStatus;
-    u8 _57c[0x5b2 - 0x57c];
+    u32 : 28;
+
+public:
+    bool m_itemTrigger : 1;
+    bool m_itemBack : 1;
+    bool m_itemFront : 1;
+    bool m_itemThrow : 1;
+
+private:
+    u8 _580[0x5b2 - 0x580];
     u8 m_driver;
     u8 m_index;
     u8 _5b4[0x5c8 - 0x5b4];

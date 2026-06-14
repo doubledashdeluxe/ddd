@@ -224,14 +224,13 @@ u8 ClientStateServer::getNameElement(u32 i0) {
 void ClientStateServer::checkConnections() {
     if (m_connections.empty()) {
         for (u32 i = 0; i < m_platform.serverManager.serverCount(); i++) {
-            m_connections.pushBack();
             const ServerManager::Server &server = m_platform.serverManager.server(i);
             const PublicKey &publicK = server.publicKey();
             const DNS::Name &name = server.address();
             Optional<u16> port = server.port();
             Connection *connection =
                     new (m_platform.allocator) Connection(m_platform, publicK, name, port);
-            m_connections.back()->reset(connection);
+            m_connections.emplaceBack()->reset(connection);
         }
     }
 }
@@ -239,8 +238,7 @@ void ClientStateServer::checkConnections() {
 void ClientStateServer::checkServers() {
     if (m_readInfo.servers.empty()) {
         for (u32 i = 0; i < m_platform.serverManager.serverCount(); i++) {
-            m_readInfo.servers.pushBack();
-            m_readInfo.servers[i].versionIsCompatible = false;
+            m_readInfo.servers.emplaceBack()->versionIsCompatible = false;
         }
     }
 }

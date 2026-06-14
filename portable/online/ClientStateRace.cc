@@ -7,8 +7,7 @@ ClientStateRace::ClientStateRace(const ClientPlatform &platform, Connection &con
         const ClientStateRaceWriteInfo &writeInfo)
     : ClientState(platform)
     , m_writeInfo(writeInfo) {
-    m_connections.pushBack();
-    m_connections.back()->reset(&connection);
+    m_connections.emplaceBack()->reset(&connection);
     m_readInfo.ok = true;
 }
 
@@ -224,6 +223,70 @@ void ClientStateRace::setItemIdsElement(u32 i0, u8 itemIdsElement) {
     m_readInfo.info.getOrEmplace().karts[m_kartIndex].itemIDs[i0] = itemIdsElement;
 }
 
+bool ClientStateRace::isItemEventCounterValid(u8 /* itemEventCounter */) {
+    return true;
+}
+
+void ClientStateRace::setItemEventCounter(u8 itemEventCounter) {
+    m_readInfo.info.getOrEmplace().karts[m_kartIndex].itemEventCounter = itemEventCounter;
+}
+
+bool ClientStateRace::isItemEventsCountValid(u32 /* itemEventsCount */) {
+    return true;
+}
+
+void ClientStateRace::setItemEventsCount(u32 itemEventsCount) {
+    m_readInfo.info.getOrEmplace().karts[m_kartIndex].itemEventCount = itemEventsCount;
+}
+
+ItemEventReader *ClientStateRace::itemEventsElementReader(u32 i0) {
+    m_itemEventIndex = i0;
+    return this;
+}
+
+bool ClientStateRace::isEventFrameValid(u8 eventFrame) {
+    return eventFrame < MaxKartInputCount;
+}
+
+void ClientStateRace::setEventFrame(u8 eventFrame) {
+    m_readInfo.info.getOrEmplace().karts[m_kartIndex].itemEvents[m_itemEventIndex].frame =
+            eventFrame;
+}
+
+bool ClientStateRace::isEventStickYValid(s8 eventStickY) {
+    return eventStickY >= MinStickY && eventStickY <= MaxStickY;
+}
+
+void ClientStateRace::setEventStickY(s8 eventStickY) {
+    m_readInfo.info.getOrEmplace().karts[m_kartIndex].itemEvents[m_itemEventIndex].stickY =
+            eventStickY;
+}
+
+bool ClientStateRace::isEventItemIdValid(u8 /* eventItemId */) {
+    return true;
+}
+
+void ClientStateRace::setEventItemId(u8 eventItemId) {
+    m_readInfo.info.getOrEmplace().karts[m_kartIndex].itemEvents[m_itemEventIndex].itemID =
+            eventItemId;
+}
+
+bool ClientStateRace::isEventPosXValid(s16 /* eventPosX */) {
+    return true;
+}
+
+void ClientStateRace::setEventPosX(s16 eventPosX) {
+    m_readInfo.info.getOrEmplace().karts[m_kartIndex].itemEvents[m_itemEventIndex].posX = eventPosX;
+}
+
+bool ClientStateRace::isEventPosZValid(s16 /* eventPosZ */) {
+    return true;
+}
+
+void ClientStateRace::setEventPosZ(s16 eventPosZ) {
+    m_readInfo.info.getOrEmplace().karts[m_kartIndex].itemEvents[m_itemEventIndex].posZ = eventPosZ;
+}
+
 ClientStateRaceWriter &ClientStateRace::raceWriter() {
     return *this;
 }
@@ -289,6 +352,39 @@ u16 ClientStateRace::getItemFramesElement(u32 i0) {
     return m_writeInfo.karts[m_kartIndex].itemFrames[i0];
 }
 
+u8 ClientStateRace::getItemEventCounter() {
+    return m_writeInfo.karts[m_kartIndex].itemEventCounter;
+}
+
+u32 ClientStateRace::getItemEventsCount() {
+    return m_writeInfo.karts[m_kartIndex].itemEvents.count();
+}
+
+ItemEventWriter &ClientStateRace::itemEventsElementWriter(u32 i0) {
+    m_itemEventIndex = i0;
+    return *this;
+}
+
 u8 ClientStateRace::getRank() {
     return m_writeInfo.karts[m_kartIndex].rank;
+}
+
+u8 ClientStateRace::getEventFrame() {
+    return m_writeInfo.karts[m_kartIndex].itemEvents[m_itemEventIndex].frame;
+}
+
+s8 ClientStateRace::getEventStickY() {
+    return m_writeInfo.karts[m_kartIndex].itemEvents[m_itemEventIndex].stickY;
+}
+
+u8 ClientStateRace::getEventItemId() {
+    return m_writeInfo.karts[m_kartIndex].itemEvents[m_itemEventIndex].itemID;
+}
+
+s16 ClientStateRace::getEventPosX() {
+    return m_writeInfo.karts[m_kartIndex].itemEvents[m_itemEventIndex].posX;
+}
+
+s16 ClientStateRace::getEventPosZ() {
+    return m_writeInfo.karts[m_kartIndex].itemEvents[m_itemEventIndex].posZ;
 }

@@ -9,8 +9,7 @@ ClientStatePoll::ClientStatePoll(const ClientPlatform &platform, Connection &con
         const ClientStatePollWriteInfo &writeInfo)
     : ClientState(platform)
     , m_writeInfo(writeInfo) {
-    m_connections.pushBack();
-    m_connections.back()->reset(&connection);
+    m_connections.emplaceBack()->reset(&connection);
     m_readInfo.ok = true;
 }
 
@@ -105,7 +104,7 @@ bool ClientStatePoll::isKartIndicesCountValid(u32 kartIndicesCount) {
 void ClientStatePoll::setKartIndicesCount(u32 kartIndicesCount) {
     Ring<u8, MaxRoomKartCount> &kartIndices = m_readInfo.kartIndices;
     while (kartIndices.count() < kartIndicesCount) {
-        kartIndices.pushBack();
+        kartIndices.emplaceBack();
     }
 }
 
@@ -129,7 +128,7 @@ bool ClientStatePoll::isKartsCountValid(u32 kartsCount) {
 void ClientStatePoll::setKartsCount(u32 kartsCount) {
     Ring<u8, MaxRoomKartCount> &kartIndices = m_readInfo.kartIndices;
     while (kartIndices.count() < kartsCount) {
-        kartIndices.pushBack();
+        kartIndices.emplaceBack();
     }
     m_readInfo.ready.emplace().kartCount = kartsCount;
 }

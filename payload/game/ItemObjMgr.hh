@@ -11,8 +11,8 @@ public:
     u32 usedCount(u32 item) const;
     u32 freeCount(u32 item) const;
     u32 moveCount(u32 item) const;
-    ItemObj *getKartEquipItem(u32 kart, u32 driver);
-    ItemObj *getKartEquipItem(u32 kart);
+    ItemObj *getKartEquipItem(u32 kart, u32 driver) const;
+    ItemObj *getKartEquipItem(u32 kart) const;
     void clearKartItemUseTriggerList();
     void REPLACED(startItemShuffleSingle)(u32 kart, bool r5);
     REPLACE void startItemShuffleSingle(u32 kart, bool r5);
@@ -20,6 +20,7 @@ public:
     REPLACE void startItemShuffleDouble(u32 kart);
     bool startItemShuffle(u32 kart, u32 character);
     bool stockItemToKart(u32 item, u32 kart, u32 character, bool isHeart, u8 r8);
+    bool equipItemToKart(u32 item, u32 kart, u32 character, bool isHeart, u8 r8);
 
     static ItemObjMgr *Instance();
 
@@ -28,7 +29,9 @@ private:
 
     static bool CanShuffle(u32 kart);
 
-    u8 _000[0x35c - 0x000];
+    u8 _000[0x2cc - 0x000];
+    ItemObj *m_equipItems[8][2];
+    u8 _30c[0x35c - 0x30c];
     ItemShuffleMgr *m_shuffleMgrs[8][2];
     u8 _39c[0x3e8 - 0x39c];
     JSUList<ItemObj> m_usedLists[22];

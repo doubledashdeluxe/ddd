@@ -7,31 +7,31 @@ use crate::constant::Constant;
 mod constant_list;
 mod type_list;
 
-pub struct Format<CL: ConstantList, TL: TypeList> {
+pub struct Format {
     name: &'static str,
-    constant_list: CL,
-    type_list: TL,
+    constant_list: Box<dyn ConstantList>,
+    type_list: Box<dyn TypeList>,
 }
 
-impl Format<(), ()> {
-    pub const fn new(name: &'static str) -> Self {
-        Self { name, constant_list: (), type_list: () }
+impl Format {
+    pub fn new(name: &'static str) -> Self {
+        Self { name, constant_list: Box::new(()), type_list: Box::new(()) }
     }
 }
 
-impl<CL: ConstantList, TL: TypeList> Format<CL, TL> {
-    pub fn with_constant<C: Constant>(self, constant: C) -> Format<(CL, C), TL> {
+impl Format {
+    pub fn with_constant<C: Constant + 'static>(self, constant: C) -> Self {
         let name = self.name;
-        let constant_list = (self.constant_list, constant);
+        let constant_list = Box::new((self.constant_list, constant));
         let type_list = self.type_list;
-        Format { name, constant_list, type_list }
+        Self { name, constant_list, type_list }
     }
 
-    pub fn with_type<T: ComplexDataType>(self, data_type: T) -> Format<CL, (TL, T)> {
+    pub fn with_type<T: ComplexDataType + 'static>(self, data_type: T) -> Self {
         let name = self.name;
         let constant_list = self.constant_list;
-        let type_list = (self.type_list, data_type);
-        Format { name, constant_list, type_list }
+        let type_list = Box::new((self.type_list, data_type));
+        Self { name, constant_list, type_list }
     }
 
     pub fn rs(&self) -> String {

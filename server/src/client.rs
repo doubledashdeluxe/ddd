@@ -232,6 +232,9 @@ impl Client {
                     }
                     _ => Err(anyhow!("Unexpected client room state")),
                 };
+                if let Err(e) = &room_info {
+                    debug!("{e}");
+                }
                 let room_info = room_info.ok();
                 State::Room { identity, room_info }
             }
@@ -244,6 +247,9 @@ impl Client {
                         Ok(room_info)
                     },
                 );
+                if let Err(e) = &room_info {
+                    debug!("{e}");
+                }
                 let room_info = room_info.ok();
                 State::Team { identity, room_info }
             }
@@ -256,6 +262,9 @@ impl Client {
                         Ok(room_info)
                     },
                 );
+                if let Err(e) = &room_info {
+                    debug!("{e}");
+                }
                 let room_info = room_info.ok();
                 State::Poll { identity, room_info }
             }
@@ -269,6 +278,9 @@ impl Client {
                         Ok(room_info)
                     },
                 );
+                if let Err(e) = &room_info {
+                    debug!("{e}");
+                }
                 let room_info = room_info.ok();
                 State::Race { identity, room_info, frame }
             }

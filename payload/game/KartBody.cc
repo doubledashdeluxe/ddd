@@ -4,6 +4,10 @@ KartGame *KartBody::getGame() const {
     return m_game;
 }
 
+bool KartBody::isChange() const {
+    return m_isChange;
+}
+
 u32 KartBody::getGameStatus() const {
     return m_gameStatus;
 }

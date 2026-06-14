@@ -12,5 +12,18 @@ private:
     u8 _10[0x1c - 0x10];
     u32 m_lMask;
     u32 m_rMask;
-    u8 _24[0x58 - 0x24];
+    u8 _24[0x3c - 0x24];
+
+public:
+    f32 m_itemStickY;
+
+private:
+    u8 _40[0x51 - 0x40];
+
+public:
+    u8 m_itemFrame;
+
+private:
+    u8 _52[0x58 - 0x52];
 };
+size_assert(KartPad, 0x58);

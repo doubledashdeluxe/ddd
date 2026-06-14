@@ -129,6 +129,45 @@ pub fn kart_id() -> impl ComplexDataType {
         .with_variant("Extra")
 }
 
+pub fn item_id() -> impl ComplexDataType {
+    SimpleEnumType::new("ItemID")
+        .with_variant("GreenShell")
+        .with_variant("BowserShell")
+        .with_variant("RedShell")
+        .with_variant("Banana")
+        .with_variant("GiantBanana")
+        .with_variant("Mushroom")
+        .with_variant("Star")
+        .with_variant("Chomp")
+        .with_variant("Bomb")
+        .with_variant("MarioFireballs")
+        .with_variant("Lightning")
+        .with_variant("YoshiEgg")
+        .with_variant("GoldenMushroom")
+        .with_variant("BlueShell")
+        .with_variant("Heart")
+        .with_variant("FakeItemBox")
+        .with_variant("None")
+        .with_variant("TripleGreenShells")
+        .with_variant("TripleMushrooms")
+        .with_variant("TripleRedShells")
+        .with_variant("Bombs")
+        .with_variant("Fireballs")
+}
+
+pub fn item_event() -> impl ComplexDataType {
+    let event_frame: SimpleDataType<u8> = SimpleDataType::new();
+    let event_stick_y: SimpleDataType<i8> = SimpleDataType::new();
+    let event_pos_x: SimpleDataType<i16> = SimpleDataType::new();
+    let event_pos_z: SimpleDataType<i16> = SimpleDataType::new();
+    StructType::new("ItemEvent")
+        .with_field("event_frame", event_frame)
+        .with_field("event_stick_y", event_stick_y)
+        .with_field("event_item_id", item_id())
+        .with_field("event_pos_x", event_pos_x)
+        .with_field("event_pos_z", event_pos_z)
+}
+
 pub const MAX_VERSION_LENGTH: usize = 19;
 pub const MIN_CLIENT_PLAYER_COUNT: usize = 1;
 pub const MAX_CLIENT_PLAYER_COUNT: usize = 4;
@@ -140,3 +179,4 @@ pub const MAX_ROOM_KART_COUNT: usize = 8;
 pub const MIN_KART_PLAYER_COUNT: usize = 1;
 pub const MAX_KART_PLAYER_COUNT: usize = 2;
 pub const MAX_TEAM_COUNT: usize = 4;
+pub const MAX_ITEM_EVENT_COUNT: usize = 3;

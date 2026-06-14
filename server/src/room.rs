@@ -5,7 +5,7 @@ use std::iter;
 use std::ops::BitOr;
 use std::time::{Duration, Instant};
 
-use anyhow::Result;
+use anyhow::{Context, Result};
 use heapless::linear_map::{self, LinearMap};
 use log::debug;
 use rand::seq::SliceRandom;
@@ -562,7 +562,7 @@ impl Room {
     }
 
     pub fn set_race(&mut self, client_pk: &PublicKey, race: ClientStateRace) -> Result<()> {
-        let ClientStateRace { frame: client_frame, karts: client_karts, item_counts } = race;
+        let ClientStateRace { frame: client_frame, karts: mut client_karts, item_counts } = race;
         anyhow::ensure!(client_frame >= MIN_CLIENT_FRAME);
         let kart_indices: heapless::Vec<_, MAX_CLIENT_KART_COUNT> = self
             .karts
@@ -579,7 +579,7 @@ impl Room {
                     return Ok(());
                 }
                 let kart_indices = || kart_indices.iter().copied();
-                for (client_kart, kart_index) in client_karts.iter().zip(kart_indices()) {
+                for (client_kart, kart_index) in client_karts.iter_mut().zip(kart_indices()) {
                     let kart = karts[kart_index].as_ref();
                     let kart_frame = kart.map_or(MIN_CLIENT_FRAME, |kart| kart.kart_frame);
                     if client_frame <= kart_frame {
@@ -599,6 +599,17 @@ impl Room {
                         anyhow::ensure!(*item_frame >= kart_item_frame);
                         anyhow::ensure!(*item_frame <= client_frame);
                     }
+                    let kart_item_event_counter = kart.map_or(0, |kart| kart.item_event_counter);
+                    let item_event_count = client_kart
+                        .item_event_counter
+                        .checked_sub(kart_item_event_counter)
+                        .context("Invalid item event counter")?
+                        as usize;
+                    client_kart.item_events.truncate(item_event_count);
+                    for item_event in &client_kart.item_events {
+                        anyhow::ensure!(item_event.event_stick_y >= MIN_STICK_Y);
+                        anyhow::ensure!(item_event.event_stick_y <= MAX_STICK_Y);
+                    }
                     anyhow::ensure!((client_kart.rank as usize) < self.karts.len());
                 }
                 for item_count in &item_counts {
@@ -612,6 +623,8 @@ impl Room {
                         let input_offset = client_inputs.len() - input_count;
                         inputs.extend(client_inputs[input_offset..].iter());
                     }
+                    let inputs =
+                        client_inputs.iter().map(|inputs| *inputs.last().unwrap()).collect();
                     let kart = &karts[kart_index];
                     let mut item_ids =
                         kart.as_ref().map_or([ItemId::None; 2], |kart| kart.item_ids);
@@ -625,7 +638,12 @@ impl Room {
                                     RoomOptionItemMode::Recommended
                                 }
                             };
-                            let character_ids = &poll_state.karts[kart_index].character_ids;
+                            let poll_kart = poll_state
+                                .karts
+                                .iter()
+                                .find(|kart| kart.kart_index as usize == kart_index)
+                                .unwrap();
+                            let character_ids = poll_kart.character_ids;
                             let mut item_counts = item_counts;
                             for kart in &*karts {
                                 let Some(kart) = kart else {
@@ -654,8 +672,29 @@ impl Room {
                             *item_frame = kart_item_frame;
                         }
                     }
-                    let inputs =
-                        client_inputs.iter().map(|inputs| *inputs.last().unwrap()).collect();
+                    if let Some(kart) = kart {
+                        while kart.item_events.len() + client_kart.item_events.len()
+                            > MAX_ITEM_EVENT_COUNT
+                        {
+                            client_kart.item_event_counter -= 1;
+                            client_kart.item_events.remove(0);
+                        }
+                    }
+                    for item_event in &mut client_kart.item_events {
+                        item_event.event_frame = 0;
+                        let item_id = item_ids
+                            .iter_mut()
+                            .find(|item_id| **item_id == item_event.event_item_id);
+                        if let Some(item_id) = item_id {
+                            *item_id = ItemId::None;
+                        } else {
+                            item_event.event_item_id = ItemId::None;
+                        }
+                    }
+                    let mut item_events = client_kart.item_events;
+                    if let Some(kart) = kart {
+                        item_events.extend(kart.item_events.clone());
+                    }
                     karts[kart_index] = Some(ServerRaceKart {
                         kart_frame: client_frame,
                         inputs,
@@ -666,8 +705,10 @@ impl Room {
                         angle: client_kart.angle,
                         vel_x: client_kart.vel_x,
                         vel_z: client_kart.vel_z,
+                        item_event_counter: client_kart.item_event_counter,
                         item_frames: client_kart.item_frames,
                         item_ids,
+                        item_events,
                     });
                 }
             }
@@ -770,14 +811,20 @@ impl Room {
                     .enumerate()
                     .map(|(i, kart)| u8::from(kart.is_some()) << i)
                     .fold(0, BitOr::bitor);
-                let karts = karts.iter().filter_map(Clone::clone).collect();
                 let state = ServerRaceStateMain {
                     frame: states.len() as u16,
                     client_frame: states.len() as u16,
                     kart_flags,
-                    karts,
+                    karts: karts.iter().filter_map(Clone::clone).collect(),
                 };
                 states.push(state);
+                for kart in karts {
+                    let Some(kart) = kart else { continue };
+                    kart.item_events.retain_mut(|item_event| {
+                        item_event.event_frame += 1;
+                        item_event.event_frame < MAX_KART_INPUT_COUNT as u8
+                    });
+                }
             }
             _ => (),
         }

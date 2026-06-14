@@ -3,7 +3,6 @@ use crate::complex_data_type::ComplexDataType;
 use crate::enum_type::EnumType;
 use crate::formats::online::common::*;
 use crate::simple_data_type::SimpleDataType;
-use crate::simple_enum_type::SimpleEnumType;
 use crate::struct_type::StructType;
 use crate::unit_type::UnitType;
 
@@ -222,6 +221,8 @@ pub fn server_race_kart() -> impl ComplexDataType {
     let item_frame: SimpleDataType<u16> = SimpleDataType::new();
     let item_frames = ArrayType::new(item_frame, KART_CHARACTER_COUNT, KART_CHARACTER_COUNT);
     let item_ids = ArrayType::new(item_id(), KART_CHARACTER_COUNT, KART_CHARACTER_COUNT);
+    let item_event_counter: SimpleDataType<u8> = SimpleDataType::new();
+    let item_events = ArrayType::new(item_event(), 0, MAX_ITEM_EVENT_COUNT);
     StructType::new("ServerRaceKart")
         .with_field("kart_frame", kart_frame)
         .with_field("inputs", inputs)
@@ -234,32 +235,8 @@ pub fn server_race_kart() -> impl ComplexDataType {
         .with_field("vel_z", vel_z)
         .with_field("item_frames", item_frames)
         .with_field("item_ids", item_ids)
-}
-
-pub fn item_id() -> impl ComplexDataType {
-    SimpleEnumType::new("ItemID")
-        .with_variant("GreenShell")
-        .with_variant("BowserShell")
-        .with_variant("RedShell")
-        .with_variant("Banana")
-        .with_variant("GiantBanana")
-        .with_variant("Mushroom")
-        .with_variant("Star")
-        .with_variant("Chomp")
-        .with_variant("Bomb")
-        .with_variant("MarioFireballs")
-        .with_variant("Lightning")
-        .with_variant("YoshiEgg")
-        .with_variant("GoldenMushroom")
-        .with_variant("BlueShell")
-        .with_variant("Heart")
-        .with_variant("FakeItemBox")
-        .with_variant("None")
-        .with_variant("TripleGreenShells")
-        .with_variant("TripleMushrooms")
-        .with_variant("TripleRedShells")
-        .with_variant("Bombs")
-        .with_variant("Fireballs")
+        .with_field("item_event_counter", item_event_counter)
+        .with_field("item_events", item_events)
 }
 
 pub const MAX_MOTD_LENGTH: usize = 99;
