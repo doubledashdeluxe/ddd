@@ -595,7 +595,9 @@ impl Room {
             .map(|(i, _)| i)
             .collect();
         anyhow::ensure!(client_karts.len() == kart_indices.len());
-        let State::Race { poll_state, inputs, karts, states, .. } = &mut self.state else {
+        let State::Race { poll_state, inputs, karts, states, lightning_available_frame, .. } =
+            &mut self.state
+        else {
             return Ok(());
         };
         let server_frame = states.len() as u16;
@@ -675,6 +677,8 @@ impl Room {
                             }
                         }
                     }
+                    let lightning_available =
+                        lightning_available_frame.is_some_and(|frame| server_frame >= frame);
                     item_ids[i] = item::choose(
                         self.karts.len(),
                         self.mode_index,
@@ -684,6 +688,7 @@ impl Room {
                         client_kart.rank,
                         item_ids[i ^ 1],
                         item_counts,
+                        lightning_available,
                         &mut self.rng,
                     );
                 } else {
@@ -702,6 +707,9 @@ impl Room {
                 let item_id =
                     item_ids.iter_mut().find(|item_id| **item_id == item_event.event_item_id);
                 if let Some(item_id) = item_id {
+                    if *item_id == ItemId::Lightning {
+                        *lightning_available_frame = server_frame.checked_add((10 + 30) * 60);
+                    }
                     *item_id = ItemId::None;
                 } else {
                     item_event.event_item_id = ItemId::None;
@@ -883,6 +891,7 @@ enum State {
         inputs: heapless::Vec<Inputs, MAX_ROOM_KART_COUNT>,
         karts: heapless::Vec<Option<ServerRaceKart>, MAX_ROOM_KART_COUNT>,
         states: Vec<ServerRaceStateMain>,
+        lightning_available_frame: Option<u16>,
     },
 }
 
@@ -938,6 +947,7 @@ impl State {
             inputs,
             karts: iter::repeat_n(None, kart_count).collect(),
             states: vec![],
+            lightning_available_frame: Some(MIN_CLIENT_FRAME + 30 * 60),
         }
     }
 }

@@ -14,6 +14,7 @@ pub fn choose(
     rank: u8,
     other_item: ItemId,
     item_counts: [u8; 16],
+    lightning_available: bool,
     rng: &mut impl Rng,
 ) -> ItemId {
     let weights = match (mode_index, item_mode, kart_count) {
@@ -60,6 +61,10 @@ pub fn choose(
             return 0;
         }
 
+        if item == ItemId::Lightning && !lightning_available {
+            return 0;
+        }
+
         let weight = |i| u32::from(weights[rank as usize][i]);
 
         let is_special = i >= 9;
@@ -93,6 +98,9 @@ pub fn choose(
         sum += weight(i);
         sum
     });
+    if sum == 0 {
+        return ItemId::Mushroom;
+    }
 
     let limit = rng.random_range(..sum);
     let index = partial_sums.partition_point(|partial_sum| *partial_sum <= limit);
@@ -164,6 +172,7 @@ mod tests {
                     rank,
                     other_item,
                     item_counts,
+                    true,
                     &mut rng,
                 );
                 counts[item as usize] += 1;
