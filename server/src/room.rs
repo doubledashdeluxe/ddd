@@ -267,6 +267,15 @@ impl Room {
         }
     }
 
+    pub const fn has_team_state(&self) -> bool {
+        match &self.state {
+            State::Room => false,
+            State::Team { .. } => true,
+            State::Poll { team_state, .. } => team_state.is_some(),
+            State::Race { team_state, .. } => team_state.is_some(),
+        }
+    }
+
     pub const fn team_state(&self) -> Option<&ServerTeamStateMain> {
         match &self.state {
             State::Room => None,
@@ -276,12 +285,30 @@ impl Room {
         }
     }
 
+    pub const fn has_poll_state(&self) -> bool {
+        match &self.state {
+            State::Room => false,
+            State::Team { .. } => false,
+            State::Poll { .. } => true,
+            State::Race { .. } => true,
+        }
+    }
+
     pub fn poll_state(&self) -> Option<ServerPollState> {
         match &self.state {
             State::Room => None,
             State::Team { .. } => None,
             State::Poll { state, .. } => Some(ServerPollState::Pending(state.clone())),
             State::Race { poll_state, .. } => Some(ServerPollState::Ready(poll_state.clone())),
+        }
+    }
+
+    pub const fn has_race_state(&self) -> bool {
+        match &self.state {
+            State::Room => false,
+            State::Team { .. } => false,
+            State::Poll { .. } => false,
+            State::Race { .. } => true,
         }
     }
 
@@ -436,33 +463,28 @@ impl Room {
     fn set_team_state_host(
         &mut self,
         client_pk: &PublicKey,
-        state: ClientTeamStateHost,
+        host: ClientTeamStateHost,
     ) -> Result<()> {
+        anyhow::ensure!(self.has_team_state());
         anyhow::ensure!(self.is_host(client_pk));
-        let ClientTeamStateHost { teams, entry_index, continuing } = state;
+        let ClientTeamStateHost { teams, entry_index, continuing } = host;
         anyhow::ensure!(teams.len() == self.karts.len());
         let team_count = self.team_count();
         anyhow::ensure!(teams.iter().all(|team| *team < team_count));
-        match &mut self.state {
-            State::Team { state, .. } => {
-                state.teams = teams;
-                state.entry_index = entry_index;
-                if continuing != 0 {
-                    let mut state = state.clone();
-                    self.balance_teams(&mut state.teams);
-                    state.continuing = u8::from(true);
-                    self.state = State::new_poll(Some(state));
-                }
-            }
-            State::Poll { team_state: Some(_), .. } => (),
-            State::Race { team_state: Some(_), .. } => (),
-            _ => anyhow::bail!("Invalid room state"),
+        let State::Team { state, .. } = &mut self.state else { return Ok(()) };
+        state.teams = teams;
+        state.entry_index = entry_index;
+        if continuing != 0 {
+            let mut state = state.clone();
+            self.balance_teams(&mut state.teams);
+            state.continuing = u8::from(true);
+            self.state = State::new_poll(Some(state));
         }
         Ok(())
     }
 
     fn set_team_state_guest(&self, client_pk: &PublicKey) -> Result<()> {
-        anyhow::ensure!(self.team_state().is_some());
+        anyhow::ensure!(self.has_team_state());
         anyhow::ensure!(self.is_guest(client_pk));
         Ok(())
     }
@@ -475,16 +497,17 @@ impl Room {
     }
 
     fn set_poll_state_pending(&self) -> Result<()> {
-        anyhow::ensure!(self.poll_state().is_some());
+        anyhow::ensure!(self.has_poll_state());
         Ok(())
     }
 
     fn set_poll_state_ready(
         &mut self,
         client_pk: &PublicKey,
-        state: ClientPollStateReady,
+        ready: ClientPollStateReady,
     ) -> Result<()> {
-        let ClientPollStateReady { karts: client_karts, course_index } = state;
+        anyhow::ensure!(self.has_poll_state());
+        let ClientPollStateReady { karts: client_karts, course_index } = ready;
         let kart_indices: heapless::Vec<_, MAX_CLIENT_KART_COUNT> = self
             .karts
             .iter()
@@ -518,50 +541,50 @@ impl Room {
                 anyhow::ensure!(course_index.is_none());
             }
         }
-        match &mut self.state {
-            State::Poll { team_state, state, karts: server_karts, host_course_index, .. } => {
-                let kart_indices = kart_indices.into_iter();
-                let is_host_selection = course_selection == RoomOptionCourseSelection::Host;
-                for (client_kart, kart_index) in client_karts.into_iter().zip(kart_indices) {
-                    let linear_map::Entry::Vacant(v) = server_karts.entry(kart_index) else {
-                        continue;
-                    };
-                    let course_index = match course_index {
-                        Some(course_index) if !is_host_selection => course_index,
-                        _ => self.rng.random_range(..self.pack.course_count),
-                    };
-                    let server_kart = ServerPollKart {
-                        kart_index,
-                        character_ids: client_kart.character_ids,
-                        kart_id: client_kart.kart_id,
-                        course_index,
-                    };
-                    state.kart_indices.push(kart_index).unwrap();
-                    v.insert(server_kart).unwrap();
-                }
-                if is_host_selection && is_host {
-                    *host_course_index = course_index;
-                }
-                if server_karts.len() == self.karts.len()
-                    && (!is_host_selection || host_course_index.is_some())
-                {
-                    self.state = State::new_race(
-                        team_state.clone(),
-                        state,
-                        server_karts,
-                        *host_course_index,
-                        &self.karts,
-                        &mut self.rng,
-                    );
-                }
-            }
-            State::Race { .. } => (),
-            _ => anyhow::bail!("Invalid room state"),
+        let State::Poll { team_state, state, karts: server_karts, host_course_index, .. } =
+            &mut self.state
+        else {
+            return Ok(());
+        };
+        let kart_indices = kart_indices.into_iter();
+        let is_host_selection = course_selection == RoomOptionCourseSelection::Host;
+        for (client_kart, kart_index) in client_karts.into_iter().zip(kart_indices) {
+            let linear_map::Entry::Vacant(v) = server_karts.entry(kart_index) else {
+                continue;
+            };
+            let course_index = match course_index {
+                Some(course_index) if !is_host_selection => course_index,
+                _ => self.rng.random_range(..self.pack.course_count),
+            };
+            let server_kart = ServerPollKart {
+                kart_index,
+                character_ids: client_kart.character_ids,
+                kart_id: client_kart.kart_id,
+                course_index,
+            };
+            state.kart_indices.push(kart_index).unwrap();
+            v.insert(server_kart).unwrap();
+        }
+        if is_host_selection && is_host {
+            *host_course_index = course_index;
+        }
+        if server_karts.len() == self.karts.len()
+            && (!is_host_selection || host_course_index.is_some())
+        {
+            self.state = State::new_race(
+                team_state.clone(),
+                state,
+                server_karts,
+                *host_course_index,
+                &self.karts,
+                &mut self.rng,
+            );
         }
         Ok(())
     }
 
     pub fn set_race(&mut self, client_pk: &PublicKey, race: ClientStateRace) -> Result<()> {
+        anyhow::ensure!(self.has_race_state());
         let ClientStateRace { frame: client_frame, karts: mut client_karts, item_counts } = race;
         anyhow::ensure!(client_frame >= MIN_CLIENT_FRAME);
         let kart_indices: heapless::Vec<_, MAX_CLIENT_KART_COUNT> = self
@@ -572,147 +595,137 @@ impl Room {
             .map(|(i, _)| i)
             .collect();
         anyhow::ensure!(client_karts.len() == kart_indices.len());
-        match &mut self.state {
-            State::Race { poll_state, inputs, karts, states, .. } => {
-                let server_frame = states.len() as u16;
-                if i32::from(client_frame) - i32::from(server_frame) > MAX_KART_INPUT_COUNT as i32 {
-                    return Ok(());
-                }
-                let kart_indices = || kart_indices.iter().copied();
-                for (client_kart, kart_index) in client_karts.iter_mut().zip(kart_indices()) {
-                    let kart = karts[kart_index].as_ref();
-                    let kart_frame = kart.map_or(MIN_CLIENT_FRAME, |kart| kart.kart_frame);
-                    if client_frame <= kart_frame {
-                        return Ok(());
-                    }
-                    let min_input_count = client_frame - kart_frame;
-                    let client_inputs = &client_kart.inputs;
-                    let inputs = &inputs[kart_index];
-                    anyhow::ensure!(client_inputs.len() == inputs.len());
-                    anyhow::ensure!(client_inputs[0].len() >= min_input_count as usize);
-                    for [ci0, ci1] in client_inputs.array_windows() {
-                        anyhow::ensure!(ci0.len() == ci1.len());
-                    }
-                    for (i, item_frame) in client_kart.item_frames.iter().enumerate() {
-                        let kart_item_frame =
-                            kart.map_or(MIN_CLIENT_FRAME, |kart| kart.item_frames[i]);
-                        anyhow::ensure!(*item_frame >= kart_item_frame);
-                        anyhow::ensure!(*item_frame <= client_frame);
-                    }
-                    let kart_item_event_counter = kart.map_or(0, |kart| kart.item_event_counter);
-                    let item_event_count = client_kart
-                        .item_event_counter
-                        .checked_sub(kart_item_event_counter)
-                        .context("Invalid item event counter")?
-                        as usize;
-                    client_kart.item_events.truncate(item_event_count);
-                    for item_event in &client_kart.item_events {
-                        anyhow::ensure!(item_event.event_stick_y >= MIN_STICK_Y);
-                        anyhow::ensure!(item_event.event_stick_y <= MAX_STICK_Y);
-                    }
-                    anyhow::ensure!((client_kart.rank as usize) < self.karts.len());
-                }
-                for item_count in &item_counts {
-                    anyhow::ensure!(*item_count <= 64);
-                }
-                for (mut client_kart, kart_index) in client_karts.into_iter().zip(kart_indices()) {
-                    let client_inputs = client_kart.inputs;
-                    let inputs = &mut inputs[kart_index];
-                    for (client_inputs, inputs) in client_inputs.iter().zip(inputs.iter_mut()) {
-                        let input_count = (client_frame - MIN_CLIENT_FRAME) as usize - inputs.len();
-                        let input_offset = client_inputs.len() - input_count;
-                        inputs.extend(client_inputs[input_offset..].iter());
-                    }
-                    let inputs =
-                        client_inputs.iter().map(|inputs| *inputs.last().unwrap()).collect();
-                    let kart = &karts[kart_index];
-                    let mut item_ids =
-                        kart.as_ref().map_or([ItemId::None; 2], |kart| kart.item_ids);
-                    for (i, item_frame) in client_kart.item_frames.iter_mut().enumerate() {
-                        let kart_item_frame =
-                            kart.as_ref().map_or(MIN_CLIENT_FRAME, |kart| kart.item_frames[i]);
-                        if *item_frame >= kart_item_frame + 50 {
-                            let item_mode = match &self.options {
-                                ServerRoomOptions::RaceOptions(options) => options.item_mode,
-                                ServerRoomOptions::BattleOptions(_) => {
-                                    RoomOptionItemMode::Recommended
-                                }
-                            };
-                            let poll_kart = poll_state
-                                .karts
-                                .iter()
-                                .find(|kart| kart.kart_index as usize == kart_index)
-                                .unwrap();
-                            let character_ids = poll_kart.character_ids;
-                            let mut item_counts = item_counts;
-                            for kart in &*karts {
-                                let Some(kart) = kart else {
-                                    continue;
-                                };
-                                for item_id in &kart.item_ids {
-                                    let base_item_id = item_id.base();
-                                    if base_item_id != ItemId::None {
-                                        let count = item_id.count();
-                                        item_counts[base_item_id as usize] += count;
-                                    }
-                                }
+        let State::Race { poll_state, inputs, karts, states, .. } = &mut self.state else {
+            return Ok(());
+        };
+        let server_frame = states.len() as u16;
+        if i32::from(client_frame) - i32::from(server_frame) > MAX_KART_INPUT_COUNT as i32 {
+            return Ok(());
+        }
+        let kart_indices = || kart_indices.iter().copied();
+        for (client_kart, kart_index) in client_karts.iter_mut().zip(kart_indices()) {
+            let kart = karts[kart_index].as_ref();
+            let kart_frame = kart.map_or(MIN_CLIENT_FRAME, |kart| kart.kart_frame);
+            if client_frame <= kart_frame {
+                return Ok(());
+            }
+            let min_input_count = client_frame - kart_frame;
+            let client_inputs = &client_kart.inputs;
+            let inputs = &inputs[kart_index];
+            anyhow::ensure!(client_inputs.len() == inputs.len());
+            anyhow::ensure!(client_inputs[0].len() >= min_input_count as usize);
+            for [ci0, ci1] in client_inputs.array_windows() {
+                anyhow::ensure!(ci0.len() == ci1.len());
+            }
+            for (i, item_frame) in client_kart.item_frames.iter().enumerate() {
+                let kart_item_frame = kart.map_or(MIN_CLIENT_FRAME, |kart| kart.item_frames[i]);
+                anyhow::ensure!(*item_frame >= kart_item_frame);
+                anyhow::ensure!(*item_frame <= client_frame);
+            }
+            let kart_item_event_counter = kart.map_or(0, |kart| kart.item_event_counter);
+            let item_event_count = client_kart
+                .item_event_counter
+                .checked_sub(kart_item_event_counter)
+                .context("Invalid item event counter")? as usize;
+            client_kart.item_events.truncate(item_event_count);
+            for item_event in &client_kart.item_events {
+                anyhow::ensure!(item_event.event_stick_y >= MIN_STICK_Y);
+                anyhow::ensure!(item_event.event_stick_y <= MAX_STICK_Y);
+            }
+            anyhow::ensure!((client_kart.rank as usize) < self.karts.len());
+        }
+        for item_count in &item_counts {
+            anyhow::ensure!(*item_count <= 64);
+        }
+        for (mut client_kart, kart_index) in client_karts.into_iter().zip(kart_indices()) {
+            let client_inputs = client_kart.inputs;
+            let inputs = &mut inputs[kart_index];
+            for (client_inputs, inputs) in client_inputs.iter().zip(inputs.iter_mut()) {
+                let input_count = (client_frame - MIN_CLIENT_FRAME) as usize - inputs.len();
+                let input_offset = client_inputs.len() - input_count;
+                inputs.extend(client_inputs[input_offset..].iter());
+            }
+            let inputs = client_inputs.iter().map(|inputs| *inputs.last().unwrap()).collect();
+            let kart = &karts[kart_index];
+            let mut item_ids = kart.as_ref().map_or([ItemId::None; 2], |kart| kart.item_ids);
+            for (i, item_frame) in client_kart.item_frames.iter_mut().enumerate() {
+                let kart_item_frame =
+                    kart.as_ref().map_or(MIN_CLIENT_FRAME, |kart| kart.item_frames[i]);
+                if *item_frame >= kart_item_frame + 50 {
+                    let item_mode = match &self.options {
+                        ServerRoomOptions::RaceOptions(options) => options.item_mode,
+                        ServerRoomOptions::BattleOptions(_) => RoomOptionItemMode::Recommended,
+                    };
+                    let poll_kart = poll_state
+                        .karts
+                        .iter()
+                        .find(|kart| kart.kart_index as usize == kart_index)
+                        .unwrap();
+                    let character_ids = poll_kart.character_ids;
+                    let mut item_counts = item_counts;
+                    for kart in &*karts {
+                        let Some(kart) = kart else {
+                            continue;
+                        };
+                        for item_id in &kart.item_ids {
+                            let base_item_id = item_id.base();
+                            if base_item_id != ItemId::None {
+                                let count = item_id.count();
+                                item_counts[base_item_id as usize] += count;
                             }
-                            item_ids[i] = item::choose(
-                                self.karts.len(),
-                                self.mode_index,
-                                item_mode,
-                                character_ids[i],
-                                character_ids[i ^ 1],
-                                client_kart.rank,
-                                item_ids[i ^ 1],
-                                item_counts,
-                                &mut self.rng,
-                            );
-                        } else {
-                            *item_frame = kart_item_frame;
                         }
                     }
-                    if let Some(kart) = kart {
-                        while kart.item_events.len() + client_kart.item_events.len()
-                            > MAX_ITEM_EVENT_COUNT
-                        {
-                            client_kart.item_event_counter -= 1;
-                            client_kart.item_events.remove(0);
-                        }
-                    }
-                    for item_event in &mut client_kart.item_events {
-                        item_event.event_frame = 0;
-                        let item_id = item_ids
-                            .iter_mut()
-                            .find(|item_id| **item_id == item_event.event_item_id);
-                        if let Some(item_id) = item_id {
-                            *item_id = ItemId::None;
-                        } else {
-                            item_event.event_item_id = ItemId::None;
-                        }
-                    }
-                    let mut item_events = client_kart.item_events;
-                    if let Some(kart) = kart {
-                        item_events.extend(kart.item_events.clone());
-                    }
-                    karts[kart_index] = Some(ServerRaceKart {
-                        kart_frame: client_frame,
-                        inputs,
-                        driver: client_kart.driver,
-                        pos_x: client_kart.pos_x,
-                        pos_y: client_kart.pos_y,
-                        pos_z: client_kart.pos_z,
-                        angle: client_kart.angle,
-                        vel_x: client_kart.vel_x,
-                        vel_z: client_kart.vel_z,
-                        item_event_counter: client_kart.item_event_counter,
-                        item_frames: client_kart.item_frames,
-                        item_ids,
-                        item_events,
-                    });
+                    item_ids[i] = item::choose(
+                        self.karts.len(),
+                        self.mode_index,
+                        item_mode,
+                        character_ids[i],
+                        character_ids[i ^ 1],
+                        client_kart.rank,
+                        item_ids[i ^ 1],
+                        item_counts,
+                        &mut self.rng,
+                    );
+                } else {
+                    *item_frame = kart_item_frame;
                 }
             }
-            _ => anyhow::bail!("Invalid room state"),
+            if let Some(kart) = kart {
+                while kart.item_events.len() + client_kart.item_events.len() > MAX_ITEM_EVENT_COUNT
+                {
+                    client_kart.item_event_counter -= 1;
+                    client_kart.item_events.remove(0);
+                }
+            }
+            for item_event in &mut client_kart.item_events {
+                item_event.event_frame = 0;
+                let item_id =
+                    item_ids.iter_mut().find(|item_id| **item_id == item_event.event_item_id);
+                if let Some(item_id) = item_id {
+                    *item_id = ItemId::None;
+                } else {
+                    item_event.event_item_id = ItemId::None;
+                }
+            }
+            let mut item_events = client_kart.item_events;
+            if let Some(kart) = kart {
+                item_events.extend(kart.item_events.clone());
+            }
+            karts[kart_index] = Some(ServerRaceKart {
+                kart_frame: client_frame,
+                inputs,
+                driver: client_kart.driver,
+                pos_x: client_kart.pos_x,
+                pos_y: client_kart.pos_y,
+                pos_z: client_kart.pos_z,
+                angle: client_kart.angle,
+                vel_x: client_kart.vel_x,
+                vel_z: client_kart.vel_z,
+                item_event_counter: client_kart.item_event_counter,
+                item_frames: client_kart.item_frames,
+                item_ids,
+                item_events,
+            });
         }
         Ok(())
     }
