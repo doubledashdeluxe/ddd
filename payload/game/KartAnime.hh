@@ -6,8 +6,9 @@ class KartAnime {
 public:
     bool isChangeStart() const;
     bool isGetItemAnime(u32 kartIndex) const;
-    bool isBack() const;
-    bool isBackStart() const;
+    bool isBack(u32 kartIndex) const;
+    bool isBackStart(u32 kartIndex) const;
+    void makeThrowAnime(bool isBack, bool isItemBack, bool isSuccessionItem);
 
 private:
     u8 _00[0x14 - 0x00];

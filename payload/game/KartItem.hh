@@ -9,6 +9,9 @@ private:
     void REPLACED(doTandemItemRelease)();
     REPLACE void doTandemItemRelease();
 
+    static bool IsTurtle(u32 itemID);
+    static bool IsBanana(u32 itemID);
+
     KartBody *m_body;
     u8 _4[0xc - 0x4];
 };

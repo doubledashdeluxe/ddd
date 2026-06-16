@@ -614,6 +614,7 @@
 8020b9d4 getRobberyItemNum__10ItemObjMgrFUlUl
 8020c9b8 slotItem__14ItemShuffleMgrFUlUl
 8020cbac doShuffle__14ItemShuffleMgrFUlUl
+802145c4 isSuccessionItem__7ItemObjCFv
 8021a1f8 getHandOffsetPos__7ItemObjFv
 8026712c GetScreenPos__6SiUtilFlRC5Vec3fR5Vec2f
 802953dc setPosition__11ZCaptureMgrFUlUlss
@@ -630,7 +631,10 @@
 802b1520 getCoDriveCont__8KartCtrlCFUl
 802b33c8 setPtr__7KartCamFv
 802b60a0 initOutView__7KartCamFv
+802b882c isBackStart__9KartAnimeCFUl
 802b8b6c isGetItemAnime__9KartAnimeCFUl
+802b8c28 isBack__9KartAnimeCFUl
+802b8d80 makeThrowAnime__9KartAnimeFbbb
 802bc378 doTandemItemAnime__8KartItemFv
 802bc998 doTandemItemRelease__8KartItemFv
 802bd478 doHorn__9KartSoundFv

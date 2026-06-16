@@ -29,7 +29,7 @@ void KartItem::doTandemItemAnime() {
     }
 
     const KartCtrl *kartCtrl = KartCtrl::Instance();
-    const KartAnime *kartAnime = kartCtrl->getKartAnime(index);
+    KartAnime *kartAnime = kartCtrl->getKartAnime(index);
     if (kartAnime->isChangeStart() || m_body->isChange()) {
         return;
     }
@@ -50,17 +50,51 @@ void KartItem::doTandemItemAnime() {
         case ItemObj::State::HeartWaiting:
             return;
         }
-    } else {
-        u32 driver = m_body->getDriver();
-        if (!itemObjMgr->equipItemToKart(itemEvent->itemID, index, driver ^ 1, false, 0)) {
+    }
+
+    u32 itemID = item ? item->getKind() : itemEvent->itemID;
+    bool isTurtle = IsTurtle(itemID);
+    bool isBanana = IsBanana(itemID);
+    if ((isTurtle || isBanana) && kartAnime->isBackStart(index)) {
+        return;
+    }
+
+    if (!item) {
+        if (itemID == ItemID::None) {
             return;
         }
+
+        u32 driver = m_body->getDriver();
+        if (!itemObjMgr->equipItemToKart(itemID, index, driver ^ 1, false, 0)) {
+            return;
+        }
+
+        item = itemObjMgr->getKartEquipItem(index);
     }
 
     m_body->m_itemThrow = true;
     KartPad *kartPad = kartCtrl->getKartPad(index);
     kartPad->m_itemFrame = 5;
     kartPad->m_itemStickY = itemEvent->stickY * (1.0f / MaxStickY);
+
+    bool isBack = isBanana || kartAnime->isBack(index);
+    bool isItemBack = itemID != ItemID::Chomp;
+    if (isTurtle || isBanana) {
+        if (isBack) {
+            isItemBack = kartPad->m_itemStickY <= 0.1f;
+        } else {
+            isItemBack = kartPad->m_itemStickY < -0.1f;
+        }
+        if (isItemBack) {
+            m_body->m_itemBack = true;
+        } else {
+            m_body->m_itemFront = true;
+        }
+    }
+    bool isSuccessionItem = isTurtle && item->isSuccessionItem();
+    if (itemID != ItemID::GoldenMushroom) {
+        kartAnime->makeThrowAnime(isBack, isItemBack, isSuccessionItem);
+    }
 }
 
 void KartItem::doTandemItemRelease() {
@@ -103,4 +137,35 @@ void KartItem::doTandemItemRelease() {
     }
 
     REPLACED(doTandemItemRelease)();
+}
+
+bool KartItem::IsTurtle(u32 itemID) {
+    switch (itemID) {
+    case ItemID::GreenShell:
+    case ItemID::BowserShell:
+    case ItemID::RedShell:
+    case ItemID::Bomb:
+    case ItemID::MarioFireballs:
+    case ItemID::YoshiEgg:
+    case ItemID::BlueShell:
+    case ItemID::TripleGreenShells:
+    case ItemID::TripleRedShells:
+    case ItemID::Bombs:
+    case ItemID::Fireballs:
+        return true;
+    default:
+        return false;
+    }
+}
+
+bool KartItem::IsBanana(u32 itemID) {
+    switch (itemID) {
+    case ItemID::Banana:
+    case ItemID::GiantBanana:
+    case ItemID::Heart:
+    case ItemID::FakeItemBox:
+        return true;
+    default:
+        return false;
+    }
 }

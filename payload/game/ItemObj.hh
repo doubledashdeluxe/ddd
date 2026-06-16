@@ -18,6 +18,7 @@ public:
 
     u32 getKind() const;
     u32 getState() const;
+    bool isSuccessionItem() const;
     s32 getSuccessionItemNum() const;
 
 protected:
