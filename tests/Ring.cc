@@ -3,7 +3,7 @@
 
 TEST_CASE("Ring") {
     SECTION("Empty") {
-        Ring<u32, 8> ring;
+        Ring<u32, 7> ring;
 
         SECTION("empty") {
             CHECK(ring.empty());
@@ -25,14 +25,18 @@ TEST_CASE("Ring") {
             CHECK(ring.back() == nullptr);
         }
 
-        SECTION("pushFront") {
-            CHECK(ring.pushFront(96));
+        SECTION("emplace") {
+            CHECK(*ring.emplaceBack() = 168);
+            CHECK(*ring.emplaceFront() = 96);
+            CHECK(*ring.back() == 168);
             CHECK(*ring.front() == 96);
         }
 
-        SECTION("pushBack") {
+        SECTION("push") {
             CHECK(ring.pushBack(168));
+            CHECK(ring.pushFront(96));
             CHECK(*ring.back() == 168);
+            CHECK(*ring.front() == 96);
         }
 
         SECTION("popFront") {
@@ -50,7 +54,7 @@ TEST_CASE("Ring") {
     }
 
     SECTION("Full") {
-        Ring<u32, 8> ring;
+        Ring<u32, 7> ring;
         ring.pushBack(231);
         ring.pushBack(67);
         ring.pushBack(102);
@@ -58,7 +62,6 @@ TEST_CASE("Ring") {
         ring.pushBack(211);
         ring.pushBack(56);
         ring.pushBack(84);
-        ring.pushBack(220);
 
         SECTION("empty") {
             CHECK_FALSE(ring.empty());
@@ -69,7 +72,7 @@ TEST_CASE("Ring") {
         }
 
         SECTION("count") {
-            CHECK(ring.count() == 8);
+            CHECK(ring.count() == 7);
         }
 
         SECTION("front") {
@@ -77,11 +80,19 @@ TEST_CASE("Ring") {
         }
 
         SECTION("back") {
-            CHECK(*ring.back() == 220);
+            CHECK(*ring.back() == 84);
         }
 
         SECTION("operator[]") {
-            CHECK(ring[6] == 84);
+            CHECK(ring[5] == 56);
+        }
+
+        SECTION("emplaceFront") {
+            CHECK_FALSE(ring.emplaceFront());
+        }
+
+        SECTION("emplaceBack") {
+            CHECK_FALSE(ring.emplaceBack());
         }
 
         SECTION("pushFront") {
@@ -99,7 +110,7 @@ TEST_CASE("Ring") {
 
         SECTION("popBack") {
             CHECK(ring.popBack());
-            CHECK(*ring.back() == 84);
+            CHECK(*ring.back() == 56);
         }
 
         SECTION("swapRemoveFront") {
@@ -111,7 +122,7 @@ TEST_CASE("Ring") {
         SECTION("swapRemoveBack") {
             ring.swapRemoveBack(5);
             CHECK(*ring.back() == 84);
-            CHECK(ring[5] == 220);
+            CHECK(ring[5] == 84);
         }
 
         SECTION("reset") {
@@ -121,8 +132,8 @@ TEST_CASE("Ring") {
     }
 
     SECTION("Wrapped around") {
-        Ring<u32, 8> ring;
-        for (size_t i = 0; i < 6; i++) {
+        Ring<u32, 7> ring;
+        for (size_t i = 0; i < 5; i++) {
             ring.pushBack(115);
             ring.popFront();
         }
@@ -154,13 +165,17 @@ TEST_CASE("Ring") {
             CHECK(ring[1] == 32);
         }
 
-        SECTION("pushFront") {
-            CHECK(ring.pushFront(111));
+        SECTION("emplace") {
+            CHECK(*ring.emplaceFront() = 111);
+            CHECK(*ring.emplaceBack() = 104);
             CHECK(*ring.front() == 111);
+            CHECK(*ring.back() == 104);
         }
 
-        SECTION("pushBack") {
+        SECTION("push") {
+            CHECK(ring.pushFront(111));
             CHECK(ring.pushBack(104));
+            CHECK(*ring.front() == 111);
             CHECK(*ring.back() == 104);
         }
 

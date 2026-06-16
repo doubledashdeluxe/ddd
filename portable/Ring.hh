@@ -69,8 +69,8 @@ public:
             return nullptr;
         }
 
-        m_front = (m_front - 1) % N;
-        new (&reinterpret_cast<T *>(m_buffer)[m_front]) T;
+        m_front = (m_front == 0 ? N : m_front) - 1;
+        new (&(*this)[0]) T;
         m_count++;
         return &(*this)[0];
     }
@@ -80,7 +80,7 @@ public:
             return nullptr;
         }
 
-        new (&reinterpret_cast<T *>(m_buffer)[(m_front + m_count) % N]) T;
+        new (&(*this)[m_count]) T;
         m_count++;
         return &(*this)[m_count - 1];
     }
@@ -90,8 +90,8 @@ public:
             return nullptr;
         }
 
-        m_front = (m_front - 1) % N;
-        new (&reinterpret_cast<T *>(m_buffer)[m_front]) T(value);
+        m_front = (m_front == 0 ? N : m_front) - 1;
+        new (&(*this)[0]) T(value);
         m_count++;
         return &(*this)[0];
     }
@@ -101,7 +101,7 @@ public:
             return nullptr;
         }
 
-        new (&reinterpret_cast<T *>(m_buffer)[(m_front + m_count) % N]) T(value);
+        new (&(*this)[m_count]) T(value);
         m_count++;
         return &(*this)[m_count - 1];
     }
@@ -111,7 +111,7 @@ public:
             return false;
         }
 
-        reinterpret_cast<T *>(m_buffer)[m_front].~T();
+        (*this)[0].~T();
         m_front = (m_front + 1) % N;
         m_count--;
         return true;
@@ -122,7 +122,7 @@ public:
             return false;
         }
 
-        reinterpret_cast<T *>(m_buffer)[(m_front + m_count - 1) % N].~T();
+        (*this)[m_count - 1].~T();
         m_count--;
         return true;
     }
