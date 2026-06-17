@@ -4,6 +4,37 @@
 #include "game/KartCtrl.hh"
 #include "game/OnlineInfo.hh"
 #include "game/RaceClient.hh"
+#include "game/SequenceInfo.hh"
+
+void KartItem::doOtherAnime() {
+    const KartCtrl *kartCtrl = KartCtrl::Instance();
+    u32 index = m_body->getIndex();
+    KartPad *kartPad = kartCtrl->getKartPad(index);
+    u32 goldenMushroomFrame = kartPad->m_goldenMushroomFrame;
+
+    REPLACED(doOtherAnime)();
+
+    if (!SequenceInfo::Instance().m_isOnline) {
+        return;
+    }
+
+    if (kartPad->m_goldenMushroomFrame != goldenMushroomFrame) {
+        return;
+    }
+
+    if (!kartPad->m_hasGoldenMushroom) {
+        return;
+    }
+
+    if (kartPad->m_goldenMushroomFrame != 0) {
+        kartPad->m_goldenMushroomFrame--;
+        return;
+    }
+
+    m_body->m_itemThrow = false;
+    kartPad->m_hasGoldenMushroom = false;
+    kartPad->m_goldenMushroom->setStateDisappear(true);
+}
 
 void KartItem::doTandemItemAnime() {
     RaceClient *raceClient = RaceClient::Instance();

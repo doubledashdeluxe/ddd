@@ -615,6 +615,7 @@
 8020c9b8 slotItem__14ItemShuffleMgrFUlUl
 8020cbac doShuffle__14ItemShuffleMgrFUlUl
 802145c4 isSuccessionItem__7ItemObjCFv
+802145f4 setStateDisappear__7ItemObjFb
 8021a1f8 getHandOffsetPos__7ItemObjFv
 8026712c GetScreenPos__6SiUtilFlRC5Vec3fR5Vec2f
 802953dc setPosition__11ZCaptureMgrFUlUlss
@@ -635,6 +636,7 @@
 802b8b6c isGetItemAnime__9KartAnimeCFUl
 802b8c28 isBack__9KartAnimeCFUl
 802b8d80 makeThrowAnime__9KartAnimeFbbb
+802bbc6c doOtherAnime__8KartItemFv
 802bc378 doTandemItemAnime__8KartItemFv
 802bc998 doTandemItemRelease__8KartItemFv
 802bd478 doHorn__9KartSoundFv
