@@ -320,6 +320,7 @@ impl Room {
             State::Race { states, .. } => {
                 let mut state = states.get(frame as usize).or_else(|| states.last())?.clone();
                 state.frame = states.len() as u16 - 1;
+                state.client_frame = frame;
                 let mut j = 0;
                 for (i, kart) in self.karts.iter().enumerate() {
                     if state.kart_flags & 1 << i == 0 {
