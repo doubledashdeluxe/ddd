@@ -1,6 +1,6 @@
 #pragma once
 
-#include <portable/Types.hh>
+#include "game/ItemObj.hh"
 
 class KartPad {
 public:
@@ -18,12 +18,18 @@ public:
     f32 m_itemStickY;
 
 private:
-    u8 _40[0x51 - 0x40];
+    u8 _40[0x4c - 0x40];
 
 public:
+    u32 m_goldenMushroomFrame;
+    u8 : 7;
+    bool m_hasGoldenMushroom : 1;
     u8 m_itemFrame;
 
 private:
-    u8 _52[0x58 - 0x52];
+    u8 _52[0x54 - 0x52];
+
+public:
+    ItemObj *m_goldenMushroom;
 };
 size_assert(KartPad, 0x58);

@@ -39,7 +39,7 @@ void KartItem::doTandemItemAnime() {
     }
 
     ItemObjMgr *itemObjMgr = ItemObjMgr::Instance();
-    const ItemObj *item = itemObjMgr->getKartEquipItem(index);
+    ItemObj *item = itemObjMgr->getKartEquipItem(index);
     if (item) {
         if (item->getKind() != itemEvent->itemID && itemEvent->itemID != ItemID::None) {
             return;
@@ -75,11 +75,21 @@ void KartItem::doTandemItemAnime() {
     m_body->m_itemThrow = true;
     KartPad *kartPad = kartCtrl->getKartPad(index);
     kartPad->m_itemFrame = 5;
-    kartPad->m_itemStickY = itemEvent->stickY * (1.0f / MaxStickY);
+
+    if (itemID == ItemID::GoldenMushroom) {
+        if (!kartPad->m_hasGoldenMushroom) {
+            kartPad->m_hasGoldenMushroom = true;
+            kartPad->m_goldenMushroomFrame = 300;
+            kartPad->m_goldenMushroom = item;
+        }
+        kartAnime->makeCrouchAnime();
+        return;
+    }
 
     bool isBack = isBanana || kartAnime->isBack(index);
     bool isItemBack = itemID != ItemID::Chomp;
     if (isTurtle || isBanana) {
+        kartPad->m_itemStickY = itemEvent->stickY * (1.0f / MaxStickY);
         if (isBack) {
             isItemBack = kartPad->m_itemStickY <= 0.1f;
         } else {
@@ -92,9 +102,7 @@ void KartItem::doTandemItemAnime() {
         }
     }
     bool isSuccessionItem = isTurtle && item->isSuccessionItem();
-    if (itemID != ItemID::GoldenMushroom) {
-        kartAnime->makeThrowAnime(isBack, isItemBack, isSuccessionItem);
-    }
+    kartAnime->makeThrowAnime(isBack, isItemBack, isSuccessionItem);
 }
 
 void KartItem::doTandemItemRelease() {
