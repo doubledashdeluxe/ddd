@@ -25,6 +25,7 @@ public:
     u8 loopFrame() const;
     u32 frame() const;
     bool isReplay() const;
+    bool isJugemCountStart() const;
     Console &console(u32 index) const;
     KartChecker *kartChecker(u32 index) const;
     KartLoader *kartLoader(u32 index) const;

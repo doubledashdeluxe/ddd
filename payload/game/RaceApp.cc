@@ -1,6 +1,8 @@
 #include "RaceApp.hh"
 
 #include "game/ForceEffectMgr.hh"
+#include "game/KartCtrl.hh"
+#include "game/OnlineInfo.hh"
 #include "game/OnlineTimer.hh"
 #include "game/RaceClient.hh"
 #include "game/RaceInfo.hh"
@@ -94,4 +96,65 @@ void RaceApp::ctrlRace() {
         m_nextScene = SceneType::MapSelect;
         break;
     }
+}
+
+void RaceApp::ctrlRecorder() {
+    switch (m_recPhase) {
+    case RecPhase::Waiting:
+        if (m_raceMgr->isJugemCountStart()) {
+            m_recPhase = RecPhase::Ready;
+        }
+        break;
+    case RecPhase::Ready:
+        m_recPhase = RecPhase::Running;
+        break;
+    }
+
+    if (m_recPhase == RecPhase::Ready) {
+        switch (m_recState) {
+        case RecState::Recording:
+            m_recorder->rec();
+            break;
+        case RecState::Playing:
+            m_recorder->play();
+            break;
+        }
+    }
+
+    if (m_recPhase != RecPhase::Running || m_recState != RecState::Recording) {
+        return;
+    }
+
+    m_recorder->nextFrame();
+
+    const OnlineInfo &onlineInfo = OnlineInfo::Instance();
+    const KartCtrl *kartCtrl = KartCtrl::Instance();
+    for (u32 i = 0; i < onlineInfo.m_localKartCount; i++) {
+        if (m_recGoalFlags & 1 << i) {
+            continue;
+        }
+
+        u32 kartIndex = onlineInfo.m_localKartIndices[i];
+        if (!m_raceMgr->kartChecker(kartIndex)->raceEnd()) {
+            continue;
+        }
+
+        const RaceTime &totalTime = m_raceMgr->kartChecker(kartIndex)->totalTime();
+        for (u32 j = 0; j < onlineInfo.m_karts[i].playerCount; j++) {
+            KartGamePad *pad = kartCtrl->getKartGamePad(kartIndex, j);
+            s32 port = pad->padPort();
+            m_recorder->finalizeRecord(port, totalTime);
+            m_recorder->setRecord(port, nullptr);
+        }
+
+        m_recGoalFlags |= 1 << i;
+    }
+
+    u32 mask = (1 << onlineInfo.m_localKartCount) - 1;
+    if ((m_recGoalFlags & mask) != mask) {
+        return;
+    }
+
+    m_recorder->stop();
+    m_recState = RecState::Stopped;
 }

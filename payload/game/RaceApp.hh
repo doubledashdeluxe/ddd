@@ -14,6 +14,30 @@ public:
     static RaceApp *Instance();
 
 private:
+    class RecState {
+    public:
+        enum {
+            Stopped = 0,
+            Recording = 1,
+            Playing = 2,
+        };
+
+    private:
+        RecState();
+    };
+
+    class RecPhase {
+    public:
+        enum {
+            Waiting = 0,
+            Ready = 1,
+            Running = 2,
+        };
+
+    private:
+        RecPhase();
+    };
+
     RaceApp();
     REPLACE ~RaceApp() override;
     void draw() override;
@@ -26,10 +50,14 @@ private:
 
     UniquePtr<RaceMgr> m_raceMgr;
     u32 m_state;
-    u8 _14[0x24 - 0x14];
+    u8 _14[0x18 - 0x14];
+    u32 m_recState;
+    u32 m_recPhase;
+    u8 _20[0x24 - 0x20];
     u32 m_nextScene;
     UniquePtr<PadRecorder> m_recorder;
-    u8 _2c[0x54 - 0x2c];
+    u8 _2c[0x50 - 0x2c];
+    u8 m_recGoalFlags;
 
     static RaceApp *s_instance;
 };

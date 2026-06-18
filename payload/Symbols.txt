@@ -504,6 +504,7 @@
 8018899c calcRace__7RaceMgrFv
 80188a54 framework__7RaceMgrFv
 80188b44 updateRace__7RaceMgrFv
+80189618 isJugemCountStart__7RaceMgrCFv
 8018970c changeTarget__Q27RaceMgr7ConsoleFUlb
 80189bb0 setHeapGroup__8SysDebugFPCcP7JKRHeap
 80189bb4 setDefaultHeapGroup__8SysDebugFP7JKRHeap
@@ -549,7 +550,6 @@
 801cd7fc draw__7RaceAppFv
 801cd840 calc__7RaceAppFv
 801cdb54 ctrlRace__7RaceAppFv
-801cde4c ctrlRecorder__7RaceAppFv
 801ce300 GetCrsArcName__6ResMgrFUl
 801ce530 Create__6ResMgrFP7JKRHeap
 801ce610 LoadKeepData__6ResMgrFPv
@@ -604,8 +604,14 @@
 801dc290 GetPadData__6PadMgrFUcbPQ26PadMgr11KartPadData
 801dc290 GetPadData__6PadMgrFUcbPUs
 801dc6cc __dt__11PadRecorderFv
+801dc758 setRecord__11PadRecorderFUcP13KartPadRecord
+801dc788 play__11PadRecorderFv
+801dc84c rec__11PadRecorderFv
+801dc858 stop__11PadRecorderFv
+801dc864 finalizeRecord__11PadRecorderFUc8RaceTime
 801dc900 line__11PadRecorderFUcPQ26PadMgr11KartPadData
 801dcacc framework__11PadRecorderFv
+801dcc2c nextFrame__11PadRecorderFv
 801dd1b4 processDHCP__6BBAMgrFv
 801dd3c4 processAutoIP__6BBAMgrFv
 801dd628 disconnecting__6BBAMgrFb
