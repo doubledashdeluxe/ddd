@@ -7,20 +7,39 @@
 
 #pragma once
 
+#include "portable/TypeTraits.hh"
 #include "portable/Types.hh"
 
 template <typename T>
-const T &Min(const T &a, const T &b) {
+typename TypeTraits::EnableIf<TypeTraits::IsRegOptimized<T>::value, T>::type Min(T a, T b) {
     return (b < a) ? b : a;
 }
 
 template <typename T>
-const T &Max(const T &a, const T &b) {
+typename TypeTraits::EnableIf<!TypeTraits::IsRegOptimized<T>::value, const T &>::type Min(
+        const T &a, const T &b) {
+    return (b < a) ? b : a;
+}
+
+template <typename T>
+typename TypeTraits::EnableIf<TypeTraits::IsRegOptimized<T>::value, T>::type Max(T a, T b) {
     return (a < b) ? b : a;
 }
 
 template <typename T>
-const T &Clamp(const T &x, const T &a, const T &b) {
+typename TypeTraits::EnableIf<!TypeTraits::IsRegOptimized<T>::value, const T &>::type Max(
+        const T &a, const T &b) {
+    return (a < b) ? b : a;
+}
+
+template <typename T>
+typename TypeTraits::EnableIf<TypeTraits::IsRegOptimized<T>::value, T>::type Clamp(T x, T a, T b) {
+    return Min(Max(x, a), b);
+}
+
+template <typename T>
+typename TypeTraits::EnableIf<!TypeTraits::IsRegOptimized<T>::value, const T &>::type Clamp(
+        const T &x, const T &a, const T &b) {
     return Min(Max(x, a), b);
 }
 
@@ -36,19 +55,49 @@ size_t Count(const T (& /* a */)[N]) {
     return N;
 }
 
+namespace detail {
+
+template <typename T, bool RegOptimized>
+struct LessImpl;
+
 template <typename T>
-struct Less {
-    bool operator()(const T &a, const T &b) {
+struct LessImpl<T, true> {
+    bool operator()(T a, T b) {
         return a < b;
     }
 };
 
 template <typename T>
-struct Greater {
+struct LessImpl<T, false> {
+    bool operator()(const T &a, const T &b) {
+        return a < b;
+    }
+};
+
+template <typename T, bool RegOptimized>
+struct GreaterImpl;
+
+template <typename T>
+struct GreaterImpl<T, true> {
+    bool operator()(T a, T b) {
+        return a > b;
+    }
+};
+
+template <typename T>
+struct GreaterImpl<T, false> {
     bool operator()(const T &a, const T &b) {
         return a > b;
     }
 };
+
+} // namespace detail
+
+template <typename T>
+struct Less : detail::LessImpl<T, TypeTraits::IsRegOptimized<T>::value> {};
+
+template <typename T>
+struct Greater : detail::GreaterImpl<T, TypeTraits::IsRegOptimized<T>::value> {};
 
 template <typename S>
 void Sort(S &sequence, size_t count) {
