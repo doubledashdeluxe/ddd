@@ -48,43 +48,43 @@ ClientState &ClientStatePoll::writeStateRace(const ClientStateRaceWriteInfo &wri
     return *(new (m_platform.allocator) ClientStateRace(m_platform, connection, writeInfo));
 }
 
-ServerStateServerReader *ClientStatePoll::serverReader() {
+ServerStateServerReader<void> *ClientStatePoll::serverReader() {
     return nullptr;
 }
 
-ServerStateModeReader *ClientStatePoll::modeReader() {
+ServerStateModeReader<void> *ClientStatePoll::modeReader() {
     return nullptr;
 }
 
-ServerStatePackReader *ClientStatePoll::packReader() {
+ServerStatePackReader<void> *ClientStatePoll::packReader() {
     return nullptr;
 }
 
-ServerStateRoomReader *ClientStatePoll::roomReader() {
+ServerStateRoomReader<void> *ClientStatePoll::roomReader() {
     return nullptr;
 }
 
-ServerStateTeamReader *ClientStatePoll::teamReader() {
+ServerStateTeamReader<void> *ClientStatePoll::teamReader() {
     return nullptr;
 }
 
-ServerStatePollReader *ClientStatePoll::pollReader() {
+ServerStatePollReader<ClientStatePoll> *ClientStatePoll::pollReader() {
     return this;
 }
 
-ServerStateRaceReader *ClientStatePoll::raceReader() {
+ServerStateRaceReader<void> *ClientStatePoll::raceReader() {
     return nullptr;
 }
 
-ServerPollStateReader *ClientStatePoll::serverPollStateReader() {
+ServerPollStateReader<ClientStatePoll> *ClientStatePoll::serverPollStateReader() {
     return this;
 }
 
-ServerPollStatePendingReader *ClientStatePoll::pendingReader() {
+ServerPollStatePendingReader<ClientStatePoll> *ClientStatePoll::pendingReader() {
     return this;
 }
 
-ServerPollStateReadyReader *ClientStatePoll::readyReader() {
+ServerPollStateReadyReader<ClientStatePoll> *ClientStatePoll::readyReader() {
     return this;
 }
 
@@ -133,7 +133,7 @@ void ClientStatePoll::setKartsCount(u32 kartsCount) {
     m_readInfo.ready.emplace().kartCount = kartsCount;
 }
 
-ServerPollKartReader *ClientStatePoll::kartsElementReader(u32 i0) {
+ServerPollKartReader<ClientStatePoll> *ClientStatePoll::kartsElementReader(u32 i0) {
     m_kartIndex = i0;
     return this;
 }
@@ -183,11 +183,11 @@ void ClientStatePoll::setCourseIndex(u8 courseIndex) {
     m_readInfo.ready.emplace().karts[m_kartIndex].courseIndex = courseIndex;
 }
 
-ClientStatePollWriter &ClientStatePoll::pollWriter() {
+ClientStatePollWriter<ClientStatePoll> &ClientStatePoll::pollWriter() {
     return *this;
 }
 
-ClientPollStateWriter &ClientStatePoll::clientPollStateWriter() {
+ClientPollStateWriter<ClientStatePoll> &ClientStatePoll::clientPollStateWriter() {
     if (m_writeInfo.ready) {
         return Upcast<ClientPollStateWriter::Ready>(*this);
     } else {
@@ -197,7 +197,7 @@ ClientPollStateWriter &ClientStatePoll::clientPollStateWriter() {
 
 void ClientStatePoll::getPending() {}
 
-ClientPollStateReadyWriter &ClientStatePoll::readyWriter() {
+ClientPollStateReadyWriter<ClientStatePoll> &ClientStatePoll::readyWriter() {
     return *this;
 }
 
@@ -205,12 +205,12 @@ u32 ClientStatePoll::getKartsCount() {
     return m_writeInfo.ready->kartCount;
 }
 
-ClientPollKartWriter &ClientStatePoll::kartsElementWriter(u32 i0) {
+ClientPollKartWriter<ClientStatePoll> &ClientStatePoll::kartsElementWriter(u32 i0) {
     m_kartIndex = i0;
     return *this;
 }
 
-ClientCourseIndexWriter &ClientStatePoll::courseIndexWriter() {
+ClientCourseIndexWriter<ClientStatePoll> &ClientStatePoll::courseIndexWriter() {
     if (m_writeInfo.ready->courseIndex) {
         return Upcast<ClientCourseIndexWriter::Specified>(*this);
     } else {

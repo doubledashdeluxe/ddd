@@ -11,11 +11,9 @@ pub trait FieldList {
     fn rs_field_names(&self) -> String;
     fn rs_read(&self) -> String;
     fn rs_write(&self) -> String;
-    fn hh_read_delegates(&self) -> String;
-    fn hh_write_delegates(&self) -> String;
-    fn cc_is_valid(&self) -> String;
-    fn cc_read(&self) -> String;
-    fn cc_write(&self) -> String;
+    fn hh_is_valid(&self) -> String;
+    fn hh_read(&self) -> String;
+    fn hh_write(&self) -> String;
 }
 
 impl FieldList for () {
@@ -47,23 +45,15 @@ impl FieldList for () {
         String::new()
     }
 
-    fn hh_read_delegates(&self) -> String {
+    fn hh_is_valid(&self) -> String {
         String::new()
     }
 
-    fn hh_write_delegates(&self) -> String {
+    fn hh_read(&self) -> String {
         String::new()
     }
 
-    fn cc_is_valid(&self) -> String {
-        String::new()
-    }
-
-    fn cc_read(&self) -> String {
-        String::new()
-    }
-
-    fn cc_write(&self) -> String {
+    fn hh_write(&self) -> String {
         String::new()
     }
 }
@@ -110,48 +100,30 @@ impl<L: FieldList, T: DataType> FieldList for (L, Field<T>) {
         )
     }
 
-    fn hh_read_delegates(&self) -> String {
-        let name = self.1.name().to_ascii_sentence_case();
-        format!(
-            concat!("{}", "{}"),
-            self.0.hh_read_delegates(),
-            self.1.data_type().hh_read_delegate(&name, ArrayIndices::new(&name)),
-        )
-    }
-
-    fn hh_write_delegates(&self) -> String {
-        let name = self.1.name().to_ascii_sentence_case();
-        format!(
-            concat!("{}", "{}"),
-            self.0.hh_write_delegates(),
-            self.1.data_type().hh_write_delegate(&name, ArrayIndices::new(&name)),
-        )
-    }
-
-    fn cc_is_valid(&self) -> String {
+    fn hh_is_valid(&self) -> String {
         let name = self.1.name().to_ascii_sentence_case();
         format!(
             concat!("{}", "{}\n"),
-            self.0.cc_is_valid(),
-            self.1.data_type().cc_is_valid(&name, ArrayIndices::new(&name)),
+            self.0.hh_is_valid(),
+            self.1.data_type().hh_is_valid(&name, ArrayIndices::new(&name)),
         )
     }
 
-    fn cc_read(&self) -> String {
+    fn hh_read(&self) -> String {
         let name = self.1.name().to_ascii_sentence_case();
         format!(
             concat!("{}", "{}\n"),
-            self.0.cc_read(),
-            self.1.data_type().cc_read(&name, ArrayIndices::new(&name)),
+            self.0.hh_read(),
+            self.1.data_type().hh_read(&name, ArrayIndices::new(&name)),
         )
     }
 
-    fn cc_write(&self) -> String {
+    fn hh_write(&self) -> String {
         let name = self.1.name().to_ascii_sentence_case();
         format!(
             concat!("{}", "{}\n"),
-            self.0.cc_write(),
-            self.1.data_type().cc_write(&name, ArrayIndices::new(&name)),
+            self.0.hh_write(),
+            self.1.data_type().hh_write(&name, ArrayIndices::new(&name)),
         )
     }
 }

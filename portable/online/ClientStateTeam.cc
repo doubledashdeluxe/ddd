@@ -58,39 +58,39 @@ ClientState &ClientStateTeam::writeStatePoll(const ClientStatePollWriteInfo &wri
     return *(new (m_platform.allocator) ClientStatePoll(m_platform, connection, writeInfo));
 }
 
-ServerStateServerReader *ClientStateTeam::serverReader() {
+ServerStateServerReader<void> *ClientStateTeam::serverReader() {
     return nullptr;
 }
 
-ServerStateModeReader *ClientStateTeam::modeReader() {
+ServerStateModeReader<void> *ClientStateTeam::modeReader() {
     return nullptr;
 }
 
-ServerStatePackReader *ClientStateTeam::packReader() {
+ServerStatePackReader<void> *ClientStateTeam::packReader() {
     return nullptr;
 }
 
-ServerStateRoomReader *ClientStateTeam::roomReader() {
+ServerStateRoomReader<void> *ClientStateTeam::roomReader() {
     return nullptr;
 }
 
-ServerStateTeamReader *ClientStateTeam::teamReader() {
+ServerStateTeamReader<ClientStateTeam> *ClientStateTeam::teamReader() {
     return this;
 }
 
-ServerStatePollReader *ClientStateTeam::pollReader() {
+ServerStatePollReader<void> *ClientStateTeam::pollReader() {
     return nullptr;
 }
 
-ServerStateRaceReader *ClientStateTeam::raceReader() {
+ServerStateRaceReader<void> *ClientStateTeam::raceReader() {
     return nullptr;
 }
 
-ServerTeamStateReader *ClientStateTeam::serverTeamStateReader() {
+ServerTeamStateReader<ClientStateTeam> *ClientStateTeam::serverTeamStateReader() {
     return this;
 }
 
-ServerTeamStateMainReader *ClientStateTeam::mainReader() {
+ServerTeamStateMainReader<ClientStateTeam> *ClientStateTeam::mainReader() {
     return this;
 }
 
@@ -141,11 +141,11 @@ void ClientStateTeam::setContinuing(u8 continuing) {
     m_readInfo.info.getOrEmplace().continuing = continuing;
 }
 
-ClientStateTeamWriter &ClientStateTeam::teamWriter() {
+ClientStateTeamWriter<ClientStateTeam> &ClientStateTeam::teamWriter() {
     return *this;
 }
 
-ClientTeamStateWriter &ClientStateTeam::clientTeamStateWriter() {
+ClientTeamStateWriter<ClientStateTeam> &ClientStateTeam::clientTeamStateWriter() {
     if (m_writeInfo.isHost) {
         return Upcast<ClientTeamStateWriter::Host>(*this);
     } else {
@@ -153,11 +153,11 @@ ClientTeamStateWriter &ClientStateTeam::clientTeamStateWriter() {
     }
 }
 
-ClientTeamStateHostWriter &ClientStateTeam::hostWriter() {
+ClientTeamStateHostWriter<ClientStateTeam> &ClientStateTeam::hostWriter() {
     return *this;
 }
 
-ClientTeamStateGuestWriter &ClientStateTeam::guestWriter() {
+ClientTeamStateGuestWriter<ClientStateTeam> &ClientStateTeam::guestWriter() {
     return *this;
 }
 

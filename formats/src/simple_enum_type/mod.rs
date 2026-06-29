@@ -96,58 +96,30 @@ impl<L: VariantList> ComplexDataType for SimpleEnumType<L> {
         )
     }
 
-    fn cc(&self) -> String {
-        String::new()
-    }
-
-    fn hh_read_delegate(&self, name: &str, array_indices: ArrayIndices) -> String {
+    fn hh_is_valid(&self, name: &str, array_indices: ArrayIndices) -> String {
         format!(
             concat!(
-                "    virtual bool is{}{}Valid({}u8 {}{}) = 0;\n",
-                "    virtual void set{}{}({}u8 {}{}) = 0;\n",
-            ),
-            name.to_ascii_camel_case().to_ascii_sentence_case(),
-            array_indices.delegate_suffix(),
-            array_indices.typed_args(true),
-            name.to_ascii_camel_case(),
-            array_indices.delegate_suffix(),
-            name.to_ascii_camel_case().to_ascii_sentence_case(),
-            array_indices.delegate_suffix(),
-            array_indices.typed_args(true),
-            name.to_ascii_camel_case(),
-            array_indices.delegate_suffix(),
-        )
-    }
-
-    fn hh_write_delegate(&self, name: &str, array_indices: ArrayIndices) -> String {
-        format!(
-            "    virtual u8 get{}{}({}) = 0;\n",
-            name.to_ascii_camel_case().to_ascii_sentence_case(),
-            array_indices.delegate_suffix(),
-            array_indices.typed_args(false),
-        )
-    }
-
-    fn cc_is_valid(&self, name: &str, array_indices: ArrayIndices) -> String {
-        format!(
-            concat!(
-                "    if (offset + 1 > size) {{\n",
-                "        return false;\n",
-                "    }}\n",
-                "    u8 {} = buffer[offset++];\n",
-                "    switch ({}) {{\n",
-                "{}",
-                "        if (!is{}{}Valid({}{})) {{\n",
+                "        if (offset + 1 > size) {{\n",
                 "            return false;\n",
                 "        }}\n",
-                "        break;\n",
-                "    default:\n",
-                "        return false;\n",
-                "    }}",
+                "        u8 {} = buffer[offset++];\n",
+                "        switch ({}) {{\n",
+                "{}",
+                "            AssertType<bool (D::*)({}u8)>(&D::is{}{}Valid);\n",
+                "            if (!d->is{}{}Valid({}{})) {{\n",
+                "                return false;\n",
+                "            }}\n",
+                "            break;\n",
+                "        default:\n",
+                "            return false;\n",
+                "        }}",
             ),
             name.to_ascii_camel_case(),
             name.to_ascii_camel_case(),
-            self.list.cc_cases(),
+            self.list.hh_cases(),
+            array_indices.arg_types(true),
+            name.to_ascii_camel_case().to_ascii_sentence_case(),
+            array_indices.delegate_suffix(),
             name.to_ascii_camel_case().to_ascii_sentence_case(),
             array_indices.delegate_suffix(),
             array_indices.untyped_args(true),
@@ -155,38 +127,49 @@ impl<L: VariantList> ComplexDataType for SimpleEnumType<L> {
         )
     }
 
-    fn cc_read(&self, name: &str, array_indices: ArrayIndices) -> String {
-        format!(
-            concat!("    u8 {} = buffer[offset++];\n", "    set{}{}({}{});"),
-            name.to_ascii_camel_case(),
-            name.to_ascii_camel_case().to_ascii_sentence_case(),
-            array_indices.delegate_suffix(),
-            array_indices.untyped_args(true),
-            name.to_ascii_camel_case(),
-        )
-    }
-
-    fn cc_write(&self, name: &str, array_indices: ArrayIndices) -> String {
+    fn hh_read(&self, name: &str, array_indices: ArrayIndices) -> String {
         format!(
             concat!(
-                "    if (offset + 1 > size) {{\n",
-                "        return false;\n",
-                "    }}\n",
-                "    u8 {} = get{}{}({});\n",
-                "    switch ({}) {{\n",
-                "{}",
-                "        buffer[offset++] = {};\n",
-                "        break;\n",
-                "    default:\n",
-                "        return false;\n",
-                "    }}",
+                "        u8 {} = buffer[offset++];\n",
+                "        AssertType<void (D::*)({}u8)>(&D::set{}{});\n",
+                "        d->set{}{}({}{});"
             ),
+            name.to_ascii_camel_case(),
+            array_indices.arg_types(true),
+            name.to_ascii_camel_case().to_ascii_sentence_case(),
+            array_indices.delegate_suffix(),
+            name.to_ascii_camel_case().to_ascii_sentence_case(),
+            array_indices.delegate_suffix(),
+            array_indices.untyped_args(true),
+            name.to_ascii_camel_case(),
+        )
+    }
+
+    fn hh_write(&self, name: &str, array_indices: ArrayIndices) -> String {
+        format!(
+            concat!(
+                "        if (offset + 1 > size) {{\n",
+                "            return false;\n",
+                "        }}\n",
+                "        AssertType<u8 (D::*)({})>(&D::get{}{});\n",
+                "        u8 {} = d->get{}{}({});\n",
+                "        switch ({}) {{\n",
+                "{}",
+                "            buffer[offset++] = {};\n",
+                "            break;\n",
+                "        default:\n",
+                "            return false;\n",
+                "        }}",
+            ),
+            array_indices.arg_types(false),
+            name.to_ascii_camel_case().to_ascii_sentence_case(),
+            array_indices.delegate_suffix(),
             name.to_ascii_camel_case(),
             name.to_ascii_camel_case().to_ascii_sentence_case(),
             array_indices.delegate_suffix(),
             array_indices.untyped_args(false),
             name.to_ascii_camel_case(),
-            self.list.cc_cases(),
+            self.list.hh_cases(),
             name.to_ascii_camel_case(),
         )
     }

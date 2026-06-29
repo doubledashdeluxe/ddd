@@ -8,35 +8,21 @@ pub trait ComplexDataType: DataType {
     fn name(&self) -> &'static str;
     fn rs(&self) -> String;
     fn hh(&self) -> String;
-    fn cc(&self) -> String;
 
-    fn hh_read_delegate(&self, name: &str, array_indices: ArrayIndices) -> String {
-        format!(
-            "    virtual {}Reader *{}{}Reader({}) = 0;\n",
-            self.name(),
-            name.to_ascii_camel_case(),
-            array_indices.delegate_suffix(),
-            array_indices.typed_args(false),
-        )
-    }
-
-    fn hh_write_delegate(&self, name: &str, array_indices: ArrayIndices) -> String {
-        format!(
-            "    virtual {}Writer &{}{}Writer({}) = 0;\n",
-            self.name(),
-            name.to_ascii_camel_case(),
-            array_indices.delegate_suffix(),
-            array_indices.typed_args(false),
-        )
-    }
-
-    fn cc_is_valid(&self, name: &str, array_indices: ArrayIndices) -> String {
+    fn hh_is_valid(&self, name: &str, array_indices: ArrayIndices) -> String {
         format!(
             concat!(
-                "    if (!{}{}Reader({}) || !{}{}Reader({})->isValid(buffer, size, offset)) {{\n",
-                "        return false;\n",
-                "    }}",
+                "        AssertType2<{}Reader<void> *(D::*)({}), {}Reader<D> *(D::*)({})>(&D::{}{}Reader);\n",
+                "        if (!d->{}{}Reader({}) || !d->{}{}Reader({})->isValid(buffer, size, offset)) {{\n",
+                "            return false;\n",
+                "        }}",
             ),
+            self.name(),
+            array_indices.arg_types(false),
+            self.name(),
+            array_indices.arg_types(false),
+            name.to_ascii_camel_case(),
+            array_indices.delegate_suffix(),
             name.to_ascii_camel_case(),
             array_indices.delegate_suffix(),
             array_indices.untyped_args(false),
@@ -46,22 +32,36 @@ pub trait ComplexDataType: DataType {
         )
     }
 
-    fn cc_read(&self, name: &str, array_indices: ArrayIndices) -> String {
-        format!(
-            "    {}{}Reader({})->read(buffer, offset);",
-            name.to_ascii_camel_case(),
-            array_indices.delegate_suffix(),
-            array_indices.untyped_args(false),
-        )
-    }
-
-    fn cc_write(&self, name: &str, array_indices: ArrayIndices) -> String {
+    fn hh_read(&self, name: &str, array_indices: ArrayIndices) -> String {
         format!(
             concat!(
-                "    if (!{}{}Writer({}).write(buffer, size, offset)) {{\n",
-                "        return false;\n",
-                "    }}",
+                "        AssertType2<{}Reader<void> *(D::*)({}), {}Reader<D> *(D::*)({})>(&D::{}{}Reader);\n",
+                "        d->{}{}Reader({})->read(buffer, offset);",
             ),
+            self.name(),
+            array_indices.arg_types(false),
+            self.name(),
+            array_indices.arg_types(false),
+            name.to_ascii_camel_case(),
+            array_indices.delegate_suffix(),
+            name.to_ascii_camel_case(),
+            array_indices.delegate_suffix(),
+            array_indices.untyped_args(false),
+        )
+    }
+
+    fn hh_write(&self, name: &str, array_indices: ArrayIndices) -> String {
+        format!(
+            concat!(
+                "        AssertType<{}Writer<D> &(D::*)({})>(&D::{}{}Writer);\n",
+                "        if (!d->{}{}Writer({}).write(buffer, size, offset)) {{\n",
+                "            return false;\n",
+                "        }}",
+            ),
+            self.name(),
+            array_indices.arg_types(false),
+            name.to_ascii_camel_case(),
+            array_indices.delegate_suffix(),
             name.to_ascii_camel_case(),
             array_indices.delegate_suffix(),
             array_indices.untyped_args(false),
@@ -90,23 +90,15 @@ impl<T: ComplexDataType> DataType for T {
         format!("let buf = {name}.write(buf)?;")
     }
 
-    fn hh_read_delegate(&self, name: &str, array_indices: ArrayIndices) -> String {
-        ComplexDataType::hh_read_delegate(self, name, array_indices)
+    fn hh_is_valid(&self, name: &str, array_indices: ArrayIndices) -> String {
+        ComplexDataType::hh_is_valid(self, name, array_indices)
     }
 
-    fn hh_write_delegate(&self, name: &str, array_indices: ArrayIndices) -> String {
-        ComplexDataType::hh_write_delegate(self, name, array_indices)
+    fn hh_read(&self, name: &str, array_indices: ArrayIndices) -> String {
+        ComplexDataType::hh_read(self, name, array_indices)
     }
 
-    fn cc_is_valid(&self, name: &str, array_indices: ArrayIndices) -> String {
-        ComplexDataType::cc_is_valid(self, name, array_indices)
-    }
-
-    fn cc_read(&self, name: &str, array_indices: ArrayIndices) -> String {
-        ComplexDataType::cc_read(self, name, array_indices)
-    }
-
-    fn cc_write(&self, name: &str, array_indices: ArrayIndices) -> String {
-        ComplexDataType::cc_write(self, name, array_indices)
+    fn hh_write(&self, name: &str, array_indices: ArrayIndices) -> String {
+        ComplexDataType::hh_write(self, name, array_indices)
     }
 }

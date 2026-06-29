@@ -45,7 +45,7 @@ ClientState &ClientState::writeStateError() {
     return *(new (m_platform.allocator) ClientStateError(m_platform));
 }
 
-void ClientState::read(ServerStateReader &reader) {
+void ClientState::read(ConnectionState::Reader &reader) {
     checkSocket();
 
     if (!m_connections.empty()) {
@@ -66,7 +66,7 @@ void ClientState::read(ServerStateReader &reader) {
     }
 }
 
-void ClientState::write(ClientStateWriter &writer) {
+void ClientState::write(ConnectionState::Writer &writer) {
     checkSocket();
 
     if (!m_connections.empty()) {

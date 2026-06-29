@@ -27,7 +27,6 @@ mod tests {
         let one_constant = Format::new("OneConstant").with_constant(first);
         assert_eq_multiline(&one_constant.rs(), include_str!("one_constant.rs"));
         assert_eq_multiline(&one_constant.hh(), include_str!("OneConstant.hh"));
-        assert_eq_multiline(&one_constant.cc(), include_str!("OneConstant.cc"));
     }
 
     #[test]
@@ -37,7 +36,6 @@ mod tests {
         let two_constants = Format::new("TwoConstants").with_constant(first).with_constant(second);
         assert_eq_multiline(&two_constants.rs(), include_str!("two_constants.rs"));
         assert_eq_multiline(&two_constants.hh(), include_str!("TwoConstants.hh"));
-        assert_eq_multiline(&two_constants.cc(), include_str!("TwoConstants.cc"));
     }
 
     #[test]
@@ -47,7 +45,6 @@ mod tests {
         let one_variant = Format::new("OneVariant").with_type(first()).with_type(one_variant);
         assert_eq_multiline(&one_variant.rs(), include_str!("one_variant.rs"));
         assert_eq_multiline(&one_variant.hh(), include_str!("OneVariant.hh"));
-        assert_eq_multiline(&one_variant.cc(), include_str!("OneVariant.cc"));
     }
 
     #[test]
@@ -60,7 +57,6 @@ mod tests {
         let two_variants = Format::new("TwoVariants").with_type(two_variants);
         assert_eq_multiline(&two_variants.rs(), include_str!("two_variants.rs"));
         assert_eq_multiline(&two_variants.hh(), include_str!("TwoVariants.hh"));
-        assert_eq_multiline(&two_variants.cc(), include_str!("TwoVariants.cc"));
     }
 
     #[test]
@@ -70,7 +66,6 @@ mod tests {
         let one_field = Format::new("OneField").with_type(first()).with_type(one_field);
         assert_eq_multiline(&one_field.rs(), include_str!("one_field.rs"));
         assert_eq_multiline(&one_field.hh(), include_str!("OneField.hh"));
-        assert_eq_multiline(&one_field.cc(), include_str!("OneField.cc"));
     }
 
     #[test]
@@ -82,7 +77,6 @@ mod tests {
         let two_fields = Format::new("TwoFields").with_type(two_fields);
         assert_eq_multiline(&two_fields.rs(), include_str!("two_fields.rs"));
         assert_eq_multiline(&two_fields.hh(), include_str!("TwoFields.hh"));
-        assert_eq_multiline(&two_fields.cc(), include_str!("TwoFields.cc"));
     }
 
     fn assert_eq_multiline(l: &str, r: &str) {

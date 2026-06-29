@@ -8,10 +8,8 @@ fn main() -> Result<(), io::Error> {
     let format = match (options.format, options.extension) {
         (Format::Online, Extension::Rs) => ddd_formats::online().rs(),
         (Format::Online, Extension::Hh) => ddd_formats::online().hh(),
-        (Format::Online, Extension::Cc) => ddd_formats::online().cc(),
         (Format::Version, Extension::Rs) => ddd_formats::version().rs(),
         (Format::Version, Extension::Hh) => ddd_formats::version().hh(),
-        (Format::Version, Extension::Cc) => ddd_formats::version().cc(),
     };
     match options.output {
         Some(output) => fs::write(output, &format)?,
@@ -28,8 +26,7 @@ fn options() -> OptionParser<Options> {
 
     let rs = bpaf::long("rs").req_flag(Extension::Rs);
     let hh = bpaf::long("hh").req_flag(Extension::Hh);
-    let cc = bpaf::long("cc").req_flag(Extension::Cc);
-    let extension = bpaf::construct!([rs, hh, cc]);
+    let extension = bpaf::construct!([rs, hh]);
 
     let output = bpaf::long("output").argument("OUTPUT").optional();
 
@@ -52,5 +49,4 @@ enum Format {
 enum Extension {
     Rs,
     Hh,
-    Cc,
 }

@@ -13,6 +13,30 @@
 
 class ClientState {
 public:
+    template <typename D>
+    class Reader : public ConnectionState::Reader {
+    private:
+        bool isValid(const u8 *buffer, u32 size, u32 &offset) override {
+            ServerStateReader<D> *reader = static_cast<D *>(this);
+            return reader->isValid(buffer, size, offset);
+        }
+
+        void read(const u8 *buffer, u32 &offset) override {
+            ServerStateReader<D> *reader = static_cast<D *>(this);
+            reader->read(buffer, offset);
+        }
+    };
+
+public:
+    template <typename D>
+    class Writer : public ConnectionState::Writer {
+    private:
+        bool write(u8 *buffer, u32 size, u32 &offset) override {
+            ClientStateWriter<D> *writer = static_cast<D *>(this);
+            return writer->write(buffer, size, offset);
+        }
+    };
+
     ClientState(const ClientPlatform &platform);
     virtual ~ClientState();
     virtual bool needsSockets() = 0;
@@ -28,8 +52,8 @@ public:
     virtual ClientState &writeStateError();
 
 protected:
-    void read(ServerStateReader &reader);
-    void write(ClientStateWriter &writer);
+    void read(ConnectionState::Reader &reader);
+    void write(ConnectionState::Writer &writer);
 
 private:
     void checkSocket();

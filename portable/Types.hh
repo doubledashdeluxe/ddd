@@ -32,3 +32,15 @@ struct Aligner<8> {
     double aligner;
 };
 alignment_assert(Aligner<8>, 8);
+
+template <typename T>
+void AssertType(const T &) {}
+
+template <typename T, typename U>
+void AssertType2(const T &) {}
+
+template <typename T, typename U>
+void AssertType2(const U &) {}
+
+template <typename T>
+void MaybeUnused(const T &) {}

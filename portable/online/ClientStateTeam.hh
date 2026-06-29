@@ -7,16 +7,18 @@
 
 class ClientStateTeam
     : public ClientState
-    , private ServerStateReader
-    , private ServerStateTeamReader
-    , private ServerTeamStateReader
-    , private ServerTeamStateMainReader
-    , private ClientStateWriter::Team
-    , private ClientStateTeamWriter
-    , private ClientTeamStateWriter::Host
-    , private ClientTeamStateHostWriter
-    , private ClientTeamStateWriter::Guest
-    , private ClientTeamStateGuestWriter {
+    , public ClientState::Reader<ClientStateTeam>
+    , public ClientState::Writer<ClientStateTeam>
+    , public ServerStateReader<ClientStateTeam>
+    , public ServerStateTeamReader<ClientStateTeam>
+    , public ServerTeamStateReader<ClientStateTeam>
+    , public ServerTeamStateMainReader<ClientStateTeam>
+    , public ClientStateWriter<ClientStateTeam>::Team
+    , public ClientStateTeamWriter<ClientStateTeam>
+    , public ClientTeamStateWriter<ClientStateTeam>::Host
+    , public ClientTeamStateHostWriter<ClientStateTeam>
+    , public ClientTeamStateWriter<ClientStateTeam>::Guest
+    , public ClientTeamStateGuestWriter<ClientStateTeam> {
 public:
     ClientStateTeam(const ClientPlatform &platform, Connection &connection,
             const ClientStateTeamWriteInfo &writeInfo);
@@ -28,44 +30,44 @@ public:
     ClientState &writeStateTeam(const ClientStateTeamWriteInfo &writeInfo) override;
     ClientState &writeStatePoll(const ClientStatePollWriteInfo &writeInfo) override;
 
+    ServerStateServerReader<void> *serverReader();
+    ServerStateModeReader<void> *modeReader();
+    ServerStatePackReader<void> *packReader();
+    ServerStateRoomReader<void> *roomReader();
+    ServerStateTeamReader *teamReader();
+    ServerStatePollReader<void> *pollReader();
+    ServerStateRaceReader<void> *raceReader();
+
+    ServerTeamStateReader *serverTeamStateReader();
+
+    ServerTeamStateMainReader *mainReader();
+    bool isErrorValid();
+    void setError();
+
+    bool isTeamsCountValid(u32 teamsCount);
+    void setTeamsCount(u32 teamsCount);
+    bool isTeamsElementValid(u32 i0, u8 teamsElement);
+    void setTeamsElement(u32 i0, u8 teamsElement);
+    bool isEntryIndexValid(u8 entryIndex);
+    void setEntryIndex(u8 entryIndex);
+    bool isContinuingValid(u8 continuing);
+    void setContinuing(u8 continuing);
+
+    ClientStateTeamWriter &teamWriter();
+
+    ClientTeamStateWriter &clientTeamStateWriter();
+
+    ClientTeamStateHostWriter &hostWriter();
+    ClientTeamStateGuestWriter &guestWriter();
+
+    u32 getTeamsCount();
+    u8 getTeamsElement(u32 i0);
+    u8 getEntryIndex();
+    u8 getContinuing();
+
 private:
     typedef ClientStateTeamReadInfo ReadInfo;
     typedef ClientStateTeamWriteInfo WriteInfo;
-
-    ServerStateServerReader *serverReader() override;
-    ServerStateModeReader *modeReader() override;
-    ServerStatePackReader *packReader() override;
-    ServerStateRoomReader *roomReader() override;
-    ServerStateTeamReader *teamReader() override;
-    ServerStatePollReader *pollReader() override;
-    ServerStateRaceReader *raceReader() override;
-
-    ServerTeamStateReader *serverTeamStateReader() override;
-
-    ServerTeamStateMainReader *mainReader() override;
-    bool isErrorValid() override;
-    void setError() override;
-
-    bool isTeamsCountValid(u32 teamsCount) override;
-    void setTeamsCount(u32 teamsCount) override;
-    bool isTeamsElementValid(u32 i0, u8 teamsElement) override;
-    void setTeamsElement(u32 i0, u8 teamsElement) override;
-    bool isEntryIndexValid(u8 entryIndex) override;
-    void setEntryIndex(u8 entryIndex) override;
-    bool isContinuingValid(u8 continuing) override;
-    void setContinuing(u8 continuing) override;
-
-    ClientStateTeamWriter &teamWriter() override;
-
-    ClientTeamStateWriter &clientTeamStateWriter() override;
-
-    ClientTeamStateHostWriter &hostWriter() override;
-    ClientTeamStateGuestWriter &guestWriter() override;
-
-    u32 getTeamsCount() override;
-    u8 getTeamsElement(u32 i0) override;
-    u8 getEntryIndex() override;
-    u8 getContinuing() override;
 
     ReadInfo m_readInfo;
     WriteInfo m_writeInfo;

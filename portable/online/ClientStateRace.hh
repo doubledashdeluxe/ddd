@@ -7,16 +7,18 @@
 
 class ClientStateRace
     : public ClientState
-    , private ServerStateReader
-    , private ServerStateRaceReader
-    , private ServerRaceStateReader
-    , private ServerRaceStateMainReader
-    , private ServerRaceKartReader
-    , private ItemEventReader
-    , private ClientStateWriter::Race
-    , private ClientStateRaceWriter
-    , private ClientRaceKartWriter
-    , private ItemEventWriter {
+    , public ClientState::Reader<ClientStateRace>
+    , public ClientState::Writer<ClientStateRace>
+    , public ServerStateReader<ClientStateRace>
+    , public ServerStateRaceReader<ClientStateRace>
+    , public ServerRaceStateReader<ClientStateRace>
+    , public ServerRaceStateMainReader<ClientStateRace>
+    , public ServerRaceKartReader<ClientStateRace>
+    , public ItemEventReader<ClientStateRace>
+    , public ClientStateWriter<ClientStateRace>::Race
+    , public ClientStateRaceWriter<ClientStateRace>
+    , public ClientRaceKartWriter<ClientStateRace>
+    , public ItemEventWriter<ClientStateRace> {
 public:
     ClientStateRace(const ClientPlatform &platform, Connection &connection,
             const ClientStateRaceWriteInfo &writeInfo);
@@ -26,103 +28,103 @@ public:
     ClientState &writeStatePoll(const ClientStatePollWriteInfo &writeInfo) override;
     ClientState &writeStateRace(const ClientStateRaceWriteInfo &writeInfo) override;
 
+    ServerStateServerReader<void> *serverReader();
+    ServerStateModeReader<void> *modeReader();
+    ServerStatePackReader<void> *packReader();
+    ServerStateRoomReader<void> *roomReader();
+    ServerStateTeamReader<void> *teamReader();
+    ServerStatePollReader<void> *pollReader();
+    ServerStateRaceReader *raceReader();
+
+    ServerRaceStateReader *serverRaceStateReader();
+
+    ServerRaceStateMainReader *mainReader();
+    bool isErrorValid();
+    void setError();
+
+    bool isFrameValid(u16 frame);
+    void setFrame(u16 frame);
+    bool isClientFrameValid(u16 clientFrame);
+    void setClientFrame(u16 clientFrame);
+    bool isKartFlagsValid(u8 kartFlags);
+    void setKartFlags(u8 kartFlags);
+    bool isKartsCountValid(u32 kartsCount);
+    void setKartsCount(u32 kartsCount);
+    ServerRaceKartReader *kartsElementReader(u32 i0);
+
+    bool isKartFrameValid(u16 kartFrame);
+    void setKartFrame(u16 kartFrame);
+    bool isInputsCountValid(u32 inputsCount);
+    void setInputsCount(u32 inputsCount);
+    bool isInputsElementValid(u32 i0, u16 inputsElement);
+    void setInputsElement(u32 i0, u16 inputsElement);
+    bool isDriverValid(u8 driver);
+    void setDriver(u8 driver);
+    bool isPosXValid(s16 posX);
+    void setPosX(s16 posX);
+    bool isPosYValid(s16 posY);
+    void setPosY(s16 posY);
+    bool isPosZValid(s16 posZ);
+    void setPosZ(s16 posZ);
+    bool isAngleValid(s8 angle);
+    void setAngle(s8 angle);
+    bool isVelXValid(s16 posX);
+    void setVelX(s16 posX);
+    bool isVelZValid(s16 posZ);
+    void setVelZ(s16 posZ);
+    bool isItemFramesElementValid(u32 i0, u16 itemFramesElement);
+    void setItemFramesElement(u32 i0, u16 itemFramesElement);
+    bool isItemIdsElementValid(u32 i0, u8 itemIdsElement);
+    void setItemIdsElement(u32 i0, u8 itemIdsElement);
+    bool isItemEventCounterValid(u8 itemEventCounter);
+    void setItemEventCounter(u8 itemEventCounter);
+    bool isItemEventsCountValid(u32 itemEventsCount);
+    void setItemEventsCount(u32 itemEventsCount);
+    ItemEventReader *itemEventsElementReader(u32 i0);
+
+    bool isEventFrameValid(u8 itemFrame);
+    void setEventFrame(u8 itemFrame);
+    bool isEventStickYValid(s8 eventStickY);
+    void setEventStickY(s8 eventStickY);
+    bool isEventItemIdValid(u8 eventItemId);
+    void setEventItemId(u8 eventItemId);
+    bool isEventPosXValid(s16 eventPosX);
+    void setEventPosX(s16 eventPosX);
+    bool isEventPosZValid(s16 eventPosZ);
+    void setEventPosZ(s16 eventPosZ);
+
+    ClientStateRaceWriter &raceWriter();
+
+    u16 getFrame();
+    u32 getKartsCount();
+    ClientRaceKartWriter &kartsElementWriter(u32 i0);
+    u8 getItemCountsElement(u32 i0);
+
+    u32 getInputsCount();
+    u32 getInputsCount(u32 i0);
+    u16 getInputsElement(u32 i0, u32 i1);
+    u8 getDriver();
+    s16 getPosX();
+    s16 getPosY();
+    s16 getPosZ();
+    s8 getAngle();
+    s16 getVelX();
+    s16 getVelZ();
+    u16 getItemFramesElement(u32 i0);
+    u8 getItemEventCounter();
+    u32 getItemEventsCount();
+    ItemEventWriter &itemEventsElementWriter(u32 i0);
+    u8 getRank();
+
+    u8 getEventFrame();
+    s8 getEventStickY();
+    u8 getEventItemId();
+    s16 getEventPosX();
+    s16 getEventPosZ();
+
 private:
     typedef ClientStateRaceReadInfo ReadInfo;
     typedef ClientStateRaceWriteInfo WriteInfo;
-
-    ServerStateServerReader *serverReader() override;
-    ServerStateModeReader *modeReader() override;
-    ServerStatePackReader *packReader() override;
-    ServerStateRoomReader *roomReader() override;
-    ServerStateTeamReader *teamReader() override;
-    ServerStatePollReader *pollReader() override;
-    ServerStateRaceReader *raceReader() override;
-
-    ServerRaceStateReader *serverRaceStateReader() override;
-
-    ServerRaceStateMainReader *mainReader() override;
-    bool isErrorValid() override;
-    void setError() override;
-
-    bool isFrameValid(u16 frame) override;
-    void setFrame(u16 frame) override;
-    bool isClientFrameValid(u16 clientFrame) override;
-    void setClientFrame(u16 clientFrame) override;
-    bool isKartFlagsValid(u8 kartFlags) override;
-    void setKartFlags(u8 kartFlags) override;
-    bool isKartsCountValid(u32 kartsCount) override;
-    void setKartsCount(u32 kartsCount) override;
-    ServerRaceKartReader *kartsElementReader(u32 i0) override;
-
-    bool isKartFrameValid(u16 kartFrame) override;
-    void setKartFrame(u16 kartFrame) override;
-    bool isInputsCountValid(u32 inputsCount) override;
-    void setInputsCount(u32 inputsCount) override;
-    bool isInputsElementValid(u32 i0, u16 inputsElement) override;
-    void setInputsElement(u32 i0, u16 inputsElement) override;
-    bool isDriverValid(u8 driver) override;
-    void setDriver(u8 driver) override;
-    bool isPosXValid(s16 posX) override;
-    void setPosX(s16 posX) override;
-    bool isPosYValid(s16 posY) override;
-    void setPosY(s16 posY) override;
-    bool isPosZValid(s16 posZ) override;
-    void setPosZ(s16 posZ) override;
-    bool isAngleValid(s8 angle) override;
-    void setAngle(s8 angle) override;
-    bool isVelXValid(s16 posX) override;
-    void setVelX(s16 posX) override;
-    bool isVelZValid(s16 posZ) override;
-    void setVelZ(s16 posZ) override;
-    bool isItemFramesElementValid(u32 i0, u16 itemFramesElement) override;
-    void setItemFramesElement(u32 i0, u16 itemFramesElement) override;
-    bool isItemIdsElementValid(u32 i0, u8 itemIdsElement) override;
-    void setItemIdsElement(u32 i0, u8 itemIdsElement) override;
-    bool isItemEventCounterValid(u8 itemEventCounter) override;
-    void setItemEventCounter(u8 itemEventCounter) override;
-    bool isItemEventsCountValid(u32 itemEventsCount) override;
-    void setItemEventsCount(u32 itemEventsCount) override;
-    ItemEventReader *itemEventsElementReader(u32 i0) override;
-
-    bool isEventFrameValid(u8 itemFrame) override;
-    void setEventFrame(u8 itemFrame) override;
-    bool isEventStickYValid(s8 eventStickY) override;
-    void setEventStickY(s8 eventStickY) override;
-    bool isEventItemIdValid(u8 eventItemId) override;
-    void setEventItemId(u8 eventItemId) override;
-    bool isEventPosXValid(s16 eventPosX) override;
-    void setEventPosX(s16 eventPosX) override;
-    bool isEventPosZValid(s16 eventPosZ) override;
-    void setEventPosZ(s16 eventPosZ) override;
-
-    ClientStateRaceWriter &raceWriter() override;
-
-    u16 getFrame() override;
-    u32 getKartsCount() override;
-    ClientRaceKartWriter &kartsElementWriter(u32 i0) override;
-    u8 getItemCountsElement(u32 i0) override;
-
-    u32 getInputsCount() override;
-    u32 getInputsCount(u32 i0) override;
-    u16 getInputsElement(u32 i0, u32 i1) override;
-    u8 getDriver() override;
-    s16 getPosX() override;
-    s16 getPosY() override;
-    s16 getPosZ() override;
-    s8 getAngle() override;
-    s16 getVelX() override;
-    s16 getVelZ() override;
-    u16 getItemFramesElement(u32 i0) override;
-    u8 getItemEventCounter() override;
-    u32 getItemEventsCount() override;
-    ItemEventWriter &itemEventsElementWriter(u32 i0) override;
-    u8 getRank() override;
-
-    u8 getEventFrame() override;
-    s8 getEventStickY() override;
-    u8 getEventItemId() override;
-    s16 getEventPosX() override;
-    s16 getEventPosZ() override;
 
     u32 m_kartIndex;
     u32 m_itemEventIndex;

@@ -6,7 +6,7 @@ pub trait VariantList {
     fn rs_read(&self) -> String;
     fn rs_write(&self) -> String;
     fn hh_variants(&self) -> String;
-    fn cc_cases(&self) -> String;
+    fn hh_cases(&self) -> String;
 }
 
 impl VariantList for () {
@@ -30,7 +30,7 @@ impl VariantList for () {
         String::new()
     }
 
-    fn cc_cases(&self) -> String {
+    fn hh_cases(&self) -> String {
         String::new()
     }
 }
@@ -66,7 +66,7 @@ impl<L: VariantList> VariantList for (L, Variant) {
         format!("{}        {} = {},\n", self.0.hh_variants(), self.1.name(), L::count())
     }
 
-    fn cc_cases(&self) -> String {
-        format!(concat!("{}", "    case {}:\n"), self.0.cc_cases(), L::count())
+    fn hh_cases(&self) -> String {
+        format!(concat!("{}", "        case {}:\n"), self.0.hh_cases(), L::count())
     }
 }

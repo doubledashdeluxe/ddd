@@ -76,10 +76,6 @@ def get_flags(tool, platform, target, format_code_dirs, args):
             flags += [
                 f'-I{code_dir}'
             ]
-        if target == 'formats':
-            flags += [
-                '-w', 'nounusedarg',
-            ]
     if tool == 'ld':
         flags += [
             '--entry=Start',
@@ -148,6 +144,7 @@ def get_flags(tool, platform, target, format_code_dirs, args):
         flags += [
             '-fcheck-new',
             '-std=c++20',
+            '-Wno-overloaded-virtual',
             '-Wno-unused-private-field',
             '-Wold-style-cast',
             '-Wsuggest-override',
@@ -157,10 +154,6 @@ def get_flags(tool, platform, target, format_code_dirs, args):
         if platform == 'cube':
             flags += [
                 '-fno-exceptions',
-            ]
-        if target == 'formats':
-            flags += [
-                '-Wno-unused-parameter',
             ]
     if tool == 'mld':
         flags += [
@@ -281,7 +274,7 @@ n.newline()
 
 n.rule(
     'format',
-    command = 'cargo -q --color always run -r --bin ddd-formats -- --$format --$ext --output $out',
+    command = 'cargo -q --color always run -r --bin ddd-formats -- --$format --hh --output $out',
     description = 'FORMAT $out',
 )
 n.newline()
@@ -424,7 +417,6 @@ format_implicit = [
 ]
 format_code_dirs = []
 format_hh_files = []
-format_cc_files = []
 for format_kc_name in format_kc_names:
     format_sc_name = format_kc_name.replace('-', '_')
     code_dir = os.path.join('$builddir', 'formats', format_sc_name)
@@ -432,23 +424,18 @@ for format_kc_name in format_kc_names:
     format_pc_name = format_kc_name.replace('-', ' ').title().replace(' ', '')
     hh_file = os.path.join(code_dir, 'formats', f'{format_pc_name}.hh')
     format_hh_files += [hh_file]
-    cc_file = os.path.join(code_dir, 'formats', f'{format_pc_name}.cc')
-    format_cc_files += [cc_file]
-    for code_file in [hh_file, cc_file]:
-        _, ext = os.path.splitext(code_file)
-        n.build(
-            code_file,
-            'format',
-            implicit = format_implicit,
-            variables = {
-                'format': format_kc_name,
-                'ext': ext[1:],
-            }
-        )
-        n.newline()
+    _, ext = os.path.splitext(hh_file)
+    n.build(
+        hh_file,
+        'format',
+        implicit = format_implicit,
+        variables = {
+            'format': format_kc_name,
+        }
+    )
+    n.newline()
 
 code_in_files = {
-    'formats': format_cc_files,
     'vendor': None,
     'libc': None,
     'portable': None,
@@ -580,7 +567,6 @@ for region in ['P', 'E', 'J']:
         os.path.join('$builddir', 'payload', f'payload{region}.elf'),
         'ld',
         [
-            *code_out_files['formats'],
             *code_out_files['vendor'],
             *code_out_files['libc'],
             *code_out_files['portable'],
@@ -762,7 +748,6 @@ n.build(
 n.newline()
 
 native_code_in_files = {
-    'formats': format_cc_files,
     'vendor': None,
     'portable': None,
     'native': None,
@@ -825,7 +810,6 @@ n.build(
     test_binary,
     'mld',
     [
-        *native_code_out_files['formats'],
         *native_code_out_files['vendor'],
         *native_code_out_files['portable'],
         *native_code_out_files['native'],
@@ -857,7 +841,6 @@ for out_file in native_code_out_files['fuzzers']:
         fuzzer_binary,
         'mld',
         [
-            *native_code_out_files['formats'],
             *native_code_out_files['vendor'],
             *native_code_out_files['portable'],
             *native_code_out_files['native'],
@@ -880,7 +863,6 @@ n.build(
 n.newline()
 
 check_code_in_files = {
-    'formats': format_cc_files,
     'vendor': None,
     'libc': None,
     'portable': None,

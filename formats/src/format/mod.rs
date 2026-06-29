@@ -40,17 +40,9 @@ impl Format {
 
     pub fn hh(&self) -> String {
         format!(
-            concat!("#pragma once\n", "\n", "#include <portable/Types.hh>\n", "{}{}"),
+            concat!("#pragma once\n", "\n", "#include <portable/Bytes.hh>\n", "{}{}"),
             self.constant_list.hh(),
             self.type_list.hh(),
-        )
-    }
-
-    pub fn cc(&self) -> String {
-        format!(
-            concat!("#include \"{}.hh\"\n", "\n", "#include <portable/Bytes.hh>\n", "{}"),
-            self.name,
-            self.type_list.cc(),
         )
     }
 }

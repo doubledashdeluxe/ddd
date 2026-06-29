@@ -55,49 +55,23 @@ macro_rules! impl_simple_data_type {
                 )
             }
 
-            fn hh_read_delegate(&self, name: &str, array_indices: ArrayIndices) -> String {
+            fn hh_is_valid(&self, name: &str, array_indices: ArrayIndices) -> String {
                 format!(
                     concat!(
-                        "    virtual bool is{}{}Valid({}{} {}{}) = 0;\n",
-                        "    virtual void set{}{}({}{} {}{}) = 0;\n",
-                    ),
-                    name.to_ascii_camel_case().to_ascii_sentence_case(),
-                    array_indices.delegate_suffix(),
-                    array_indices.typed_args(true),
-                    $ct,
-                    name.to_ascii_camel_case(),
-                    array_indices.delegate_suffix(),
-                    name.to_ascii_camel_case().to_ascii_sentence_case(),
-                    array_indices.delegate_suffix(),
-                    array_indices.typed_args(true),
-                    $ct,
-                    name.to_ascii_camel_case(),
-                    array_indices.delegate_suffix(),
-                )
-            }
-
-            fn hh_write_delegate(&self, name: &str, array_indices: ArrayIndices) -> String {
-                format!(
-                    "    virtual {} get{}{}({}) = 0;\n",
-                    $ct,
-                    name.to_ascii_camel_case().to_ascii_sentence_case(),
-                    array_indices.delegate_suffix(),
-                    array_indices.typed_args(false),
-                )
-            }
-
-            fn cc_is_valid(&self, name: &str, array_indices: ArrayIndices) -> String {
-                format!(
-                    concat!(
-                        "    if (offset + {} > size) {{\n",
-                        "        return false;\n",
-                        "    }}\n",
-                        "    if (!is{}{}Valid({}Bytes::ReadBE<{}>(buffer, offset))) {{\n",
-                        "        return false;\n",
-                        "    }}\n",
-                        "    offset += {};",
+                        "        if (offset + {} > size) {{\n",
+                        "            return false;\n",
+                        "        }}\n",
+                        "        AssertType<bool (D::*)({}{})>(&D::is{}{}Valid);\n",
+                        "        if (!d->is{}{}Valid({}Bytes::ReadBE<{}>(buffer, offset))) {{\n",
+                        "            return false;\n",
+                        "        }}\n",
+                        "        offset += {};",
                     ),
                     $l,
+                    array_indices.arg_types(true),
+                    $ct,
+                    name.to_ascii_camel_case().to_ascii_sentence_case(),
+                    array_indices.delegate_suffix(),
                     name.to_ascii_camel_case().to_ascii_sentence_case(),
                     array_indices.delegate_suffix(),
                     array_indices.untyped_args(true),
@@ -106,12 +80,17 @@ macro_rules! impl_simple_data_type {
                 )
             }
 
-            fn cc_read(&self, name: &str, array_indices: ArrayIndices) -> String {
+            fn hh_read(&self, name: &str, array_indices: ArrayIndices) -> String {
                 format!(
                     concat!(
-                        "    set{}{}({}Bytes::ReadBE<{}>(buffer, offset));\n",
-                        "    offset += {};",
+                        "        AssertType<void (D::*)({}{})>(&D::set{}{});\n",
+                        "        d->set{}{}({}Bytes::ReadBE<{}>(buffer, offset));\n",
+                        "        offset += {};",
                     ),
+                    array_indices.arg_types(true),
+                    $ct,
+                    name.to_ascii_camel_case().to_ascii_sentence_case(),
+                    array_indices.delegate_suffix(),
                     name.to_ascii_camel_case().to_ascii_sentence_case(),
                     array_indices.delegate_suffix(),
                     array_indices.untyped_args(true),
@@ -120,16 +99,21 @@ macro_rules! impl_simple_data_type {
                 )
             }
 
-            fn cc_write(&self, name: &str, array_indices: ArrayIndices) -> String {
+            fn hh_write(&self, name: &str, array_indices: ArrayIndices) -> String {
                 format!(
                     concat!(
-                        "    if (offset + {} > size) {{\n",
-                        "        return false;\n",
-                        "    }}\n",
-                        "    Bytes::WriteBE<{}>(buffer, offset, get{}{}({}));\n",
-                        "    offset += {};",
+                        "        if (offset + {} > size) {{\n",
+                        "            return false;\n",
+                        "        }}\n",
+                        "        AssertType<{} (D::*)({})>(&D::get{}{});\n",
+                        "        Bytes::WriteBE<{}>(buffer, offset, d->get{}{}({}));\n",
+                        "        offset += {};",
                     ),
                     $l,
+                    $ct,
+                    array_indices.arg_types(false),
+                    name.to_ascii_camel_case().to_ascii_sentence_case(),
+                    array_indices.delegate_suffix(),
                     $ct,
                     name.to_ascii_camel_case().to_ascii_sentence_case(),
                     array_indices.delegate_suffix(),

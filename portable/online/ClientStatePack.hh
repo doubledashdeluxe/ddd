@@ -7,10 +7,12 @@
 
 class ClientStatePack
     : public ClientState
-    , private ServerStateReader
-    , private ServerStatePackReader
-    , private ClientStateWriter::Pack
-    , private ClientStatePackWriter {
+    , public ClientState::Reader<ClientStatePack>
+    , public ClientState::Writer<ClientStatePack>
+    , public ServerStateReader<ClientStatePack>
+    , public ServerStatePackReader<ClientStatePack>
+    , public ClientStateWriter<ClientStatePack>::Pack
+    , public ClientStatePackWriter<ClientStatePack> {
 public:
     ClientStatePack(const ClientPlatform &platform, Connection &connection,
             const ClientStatePackWriteInfo &writeInfo);
@@ -21,33 +23,33 @@ public:
     ClientState &writeStatePack(const ClientStatePackWriteInfo &writeInfo) override;
     ClientState &writeStateRoom(const ClientStateRoomWriteInfo &writeInfo) override;
 
+    ServerStateServerReader<void> *serverReader();
+    ServerStateModeReader<void> *modeReader();
+    ServerStatePackReader *packReader();
+    ServerStateRoomReader<void> *roomReader();
+    ServerStateTeamReader<void> *teamReader();
+    ServerStatePollReader<void> *pollReader();
+    ServerStateRaceReader<void> *raceReader();
+
+    bool isModeIndexValid(u8 modeIndex);
+    void setModeIndex(u8 modeIndex);
+    bool isPackIndexValid(u8 packIndex);
+    void setPackIndex(u8 packIndex);
+    bool isPlayerCountValid(u16 playerCount);
+    void setPlayerCount(u16 playerCount);
+    bool isFormatPlayerCountsElementValid(u32 i0, u16 formatPlayerCountsElement);
+    void setFormatPlayerCountsElement(u32 i0, u16 formatPlayerCountsElement);
+
+    ClientStatePackWriter &packWriter();
+
+    u8 getModeIndex();
+    u8 getPackIndex();
+    u8 getPackCourseCount();
+    u8 getPackHashElement(u32 i0);
+
 private:
     typedef ClientStatePackReadInfo ReadInfo;
     typedef ClientStatePackWriteInfo WriteInfo;
-
-    ServerStateServerReader *serverReader() override;
-    ServerStateModeReader *modeReader() override;
-    ServerStatePackReader *packReader() override;
-    ServerStateRoomReader *roomReader() override;
-    ServerStateTeamReader *teamReader() override;
-    ServerStatePollReader *pollReader() override;
-    ServerStateRaceReader *raceReader() override;
-
-    bool isModeIndexValid(u8 modeIndex) override;
-    void setModeIndex(u8 modeIndex) override;
-    bool isPackIndexValid(u8 packIndex) override;
-    void setPackIndex(u8 packIndex) override;
-    bool isPlayerCountValid(u16 playerCount) override;
-    void setPlayerCount(u16 playerCount) override;
-    bool isFormatPlayerCountsElementValid(u32 i0, u16 formatPlayerCountsElement) override;
-    void setFormatPlayerCountsElement(u32 i0, u16 formatPlayerCountsElement) override;
-
-    ClientStatePackWriter &packWriter() override;
-
-    u8 getModeIndex() override;
-    u8 getPackIndex() override;
-    u8 getPackCourseCount() override;
-    u8 getPackHashElement(u32 i0) override;
 
     ReadInfo m_readInfo;
     WriteInfo m_writeInfo;

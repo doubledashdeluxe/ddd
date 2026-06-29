@@ -40,39 +40,39 @@ ClientState &ClientStateRace::writeStateRace(const ClientStateRaceWriteInfo &wri
     return *this;
 }
 
-ServerStateServerReader *ClientStateRace::serverReader() {
+ServerStateServerReader<void> *ClientStateRace::serverReader() {
     return nullptr;
 }
 
-ServerStateModeReader *ClientStateRace::modeReader() {
+ServerStateModeReader<void> *ClientStateRace::modeReader() {
     return nullptr;
 }
 
-ServerStatePackReader *ClientStateRace::packReader() {
+ServerStatePackReader<void> *ClientStateRace::packReader() {
     return nullptr;
 }
 
-ServerStateRoomReader *ClientStateRace::roomReader() {
+ServerStateRoomReader<void> *ClientStateRace::roomReader() {
     return nullptr;
 }
 
-ServerStateTeamReader *ClientStateRace::teamReader() {
+ServerStateTeamReader<void> *ClientStateRace::teamReader() {
     return nullptr;
 }
 
-ServerStatePollReader *ClientStateRace::pollReader() {
+ServerStatePollReader<void> *ClientStateRace::pollReader() {
     return nullptr;
 }
 
-ServerStateRaceReader *ClientStateRace::raceReader() {
+ServerStateRaceReader<ClientStateRace> *ClientStateRace::raceReader() {
     return this;
 }
 
-ServerRaceStateReader *ClientStateRace::serverRaceStateReader() {
+ServerRaceStateReader<ClientStateRace> *ClientStateRace::serverRaceStateReader() {
     return this;
 }
 
-ServerRaceStateMainReader *ClientStateRace::mainReader() {
+ServerRaceStateMainReader<ClientStateRace> *ClientStateRace::mainReader() {
     return this;
 }
 
@@ -122,7 +122,7 @@ void ClientStateRace::setKartsCount(u32 kartsCount) {
     m_readInfo.info.getOrEmplace().kartCount = kartsCount;
 }
 
-ServerRaceKartReader *ClientStateRace::kartsElementReader(u32 i0) {
+ServerRaceKartReader<ClientStateRace> *ClientStateRace::kartsElementReader(u32 i0) {
     m_kartIndex = i0;
     return this;
 }
@@ -239,7 +239,7 @@ void ClientStateRace::setItemEventsCount(u32 itemEventsCount) {
     m_readInfo.info.getOrEmplace().karts[m_kartIndex].itemEventCount = itemEventsCount;
 }
 
-ItemEventReader *ClientStateRace::itemEventsElementReader(u32 i0) {
+ItemEventReader<ClientStateRace> *ClientStateRace::itemEventsElementReader(u32 i0) {
     m_itemEventIndex = i0;
     return this;
 }
@@ -287,7 +287,7 @@ void ClientStateRace::setEventPosZ(s16 eventPosZ) {
     m_readInfo.info.getOrEmplace().karts[m_kartIndex].itemEvents[m_itemEventIndex].posZ = eventPosZ;
 }
 
-ClientStateRaceWriter &ClientStateRace::raceWriter() {
+ClientStateRaceWriter<ClientStateRace> &ClientStateRace::raceWriter() {
     return *this;
 }
 
@@ -299,7 +299,7 @@ u32 ClientStateRace::getKartsCount() {
     return m_writeInfo.kartCount;
 }
 
-ClientRaceKartWriter &ClientStateRace::kartsElementWriter(u32 i0) {
+ClientRaceKartWriter<ClientStateRace> &ClientStateRace::kartsElementWriter(u32 i0) {
     m_kartIndex = i0;
     return *this;
 }
@@ -360,7 +360,7 @@ u32 ClientStateRace::getItemEventsCount() {
     return m_writeInfo.karts[m_kartIndex].itemEvents.count();
 }
 
-ItemEventWriter &ClientStateRace::itemEventsElementWriter(u32 i0) {
+ItemEventWriter<ClientStateRace> &ClientStateRace::itemEventsElementWriter(u32 i0) {
     m_itemEventIndex = i0;
     return *this;
 }

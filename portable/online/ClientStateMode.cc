@@ -48,35 +48,35 @@ ClientState &ClientStateMode::writeStateRoom(const ClientStateRoomWriteInfo &wri
     return *(new (m_platform.allocator) ClientStateRoom(m_platform, connection, writeInfo));
 }
 
-ServerStateServerReader *ClientStateMode::serverReader() {
+ServerStateServerReader<void> *ClientStateMode::serverReader() {
     return nullptr;
 }
 
-ServerStateModeReader *ClientStateMode::modeReader() {
+ServerStateModeReader<ClientStateMode> *ClientStateMode::modeReader() {
     return this;
 }
 
-ServerStatePackReader *ClientStateMode::packReader() {
+ServerStatePackReader<void> *ClientStateMode::packReader() {
     return nullptr;
 }
 
-ServerStateRoomReader *ClientStateMode::roomReader() {
+ServerStateRoomReader<void> *ClientStateMode::roomReader() {
     return nullptr;
 }
 
-ServerStateTeamReader *ClientStateMode::teamReader() {
+ServerStateTeamReader<void> *ClientStateMode::teamReader() {
     return nullptr;
 }
 
-ServerStatePollReader *ClientStateMode::pollReader() {
+ServerStatePollReader<void> *ClientStateMode::pollReader() {
     return nullptr;
 }
 
-ServerStateRaceReader *ClientStateMode::raceReader() {
+ServerStateRaceReader<void> *ClientStateMode::raceReader() {
     return nullptr;
 }
 
-ServerModeReader *ClientStateMode::modesElementReader(u32 i0) {
+ServerModeReader<ClientStateMode> *ClientStateMode::modesElementReader(u32 i0) {
     m_modeIndex = i0;
     return this;
 }
@@ -103,6 +103,6 @@ void ClientStateMode::setPlayerCount(u16 playerCount) {
     m_readInfo.modes.emplace()[m_modeIndex].playerCount = playerCount;
 }
 
-ClientStateModeWriter &ClientStateMode::modeWriter() {
+ClientStateModeWriter<ClientStateMode> &ClientStateMode::modeWriter() {
     return *this;
 }

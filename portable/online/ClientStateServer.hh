@@ -6,18 +6,20 @@
 
 class ClientStateServer
     : public ClientState
-    , private ServerStateReader
-    , private ServerStateServerReader
-    , private ServerIdentityReader
-    , private ServerIdentityUnspecifiedReader
-    , private ServerIdentitySpecifiedReader
-    , private ClientStateWriter::Server
-    , private ClientStateServerWriter
-    , private ClientIdentityWriter::Unspecified
-    , private ClientIdentityUnspecifiedWriter
-    , private ClientIdentityWriter::Specified
-    , private ClientIdentitySpecifiedWriter
-    , private ClientPlayerWriter {
+    , public ClientState::Reader<ClientStateServer>
+    , public ClientState::Writer<ClientStateServer>
+    , public ServerStateReader<ClientStateServer>
+    , public ServerStateServerReader<ClientStateServer>
+    , public ServerIdentityReader<ClientStateServer>
+    , public ServerIdentityUnspecifiedReader<ClientStateServer>
+    , public ServerIdentitySpecifiedReader<ClientStateServer>
+    , public ClientStateWriter<ClientStateServer>::Server
+    , public ClientStateServerWriter<ClientStateServer>
+    , public ClientIdentityWriter<ClientStateServer>::Unspecified
+    , public ClientIdentityUnspecifiedWriter<ClientStateServer>
+    , public ClientIdentityWriter<ClientStateServer>::Specified
+    , public ClientIdentitySpecifiedWriter<ClientStateServer>
+    , public ClientPlayerWriter<ClientStateServer> {
 public:
     ClientStateServer(const ClientPlatform &platform);
     ~ClientStateServer() override;
@@ -26,56 +28,56 @@ public:
     ClientState &writeStateServer(const ClientStateServerWriteInfo &writeInfo) override;
     ClientState &writeStateMode(const ClientStateModeWriteInfo &writeInfo) override;
 
-private:
-    typedef ClientStateServerReadInfo ReadInfo;
-    typedef ClientStateServerWriteInfo WriteInfo;
+    ServerStateServerReader *serverReader();
+    ServerStateModeReader<void> *modeReader();
+    ServerStatePackReader<void> *packReader();
+    ServerStateRoomReader<void> *roomReader();
+    ServerStateTeamReader<void> *teamReader();
+    ServerStatePollReader<void> *pollReader();
+    ServerStateRaceReader<void> *raceReader();
 
-    ServerStateServerReader *serverReader() override;
-    ServerStateModeReader *modeReader() override;
-    ServerStatePackReader *packReader() override;
-    ServerStateRoomReader *roomReader() override;
-    ServerStateTeamReader *teamReader() override;
-    ServerStatePollReader *pollReader() override;
-    ServerStateRaceReader *raceReader() override;
+    bool isProtocolVersionValid(u32 protocolVersion);
+    void setProtocolVersion(u32 protocolVersion);
+    bool isVersionCountValid(u32 versionCount);
+    void setVersionCount(u32 versionCount);
+    bool isVersionElementValid(u32 i0, u8 versionElement);
+    void setVersionElement(u32 i0, u8 versionElement);
+    ServerIdentityReader *serverIdentityReader();
 
-    bool isProtocolVersionValid(u32 protocolVersion) override;
-    void setProtocolVersion(u32 protocolVersion) override;
-    bool isVersionCountValid(u32 versionCount) override;
-    void setVersionCount(u32 versionCount) override;
-    bool isVersionElementValid(u32 i0, u8 versionElement) override;
-    void setVersionElement(u32 i0, u8 versionElement) override;
-    ServerIdentityReader *serverIdentityReader() override;
+    ServerIdentityUnspecifiedReader *unspecifiedReader();
+    ServerIdentitySpecifiedReader *specifiedReader();
 
-    ServerIdentityUnspecifiedReader *unspecifiedReader() override;
-    ServerIdentitySpecifiedReader *specifiedReader() override;
-
-    bool isMotdCountValid(u32 motdCount) override;
-    void setMotdCount(u32 motdCount) override;
-    bool isMotdElementValid(u32 i0, u8 motdElement) override;
-    void setMotdElement(u32 i0, u8 motdElement) override;
-    bool isPlayerCountValid(u16 playerCount) override;
-    void setPlayerCount(u16 playerCount) override;
-
-    ClientStateServerWriter &serverWriter() override;
-
-    u32 getProtocolVersion() override;
-    u32 getVersionCount() override;
-    u8 getVersionElement(u32 i0) override;
-    ClientIdentityWriter &clientIdentityWriter() override;
-
-    ClientIdentityUnspecifiedWriter &unspecifiedWriter() override;
-    ClientIdentitySpecifiedWriter &specifiedWriter() override;
-
-    u8 getFrameRate() override;
-    u32 getPlayersCount() override;
-    ClientPlayerWriter &playersElementWriter(u32 i0) override;
-    u8 getKartCount() override;
-
-    u8 getProfile() override;
-    u8 getNameElement(u32 i0) override;
+    bool isMotdCountValid(u32 motdCount);
+    void setMotdCount(u32 motdCount);
+    bool isMotdElementValid(u32 i0, u8 motdElement);
+    void setMotdElement(u32 i0, u8 motdElement);
+    bool isPlayerCountValid(u16 playerCount);
+    void setPlayerCount(u16 playerCount);
 
     void checkConnections();
     void checkServers();
+
+    ClientStateServerWriter &serverWriter();
+
+    u32 getProtocolVersion();
+    u32 getVersionCount();
+    u8 getVersionElement(u32 i0);
+    ClientIdentityWriter &clientIdentityWriter();
+
+    ClientIdentityUnspecifiedWriter &unspecifiedWriter();
+    ClientIdentitySpecifiedWriter &specifiedWriter();
+
+    u8 getFrameRate();
+    u32 getPlayersCount();
+    ClientPlayerWriter &playersElementWriter(u32 i0);
+    u8 getKartCount();
+
+    u8 getProfile();
+    u8 getNameElement(u32 i0);
+
+private:
+    typedef ClientStateServerReadInfo ReadInfo;
+    typedef ClientStateServerWriteInfo WriteInfo;
 
     ReadInfo m_readInfo;
     Array<char, MaxVersionLength + 1> m_version;

@@ -26,14 +26,14 @@ ConnectionState &ConnectionStateDNS::reset() {
     return *this;
 }
 
-ConnectionState &ConnectionStateDNS::read(ServerStateReader & /* reader */, u8 * /* buffer */,
-        u32 /* size */, const Address & /* address */, bool &ok) {
+ConnectionState &ConnectionStateDNS::read(Reader & /* reader */, u8 * /* buffer */, u32 /* size */,
+        const Address & /* address */, bool &ok) {
     ok = false;
 
     return *this;
 }
 
-ConnectionState &ConnectionStateDNS::write(ClientStateWriter & /* writer */, u8 * /* buffer */,
+ConnectionState &ConnectionStateDNS::write(Writer & /* writer */, u8 * /* buffer */,
         u32 & /* size */, Address & /* address */, bool &ok) {
     ok = false;
 

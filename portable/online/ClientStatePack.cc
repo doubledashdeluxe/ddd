@@ -55,31 +55,31 @@ ClientState &ClientStatePack::writeStateRoom(const ClientStateRoomWriteInfo &wri
     return *(new (m_platform.allocator) ClientStateRoom(m_platform, connection, writeInfo));
 }
 
-ServerStateServerReader *ClientStatePack::serverReader() {
+ServerStateServerReader<void> *ClientStatePack::serverReader() {
     return nullptr;
 }
 
-ServerStateModeReader *ClientStatePack::modeReader() {
+ServerStateModeReader<void> *ClientStatePack::modeReader() {
     return nullptr;
 }
 
-ServerStatePackReader *ClientStatePack::packReader() {
+ServerStatePackReader<ClientStatePack> *ClientStatePack::packReader() {
     return this;
 }
 
-ServerStateRoomReader *ClientStatePack::roomReader() {
+ServerStateRoomReader<void> *ClientStatePack::roomReader() {
     return nullptr;
 }
 
-ServerStateTeamReader *ClientStatePack::teamReader() {
+ServerStateTeamReader<void> *ClientStatePack::teamReader() {
     return nullptr;
 }
 
-ServerStatePollReader *ClientStatePack::pollReader() {
+ServerStatePollReader<void> *ClientStatePack::pollReader() {
     return nullptr;
 }
 
-ServerStateRaceReader *ClientStatePack::raceReader() {
+ServerStateRaceReader<void> *ClientStatePack::raceReader() {
     return nullptr;
 }
 
@@ -114,7 +114,7 @@ void ClientStatePack::setFormatPlayerCountsElement(u32 i0, u16 formatPlayerCount
     m_readInfo.packs[m_packIndex].emplace().formatPlayerCounts[i0] = formatPlayerCountsElement;
 }
 
-ClientStatePackWriter &ClientStatePack::packWriter() {
+ClientStatePackWriter<ClientStatePack> &ClientStatePack::packWriter() {
     return *this;
 }
 

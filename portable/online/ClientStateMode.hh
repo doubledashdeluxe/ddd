@@ -7,11 +7,13 @@
 
 class ClientStateMode
     : public ClientState
-    , private ServerStateReader
-    , private ServerStateModeReader
-    , private ServerModeReader
-    , private ClientStateWriter::Mode
-    , private ClientStateModeWriter {
+    , public ClientState::Reader<ClientStateMode>
+    , public ClientState::Writer<ClientStateMode>
+    , public ServerStateReader<ClientStateMode>
+    , public ServerStateModeReader<ClientStateMode>
+    , public ServerModeReader<ClientStateMode>
+    , public ClientStateWriter<ClientStateMode>::Mode
+    , public ClientStateModeWriter<ClientStateMode> {
 public:
     ClientStateMode(const ClientPlatform &platform, Connection &connection, u8 playerCount);
     ~ClientStateMode() override;
@@ -22,28 +24,28 @@ public:
     ClientState &writeStatePack(const ClientStatePackWriteInfo &writeInfo) override;
     ClientState &writeStateRoom(const ClientStateRoomWriteInfo &writeInfo) override;
 
+    ServerStateServerReader<void> *serverReader();
+    ServerStateModeReader *modeReader();
+    ServerStatePackReader<void> *packReader();
+    ServerStateRoomReader<void> *roomReader();
+    ServerStateTeamReader<void> *teamReader();
+    ServerStatePollReader<void> *pollReader();
+    ServerStateRaceReader<void> *raceReader();
+
+    ServerModeReader *modesElementReader(u32 i0);
+
+    bool isMmrsCountValid(u32 mmrsCount);
+    void setMmrsCount(u32 mmrsCount);
+    bool isMmrsElementValid(u32 i0, u16 mmrsElement);
+    void setMmrsElement(u32 i0, u16 mmrsElement);
+    bool isPlayerCountValid(u16 playerCount);
+    void setPlayerCount(u16 playerCount);
+
+    ClientStateModeWriter &modeWriter();
+
 private:
     typedef ClientStateModeReadInfo ReadInfo;
     typedef ClientStateModeWriteInfo WriteInfo;
-
-    ServerStateServerReader *serverReader() override;
-    ServerStateModeReader *modeReader() override;
-    ServerStatePackReader *packReader() override;
-    ServerStateRoomReader *roomReader() override;
-    ServerStateTeamReader *teamReader() override;
-    ServerStatePollReader *pollReader() override;
-    ServerStateRaceReader *raceReader() override;
-
-    ServerModeReader *modesElementReader(u32 i0) override;
-
-    bool isMmrsCountValid(u32 mmrsCount) override;
-    void setMmrsCount(u32 mmrsCount) override;
-    bool isMmrsElementValid(u32 i0, u16 mmrsElement) override;
-    void setMmrsElement(u32 i0, u16 mmrsElement) override;
-    bool isPlayerCountValid(u16 playerCount) override;
-    void setPlayerCount(u16 playerCount) override;
-
-    ClientStateModeWriter &modeWriter() override;
 
     u8 m_playerCount;
     ReadInfo m_readInfo;

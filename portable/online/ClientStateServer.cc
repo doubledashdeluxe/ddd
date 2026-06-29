@@ -74,31 +74,31 @@ ClientState &ClientStateServer::writeStateMode(const ClientStateModeWriteInfo &w
     return *(new (m_platform.allocator) ClientStateMode(m_platform, connection, playerCount));
 }
 
-ServerStateServerReader *ClientStateServer::serverReader() {
+ServerStateServerReader<ClientStateServer> *ClientStateServer::serverReader() {
     return this;
 }
 
-ServerStateModeReader *ClientStateServer::modeReader() {
+ServerStateModeReader<void> *ClientStateServer::modeReader() {
     return nullptr;
 }
 
-ServerStatePackReader *ClientStateServer::packReader() {
+ServerStatePackReader<void> *ClientStateServer::packReader() {
     return nullptr;
 }
 
-ServerStateRoomReader *ClientStateServer::roomReader() {
+ServerStateRoomReader<void> *ClientStateServer::roomReader() {
     return nullptr;
 }
 
-ServerStateTeamReader *ClientStateServer::teamReader() {
+ServerStateTeamReader<void> *ClientStateServer::teamReader() {
     return nullptr;
 }
 
-ServerStatePollReader *ClientStateServer::pollReader() {
+ServerStatePollReader<void> *ClientStateServer::pollReader() {
     return nullptr;
 }
 
-ServerStateRaceReader *ClientStateServer::raceReader() {
+ServerStateRaceReader<void> *ClientStateServer::raceReader() {
     return nullptr;
 }
 
@@ -126,15 +126,15 @@ void ClientStateServer::setVersionElement(u32 i0, u8 versionElement) {
     m_readInfo.servers[m_readIndex].version.getOrEmplace()[i0] = versionElement;
 }
 
-ServerIdentityReader *ClientStateServer::serverIdentityReader() {
+ServerIdentityReader<ClientStateServer> *ClientStateServer::serverIdentityReader() {
     return this;
 }
 
-ServerIdentityUnspecifiedReader *ClientStateServer::unspecifiedReader() {
+ServerIdentityUnspecifiedReader<ClientStateServer> *ClientStateServer::unspecifiedReader() {
     return this;
 }
 
-ServerIdentitySpecifiedReader *ClientStateServer::specifiedReader() {
+ServerIdentitySpecifiedReader<ClientStateServer> *ClientStateServer::specifiedReader() {
     if (m_readInfo.servers[m_writeIndex].versionIsCompatible) {
         return this;
     }
@@ -165,7 +165,7 @@ void ClientStateServer::setPlayerCount(u16 playerCount) {
     m_readInfo.servers[m_readIndex].playerCount = playerCount;
 }
 
-ClientStateServerWriter &ClientStateServer::serverWriter() {
+ClientStateServerWriter<ClientStateServer> &ClientStateServer::serverWriter() {
     return *this;
 }
 
@@ -181,18 +181,18 @@ u8 ClientStateServer::getVersionElement(u32 i0) {
     return m_version[i0];
 }
 
-ClientIdentityWriter &ClientStateServer::clientIdentityWriter() {
+ClientIdentityWriter<ClientStateServer> &ClientStateServer::clientIdentityWriter() {
     if (m_readInfo.servers[m_writeIndex].versionIsCompatible) {
         return Upcast<ClientIdentityWriter::Specified>(*this);
     }
     return Upcast<ClientIdentityWriter::Unspecified>(*this);
 }
 
-ClientIdentityUnspecifiedWriter &ClientStateServer::unspecifiedWriter() {
+ClientIdentityUnspecifiedWriter<ClientStateServer> &ClientStateServer::unspecifiedWriter() {
     return *this;
 }
 
-ClientIdentitySpecifiedWriter &ClientStateServer::specifiedWriter() {
+ClientIdentitySpecifiedWriter<ClientStateServer> &ClientStateServer::specifiedWriter() {
     return *this;
 }
 
@@ -204,7 +204,7 @@ u32 ClientStateServer::getPlayersCount() {
     return m_writeInfo->playerCount;
 }
 
-ClientPlayerWriter &ClientStateServer::playersElementWriter(u32 i0) {
+ClientPlayerWriter<ClientStateServer> &ClientStateServer::playersElementWriter(u32 i0) {
     m_playerIndex = i0;
     return *this;
 }

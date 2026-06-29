@@ -1,3 +1,5 @@
+use std::iter;
+
 use crate::data_type::DataType;
 use crate::str_ext::StrExt;
 
@@ -144,78 +146,47 @@ impl<T: DataType> DataType for ArrayType<T> {
         }
     }
 
-    fn hh_read_delegate(&self, name: &str, array_indices: ArrayIndices) -> String {
-        match self {
-            Self::Fixed { data_type, .. } => data_type.hh_read_delegate(name, array_indices.next()),
-            Self::Variable { data_type, .. } => {
-                format!(
-                    concat!(
-                        "    virtual bool is{}CountValid({}u32 {}Count) = 0;\n",
-                        "    virtual void set{}Count({}u32 {}Count) = 0;\n",
-                        "{}",
-                    ),
-                    name.to_ascii_camel_case().to_ascii_sentence_case(),
-                    array_indices.typed_args(true),
-                    name.to_ascii_camel_case(),
-                    name.to_ascii_camel_case().to_ascii_sentence_case(),
-                    array_indices.typed_args(true),
-                    name.to_ascii_camel_case(),
-                    data_type.hh_read_delegate(name, array_indices.next()),
-                )
-            }
-        }
-    }
-
-    fn hh_write_delegate(&self, name: &str, array_indices: ArrayIndices) -> String {
-        match self {
-            Self::Fixed { data_type, .. } => {
-                data_type.hh_write_delegate(name, array_indices.next())
-            }
-            Self::Variable { data_type, .. } => {
-                format!(
-                    concat!("    virtual u32 get{}Count({}) = 0;\n", "{}"),
-                    name.to_ascii_camel_case().to_ascii_sentence_case(),
-                    array_indices.typed_args(false),
-                    data_type.hh_write_delegate(name, array_indices.next()),
-                )
-            }
-        }
-    }
-
-    fn cc_is_valid(&self, name: &str, array_indices: ArrayIndices) -> String {
+    fn hh_is_valid(&self, name: &str, array_indices: ArrayIndices) -> String {
         match self {
             Self::Fixed { data_type, len } => {
                 format!(
-                    concat!("    for (u32 {} = 0; {} < {}; {}++) {{\n", "    {}\n", "    }}"),
+                    concat!(
+                        "        for (u32 {} = 0; {} < {}; {}++) {{\n",
+                        "    {}\n",
+                        "        }}",
+                    ),
                     array_indices.index(),
                     array_indices.index(),
                     len,
                     array_indices.index(),
-                    data_type.cc_is_valid(name, array_indices.next()).replace('\n', "\n    "),
+                    data_type.hh_is_valid(name, array_indices.next()).replace('\n', "\n    "),
                 )
             }
             Self::Variable { data_type, min_len, max_len } => {
                 format!(
                     concat!(
-                        "    if (offset + 1 > size) {{\n",
-                        "        return false;\n",
-                        "    }}\n",
-                        "    u32 {} = buffer[offset++];\n",
-                        "    if ({} < {} || {} > {}) {{\n",
-                        "        return false;\n",
-                        "    }}\n",
-                        "    if (!is{}CountValid({}{})) {{\n",
-                        "        return false;\n",
-                        "    }}\n",
-                        "    for (u32 {} = 0; {} < {}; {}++) {{\n",
+                        "        if (offset + 1 > size) {{\n",
+                        "            return false;\n",
+                        "        }}\n",
+                        "        u32 {} = buffer[offset++];\n",
+                        "        if ({} < {} || {} > {}) {{\n",
+                        "            return false;\n",
+                        "        }}\n",
+                        "        AssertType<bool (D::*)({}u32)>(&D::is{}CountValid);\n",
+                        "        if (!d->is{}CountValid({}{})) {{\n",
+                        "            return false;\n",
+                        "        }}\n",
+                        "        for (u32 {} = 0; {} < {}; {}++) {{\n",
                         "    {}\n",
-                        "    }}",
+                        "        }}",
                     ),
                     array_indices.count(),
                     array_indices.count(),
                     min_len,
                     array_indices.count(),
                     max_len,
+                    array_indices.arg_types(true),
+                    name.to_ascii_camel_case().to_ascii_sentence_case(),
                     name.to_ascii_camel_case().to_ascii_sentence_case(),
                     array_indices.untyped_args(true),
                     array_indices.count(),
@@ -223,34 +194,41 @@ impl<T: DataType> DataType for ArrayType<T> {
                     array_indices.index(),
                     array_indices.count(),
                     array_indices.index(),
-                    data_type.cc_is_valid(name, array_indices.next()).replace('\n', "\n    "),
+                    data_type.hh_is_valid(name, array_indices.next()).replace('\n', "\n    "),
                 )
             }
         }
     }
 
-    fn cc_read(&self, name: &str, array_indices: ArrayIndices) -> String {
+    fn hh_read(&self, name: &str, array_indices: ArrayIndices) -> String {
         match self {
             Self::Fixed { data_type, len } => {
                 format!(
-                    concat!("    for (u32 {} = 0; {} < {}; {}++) {{\n", "    {}\n", "    }}"),
+                    concat!(
+                        "        for (u32 {} = 0; {} < {}; {}++) {{\n",
+                        "    {}\n",
+                        "        }}",
+                    ),
                     array_indices.index(),
                     array_indices.index(),
                     len,
                     array_indices.index(),
-                    data_type.cc_read(name, array_indices.next()).replace('\n', "\n    "),
+                    data_type.hh_read(name, array_indices.next()).replace('\n', "\n    "),
                 )
             }
             Self::Variable { data_type, .. } => {
                 format!(
                     concat!(
-                        "    u32 {} = buffer[offset++];\n",
-                        "    set{}Count({}{});\n",
-                        "    for (u32 {} = 0; {} < {}; {}++) {{\n",
+                        "        u32 {} = buffer[offset++];\n",
+                        "        AssertType<void (D::*)({}u32)>(&D::set{}Count);\n",
+                        "        d->set{}Count({}{});\n",
+                        "        for (u32 {} = 0; {} < {}; {}++) {{\n",
                         "    {}\n",
-                        "    }}",
+                        "        }}",
                     ),
                     array_indices.count(),
+                    array_indices.arg_types(true),
+                    name.to_ascii_camel_case().to_ascii_sentence_case(),
                     name.to_ascii_camel_case().to_ascii_sentence_case(),
                     array_indices.untyped_args(true),
                     array_indices.count(),
@@ -258,39 +236,46 @@ impl<T: DataType> DataType for ArrayType<T> {
                     array_indices.index(),
                     array_indices.count(),
                     array_indices.index(),
-                    data_type.cc_read(name, array_indices.next()).replace('\n', "\n    "),
+                    data_type.hh_read(name, array_indices.next()).replace('\n', "\n    "),
                 )
             }
         }
     }
 
-    fn cc_write(&self, name: &str, array_indices: ArrayIndices) -> String {
+    fn hh_write(&self, name: &str, array_indices: ArrayIndices) -> String {
         match self {
             Self::Fixed { data_type, len } => {
                 format!(
-                    concat!("    for (u32 {} = 0; {} < {}; {}++) {{\n", "    {}\n", "    }}"),
+                    concat!(
+                        "        for (u32 {} = 0; {} < {}; {}++) {{\n",
+                        "    {}\n",
+                        "        }}",
+                    ),
                     array_indices.index(),
                     array_indices.index(),
                     len,
                     array_indices.index(),
-                    data_type.cc_write(name, array_indices.next()).replace('\n', "\n    "),
+                    data_type.hh_write(name, array_indices.next()).replace('\n', "\n    "),
                 )
             }
             Self::Variable { data_type, min_len, max_len } => {
                 format!(
                     concat!(
-                        "    if (offset + 1 > size) {{\n",
-                        "        return false;\n",
-                        "    }}\n",
-                        "    u32 {} = get{}Count({});\n",
-                        "    if ({} < {} || {} > {}) {{\n",
-                        "        return false;\n",
-                        "    }}\n",
-                        "    buffer[offset++] = {};\n",
-                        "    for (u32 {} = 0; {} < {}; {}++) {{\n",
+                        "        if (offset + 1 > size) {{\n",
+                        "            return false;\n",
+                        "        }}\n",
+                        "        AssertType<u32 (D::*)({})>(&D::get{}Count);\n",
+                        "        u32 {} = d->get{}Count({});\n",
+                        "        if ({} < {} || {} > {}) {{\n",
+                        "            return false;\n",
+                        "        }}\n",
+                        "        buffer[offset++] = {};\n",
+                        "        for (u32 {} = 0; {} < {}; {}++) {{\n",
                         "    {}\n",
-                        "    }}",
+                        "        }}",
                     ),
+                    array_indices.arg_types(false),
+                    name.to_ascii_camel_case().to_ascii_sentence_case(),
                     array_indices.count(),
                     name.to_ascii_camel_case().to_ascii_sentence_case(),
                     array_indices.untyped_args(false),
@@ -303,7 +288,7 @@ impl<T: DataType> DataType for ArrayType<T> {
                     array_indices.index(),
                     array_indices.count(),
                     array_indices.index(),
-                    data_type.cc_write(name, array_indices.next()).replace('\n', "\n    "),
+                    data_type.hh_write(name, array_indices.next()).replace('\n', "\n    "),
                 )
             }
         }
@@ -341,6 +326,14 @@ impl<'a> ArrayIndices<'a> {
             args.push(String::new());
         }
         args.join(", ")
+    }
+
+    pub fn arg_types(&self, trailing_comma: bool) -> String {
+        let mut types: Vec<_> = iter::repeat_n("u32", self.count).collect();
+        if trailing_comma {
+            types.push("");
+        }
+        types.join(", ")
     }
 
     fn count(&self) -> String {

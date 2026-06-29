@@ -10,9 +10,9 @@ public:
     ~ConnectionStateDNS() override;
     Optional<Address> address() const override;
     ConnectionState &reset() override;
-    ConnectionState &read(ServerStateReader &reader, u8 *buffer, u32 size, const Address &address,
+    ConnectionState &read(Reader &reader, u8 *buffer, u32 size, const Address &address,
             bool &ok) override;
-    ConnectionState &write(ClientStateWriter &writer, u8 *buffer, u32 &size, Address &address,
+    ConnectionState &write(Writer &writer, u8 *buffer, u32 &size, Address &address,
             bool &ok) override;
 
 private:

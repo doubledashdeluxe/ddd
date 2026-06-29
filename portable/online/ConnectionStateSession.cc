@@ -29,7 +29,7 @@ ConnectionState &ConnectionStateSession::reset() {
     return state;
 }
 
-ConnectionState &ConnectionStateSession::read(ServerStateReader &reader, u8 *buffer, u32 size,
+ConnectionState &ConnectionStateSession::read(Reader &reader, u8 *buffer, u32 size,
         const Address &address, bool &ok) {
     ok = address == m_address;
 
@@ -58,7 +58,7 @@ ConnectionState &ConnectionStateSession::read(ServerStateReader &reader, u8 *buf
     return *this;
 }
 
-ConnectionState &ConnectionStateSession::write(ClientStateWriter &writer, u8 *buffer, u32 &size,
+ConnectionState &ConnectionStateSession::write(Writer &writer, u8 *buffer, u32 &size,
         Address &address, bool &ok) {
     assert(size >= Session::MACSize + Session::NonceSize);
 

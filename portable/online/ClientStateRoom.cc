@@ -80,39 +80,39 @@ ClientState &ClientStateRoom::writeStatePoll(const ClientStatePollWriteInfo &wri
     return *(new (m_platform.allocator) ClientStatePoll(m_platform, connection, writeInfo));
 }
 
-ServerStateServerReader *ClientStateRoom::serverReader() {
+ServerStateServerReader<void> *ClientStateRoom::serverReader() {
     return nullptr;
 }
 
-ServerStateModeReader *ClientStateRoom::modeReader() {
+ServerStateModeReader<void> *ClientStateRoom::modeReader() {
     return nullptr;
 }
 
-ServerStatePackReader *ClientStateRoom::packReader() {
+ServerStatePackReader<void> *ClientStateRoom::packReader() {
     return nullptr;
 }
 
-ServerStateRoomReader *ClientStateRoom::roomReader() {
+ServerStateRoomReader<ClientStateRoom> *ClientStateRoom::roomReader() {
     return this;
 }
 
-ServerStateTeamReader *ClientStateRoom::teamReader() {
+ServerStateTeamReader<void> *ClientStateRoom::teamReader() {
     return nullptr;
 }
 
-ServerStatePollReader *ClientStateRoom::pollReader() {
+ServerStatePollReader<void> *ClientStateRoom::pollReader() {
     return nullptr;
 }
 
-ServerStateRaceReader *ClientStateRoom::raceReader() {
+ServerStateRaceReader<void> *ClientStateRoom::raceReader() {
     return nullptr;
 }
 
-ServerRoomStateReader *ClientStateRoom::serverRoomStateReader() {
+ServerRoomStateReader<ClientStateRoom> *ClientStateRoom::serverRoomStateReader() {
     return this;
 }
 
-ServerRoomStateMainReader *ClientStateRoom::mainReader() {
+ServerRoomStateMainReader<ClientStateRoom> *ClientStateRoom::mainReader() {
     return this;
 }
 
@@ -138,7 +138,7 @@ void ClientStateRoom::setKartsCount(u32 kartsCount) {
     m_readInfo.info.getOrEmplace().kartCount = kartsCount;
 }
 
-ServerKartReader *ClientStateRoom::kartsElementReader(u32 i0) {
+ServerKartReader<ClientStateRoom> *ClientStateRoom::kartsElementReader(u32 i0) {
     m_kartIndex = i0;
     return this;
 }
@@ -225,7 +225,7 @@ void ClientStateRoom::setSpectating(u8 spectating) {
     m_readInfo.info.getOrEmplace().spectating = spectating;
 }
 
-ServerRoomOptionsReader *ClientStateRoom::optionsReader() {
+ServerRoomOptionsReader<ClientStateRoom> *ClientStateRoom::optionsReader() {
     return this;
 }
 
@@ -256,7 +256,7 @@ void ClientStateRoom::setPlayersCount(u32 playersCount) {
     m_readInfo.info.getOrEmplace().karts[m_kartIndex].playerCount = playersCount;
 }
 
-ServerPlayerReader *ClientStateRoom::playersElementReader(u32 i0) {
+ServerPlayerReader<ClientStateRoom> *ClientStateRoom::playersElementReader(u32 i0) {
     m_playerIndex = i0;
     return this;
 }
@@ -286,11 +286,11 @@ void ClientStateRoom::setNameElement(u32 i0, u8 nameElement) {
     m_readInfo.info.getOrEmplace().karts[m_kartIndex].players[m_playerIndex].name[i0] = nameElement;
 }
 
-RoomOptionsRaceReader *ClientStateRoom::raceOptionsReader() {
+RoomOptionsRaceReader<ClientStateRoom> *ClientStateRoom::raceOptionsReader() {
     return this;
 }
 
-RoomOptionsBattleReader *ClientStateRoom::battleOptionsReader() {
+RoomOptionsBattleReader<ClientStateRoom> *ClientStateRoom::battleOptionsReader() {
     return this;
 }
 
@@ -424,11 +424,11 @@ void ClientStateRoom::setEntryIndex(u8 entryIndex) {
     m_readInfo.info.getOrEmplace().entryIndex = entryIndex;
 }
 
-ClientStateRoomWriter &ClientStateRoom::roomWriter() {
+ClientStateRoomWriter<ClientStateRoom> &ClientStateRoom::roomWriter() {
     return *this;
 }
 
-ClientRoomStateWriter &ClientStateRoom::clientRoomStateWriter() {
+ClientRoomStateWriter<ClientStateRoom> &ClientStateRoom::clientRoomStateWriter() {
     if (m_readInfo.info) {
         return Upcast<ClientRoomStateWriter::Main>(*this);
     } else {
@@ -442,19 +442,19 @@ ClientRoomStateWriter &ClientStateRoom::clientRoomStateWriter() {
     }
 }
 
-ClientRoomStateSearchWriter &ClientStateRoom::searchWriter() {
+ClientRoomStateSearchWriter<ClientStateRoom> &ClientStateRoom::searchWriter() {
     return *this;
 }
 
-ClientRoomStateNewWriter &ClientStateRoom::newWriter() {
+ClientRoomStateNewWriter<ClientStateRoom> &ClientStateRoom::newWriter() {
     return *this;
 }
 
-ClientRoomStateCodeWriter &ClientStateRoom::codeWriter() {
+ClientRoomStateCodeWriter<ClientStateRoom> &ClientStateRoom::codeWriter() {
     return *this;
 }
 
-ClientRoomStateMainWriter &ClientStateRoom::mainWriter() {
+ClientRoomStateMainWriter<ClientStateRoom> &ClientStateRoom::mainWriter() {
     return *this;
 }
 
@@ -490,7 +490,7 @@ u8 ClientStateRoom::getSpectating() {
     return m_writeInfo.spectating;
 }
 
-ClientRoomOptionsWriter &ClientStateRoom::optionsWriter() {
+ClientRoomOptionsWriter<ClientStateRoom> &ClientStateRoom::optionsWriter() {
     if (m_writeInfo.isHost) {
         if (m_writeInfo.isRace) {
             return Upcast<ClientRoomOptionsWriter::RaceOptions>(*this);
@@ -506,11 +506,11 @@ u8 ClientStateRoom::getContinuing() {
     return m_writeInfo.continuing;
 }
 
-RoomOptionsRaceWriter &ClientStateRoom::raceOptionsWriter() {
+RoomOptionsRaceWriter<ClientStateRoom> &ClientStateRoom::raceOptionsWriter() {
     return *this;
 }
 
-RoomOptionsBattleWriter &ClientStateRoom::battleOptionsWriter() {
+RoomOptionsBattleWriter<ClientStateRoom> &ClientStateRoom::battleOptionsWriter() {
     return *this;
 }
 

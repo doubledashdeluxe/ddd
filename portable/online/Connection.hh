@@ -13,8 +13,8 @@ public:
     ~Connection();
     Optional<Address> address() const;
     void reset();
-    bool read(ServerStateReader &reader, u8 *buffer, u32 size, const Address &address);
-    bool write(ClientStateWriter &writer, u8 *buffer, u32 &size, Address &address);
+    bool read(ConnectionState::Reader &reader, u8 *buffer, u32 size, const Address &address);
+    bool write(ConnectionState::Writer &writer, u8 *buffer, u32 &size, Address &address);
 
 private:
     bool updateState(ConnectionState &nextState);

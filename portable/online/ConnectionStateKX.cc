@@ -26,7 +26,7 @@ ConnectionState &ConnectionStateKX::reset() {
     return *this;
 }
 
-ConnectionState &ConnectionStateKX::read(ServerStateReader & /* reader */, u8 *buffer, u32 size,
+ConnectionState &ConnectionStateKX::read(Reader & /* reader */, u8 *buffer, u32 size,
         const Address &address, bool &ok) {
     ok = address == m_address;
 
@@ -47,7 +47,7 @@ ConnectionState &ConnectionStateKX::read(ServerStateReader & /* reader */, u8 *b
     return *this;
 }
 
-ConnectionState &ConnectionStateKX::write(ClientStateWriter & /* writer */, u8 *buffer, u32 &size,
+ConnectionState &ConnectionStateKX::write(Writer & /* writer */, u8 *buffer, u32 &size,
         Address &address, bool &ok) {
     assert(size >= m_cookie.count() + KX::M1Size);
 

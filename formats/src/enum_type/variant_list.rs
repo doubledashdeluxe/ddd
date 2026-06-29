@@ -10,12 +10,10 @@ pub trait VariantList {
     fn rs_variants(&self) -> String;
     fn rs_read(&self) -> String;
     fn rs_write(&self) -> String;
-    fn hh_read_delegates(&self) -> String;
     fn hh_writer_decls(&self) -> String;
     fn hh_writer_defs(&self, enum_name: &str) -> String;
-    fn cc_is_valid(&self) -> String;
-    fn cc_read(&self) -> String;
-    fn cc_writers(&self, enum_name: &str) -> String;
+    fn hh_is_valid(&self) -> String;
+    fn hh_read(&self) -> String;
 }
 
 impl VariantList for () {
@@ -43,10 +41,6 @@ impl VariantList for () {
         String::new()
     }
 
-    fn hh_read_delegates(&self) -> String {
-        String::new()
-    }
-
     fn hh_writer_decls(&self) -> String {
         String::new()
     }
@@ -55,15 +49,11 @@ impl VariantList for () {
         String::new()
     }
 
-    fn cc_is_valid(&self) -> String {
+    fn hh_is_valid(&self) -> String {
         String::new()
     }
 
-    fn cc_read(&self) -> String {
-        String::new()
-    }
-
-    fn cc_writers(&self, _: &str) -> String {
+    fn hh_read(&self) -> String {
         String::new()
     }
 }
@@ -127,14 +117,6 @@ impl<L: VariantList, T: DataType> VariantList for (L, Variant<T>) {
         )
     }
 
-    fn hh_read_delegates(&self) -> String {
-        format!(
-            concat!("{}", "{}"),
-            self.0.hh_read_delegates(),
-            self.1.data_type().hh_read_delegate(self.1.name(), ArrayIndices::new(self.1.name())),
-        )
-    }
-
     fn hh_writer_decls(&self) -> String {
         format!(concat!("{}", "    class {};\n"), self.0.hh_writer_decls(), self.1.name())
     }
@@ -143,78 +125,73 @@ impl<L: VariantList, T: DataType> VariantList for (L, Variant<T>) {
         format!(
             concat!(
                 "{}\n",
-                "class {}Writer::{} : public {}Writer {{\n",
+                "template <typename D>\n",
+                "class {}Writer<D>::{} : public {}Writer {{\n",
                 "public:\n",
-                "    bool write(u8 *buffer, u32 size, u32 &offset) override;\n",
+                "    bool write(u8 *buffer, u32 size, u32 &offset) override {{\n",
+                "        MaybeUnused(buffer);\n",
+                "        MaybeUnused(size);\n",
+                "        MaybeUnused(offset);\n",
+                "        D *d = static_cast<D *>(this);\n",
+                "        if (offset + 1 > size) {{\n",
+                "            return false;\n",
+                "        }}\n",
+                "        buffer[offset++] = {};\n",
+                "{}\n",
+                "        return true;\n",
+                "    }}\n",
+                "\n",
+                "    friend D;\n",
                 "\n",
                 "private:\n",
-                "{}",
+                "    {}() {{}}\n",
                 "}};\n",
             ),
             self.0.hh_writer_defs(enum_name),
             enum_name,
             self.1.name(),
             enum_name,
-            self.1.data_type().hh_write_delegate(self.1.name(), ArrayIndices::new(self.1.name())),
-        )
-    }
-
-    fn cc_is_valid(&self) -> String {
-        format!(
-            concat!(
-                "{}",
-                "    case {}:\n",
-                "        {{\n",
-                "        {}\n",
-                "            return true;\n",
-                "        }}\n",
-            ),
-            self.0.cc_is_valid(),
             L::count(),
-            self.1
-                .data_type()
-                .cc_is_valid(self.1.name(), ArrayIndices::new(self.1.name()))
-                .replace('\n', "\n        "),
-        )
-    }
-
-    fn cc_read(&self) -> String {
-        format!(
-            concat!(
-                "{}",
-                "    case {}:\n",
-                "        {{\n",
-                "        {}\n",
-                "            break;\n",
-                "        }}\n"
-            ),
-            self.0.cc_read(),
-            L::count(),
-            self.1
-                .data_type()
-                .cc_read(self.1.name(), ArrayIndices::new(self.1.name()))
-                .replace('\n', "\n        "),
-        )
-    }
-
-    fn cc_writers(&self, enum_name: &str) -> String {
-        format!(
-            concat!(
-                "{}\n",
-                "bool {}Writer::{}::write(u8 *buffer, u32 size, u32 &offset) {{\n",
-                "    if (offset + 1 > size) {{\n",
-                "        return false;\n",
-                "    }}\n",
-                "    buffer[offset++] = {};\n",
-                "{}\n",
-                "    return true;\n",
-                "}}\n",
-            ),
-            self.0.cc_writers(enum_name),
-            enum_name,
+            self.1.data_type().hh_write(self.1.name(), ArrayIndices::new(self.1.name())),
             self.1.name(),
+        )
+    }
+
+    fn hh_is_valid(&self) -> String {
+        format!(
+            concat!(
+                "{}",
+                "        case {}:\n",
+                "            {{\n",
+                "        {}\n",
+                "                return true;\n",
+                "            }}\n",
+            ),
+            self.0.hh_is_valid(),
             L::count(),
-            self.1.data_type().cc_write(self.1.name(), ArrayIndices::new(self.1.name())),
+            self.1
+                .data_type()
+                .hh_is_valid(self.1.name(), ArrayIndices::new(self.1.name()))
+                .replace('\n', "\n        "),
+        )
+    }
+
+    fn hh_read(&self) -> String {
+        format!(
+            concat!(
+                "{}",
+                "        case {}:\n",
+                "            {{\n",
+                "        {}\n",
+                "                break;\n",
+                "            }}\n"
+            ),
+            self.0.hh_read(),
+            L::count(),
+            self.1
+                .data_type()
+                .hh_read(self.1.name(), ArrayIndices::new(self.1.name()))
+                .replace('\n', "\n        "),
         )
     }
 }
