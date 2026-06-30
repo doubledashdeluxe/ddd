@@ -3,7 +3,9 @@
 #ifdef CUBE
 #include "portable/Types.hh"
 
-void *operator new(size_t size, void *ptr);
+inline void *operator new(size_t /* size */, void *ptr) {
+    return ptr;
+}
 #else
 #include <new>
 #endif
