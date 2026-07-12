@@ -217,6 +217,7 @@ n.variable('bin2c', os.path.join('tools', 'bin2c.py'))
 n.variable('cp', os.path.join('tools', 'cp.py'))
 n.variable('dir2arc', os.path.join('tools', 'dir2arc.py'))
 n.variable('file_patcher', os.path.join('tools', 'file_patcher.py'))
+n.variable('meta', os.path.join('tools', 'meta.py'))
 if is_windows():
     n.variable('mwcc', os.path.join('tools', 'cw', 'modified_mwcceppc'))
 else:
@@ -309,6 +310,13 @@ n.rule(
 )
 n.newline()
 
+n.rule(
+    'meta',
+    command = f'{sys.executable} $meta $in $out',
+    description = 'META $out',
+)
+n.newline()
+
 mld = get_llvm_tool('clang++', args)
 n.rule(
     'mld',
@@ -365,6 +373,13 @@ n.rule(
 )
 n.newline()
 
+n.rule(
+    'zip',
+    command = 'cargo -q --color always run -r --bin zip -- $in_dir $out $key',
+    description = 'ZIP $out',
+)
+n.newline()
+
 n.build(
     os.path.join('tools', 'cw', 'modified_mwcceppc.exe'),
     'patch_mwcceppc',
@@ -413,7 +428,7 @@ for arc_file in asset_arc_files:
 format_kc_names = ['online', 'version']
 format_implicit = [
     *sorted(glob.glob(os.path.join('formats', '**'), recursive=True)),
-    os.path.join('version.txt'),
+    os.path.join('data', 'version.txt'),
 ]
 format_code_dirs = []
 format_hh_files = []
@@ -486,7 +501,7 @@ for target in code_in_files:
             out_file,
             'split',
             tmp_file,
-            implicit = sorted(glob.glob(os.path.join('tools', 'split', '**'), recursive=True)),
+            implicit = sorted(glob.glob(os.path.join('tools', '**'), recursive=True)),
         )
 
 n.build(
@@ -518,7 +533,7 @@ n.build(
         os.path.join('$builddir', 'payload', f'payload.o'),
         os.path.join('payload', 'Symbols.txt'),
     ],
-    implicit = sorted(glob.glob(os.path.join('tools', 'patch', '**'), recursive=True)),
+    implicit = sorted(glob.glob(os.path.join('tools', '**'), recursive=True)),
 )
 n.newline()
 
@@ -595,7 +610,7 @@ for region in ['P', 'E', 'J']:
             variables = {
                 'kind': kind.lower(),
             },
-            implicit = sorted(glob.glob(os.path.join('tools', 'obj2bin', '**'), recursive=True)),
+            implicit = sorted(glob.glob(os.path.join('tools', '**'), recursive=True)),
         )
         n.newline()
 
@@ -650,7 +665,7 @@ n.build(
     os.path.join('$builddir', 'channel', 'channel.dol'),
     'obj2dol',
     os.path.join('$builddir', 'channel', 'channel.elf'),
-    implicit = sorted(glob.glob(os.path.join('tools', 'obj2dol', '**'), recursive=True)),
+    implicit = sorted(glob.glob(os.path.join('tools', '**'), recursive=True)),
 )
 n.newline()
 
@@ -700,24 +715,35 @@ n.build(
 n.newline()
 
 n.build(
-    os.path.join('$outdir', 'boot.dol'),
+    os.path.join('$builddir', 'ddd', 'boot.dol'),
     'obj2dol',
     os.path.join('$builddir', 'bootstrap', 'bootstrap.elf'),
-    implicit = sorted(glob.glob(os.path.join('tools', 'obj2dol', '**'), recursive=True)),
+    implicit = sorted(glob.glob(os.path.join('tools', '**'), recursive=True)),
 )
 n.newline()
 
 n.build(
-    os.path.join('$outdir', 'meta.xml'),
-    'cp',
-    os.path.join('meta.xml'),
-    implicit = '$cp',
+    os.path.join('$builddir', 'ddd', 'meta.xml'),
+    'meta',
+    [
+        os.path.join('data', 'version.txt'),
+        os.path.join('data', 'meta.xml.template'),
+    ],
+    implicit = '$meta',
 )
 n.newline()
 
+for in_file in ['version.txt', 'changelog.txt']:
+    n.build(
+        os.path.join('$builddir', 'ddd', in_file),
+        'cp',
+        os.path.join('data', in_file),
+    )
+    n.newline()
+
 license_out_files = []
 for in_file in sorted(glob.glob(os.path.join('vendor', '*', 'LICEN[CS]E*'))):
-    out_file = os.path.join('$outdir', 'licenses', os.path.relpath(in_file, 'vendor'))
+    out_file = os.path.join('$builddir', 'ddd', 'licenses', os.path.relpath(in_file, 'vendor'))
     license_out_files += [out_file]
     n.build(
         out_file,
@@ -726,7 +752,7 @@ for in_file in sorted(glob.glob(os.path.join('vendor', '*', 'LICEN[CS]E*'))):
         implicit = '$cp',
     )
 for in_file in ['LICENSE.md', 'NOTICE.md']:
-    out_file = os.path.join('$outdir', 'licenses', 'ddd', in_file)
+    out_file = os.path.join('$builddir', 'ddd', 'licenses', 'ddd', in_file)
     license_out_files += [out_file]
     n.build(
         out_file,
@@ -736,14 +762,29 @@ for in_file in ['LICENSE.md', 'NOTICE.md']:
     )
 n.newline()
 
+ddd_out_files = [
+    os.path.join('$builddir', 'ddd', 'boot.dol'),
+    os.path.join('$builddir', 'ddd', 'meta.xml'),
+    os.path.join('$builddir', 'ddd', 'version.txt'),
+    os.path.join('$builddir', 'ddd', 'changelog.txt'),
+    *license_out_files,
+]
+n.build(
+    os.path.join('$builddir', 'update.zip'),
+    'zip',
+    ddd_out_files,
+    variables = {
+        'in_dir': os.path.join('$builddir', 'ddd'),
+        'key': os.path.join('data', 'keys', 'update-ed25519-dev.bin'),
+    },
+    implicit = sorted(glob.glob(os.path.join('tools', '**'), recursive=True)),
+)
+n.newline()
+
 n.build(
     'ddd',
     'phony',
-    [
-        os.path.join('$outdir', 'boot.dol'),
-        os.path.join('$outdir', 'meta.xml'),
-        *license_out_files,
-    ],
+    os.path.join('$builddir', 'update.zip'),
 )
 n.newline()
 

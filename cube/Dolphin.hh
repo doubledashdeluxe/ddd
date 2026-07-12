@@ -10,7 +10,7 @@ public:
     ~Dolphin();
     bool ok() const;
 
-    bool getVersion(DolphinVersion &version);
+    bool getVersion(Array<char, 64> &versionString, DolphinVersion &version);
 
 private:
     class Ioctlv {

@@ -19,7 +19,15 @@ macro_rules! impl_simple_constant {
     ($t:ty, $ct:expr) => {
         impl Constant for SimpleConstant<$t> {
             fn rs(&self) -> String {
-                format!("pub const {}: {} = {};\n", self.name, stringify!($t), self.value)
+                let value = self.value.to_string();
+                let chunk_size = if value.len() > 6 { 3 } else { value.len() };
+                let value = value
+                    .into_bytes()
+                    .rchunks(chunk_size)
+                    .map(|part| str::from_utf8(part).unwrap().to_owned())
+                    .reduce(|left, right| format!("{right}_{left}"))
+                    .unwrap();
+                format!("pub const {}: {} = {};\n", self.name, stringify!($t), value)
             }
 
             fn hh(&self) -> String {

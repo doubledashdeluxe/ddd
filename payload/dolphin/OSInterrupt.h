@@ -7,6 +7,7 @@
 typedef void (*OSInterruptHandler)(s16 interrupt, OSContext *context);
 
 BOOL OSDisableInterrupts(void);
+BOOL OSEnableInterrupts(void);
 BOOL OSRestoreInterrupts(BOOL enable);
 
 OSInterruptHandler OSSetInterruptHandler(s16 interrupt, OSInterruptHandler handler);

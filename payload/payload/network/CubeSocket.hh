@@ -21,6 +21,9 @@ private:
 
     s32 fcntl(s32 command, s32 argument);
 
+protected:
     s32 m_socket;
+
+private:
     u64 m_generation;
 };

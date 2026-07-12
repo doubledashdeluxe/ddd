@@ -2,7 +2,9 @@
 
 #include "payload/DOSTime.hh"
 
-ZIPFile::ZIPFile(const char *path) : m_file(path, Storage::Mode::ReadWrite) {
+#include <portable/Upcast.hh>
+
+ZIPFile::ZIPFile(Storage::FileHandle &file) : m_file(file) {
     setup();
 }
 
@@ -27,3 +29,7 @@ bool ZIPFile::size(u64 &size) {
 u32 ZIPFile::getDOSTime() {
     return DOSTime::Now();
 }
+
+OwnedZIPFile::OwnedZIPFile(const char *path)
+    : FileHandle(path, Storage::Mode::ReadWrite)
+    , ZIPFile(Upcast<FileHandle>(*this)) {}

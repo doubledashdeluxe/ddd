@@ -25,7 +25,7 @@ jobs:
         uses: actions/checkout@v7
       - name: Set version
         if: github.ref_type == 'tag'
-        run: git describe --tags --abbrev=0 > version.txt
+        run: git describe --tags --abbrev=0 > data/version.txt
       - name: Setup LLVM
         uses: ./.github/actions/setup-llvm
         with:
@@ -61,7 +61,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: ${{ runner.os }}-ddd
-          path: out
+          path: build/ddd
 
   compare-results:
     name: Compare results
@@ -89,7 +89,7 @@ jobs:
         uses: actions/checkout@v7
       - name: Set version
         if: github.ref_type == 'tag'
-        run: git describe --tags --abbrev=0 > version.txt
+        run: git describe --tags --abbrev=0 > data/version.txt
       - name: Setup LLVM
         uses: ./.github/actions/setup-llvm
         with:
@@ -121,7 +121,7 @@ jobs:
         uses: actions/checkout@v7
       - name: Set version
         if: github.ref_type == 'tag'
-        run: git describe --tags --abbrev=0 > version.txt
+        run: git describe --tags --abbrev=0 > data/version.txt
       - name: Setup LLVM
         uses: ./.github/actions/setup-llvm
         with:
@@ -148,7 +148,7 @@ jobs:
         uses: actions/checkout@v7
       - name: Set version
         if: github.ref_type == 'tag'
-        run: git describe --tags --abbrev=0 > version.txt
+        run: git describe --tags --abbrev=0 > data/version.txt
       - name: Setup LLVM
         uses: ./.github/actions/setup-llvm
         with:

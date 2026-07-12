@@ -3,9 +3,9 @@ use std::iter;
 
 use anyhow::{Context, Result};
 use bpaf::{OptionParser, Parser};
-use miniz_oxide::deflate;
 use object::elf;
 use object::{File, Object, ObjectSegment, SegmentFlags};
+use yazi::{CompressionLevel, Format};
 
 fn main() -> Result<()> {
     let options = options().run();
@@ -37,7 +37,8 @@ fn main() -> Result<()> {
         output.extend(iter::repeat_n(0x00, segment.size() as usize - data.len()));
         address = Some(segment.address() + segment.size());
     }
-    let output = deflate::compress_to_vec(&output, 10);
+    let output = yazi::compress(&output, Format::Raw, CompressionLevel::Specific(10))
+        .map_err(|e| anyhow::anyhow!("{e:?}"))?;
     fs::write(options.output, output)?;
     Ok(())
 }

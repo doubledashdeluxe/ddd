@@ -11,12 +11,14 @@ use crate::config::Config;
 use crate::crypto::PublicKey;
 use crate::formats::online::*;
 use crate::formats::version;
+use crate::frequency::Frequency;
 use crate::kart::Kart;
 use crate::mmr::Mmr;
 use crate::pack::Pack;
 use crate::player::Player;
 use crate::room::Room;
 use crate::rooms::{Rooms, Search};
+use crate::update::Update;
 
 pub struct Client {
     expiration: Instant,
@@ -40,65 +42,52 @@ impl Client {
         self.addr = addr;
     }
 
-    const fn frame_rate(&self) -> Option<FrameRate> {
-        let identity = match &self.state {
-            State::Server { identity: Some(identity) } => identity,
-            State::Mode { identity } => identity,
-            State::Pack { identity, .. } => identity,
-            State::Room { identity, .. } => identity,
-            State::Team { identity, .. } => identity,
-            State::Poll { identity, .. } => identity,
-            State::Race { identity, .. } => identity,
-            _ => return None,
-        };
-        Some(identity.frame_rate)
+    fn frequency(&self) -> Frequency {
+        match self.state {
+            State::Update { .. } => Frequency::FiveHundredHz,
+            _ => self
+                .state
+                .identity()
+                .map_or(Frequency::SixtyHz, |identity| identity.frame_rate.into()),
+        }
     }
 
     pub fn player_count(&self) -> usize {
-        let identity = match &self.state {
-            State::Mode { identity } => identity,
-            State::Pack { identity, .. } => identity,
-            State::Room { identity, .. } => identity,
-            State::Team { identity, .. } => identity,
-            State::Poll { identity, .. } => identity,
-            State::Race { identity, .. } => identity,
-            _ => return 0,
-        };
-        identity.players.len()
+        match self.state {
+            State::Server { .. } | State::Update { .. } => 0,
+            _ => self.state.identity().map_or(0, |identity| identity.players.len()),
+        }
     }
 
-    pub const fn room_id(&self) -> Option<u128> {
-        let room_info = match &self.state {
-            State::Room { room_info: Some(room_info), .. } => room_info,
-            State::Team { room_info: Some(room_info), .. } => room_info,
-            State::Poll { room_info: Some(room_info), .. } => room_info,
-            State::Race { room_info: Some(room_info), .. } => room_info,
-            _ => return None,
-        };
-        Some(room_info.id)
+    pub fn room_id(&self) -> Option<u128> {
+        self.state.room_info().map(|room_info| room_info.id)
     }
 
     pub fn update(
         &mut self,
         now: Instant,
         config: &Config,
-        frame_rate: FrameRate,
+        frequency: Frequency,
         rooms: &Rooms,
         room_slots: &mut usize,
         rng: &mut impl Rng,
     ) -> Result<()> {
         anyhow::ensure!(now < self.expiration);
-        if frame_rate != self.frame_rate().unwrap_or(FrameRate::SixtyHz) {
+        if frequency != self.frequency() {
             return Ok(());
         }
         let client_state = self.client_state.take();
         let Some(client_state) = client_state else {
+            if let State::Update { state: ClientUpdateState::Data(data), .. } = &mut self.state {
+                data.indices.pop();
+            }
             return Ok(());
         };
         let state = mem::replace(&mut self.state, State::Idle);
         let (identity, room_info) = match state {
             State::Idle => (None, None),
             State::Server { identity } => (identity, None),
+            State::Update { identity, .. } => (identity, None),
             State::Mode { identity } => (Some(identity), None),
             State::Pack { identity, .. } => (Some(identity), None),
             State::Room { identity, room_info } => (Some(identity), room_info),
@@ -120,6 +109,9 @@ impl Client {
                     }
                 };
                 State::Server { identity }
+            }
+            (ClientState::Update(update), identity, _) => {
+                State::Update { identity, state: update.client_update_state }
             }
             (ClientState::Mode(_), Some(identity), _) => State::Mode { identity },
             (ClientState::Pack(pack), Some(identity), _) => State::Pack { identity, pack },
@@ -300,38 +292,66 @@ impl Client {
 
     pub fn write(
         &self,
-        frame_rate: FrameRate,
+        frequency: Frequency,
         addr: SocketAddr,
         message: &mut [u8],
         config: &Config,
+        update: Option<&Update>,
         player_count: usize,
         rooms: &Rooms,
     ) -> Result<Option<usize>> {
         anyhow::ensure!(addr == self.addr);
-        if frame_rate != self.frame_rate().unwrap_or(FrameRate::SixtyHz) {
+        if frequency != self.frequency() {
             return Ok(None);
         }
         let server_state = match &self.state {
             State::Idle => return Ok(None),
             State::Server { identity } => {
-                let protocol_version = PROTOCOL_VERSION;
-                let version = heapless::Vec::try_from(version::VERSION.as_bytes()).unwrap();
                 let server_identity = if identity.is_some() {
-                    let identity = ServerIdentitySpecified {
+                    let specified = ServerIdentitySpecified {
                         motd: config.motd.clone().into_bytes(),
                         player_count: player_count as u16,
                     };
-                    ServerIdentity::Specified(identity)
+                    ServerIdentity::Specified(specified)
                 } else {
-                    let identity = ServerIdentityUnspecified {};
-                    ServerIdentity::Unspecified(identity)
+                    let unspecified = ServerIdentityUnspecified {};
+                    ServerIdentity::Unspecified(unspecified)
                 };
-                let server_state_server =
-                    ServerStateServer { protocol_version, version, server_identity };
-                ServerState::Server(server_state_server)
+                let server = ServerStateServer {
+                    update_version: if update.is_some() { UPDATE_VERSION } else { 0 },
+                    reserved: 0,
+                    protocol_version: PROTOCOL_VERSION,
+                    version: version::VERSION.as_bytes().try_into().unwrap(),
+                    server_identity,
+                };
+                ServerState::Server(server)
+            }
+            State::Update { state, .. } => {
+                let Some(update) = update else { return Ok(None) };
+                let state = match state {
+                    ClientUpdateState::Info(_) => {
+                        let info = ServerUpdateStateInfo {
+                            size: update.update.len() as u32,
+                            changelog: update.changelog.clone(),
+                        };
+                        ServerUpdateState::Info(info)
+                    }
+                    ClientUpdateState::Data(data) => {
+                        let Some(index) = data.indices.last() else { return Ok(None) };
+                        let offset = *index as usize * UPDATE_CHUNK_SIZE;
+                        let mut chunk = [0; _];
+                        let Some(update) = update.update.get(offset..) else { return Ok(None) };
+                        let len = chunk.len().min(update.len());
+                        chunk[..len].copy_from_slice(&update[..len]);
+                        let data = ServerUpdateStateData { index: *index, chunk };
+                        ServerUpdateState::Data(data)
+                    }
+                };
+                let update = ServerStateUpdate { server_update_state: state };
+                ServerState::Update(update)
             }
             State::Mode { identity } => {
-                let mode_player_counts = rooms.mode_player_counts(frame_rate);
+                let mode_player_counts = rooms.mode_player_counts(identity.frame_rate);
                 let modes = array::from_fn(|i| ServerMode {
                     mmrs: (0..identity.players.len()).map(|j| (i * 4 + j) as u16 * 179).collect(),
                     player_count: mode_player_counts[i] as u16,
@@ -339,7 +359,7 @@ impl Client {
                 let mode = ServerStateMode { modes };
                 ServerState::Mode(mode)
             }
-            State::Pack { pack, .. } => {
+            State::Pack { identity, pack, .. } => {
                 let ClientStatePack { mode_index, pack_index, pack_course_count, pack_hash } =
                     pack.clone();
                 let formats: [_; FORMAT_COUNT] = [
@@ -351,7 +371,7 @@ impl Client {
                 let format_player_counts = formats.map(|format| {
                     let pack = Pack { course_count: pack_course_count, hash: pack_hash };
                     let search = Search { mode_index, pack, format };
-                    rooms.search_player_count(frame_rate, &search) as u16
+                    rooms.search_player_count(identity.frame_rate, &search) as u16
                 });
                 let player_count = format_player_counts.iter().sum();
                 let pack =
@@ -457,9 +477,11 @@ impl Drop for Client {
     }
 }
 
+#[derive(Clone, Debug)]
 enum State {
     Idle,
     Server { identity: Option<ClientIdentitySpecified> },
+    Update { identity: Option<ClientIdentitySpecified>, state: ClientUpdateState },
     Mode { identity: ClientIdentitySpecified },
     Pack { identity: ClientIdentitySpecified, pack: ClientStatePack },
     Room { identity: ClientIdentitySpecified, room_info: Option<RoomInfo> },
@@ -468,6 +490,33 @@ enum State {
     Race { identity: ClientIdentitySpecified, room_info: Option<RoomInfo>, frame: u16 },
 }
 
+impl State {
+    const fn identity(&self) -> Option<&ClientIdentitySpecified> {
+        match self {
+            Self::Idle => None,
+            Self::Server { identity } => identity.as_ref(),
+            Self::Update { identity, .. } => identity.as_ref(),
+            Self::Mode { identity } => Some(identity),
+            Self::Pack { identity, .. } => Some(identity),
+            Self::Room { identity, .. } => Some(identity),
+            Self::Team { identity, .. } => Some(identity),
+            Self::Poll { identity, .. } => Some(identity),
+            Self::Race { identity, .. } => Some(identity),
+        }
+    }
+
+    const fn room_info(&self) -> Option<RoomInfo> {
+        match self {
+            Self::Room { room_info, .. } => *room_info,
+            Self::Team { room_info, .. } => *room_info,
+            Self::Poll { room_info, .. } => *room_info,
+            Self::Race { room_info, .. } => *room_info,
+            _ => None,
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug)]
 struct RoomInfo {
     counter: u32,
     id: u128,

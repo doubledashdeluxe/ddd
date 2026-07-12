@@ -12,7 +12,7 @@ use scc::hash_map::{Entry, HashMap, OccupiedEntry};
 use crate::client::Client;
 use crate::config::Config;
 use crate::crypto::PublicKey;
-use crate::formats::online::FrameRate;
+use crate::frequency::Frequency;
 use crate::rooms::Rooms;
 
 #[derive(Clone, Default)]
@@ -73,7 +73,7 @@ impl Clients {
         &self,
         now: Instant,
         config: &Config,
-        frame_rate: FrameRate,
+        frequency: Frequency,
         client_room_ids: &mut collections::HashMap<PublicKey, Option<u128>>,
         rooms: &Rooms,
         room_slots: &mut usize,
@@ -83,7 +83,7 @@ impl Clients {
         let mut count = 0;
         let mut player_count = 0;
         self.clients.retain_sync(|pk, client| {
-            let retain = client.update(now, config, frame_rate, rooms, room_slots, rng).is_ok();
+            let retain = client.update(now, config, frequency, rooms, room_slots, rng).is_ok();
             if retain {
                 count += 1;
                 player_count += client.player_count();

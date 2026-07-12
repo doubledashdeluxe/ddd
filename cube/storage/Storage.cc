@@ -230,6 +230,15 @@ bool Storage::Remove(const char *path, u32 mode) {
     return storage.remove(path + strlen(storage.prefix()), mode);
 }
 
+bool Storage::RemoveAll(const char *path, u32 mode) {
+    char recPath[256];
+    snprintf(recPath, Count(recPath), "%s", path);
+    NodeInfo nodeInfo;
+    RemoveAll(recPath, nodeInfo);
+
+    return Remove(path, mode);
+}
+
 Storage::Storage(Mutex *mutex) : m_next(nullptr), m_isContained(false), m_mutex(mutex) {}
 
 Storage::~Storage() {}
@@ -347,6 +356,18 @@ void Storage::addWithoutLocking() {
             observer->onAdd("main:");
         }
     }
+}
+
+void Storage::RemoveAll(char (&path)[256], NodeInfo &nodeInfo) {
+    u32 length = strlen(path);
+    for (DirHandle dir(path); dir.read(nodeInfo);) {
+        snprintf(path + length, Count(path) - length, "/%s", nodeInfo.name.values());
+        if (nodeInfo.type == NodeType::Dir) {
+            RemoveAll(path, nodeInfo);
+        }
+        Remove(path, Mode::RemoveAlways);
+    }
+    path[length] = '\0';
 }
 
 Storage *Storage::s_head = nullptr;

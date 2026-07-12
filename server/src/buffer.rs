@@ -1,3 +1,5 @@
+use crate::formats::online::BUFFER_SIZE;
+
 #[derive(Clone)]
 pub struct Buffer {
     buffer: Box<[u8; MAX_LEN]>,
@@ -33,4 +35,4 @@ impl Buffer {
     }
 }
 
-const MAX_LEN: usize = 512;
+const MAX_LEN: usize = BUFFER_SIZE as usize;

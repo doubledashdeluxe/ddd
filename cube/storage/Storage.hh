@@ -143,6 +143,7 @@ public:
 
     static bool Rename(const char *srcPath, const char *dstPath);
     static bool Remove(const char *path, u32 mode);
+    static bool RemoveAll(const char *path, u32 mode);
 
 protected:
     Storage(class Mutex *mutex);
@@ -199,6 +200,8 @@ private:
     void addWithoutLocking();
 
     static void *Poll(void *param);
+
+    static void RemoveAll(char (&path)[256], NodeInfo &nodeInfo);
 
     Storage *m_next;
     bool m_isContained;

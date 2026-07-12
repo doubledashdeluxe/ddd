@@ -34,6 +34,7 @@ public:
     ClientState &writeStateRace(const ClientStateRaceWriteInfo &writeInfo) override;
 
     ServerStateServerReader<void> *serverReader();
+    ServerStateUpdateReader<void> *updateReader();
     ServerStateModeReader<void> *modeReader();
     ServerStatePackReader<void> *packReader();
     ServerStateRoomReader<void> *roomReader();

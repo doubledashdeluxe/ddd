@@ -87,6 +87,7 @@
 80030284 setPriority__9J2DScreenFPCcUlP10JKRArchive
 80030f4c draw__9J2DScreenFffPC15J2DGraphContext
 80031774 animation__9J2DScreenFv
+80032b00 getString__10J2DTextBoxCFv
 8003875c Load__20J2DAnmLoaderDataBaseFPCv
 800432fc animation__11J2DMaterialFv
 8004558c drawFullSet__12J2DPictureExFffffPA3_A4_f
@@ -261,6 +262,7 @@
 800e803c OSReport
 800e80bc OSPanic
 800e8740 OSDisableInterrupts
+800e8754 OSEnableInterrupts
 800e8768 OSRestoreInterrupts
 800e878c OSSetInterruptHandler
 800e87a8 OSGetInterruptHandler
@@ -278,6 +280,8 @@
 800e9644 OSInitMutex
 800e967c OSLockMutex
 800e9758 OSUnlockMutex
+800e98ac __OSReboot
+800e9d28 OSResetSystem
 800ea670 __OSLockSram
 800eaa64 __OSUnlockSram
 800eafb8 SystemCallVector
@@ -460,6 +464,10 @@
 80167888 isCancel__17CharacterSelect3DFl
 801678dc isNext__17CharacterSelect3DFl
 80168eb8 init__17SceneCourseSelectFv
+801700f8 __ct__11PrintWindowFP7JKRHeap
+8017084c draw__11PrintWindowFv
+8017089c calc__11PrintWindowFv
+80170df0 getTextBox__11PrintWindowCFv
 801737cc stateNextBattle__14SceneMapSelectFv
 80173d50 __ct__12BattleName2DFP10JKRArchive
 80173e34 getBattleNameTexture__12BattleName2DFUl

@@ -158,10 +158,10 @@ Storage::File *FATStorage::openFile(const char *path, u32 mode) {
         fMode = FA_READ | FA_WRITE;
         break;
     case Mode::WriteAlways:
-        fMode = FA_CREATE_ALWAYS | FA_WRITE;
+        fMode = FA_CREATE_ALWAYS | FA_READ | FA_WRITE;
         break;
     case Mode::WriteNew:
-        fMode = FA_CREATE_NEW | FA_WRITE;
+        fMode = FA_CREATE_NEW | FA_READ | FA_WRITE;
         break;
     default:
         return nullptr;

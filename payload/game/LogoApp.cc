@@ -41,7 +41,7 @@ void LogoApp::calc() {
         INFO("Loaded se00_0.aw.");
         CourseManager::Instance()->start();
         CubeServerManager::Instance()->start();
-        CubeClient::Init(System::GetAppHeap(), BBAMgr::Config());
+        CubeClient::Init(BBAMgr::Instance()->heap(), BBAMgr::Config());
         SequenceApp::Call(SceneType::Title);
         return;
     }

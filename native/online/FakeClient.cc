@@ -37,7 +37,13 @@ bool FakeClient::clientStateServer(const ClientStateServerReadInfo &readInfo) {
     const ClientStateServerReadInfo::Server &server = readInfo.servers[0];
     if (server.motd) {
         m_writer = &FakeClient::writeStateMode;
+    } else if (server.updateIsAvailable) {
+        m_writer = &FakeClient::writeStateUpdate;
     }
+    return true;
+}
+
+bool FakeClient::clientStateUpdate(const ClientStateUpdateReadInfo & /* readInfo */) {
     return true;
 }
 
@@ -82,6 +88,15 @@ ClientState &FakeClient::writeStateServer() {
     writeInfo.players[0].name = "AAA";
     writeInfo.kartCount = 1;
     return m_state->writeStateServer(writeInfo);
+}
+
+ClientState &FakeClient::writeStateUpdate() {
+    ClientStateUpdateWriteInfo writeInfo;
+    writeInfo.serverIndex = 0;
+    writeInfo.info.region = 'P';
+    writeInfo.info.platform[0] = '\0';
+    writeInfo.info.language = 0;
+    return m_state->writeStateUpdate(writeInfo);
 }
 
 ClientState &FakeClient::writeStateMode() {

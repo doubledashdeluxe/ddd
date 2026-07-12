@@ -14,6 +14,58 @@ extern "C" {
 #include <string.h>
 }
 
+ZIP::Iterator::Iterator(ZIP &zip) : m_ok(false), m_zip(zip), m_cdNodeIndex(0) {
+    if (!zip.m_ok) {
+        return;
+    }
+
+    m_cdNodeOffset = zip.m_eocd.cdOffset;
+    if (!zip.readCDNode(m_cdNodeOffset, m_cdNode)) {
+        return;
+    }
+
+    m_ok = true;
+}
+
+ZIP::Iterator::~Iterator() {}
+
+bool ZIP::Iterator::ok() const {
+    return m_ok;
+}
+
+ZIP &ZIP::Iterator::zip() const {
+    return m_zip;
+}
+
+const ZIP::CDNode &ZIP::Iterator::cdNode() const {
+    return m_cdNode;
+}
+
+bool ZIP::Iterator::done() const {
+    return !m_ok || m_cdNodeIndex == m_zip.m_eocd.cdNodeCount;
+}
+
+void ZIP::Iterator::next() {
+    if (!m_ok) {
+        return;
+    }
+
+    m_cdNodeIndex++;
+    m_cdNodeOffset = m_cdNode.nextOffset;
+    if (done()) {
+        return;
+    }
+
+    m_ok = m_zip.readCDNode(m_cdNodeOffset, m_cdNode);
+}
+
+ZIP::Reader::Reader(const Iterator &iterator)
+    : m_ok(false)
+    , m_zip(iterator.zip())
+    , m_cdNode(iterator.cdNode()) {
+    setup();
+}
+
 ZIP::Reader::Reader(ZIP &zip, const char *path) : m_ok(false), m_zip(zip) {
     if (!zip.m_ok) {
         return;
@@ -42,26 +94,7 @@ ZIP::Reader::Reader(ZIP &zip, const char *path) : m_ok(false), m_zip(zip) {
         return;
     }
 
-    if (!zip.readLocalNode(m_cdNode.localNodeOffset, m_localNode)) {
-        return;
-    }
-
-    switch (m_cdNode.compressionMethod) {
-    case CompressionMethod::Store:
-        break;
-    case CompressionMethod::Deflate:
-        tinfl_init(&m_decompressor);
-        m_status = TINFL_STATUS_NEEDS_MORE_INPUT;
-        m_compressedOffset = 0;
-        break;
-    default:
-        return;
-    }
-
-    m_uncompressedOffset = 0;
-    m_crc32 = MZ_CRC32_INIT;
-
-    m_ok = true;
+    setup();
 }
 
 ZIP::Reader::~Reader() {}
@@ -160,13 +193,44 @@ bool ZIP::Reader::read(const u8 *&buffer, u32 &size) {
     return true;
 }
 
+void ZIP::Reader::setup() {
+    if (!m_zip.readLocalNode(m_cdNode.localNodeOffset, m_localNode)) {
+        return;
+    }
+
+    switch (m_cdNode.compressionMethod) {
+    case CompressionMethod::Store:
+        break;
+    case CompressionMethod::Deflate:
+        tinfl_init(&m_decompressor);
+        m_status = TINFL_STATUS_NEEDS_MORE_INPUT;
+        m_compressedOffset = 0;
+        break;
+    default:
+        return;
+    }
+
+    m_uncompressedOffset = 0;
+    m_crc32 = MZ_CRC32_INIT;
+
+    m_ok = true;
+}
+
+ZIP::Writer::Writer(const Iterator &iterator, u32 size)
+    : m_ok(false)
+    , m_zip(iterator.zip())
+    , m_cdNode(iterator.cdNode())
+    , m_size(size)
+    , m_isNew(false) {
+    setup(m_cdNode.path.values());
+}
+
 ZIP::Writer::Writer(ZIP &zip, const char *path, u32 size) : m_ok(false), m_zip(zip), m_size(size) {
     if (path[0] != '/') {
         return;
     }
 
-    m_eocd.cdNodeCount = zip.m_eocd.cdNodeCount + 1;
-    if (m_eocd.cdNodeCount < zip.m_eocd.cdNodeCount) {
+    if (!zip.m_ok) {
         return;
     }
 
@@ -184,31 +248,7 @@ ZIP::Writer::Writer(ZIP &zip, const char *path, u32 size) : m_ok(false), m_zip(z
     }
     m_isNew = cdNodeIndex == zip.m_eocd.cdNodeCount;
 
-    m_offset = zip.m_fileSize;
-    m_localNode.compressionMethod = CompressionMethod::Store;
-    u32 dosTime = zip.getDOSTime();
-    m_localNode.time = dosTime >> 0;
-    m_localNode.date = dosTime >> 16;
-    m_localNode.uncompressedCRC32 = MZ_CRC32_INIT;
-    m_localNode.compressedSize = m_size;
-    m_localNode.uncompressedSize = m_size;
-    s32 pathLength = snprintf(m_localNode.path.values(), m_localNode.path.count(), "%s", path + 1);
-    if (pathLength >= static_cast<s32>(m_localNode.path.count())) {
-        return;
-    }
-    m_localNode.compressedOffset = m_offset + LocalNodeHeaderSize + pathLength;
-    if (m_offset + LocalNodeHeaderSize < m_offset) {
-        return;
-    }
-    if (m_localNode.compressedOffset < m_offset) {
-        return;
-    }
-    if (!zip.writeLocalNode(m_offset, m_localNode)) {
-        return;
-    }
-    m_offset = m_localNode.compressedOffset;
-
-    m_ok = true;
+    setup(path + 1);
 }
 
 ZIP::Writer::~Writer() {
@@ -303,6 +343,39 @@ bool ZIP::Writer::write(const u8 *buffer, u32 size) {
     m_zip.m_fileSize = m_offset;
     m_zip.m_eocd = m_eocd;
     return true;
+}
+
+void ZIP::Writer::setup(const char *path) {
+    m_eocd.cdNodeCount = m_zip.m_eocd.cdNodeCount + 1;
+    if (m_eocd.cdNodeCount < m_zip.m_eocd.cdNodeCount) {
+        return;
+    }
+
+    m_offset = m_zip.m_fileSize;
+    m_localNode.compressionMethod = CompressionMethod::Store;
+    u32 dosTime = m_zip.getDOSTime();
+    m_localNode.time = dosTime >> 0;
+    m_localNode.date = dosTime >> 16;
+    m_localNode.uncompressedCRC32 = MZ_CRC32_INIT;
+    m_localNode.compressedSize = m_size;
+    m_localNode.uncompressedSize = m_size;
+    s32 pathLength = snprintf(m_localNode.path.values(), m_localNode.path.count(), "%s", path);
+    if (pathLength >= static_cast<s32>(m_localNode.path.count())) {
+        return;
+    }
+    m_localNode.compressedOffset = m_offset + LocalNodeHeaderSize + pathLength;
+    if (m_offset + LocalNodeHeaderSize < m_offset) {
+        return;
+    }
+    if (m_localNode.compressedOffset < m_offset) {
+        return;
+    }
+    if (!m_zip.writeLocalNode(m_offset, m_localNode)) {
+        return;
+    }
+    m_offset = m_localNode.compressedOffset;
+
+    m_ok = true;
 }
 
 ZIP::ZIP() : m_ok(false) {}

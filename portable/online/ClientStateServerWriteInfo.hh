@@ -11,6 +11,8 @@ struct ClientStateServerWriteInfo {
     };
 
     u8 frameRate;
+    char region;
+    Array<char, MaxPlatformLength + 1> platform;
     u8 playerCount;
     Array<Player, MaxClientPlayerCount> players;
     u8 kartCount;

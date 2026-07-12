@@ -8,6 +8,10 @@ bool ClientReadHandler::clientStateServer(const ClientStateServerReadInfo & /* r
     return false;
 }
 
+bool ClientReadHandler::clientStateUpdate(const ClientStateUpdateReadInfo & /* readInfo */) {
+    return false;
+}
+
 bool ClientReadHandler::clientStateMode(const ClientStateModeReadInfo & /* readInfo */) {
     return false;
 }

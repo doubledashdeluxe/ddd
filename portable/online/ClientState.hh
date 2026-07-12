@@ -9,6 +9,7 @@
 #include "portable/online/ClientStateRoomWriteInfo.hh"
 #include "portable/online/ClientStateServerWriteInfo.hh"
 #include "portable/online/ClientStateTeamWriteInfo.hh"
+#include "portable/online/ClientStateUpdateWriteInfo.hh"
 #include "portable/online/Connection.hh"
 
 class ClientState {
@@ -43,6 +44,7 @@ public:
     virtual ClientState &read(ClientReadHandler &handler) = 0;
     virtual ClientState &writeStateIdle();
     virtual ClientState &writeStateServer(const ClientStateServerWriteInfo &writeInfo);
+    virtual ClientState &writeStateUpdate(const ClientStateUpdateWriteInfo &writeInfo);
     virtual ClientState &writeStateMode(const ClientStateModeWriteInfo &writeInfo);
     virtual ClientState &writeStatePack(const ClientStatePackWriteInfo &writeInfo);
     virtual ClientState &writeStateRoom(const ClientStateRoomWriteInfo &writeInfo);

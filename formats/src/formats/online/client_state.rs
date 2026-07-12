@@ -8,7 +8,8 @@ use crate::unit_type::UnitType;
 
 pub fn client_state() -> impl ComplexDataType {
     EnumType::new("ClientState")
-        .with_variant("Server", client_state_server())
+        .with_variant("Server", client_state_server()) // Compatible
+        .with_variant("Update", client_state_update()) // Compatible
         .with_variant("Mode", client_state_mode())
         .with_variant("Pack", client_state_pack())
         .with_variant("Room", client_state_room())
@@ -18,10 +19,14 @@ pub fn client_state() -> impl ComplexDataType {
 }
 
 pub fn client_state_server() -> impl ComplexDataType {
-    let protocol_version: SimpleDataType<u32> = SimpleDataType::new();
+    let update_version: SimpleDataType<u8> = SimpleDataType::new();
+    let reserved: SimpleDataType<u8> = SimpleDataType::new();
+    let protocol_version: SimpleDataType<u16> = SimpleDataType::new();
     let version_element: SimpleDataType<u8> = SimpleDataType::new();
     let version = ArrayType::new(version_element, 0, MAX_VERSION_LENGTH);
-    StructType::new("ClientStateServer")
+    StructType::new("ClientStateServer") // Compatible
+        .with_field("update_version", update_version)
+        .with_field("reserved", reserved)
         .with_field("protocol_version", protocol_version)
         .with_field("version", version)
         .with_field("client_identity", client_identity())
@@ -29,19 +34,24 @@ pub fn client_state_server() -> impl ComplexDataType {
 
 pub fn client_identity() -> impl ComplexDataType {
     EnumType::new("ClientIdentity")
-        .with_variant("Unspecified", client_identity_unspecified())
+        .with_variant("Unspecified", client_identity_unspecified()) // Compatible
         .with_variant("Specified", client_identity_specified())
 }
 
 pub fn client_identity_unspecified() -> impl ComplexDataType {
-    StructType::new("ClientIdentityUnspecified")
+    StructType::new("ClientIdentityUnspecified") // Compatible
 }
 
 pub fn client_identity_specified() -> impl ComplexDataType {
+    let region: SimpleDataType<u8> = SimpleDataType::new();
+    let platform_element: SimpleDataType<u8> = SimpleDataType::new();
+    let platform = ArrayType::new(platform_element, 0, MAX_PLATFORM_LENGTH);
     let players = ArrayType::new(client_player(), MIN_CLIENT_PLAYER_COUNT, MAX_CLIENT_PLAYER_COUNT);
     let kart_count: SimpleDataType<u8> = SimpleDataType::new();
     StructType::new("ClientIdentitySpecified")
         .with_field("frame_rate", frame_rate())
+        .with_field("region", region)
+        .with_field("platform", platform)
         .with_field("players", players)
         .with_field("kart_count", kart_count)
 }
@@ -51,6 +61,34 @@ pub fn client_player() -> impl ComplexDataType {
     let name_element: SimpleDataType<u8> = SimpleDataType::new();
     let name = ArrayType::new(name_element, PLAYER_NAME_LENGTH, PLAYER_NAME_LENGTH);
     StructType::new("ClientPlayer").with_field("profile", profile).with_field("name", name)
+}
+
+pub fn client_state_update() -> impl ComplexDataType {
+    StructType::new("ClientStateUpdate") // Compatible
+        .with_field("client_update_state", client_update_state())
+}
+
+pub fn client_update_state() -> impl ComplexDataType {
+    EnumType::new("ClientUpdateState")
+        .with_variant("Info", client_update_state_info())
+        .with_variant("Data", client_update_state_data())
+}
+
+pub fn client_update_state_info() -> impl ComplexDataType {
+    let region: SimpleDataType<u8> = SimpleDataType::new();
+    let platform_element: SimpleDataType<u8> = SimpleDataType::new();
+    let platform = ArrayType::new(platform_element, 0, MAX_PLATFORM_LENGTH);
+    let language: SimpleDataType<u8> = SimpleDataType::new();
+    StructType::new("ClientUpdateStateInfo")
+        .with_field("region", region)
+        .with_field("platform", platform)
+        .with_field("language", language)
+}
+
+pub fn client_update_state_data() -> impl ComplexDataType {
+    let index: SimpleDataType<u16> = SimpleDataType::new();
+    let indices = ArrayType::new(index, 0, MAX_UPDATE_INDEX_COUNT);
+    StructType::new("ClientUpdateStateData").with_field("indices", indices)
 }
 
 pub fn client_state_mode() -> impl ComplexDataType {
@@ -230,4 +268,6 @@ pub fn client_race_kart() -> impl ComplexDataType {
         .with_field("rank", rank)
 }
 
+pub const MAX_PLATFORM_LENGTH: usize = 31;
+pub const MAX_UPDATE_INDEX_COUNT: usize = 8;
 pub const MAX_KART_INPUT_COUNT: usize = 30;

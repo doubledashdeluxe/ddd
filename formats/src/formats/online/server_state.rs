@@ -8,7 +8,8 @@ use crate::unit_type::UnitType;
 
 pub fn server_state() -> impl ComplexDataType {
     EnumType::new("ServerState")
-        .with_variant("Server", server_state_server())
+        .with_variant("Server", server_state_server()) // Compatible
+        .with_variant("Update", server_state_update()) // Compatible
         .with_variant("Mode", server_state_mode())
         .with_variant("Pack", server_state_pack())
         .with_variant("Room", server_state_room())
@@ -18,10 +19,14 @@ pub fn server_state() -> impl ComplexDataType {
 }
 
 pub fn server_state_server() -> impl ComplexDataType {
-    let protocol_version: SimpleDataType<u32> = SimpleDataType::new();
+    let update_version: SimpleDataType<u8> = SimpleDataType::new();
+    let reserved: SimpleDataType<u8> = SimpleDataType::new();
+    let protocol_version: SimpleDataType<u16> = SimpleDataType::new();
     let version_element: SimpleDataType<u8> = SimpleDataType::new();
     let version = ArrayType::new(version_element, 0, MAX_VERSION_LENGTH);
-    StructType::new("ServerStateServer")
+    StructType::new("ServerStateServer") // Compatible
+        .with_field("update_version", update_version)
+        .with_field("reserved", reserved)
         .with_field("protocol_version", protocol_version)
         .with_field("version", version)
         .with_field("server_identity", server_identity())
@@ -29,12 +34,12 @@ pub fn server_state_server() -> impl ComplexDataType {
 
 pub fn server_identity() -> impl ComplexDataType {
     EnumType::new("ServerIdentity")
-        .with_variant("Unspecified", server_identity_unspecified())
+        .with_variant("Unspecified", server_identity_unspecified()) // Compatible
         .with_variant("Specified", server_identity_specified())
 }
 
 pub fn server_identity_unspecified() -> impl ComplexDataType {
-    StructType::new("ServerIdentityUnspecified")
+    StructType::new("ServerIdentityUnspecified") // Compatible
 }
 
 pub fn server_identity_specified() -> impl ComplexDataType {
@@ -44,6 +49,33 @@ pub fn server_identity_specified() -> impl ComplexDataType {
     StructType::new("ServerIdentitySpecified")
         .with_field("motd", motd)
         .with_field("player_count", player_count)
+}
+
+pub fn server_state_update() -> impl ComplexDataType {
+    StructType::new("ServerStateUpdate") // Compatible
+        .with_field("server_update_state", server_update_state())
+}
+
+pub fn server_update_state() -> impl ComplexDataType {
+    EnumType::new("ServerUpdateState")
+        .with_variant("Info", server_update_state_info())
+        .with_variant("Data", server_update_state_data())
+}
+
+pub fn server_update_state_info() -> impl ComplexDataType {
+    let size: SimpleDataType<u32> = SimpleDataType::new();
+    let changelog_element: SimpleDataType<u8> = SimpleDataType::new();
+    let changelog = ArrayType::new(changelog_element, 0, MAX_UPDATE_CHANGELOG_LENGTH);
+    StructType::new("ServerUpdateStateInfo")
+        .with_field("size", size)
+        .with_field("changelog", changelog)
+}
+
+pub fn server_update_state_data() -> impl ComplexDataType {
+    let index: SimpleDataType<u16> = SimpleDataType::new();
+    let chunk_element: SimpleDataType<u8> = SimpleDataType::new();
+    let chunk = ArrayType::new(chunk_element, UPDATE_CHUNK_SIZE, UPDATE_CHUNK_SIZE);
+    StructType::new("ServerUpdateStateData").with_field("index", index).with_field("chunk", chunk)
 }
 
 pub fn server_state_mode() -> impl ComplexDataType {
@@ -240,4 +272,6 @@ pub fn server_race_kart() -> impl ComplexDataType {
 }
 
 pub const MAX_MOTD_LENGTH: usize = 99;
+pub const MAX_UPDATE_CHANGELOG_LENGTH: usize = 255;
+pub const UPDATE_CHUNK_SIZE: usize = 1024;
 pub const FORMAT_COUNT: usize = 4;

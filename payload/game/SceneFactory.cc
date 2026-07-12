@@ -20,6 +20,7 @@
 #include "game/SceneTandemSelect.hh"
 #include "game/SceneTeamSelect.hh"
 #include "game/SceneTitle.hh"
+#include "game/SceneUpdate.hh"
 #include "game/SysDebug.hh"
 
 extern "C" {
@@ -73,6 +74,8 @@ void SceneFactory::loadData(s32 sceneType, JKRHeap *heap) {
         REPLACED(loadData)(SceneType::Menu, heap);
         REPLACED(loadData)(SceneType::LanEntry, heap);
         loadLocalizedArchive(ArchiveType::GhostData, "GhostData", heap);
+        return;
+    case SceneType::Update:
         return;
     case SceneType::RoomTypeSelect:
         REPLACED(loadData)(SceneType::Menu, heap);
@@ -159,6 +162,10 @@ Scene *SceneFactory::createScene(s32 sceneType, JKRHeap *heap) {
     case SceneType::ServerSelect:
         sysDebug->setHeapGroup("ServerSelect", heap);
         scene = new (heap, 0x0) SceneServerSelect(m_archives[ArchiveType::GhostData], heap);
+        break;
+    case SceneType::Update:
+        sysDebug->setHeapGroup("Update", heap);
+        scene = new (heap, 0x0) SceneUpdate(nullptr, heap);
         break;
     case SceneType::RoomTypeSelect:
         sysDebug->setHeapGroup("RoomTypeSelect", heap);

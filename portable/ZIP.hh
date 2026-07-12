@@ -52,8 +52,27 @@ public:
         u32 compressedOffset;
     };
 
+    class Iterator {
+    public:
+        Iterator(ZIP &zip);
+        ~Iterator();
+        bool ok() const;
+        ZIP &zip() const;
+        const CDNode &cdNode() const;
+        bool done() const;
+        void next();
+
+    private:
+        bool m_ok;
+        ZIP &m_zip;
+        CDNode m_cdNode;
+        u32 m_cdNodeIndex;
+        u32 m_cdNodeOffset;
+    };
+
     class Reader {
     public:
+        Reader(const Iterator &iterator);
         Reader(ZIP &zip, const char *path);
         ~Reader();
         bool ok() const;
@@ -63,6 +82,8 @@ public:
         bool read(const u8 *&buffer, u32 &size);
 
     private:
+        void setup();
+
         bool m_ok;
         ZIP &m_zip;
         CDNode m_cdNode;
@@ -78,6 +99,7 @@ public:
 
     class Writer {
     public:
+        Writer(const Iterator &iterator, u32 size);
         Writer(ZIP &zip, const char *path, u32 size);
         ~Writer();
         bool ok() const;
@@ -86,6 +108,8 @@ public:
         bool write(const u8 *buffer, u32 size);
 
     private:
+        void setup(const char *path);
+
         bool m_ok;
         ZIP &m_zip;
         CDNode m_cdNode;

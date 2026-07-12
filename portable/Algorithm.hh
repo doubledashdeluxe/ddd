@@ -55,6 +55,13 @@ size_t Count(const T (& /* a */)[N]) {
     return N;
 }
 
+template <typename T, size_t N, typename U>
+void Fill(T (&a)[N], U value) {
+    for (size_t i = 0; i < N; i++) {
+        a[i] = value;
+    }
+}
+
 namespace detail {
 
 template <typename T, bool RegOptimized>

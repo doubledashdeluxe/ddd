@@ -105,6 +105,10 @@ bool BBAMgr::disconnecting(bool force) {
     return false;
 }
 
+JKRHeap *BBAMgr::heap() const {
+    return m_heap;
+}
+
 BBAMgr *BBAMgr::Instance() {
     return s_instance;
 }

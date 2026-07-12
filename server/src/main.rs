@@ -16,11 +16,13 @@ use crate::buffer::Buffer;
 use crate::clients::Clients;
 use crate::config::Config;
 use crate::crypto::x25519::X25519;
-use crate::formats::online::{DEFAULT_PORT, FrameRate};
+use crate::formats::online::DEFAULT_PORT;
 use crate::formats::version;
+use crate::frequency::Frequency;
 use crate::listener::Listener;
 use crate::rooms::Rooms;
 use crate::shard::Shard;
+use crate::update::Update;
 use crate::updater::Updater;
 
 mod buffer;
@@ -30,6 +32,7 @@ mod config;
 mod connection;
 mod crypto;
 mod formats;
+mod frequency;
 mod item;
 mod item_weights;
 mod kart;
@@ -44,6 +47,7 @@ mod room;
 mod rooms;
 mod shard;
 mod sighup;
+mod update;
 mod updater;
 mod weight;
 
@@ -61,6 +65,11 @@ fn main() -> Result<()> {
     let config = Config::read()?;
     let config = Arc::new(ArcSwap::from_pointee(config));
     debug!("Loaded configuration.");
+
+    debug!("Loading update...");
+    let update = Update::read()?;
+    let update = Arc::new(ArcSwap::from_pointee(update));
+    debug!("Loaded update.");
 
     let server_k = if let Ok(mut file) = File::open("k.bin") {
         let mut server_k = <X25519 as DH>::Key::new();
@@ -107,6 +116,7 @@ fn main() -> Result<()> {
             let shard = Shard::new(
                 options.net_sim,
                 config.clone(),
+                update.clone(),
                 server_k.clone(),
                 socket.try_clone()?,
                 message_receiver,
@@ -120,13 +130,14 @@ fn main() -> Result<()> {
         .collect();
     let message_senders: Vec<_> = message_senders?;
 
-    for (i, frame_rate) in [FrameRate::SixtyHz, FrameRate::FiftyHz].into_iter().enumerate() {
+    let frequencies = [Frequency::SixtyHz, Frequency::FiftyHz, Frequency::FiveHundredHz];
+    for (i, frequency) in frequencies.into_iter().enumerate() {
         let updater = Updater::new(
             config.clone(),
             message_senders.clone(),
             clients.clone(),
             rooms.clone(),
-            frame_rate,
+            frequency,
         );
         Builder::new().name(format!("updater/{i}")).spawn(move || updater.run())?;
     }
@@ -137,10 +148,21 @@ fn main() -> Result<()> {
     for () in sighup::sighup()? {
         debug!("Reloading configuration...");
         match Config::read() {
-            Ok(new_config) => config.store(Arc::new(new_config)),
+            Ok(new_config) => {
+                config.store(Arc::new(new_config));
+                debug!("Reloaded configuration.");
+            }
             Err(e) => error!("Failed to reload configuration: {e}"),
         }
-        debug!("Reloaded configuration.");
+
+        debug!("Reloading update...");
+        match Update::read() {
+            Ok(new_update) => {
+                update.store(Arc::new(new_update));
+                debug!("Reloaded update.");
+            }
+            Err(e) => error!("Failed to reload update: {e}"),
+        }
     }
 
     unreachable!()

@@ -1,14 +1,14 @@
 use std::collections::HashMap;
 use std::sync::mpsc::SyncSender;
 use std::thread;
-use std::time::{Duration, Instant};
+use std::time::Instant;
 
 use arc_swap::Cache;
 
 use crate::clients::Clients;
 use crate::config::SharedConfig;
 use crate::crypto::ChaCha20Rng;
-use crate::formats::online::FrameRate;
+use crate::frequency::Frequency;
 use crate::message::Message;
 use crate::rooms::Rooms;
 
@@ -17,7 +17,7 @@ pub struct Updater {
     message_senders: Vec<SyncSender<Message>>,
     clients: Clients,
     rooms: Rooms,
-    frame_rate: FrameRate,
+    frequency: Frequency,
 }
 
 impl Updater {
@@ -26,9 +26,9 @@ impl Updater {
         message_senders: Vec<SyncSender<Message>>,
         clients: Clients,
         rooms: Rooms,
-        frame_rate: FrameRate,
+        frequency: Frequency,
     ) -> Self {
-        Self { config, message_senders, clients, rooms, frame_rate }
+        Self { config, message_senders, clients, rooms, frequency }
     }
 
     pub fn run(self) -> ! {
@@ -42,30 +42,31 @@ impl Updater {
                 Some(duration) if !duration.is_zero() => thread::sleep(duration),
                 _ => {
                     let config = config.load();
-                    let room_count = self.rooms.count(self.frame_rate);
-                    let mut room_slots = config.max_rooms_per_frame_rate - room_count;
+                    let frame_rate = self.frequency.try_into().ok();
+                    let mut room_slots = frame_rate.map_or(0, |frame_rate| {
+                        let room_count = self.rooms.count(frame_rate);
+                        config.max_rooms_per_frame_rate - room_count
+                    });
                     self.clients.update(
                         now,
                         config,
-                        self.frame_rate,
+                        self.frequency,
                         &mut client_room_ids,
                         &self.rooms,
                         &mut room_slots,
                         &mut rng,
                     );
-                    self.rooms.update(self.frame_rate, &client_room_ids);
+                    if let Some(frame_rate) = frame_rate {
+                        self.rooms.update(frame_rate, &client_room_ids);
+                    }
                     let client_count = self.clients.count();
                     let client_slots = config.max_clients - client_count;
                     let client_slots = client_slots / self.message_senders.len();
                     for message_sender in &self.message_senders {
-                        let message = Message::Write { frame_rate: self.frame_rate, client_slots };
+                        let message = Message::Write { frequency: self.frequency, client_slots };
                         message_sender.send(message).unwrap();
                     }
-                    let tick_duration = match self.frame_rate {
-                        FrameRate::SixtyHz => 16_683_333,
-                        FrameRate::FiftyHz => 20_000_000,
-                    };
-                    next_tick += Duration::from_nanos(tick_duration);
+                    next_tick += self.frequency.period();
                 }
             }
         }

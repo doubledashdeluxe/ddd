@@ -32,6 +32,7 @@ extern "C" void RunPayload(Context *context) {
     Patcher::Run();
 
     if (!Platform::IsGameCube()) {
+        Platform::s_iosVersion = context->iosVersion;
         MEM2Arena::Init(context->mem2ArenaLo, context->mem2ArenaHi);
     }
     VI::Init(context->vi);

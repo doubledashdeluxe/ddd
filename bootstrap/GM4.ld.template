@@ -1,5 +1,6 @@
 PHDRS {
     text PT_LOAD;
+    first PT_LOAD;
     rodata PT_LOAD;
     data PT_LOAD;
     bss PT_LOAD;
@@ -7,11 +8,11 @@ PHDRS {
 
 SECTIONS {
     . = 0x80900000;
-    .first : ALIGN(32) { *channel.c.split.o (.rodata*) } :rodata
+    .first : ALIGN(32) { *channel.c.split.o (.rodata*) } :first
+    .text : ALIGN(32) { *(.init*) *(.text*) } :text
     .ctors : ALIGN(32) { *(.ctors*) } :rodata
     .dtors : ALIGN(32) { *(.dtors*) } :rodata
     .rodata : ALIGN(32) { *(.rodata*) } :rodata
-    .text : ALIGN(32) { *(.init*) *(.text*) } :text
     .data : ALIGN(32) { *(.data*) } :data
     .bss : ALIGN(32) { *(.bss*) } :bss
 

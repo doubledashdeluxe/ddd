@@ -55,6 +55,7 @@ cd800000 ppcmsg
 cd800004 ppcctrl
 cd800008 armmsg
 cd800030 ppcirqflag
+cd800034 ppcirqmask
 cd80003c armirqmask
 cd800070 aipprot
 cd8000e0 gpio_out

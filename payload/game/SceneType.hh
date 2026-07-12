@@ -19,18 +19,19 @@ public:
         NameSelect = 0x0f,      // Added
         TandemSelect = 0x10,    // Added
         ServerSelect = 0x11,    // Added
-        RoomTypeSelect = 0x12,  // Added
-        RoomCodeEnter = 0x13,   // Added
-        ModeSelect = 0x14,      // Added
-        FormatSelect = 0x15,    // Added
-        PersonalRoom = 0x16,    // Added
-        TeamSelect = 0x17,      // Added
-        PlayerList = 0x18,      // Added
-        CharacterSelect = 0x19, // Added
-        MapSelect = 0x1a,       // Moved
-        CoursePoll = 0x1b,      // Added
-        Replay = 0x1c,          // Added
-        Count = 0x1d,
+        Update = 0x12,          // Added
+        RoomTypeSelect = 0x13,  // Added
+        RoomCodeEnter = 0x14,   // Added
+        ModeSelect = 0x15,      // Added
+        FormatSelect = 0x16,    // Added
+        PersonalRoom = 0x17,    // Added
+        TeamSelect = 0x18,      // Added
+        PlayerList = 0x19,      // Added
+        CharacterSelect = 0x1a, // Added
+        MapSelect = 0x1b,       // Moved
+        CoursePoll = 0x1c,      // Added
+        Replay = 0x1d,          // Added
+        Count = 0x1e,
     };
 
 private:

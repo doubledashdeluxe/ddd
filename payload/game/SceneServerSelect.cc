@@ -11,12 +11,13 @@
 #include "game/SequenceApp.hh"
 #include "game/SequenceInfo.hh"
 
+#include <cube/DiscID.hh>
+#include <cube/Platform.hh>
 #include <jsystem/J2DAnmLoaderDataBase.hh>
 #include <payload/online/CubeClient.hh>
 #include <payload/online/CubeServerManager.hh>
 
 extern "C" {
-#include <inttypes.h>
 #include <stdio.h>
 #include <string.h>
 }
@@ -26,6 +27,7 @@ SceneServerSelect::SceneServerSelect(JKRArchive *archive, JKRHeap *heap) : Scene
     JKRArchive *lanEntryArchive = sceneFactory->archive(SceneFactory::ArchiveType::LanEntry);
 
     m_mainScreen.set("GDIndexLayout.blo", 0x20000, m_archive);
+    m_installScreen.set("EnterRoomCode.blo", 0x1040000, lanEntryArchive);
     m_colorScreen.set("ServerColors.blo", 0x20000, lanEntryArchive);
     for (u32 i = 0; i < m_serverScreens.count(); i++) {
         m_serverScreens[i].set("Line.blo", 0x20000, m_archive);
@@ -51,13 +53,20 @@ SceneServerSelect::SceneServerSelect(JKRArchive *archive, JKRHeap *heap) : Scene
         m_serverScreens[i].search("CIcon")->m_isVisible = false;
         m_serverScreens[i].search("CCount")->m_isVisible = false;
     }
+    J2DPicture *installPicture = m_installScreen.search("Ran3")->downcast<J2DPicture>();
+    installPicture->changeTexture("Install.bti", 0);
 
-    m_mainAnmTransform = J2DAnmLoaderDataBase::Load("SelectServerLayout.bck", m_archive);
+    m_mainAnmTransform = J2DAnmLoaderDataBase::Load("SelectPackLayout.bck", m_archive);
     m_mainScreen.setAnimation(m_mainAnmTransform);
-    m_arrowAnmTransform = J2DAnmLoaderDataBase::Load("SelectServerLayout.bck", m_archive);
+    m_arrowAnmTransform = J2DAnmLoaderDataBase::Load("SelectPackLayout.bck", m_archive);
     for (u32 i = 0; i < 2; i++) {
         m_mainScreen.search("MArrow%02u", i + 1)->setAnimation(m_arrowAnmTransform);
     }
+    m_installAnmTransform = J2DAnmLoaderDataBase::Load("EnterRoomCode.bck", lanEntryArchive);
+    m_installScreen.search("NSlMap")->setAnimation(m_installAnmTransform);
+    m_selectAnmTransform = J2DAnmLoaderDataBase::Load("EnterRoomCode.bck", lanEntryArchive);
+    m_installScreen.search("NRandom")->setAnimation(m_selectAnmTransform);
+    m_installScreen.search("OK_wb11")->setAnimation(m_selectAnmTransform);
     for (u32 i = 0; i < m_serverAnmTransforms.count(); i++) {
         m_serverAnmTransforms[i] = J2DAnmLoaderDataBase::Load("Line.bck", m_archive);
         m_serverScreens[i].setAnimation(m_serverAnmTransforms[i]);
@@ -69,9 +78,12 @@ SceneServerSelect::SceneServerSelect(JKRArchive *archive, JKRHeap *heap) : Scene
 
     m_mainAnmTransformFrame = 0;
     m_arrowAnmTransformFrame = 0;
+    m_installAnmTransformFrame = 0;
+    m_selectAnmTransformFrame = 10;
     m_serverAnmTransformFrames.fill(0);
     m_descAnmTransformFrames.fill(0);
     m_arrowAlphas.fill(0);
+    m_installAlpha = 0;
     m_serverAlphas.fill(0);
     m_descAlphas.fill(0);
 }
@@ -124,6 +136,8 @@ void SceneServerSelect::init() {
     }
 
     m_writeInfo.frameRate = KartLocale::GetVideoFrameMode();
+    m_writeInfo.region = DiscID::Get().gameID[3];
+    m_writeInfo.platform = Platform::GetString();
     m_writeInfo.playerCount = playerCount;
     for (u32 i = 0; i < playerCount; i++) {
         u32 profileIndex = onlineInfo.m_profileIndices[i];
@@ -146,6 +160,7 @@ void SceneServerSelect::draw() {
     MenuTitleLine::Instance()->draw(m_graphContext);
 
     m_mainScreen.draw(0.0f, 0.0f, m_graphContext);
+    m_installScreen.draw(0.0f, 0.0f, m_graphContext);
 }
 
 void SceneServerSelect::calc() {
@@ -174,6 +189,15 @@ void SceneServerSelect::calc() {
             if (m_serverAnmTransformFrames[i] < 7) {
                 m_serverAnmTransformFrames[i]++;
             }
+            if (m_canUpdate[serverIndex]) {
+                if (m_installAlpha < 255) {
+                    m_installAlpha += 51;
+                }
+            } else {
+                if (m_installAlpha > 0) {
+                    m_installAlpha -= 51;
+                }
+            }
         } else {
             if (m_serverAnmTransformFrames[i] > 0) {
                 m_serverAnmTransformFrames[i]--;
@@ -183,6 +207,8 @@ void SceneServerSelect::calc() {
 
     m_mainAnmTransform->m_frame = m_mainAnmTransformFrame;
     m_arrowAnmTransform->m_frame = m_arrowAnmTransformFrame;
+    m_installAnmTransform->m_frame = m_installAnmTransformFrame;
+    m_selectAnmTransform->m_frame = m_selectAnmTransformFrame;
     for (u32 i = 0; i < m_serverAnmTransforms.count(); i++) {
         m_serverAnmTransforms[i]->m_frame = m_serverAnmTransformFrames[i];
     }
@@ -193,6 +219,8 @@ void SceneServerSelect::calc() {
     for (u32 i = 0; i < m_arrowAlphas.count(); i++) {
         m_mainScreen.search("MArrow%02u", i + 1)->setAlpha(m_arrowAlphas[i]);
     }
+    m_installScreen.search("Ran1")->setAlpha(m_installAlpha);
+    m_installScreen.search("Ran3")->setAlpha(m_installAlpha);
     for (u32 i = 0; i < m_serverAlphas.count(); i++) {
         m_serverScreens[i].search("GDCurs")->setAlpha(m_serverAlphas[i]);
         m_serverScreens[i].search("GDCurs1")->setAlpha(m_serverAlphas[i]);
@@ -215,6 +243,7 @@ void SceneServerSelect::calc() {
     }
 
     m_mainScreen.animation();
+    m_installScreen.animation();
     for (u32 i = 0; i < m_serverScreens.count(); i++) {
         m_serverScreens[i].animationMaterials();
     }
@@ -256,18 +285,19 @@ bool SceneServerSelect::clientStateServer(const ClientStateServerReadInfo &readI
         Optional<u16> port = server.port();
         const ClientStateServerReadInfo::Server &serverInfo = readInfo.servers[i];
         const Optional<Address> &address = serverInfo.address;
-        const Optional<u32> &protocolVersion = serverInfo.protocolVersion;
+        const Optional<u16> &protocolVersion = serverInfo.protocolVersion;
         const Optional<Array<char, MaxVersionLength + 1>> &version = serverInfo.version;
         const Optional<Array<char, MaxMotdLength + 1>> &motd = serverInfo.motd;
         const Optional<u16> &uncappedPlayerCount = serverInfo.playerCount;
         bool versionIsCompatible = serverInfo.versionIsCompatible;
+        bool updateIsAvailable = serverInfo.updateIsAvailable;
         Array<char, MaxMotdLength + 1> prevDesc = m_descs[i];
         Array<char, MaxMotdLength + 1> &desc = m_descs[i];
         if (motd) {
             desc = *motd;
         } else if (protocolVersion && version && !versionIsCompatible) {
-            snprintf(desc.values(), desc.count(), "%s%s (%" PRIu32 ")", String(8),
-                    version->values(), *protocolVersion);
+            snprintf(desc.values(), desc.count(), "%s%s (%u)", String(8), version->values(),
+                    *protocolVersion);
         } else if (protocolVersion && version) {
             snprintf(desc.values(), desc.count(), "%s", String(7));
         } else if (networkAddress && address && port) {
@@ -303,6 +333,8 @@ bool SceneServerSelect::clientStateServer(const ClientStateServerReadInfo &readI
         } else {
             snprintf(playerCount.values(), playerCount.count(), "...");
         }
+        m_canContinue[i] = !!motd;
+        m_canUpdate[i] = updateIsAvailable;
     }
     return true;
 }
@@ -377,6 +409,7 @@ void SceneServerSelect::stateWait() {
 void SceneServerSelect::stateSlideIn() {
     if (m_mainAnmTransformFrame < 30) {
         m_mainAnmTransformFrame++;
+        m_installAnmTransformFrame = Min<u32>(m_mainAnmTransformFrame, 15);
         if (m_mainAnmTransformFrame > 25) {
             showArrows(0);
         }
@@ -388,6 +421,7 @@ void SceneServerSelect::stateSlideIn() {
 void SceneServerSelect::stateSlideOut() {
     if (m_mainAnmTransformFrame > 0) {
         m_mainAnmTransformFrame--;
+        m_installAnmTransformFrame = Min<u32>(m_mainAnmTransformFrame, 15);
         hideArrows();
     } else {
         nextScene();
@@ -407,6 +441,13 @@ void SceneServerSelect::stateIdle() {
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CANCEL_LITTLE);
         OnlineInfo::Instance().m_hasIDs = false;
         slideOut();
+    } else if (button.risingEdge() & PAD_TRIGGER_Z) {
+        if (m_canUpdate[m_serverIndex]) {
+            m_nextScene = SceneType::Update;
+            GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE_LITTLE);
+            OnlineInfo::Instance().m_serverIndex = m_serverIndex;
+            slideOut();
+        }
     } else if (button.repeat() & JUTGamePad::PAD_MSTICK_UP) {
         if (m_serverIndex >= 1) {
             GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CURSOL);

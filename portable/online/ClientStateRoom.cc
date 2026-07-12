@@ -84,6 +84,10 @@ ServerStateServerReader<void> *ClientStateRoom::serverReader() {
     return nullptr;
 }
 
+ServerStateUpdateReader<void> *ClientStateRoom::updateReader() {
+    return nullptr;
+}
+
 ServerStateModeReader<void> *ClientStateRoom::modeReader() {
     return nullptr;
 }

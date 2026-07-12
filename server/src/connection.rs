@@ -8,8 +8,10 @@ use crate::config::Config;
 use crate::crypto::kx;
 use crate::crypto::session::Session;
 use crate::crypto::{Key, PublicKey};
-use crate::formats::online::FrameRate;
+use crate::formats::online::BUFFER_SIZE;
+use crate::frequency::Frequency;
 use crate::rooms::Rooms;
+use crate::update::Update;
 
 pub struct Connection {
     expiration: Instant,
@@ -41,7 +43,7 @@ impl Connection {
             .len()
             .checked_sub(Session::MAC_SIZE + Session::NONCE_SIZE)
             .context("Invalid message length")?;
-        let mut plaintext = [0u8; 512];
+        let mut plaintext = [0u8; BUFFER_SIZE as usize];
         let plaintext = &mut plaintext[..plaintext_len];
         match self.session.decrypt(message, plaintext) {
             Ok(()) => (),
@@ -64,7 +66,8 @@ impl Connection {
         &mut self,
         now: Instant,
         config: &Config,
-        frame_rate: FrameRate,
+        update: Option<&Update>,
+        frequency: Frequency,
         message: &mut [u8],
         clients: &Clients,
         player_count: usize,
@@ -72,18 +75,26 @@ impl Connection {
     ) -> Result<Option<usize>> {
         anyhow::ensure!(now < self.expiration);
         match self.state {
-            State::Kx { m2 } => match frame_rate {
-                FrameRate::SixtyHz => {
+            State::Kx { m2 } => match frequency {
+                Frequency::SixtyHz => {
                     let message = &mut message[..kx::M2_SIZE];
                     message.copy_from_slice(&m2);
                     Ok(Some(kx::M2_SIZE))
                 }
-                FrameRate::FiftyHz => Ok(None),
+                _ => Ok(None),
             },
             State::Session => {
-                let mut plaintext = [0u8; 512];
+                let mut plaintext = [0u8; BUFFER_SIZE as usize];
                 let plaintext_len = clients.read(&self.client_pk, |client| {
-                    client.write(frame_rate, self.addr, &mut plaintext, config, player_count, rooms)
+                    client.write(
+                        frequency,
+                        self.addr,
+                        &mut plaintext,
+                        config,
+                        update,
+                        player_count,
+                        rooms,
+                    )
                 })??;
                 let Some(plaintext_len) = plaintext_len else {
                     return Ok(None);

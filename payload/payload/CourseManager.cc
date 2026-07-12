@@ -636,7 +636,7 @@ void CourseManager::addCustomPacksAndCourses(Array<char, 128> &path, Storage::No
 void CourseManager::addCustomCourse(const Array<char, 128> &path,
         Ring<u8, MaxCourseCount> &raceCourseIndices,
         Ring<u8, MaxCourseCount> &battleCourseIndices) {
-    ZIPFile zipFile(path.values());
+    OwnedZIPFile zipFile(path.values());
     if (!zipFile.ok()) {
         return;
     }
@@ -994,7 +994,7 @@ bool CourseManager::loadCourseHash(ZIPFile &zipFile, const char *filePath, Hash 
 
 void *CourseManager::loadFile(const char *zipPath, const char *filePath, JKRHeap *heap,
         u32 *size) const {
-    ZIPFile zipFile(zipPath);
+    OwnedZIPFile zipFile(zipPath);
     if (!zipFile.ok()) {
         return nullptr;
     }
@@ -1028,7 +1028,7 @@ void *CourseManager::loadFile(ZIPFile &zipFile, const char *filePath, JKRHeap *h
 
 void *CourseManager::loadLocalizedFile(const char *zipPath, const char *prefix, const char *suffix,
         JKRHeap *heap, u32 *size) const {
-    ZIPFile zipFile(zipPath);
+    OwnedZIPFile zipFile(zipPath);
     if (!zipFile.ok()) {
         return nullptr;
     }
@@ -1065,7 +1065,7 @@ void *CourseManager::loadLocalizedFile(const char *prefix, const char *suffix, J
 
 void *CourseManager::loadCourseFile(const char *zipPath, const char *filePath, JKRHeap *heap,
         u32 *size) const {
-    ZIPFile zipFile(zipPath);
+    OwnedZIPFile zipFile(zipPath);
     if (!zipFile.ok()) {
         return nullptr;
     }

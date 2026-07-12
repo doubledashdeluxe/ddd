@@ -85,6 +85,9 @@ Channel::PayloadEntryFunc Channel::Run(Context *context) {
             return nullptr;
         }
 
+        context->iosVersion = iosVersion;
+        Platform::s_iosVersion = iosVersion;
+
         IOS::Resource::Init();
     }
     Clock::Init();

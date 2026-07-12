@@ -2,5 +2,6 @@
 <app version="1">
     <name>Double Dash Deluxe</name>
     <coder>The DDD Developers</coder>
+    <version>$version</version>
     <short_description>Double Dash Deluxe</short_description>
 </app>

@@ -3,6 +3,7 @@
 extern "C" {
 #include <dolphin/IPSocket.h>
 }
+#include <jsystem/JKRHeap.hh>
 #include <payload/Replace.hh>
 
 class BBAMgr {
@@ -13,6 +14,7 @@ public:
     REPLACE s32 processAutoIP();
     REPLACE bool disconnecting(bool force);
     u32 getState();
+    JKRHeap *heap() const;
 
     static BBAMgr *Instance();
     static SOConfig &Config();
@@ -23,7 +25,7 @@ private:
     u8 _008[0x014 - 0x008];
     f32 _014;
     f32 _018;
-    u8 _01c[0x020 - 0x01c];
+    JKRHeap *m_heap;
     u32 _020;
     u32 _024;
     f32 _028;

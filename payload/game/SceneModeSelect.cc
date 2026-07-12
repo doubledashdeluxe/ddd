@@ -54,7 +54,7 @@ SceneModeSelect::SceneModeSelect(JKRArchive *archive, JKRHeap *heap) : Scene(arc
         kart2DCommon->changeUnicodeTexture(name, 24, m_modeScreens[i], "Name");
     }
 
-    m_mainAnmTransform = J2DAnmLoaderDataBase::Load("SelectServerLayout.bck", m_archive);
+    m_mainAnmTransform = J2DAnmLoaderDataBase::Load("SelectModeLayout.bck", m_archive);
     m_mainScreen.setAnimation(m_mainAnmTransform);
     for (u32 i = 0; i < m_modeAnmTransforms.count(); i++) {
         m_modeAnmTransforms[i] = J2DAnmLoaderDataBase::Load("Line.bck", m_archive);

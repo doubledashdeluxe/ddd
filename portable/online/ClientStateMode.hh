@@ -25,6 +25,7 @@ public:
     ClientState &writeStateRoom(const ClientStateRoomWriteInfo &writeInfo) override;
 
     ServerStateServerReader<void> *serverReader();
+    ServerStateUpdateReader<void> *updateReader();
     ServerStateModeReader *modeReader();
     ServerStatePackReader<void> *packReader();
     ServerStateRoomReader<void> *roomReader();

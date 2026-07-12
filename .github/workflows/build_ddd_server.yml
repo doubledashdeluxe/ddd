@@ -20,7 +20,7 @@ jobs:
         uses: actions/checkout@v7
       - name: Set version
         if: github.ref_type == 'tag'
-        run: git describe --tags --abbrev=0 > version.txt
+        run: git describe --tags --abbrev=0 > data/version.txt
       - name: Build
         run: cargo build --release
       - name: Upload result
@@ -48,7 +48,7 @@ jobs:
         uses: actions/checkout@v7
       - name: Set version
         if: github.ref_type == 'tag'
-        run: git describe --tags --abbrev=0 > version.txt
+        run: git describe --tags --abbrev=0 > data/version.txt
       - name: Test
         run: cargo test
 

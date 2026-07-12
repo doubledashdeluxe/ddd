@@ -24,6 +24,11 @@ ClientState &ClientStateError::writeStateServer(
     return *this;
 }
 
+ClientState &ClientStateError::writeStateUpdate(
+        const ClientStateUpdateWriteInfo & /* writeInfo */) {
+    return *this;
+}
+
 ClientState &ClientStateError::writeStateMode(const ClientStateModeWriteInfo & /* writeInfo */) {
     return *this;
 }

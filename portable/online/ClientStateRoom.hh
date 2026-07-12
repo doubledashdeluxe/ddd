@@ -46,6 +46,7 @@ public:
     ClientState &writeStatePoll(const ClientStatePollWriteInfo &writeInfo) override;
 
     ServerStateServerReader<void> *serverReader();
+    ServerStateUpdateReader<void> *updateReader();
     ServerStateModeReader<void> *modeReader();
     ServerStatePackReader<void> *packReader();
     ServerStateRoomReader *roomReader();

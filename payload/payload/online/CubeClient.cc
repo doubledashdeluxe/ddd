@@ -25,6 +25,10 @@ void CubeClient::writeStateServer(const ClientStateServerWriteInfo &writeInfo) {
     while (updateState(m_state->writeStateServer(writeInfo))) {}
 }
 
+void CubeClient::writeStateUpdate(const ClientStateUpdateWriteInfo &writeInfo) {
+    while (updateState(m_state->writeStateUpdate(writeInfo))) {}
+}
+
 void CubeClient::writeStateMode(const ClientStateModeWriteInfo &writeInfo) {
     while (updateState(m_state->writeStateMode(writeInfo))) {}
 }
@@ -53,8 +57,7 @@ void CubeClient::writeStateError() {
     while (updateState(m_state->writeStateError())) {}
 }
 
-void CubeClient::Init(JKRHeap *parentHeap, SOConfig &config) {
-    JKRHeap *heap = JKRExpHeap::Create(16 * 1024, parentHeap, false);
+void CubeClient::Init(JKRHeap *heap, SOConfig &config) {
     s_instance = new (heap, 0x4) CubeClient(config, heap);
 }
 

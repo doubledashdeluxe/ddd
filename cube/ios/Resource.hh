@@ -85,8 +85,9 @@ protected:
             } ioctlv;
         };
         struct {
+            u32 reboot;
             Request *next;
-            u8 _04[0x20 - 0x04];
+            u8 _08[0x20 - 0x08];
         } user;
     };
     size_assert(Request, 0x40);

@@ -17,6 +17,7 @@ public:
     void read(ClientReadHandler &handler);
     void writeStateIdle();
     void writeStateServer(const ClientStateServerWriteInfo &writeInfo);
+    void writeStateUpdate(const ClientStateUpdateWriteInfo &writeInfo);
     void writeStateMode(const ClientStateModeWriteInfo &writeInfo);
     void writeStatePack(const ClientStatePackWriteInfo &writeInfo);
     void writeStateRoom(const ClientStateRoomWriteInfo &writeInfo);
@@ -25,7 +26,7 @@ public:
     void writeStateRace(const ClientStateRaceWriteInfo &writeInfo);
     void writeStateError();
 
-    static void Init(JKRHeap *parentHeap, SOConfig &config);
+    static void Init(JKRHeap *heap, SOConfig &config);
     static CubeClient *Instance();
 
 private:

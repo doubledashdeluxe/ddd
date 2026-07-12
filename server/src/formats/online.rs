@@ -7,6 +7,7 @@ use std::array;
 use rand::distr::{Distribution, StandardUniform};
 use rand::{Rng, RngExt};
 
+use crate::frequency::Frequency;
 use crate::weight::Weight;
 
 include!(concat!(env!("OUT_DIR"), "/online.rs"));
@@ -14,6 +15,18 @@ include!(concat!(env!("OUT_DIR"), "/online.rs"));
 pub type CharacterId = CharacterID;
 pub type KartId = KartID;
 pub type ItemId = ItemID;
+
+impl TryFrom<Frequency> for FrameRate {
+    type Error = ();
+
+    fn try_from(frequency: Frequency) -> Result<Self, Self::Error> {
+        match frequency {
+            Frequency::SixtyHz => Ok(Self::SixtyHz),
+            Frequency::FiftyHz => Ok(Self::FiftyHz),
+            Frequency::FiveHundredHz => Err(()),
+        }
+    }
+}
 
 impl CharacterId {
     pub const fn weight(self) -> Weight {

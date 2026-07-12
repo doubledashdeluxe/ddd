@@ -62,6 +62,10 @@ ServerStateServerReader<void> *ClientStateTeam::serverReader() {
     return nullptr;
 }
 
+ServerStateUpdateReader<void> *ClientStateTeam::updateReader() {
+    return nullptr;
+}
+
 ServerStateModeReader<void> *ClientStateTeam::modeReader() {
     return nullptr;
 }

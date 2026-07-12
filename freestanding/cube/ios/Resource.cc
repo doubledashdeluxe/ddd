@@ -4,10 +4,6 @@
 #include <cube/DCache.hh>
 #include <cube/Memory.hh>
 
-extern "C" {
-#include <string.h>
-}
-
 enum {
     X1 = 1 << 0,
     Y2 = 1 << 1,
@@ -20,11 +16,15 @@ enum {
 extern "C" volatile u32 ppcmsg;
 extern "C" volatile u32 ppcctrl;
 extern "C" volatile u32 armmsg;
+extern "C" volatile u32 ppcirqmask;
 
 namespace IOS {
 
 void Resource::Init() {
+    while ((ppcctrl & Y2) != Y2) {}
+    ppcctrl = Y2;
     ppcctrl = X2;
+    ppcirqmask = 1 << 30; // Dolphin is not happy without this, likely a bug!
 }
 
 void Resource::Sync(Request &request) {

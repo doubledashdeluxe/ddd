@@ -69,17 +69,19 @@ impl<T: DataType> DataType for ArrayType<T> {
                 )
             }
             Self::Variable { data_type, min_len, max_len } => {
-                let len_check = if *min_len == 0 {
-                    format!("*{}_len > {}", name, *max_len)
-                } else {
-                    format!("*{name}_len < {min_len} || *{name}_len > {max_len}")
+                let len_check = match (*min_len as u8, *max_len as u8) {
+                    (u8::MIN, u8::MAX) => None,
+                    (u8::MIN, _) => Some(format!("*{}_len > {}", name, *max_len)),
+                    (_, u8::MAX) => Some(format!("*{name}_len < {min_len}")),
+                    (_, _) => Some(format!("*{name}_len < {min_len} || *{name}_len > {max_len}")),
                 };
+                let len_check = len_check.map_or_else(String::new, |len_check| {
+                    format!(concat!("if {} {{\n", "    return Err(());\n", "}}\n"), len_check)
+                });
                 format!(
                     concat!(
                         "let ({}_len, buf) = buf.split_first().ok_or(())?;\n",
-                        "if {} {{\n",
-                        "    return Err(());\n",
-                        "}}\n",
+                        "{}",
                         "let mut {} = heapless::Vec::new();\n",
                         "let buf = (0..*{}_len).try_fold(buf, |buf, _| {{\n",
                         "    {}\n",

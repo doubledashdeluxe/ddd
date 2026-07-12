@@ -26,9 +26,11 @@ public:
     bool needsSockets() override;
     ClientState &read(ClientReadHandler &handler) override;
     ClientState &writeStateServer(const ClientStateServerWriteInfo &writeInfo) override;
+    ClientState &writeStateUpdate(const ClientStateUpdateWriteInfo &writeInfo) override;
     ClientState &writeStateMode(const ClientStateModeWriteInfo &writeInfo) override;
 
     ServerStateServerReader *serverReader();
+    ServerStateUpdateReader<void> *updateReader();
     ServerStateModeReader<void> *modeReader();
     ServerStatePackReader<void> *packReader();
     ServerStateRoomReader<void> *roomReader();
@@ -36,8 +38,12 @@ public:
     ServerStatePollReader<void> *pollReader();
     ServerStateRaceReader<void> *raceReader();
 
-    bool isProtocolVersionValid(u32 protocolVersion);
-    void setProtocolVersion(u32 protocolVersion);
+    bool isUpdateVersionValid(u8 updateVersion);
+    void setUpdateVersion(u8 updateVersion);
+    bool isReservedValid(u8 reserved);
+    void setReserved(u8 reserved);
+    bool isProtocolVersionValid(u16 protocolVersion);
+    void setProtocolVersion(u16 protocolVersion);
     bool isVersionCountValid(u32 versionCount);
     void setVersionCount(u32 versionCount);
     bool isVersionElementValid(u32 i0, u8 versionElement);
@@ -54,12 +60,11 @@ public:
     bool isPlayerCountValid(u16 playerCount);
     void setPlayerCount(u16 playerCount);
 
-    void checkConnections();
-    void checkServers();
-
     ClientStateServerWriter &serverWriter();
 
-    u32 getProtocolVersion();
+    u8 getUpdateVersion();
+    u8 getReserved();
+    u16 getProtocolVersion();
     u32 getVersionCount();
     u8 getVersionElement(u32 i0);
     ClientIdentityWriter &clientIdentityWriter();
@@ -68,6 +73,9 @@ public:
     ClientIdentitySpecifiedWriter &specifiedWriter();
 
     u8 getFrameRate();
+    u8 getRegion();
+    u32 getPlatformCount();
+    u8 getPlatformElement(u32 i0);
     u32 getPlayersCount();
     ClientPlayerWriter &playersElementWriter(u32 i0);
     u8 getKartCount();
@@ -79,8 +87,12 @@ private:
     typedef ClientStateServerReadInfo ReadInfo;
     typedef ClientStateServerWriteInfo WriteInfo;
 
+    void checkConnections();
+    void checkServers();
+
+    static bool UpdateIsAvailable(const ReadInfo::Server &server);
+
     ReadInfo m_readInfo;
-    Array<char, MaxVersionLength + 1> m_version;
     const WriteInfo *m_writeInfo;
     u32 m_playerIndex;
 };

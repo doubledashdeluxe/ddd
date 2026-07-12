@@ -57,15 +57,15 @@ SceneReplay::SceneReplay(JKRArchive *archive, JKRHeap *heap) : Scene(archive, he
 
     m_mainAnmTransform = J2DAnmLoaderDataBase::Load("SelectPackLayout.bck", m_archive);
     m_mainScreen.setAnimation(m_mainAnmTransform);
+    m_arrowAnmTransform = J2DAnmLoaderDataBase::Load("SelectPackLayout.bck", m_archive);
+    for (u32 i = 0; i < 2; i++) {
+        m_mainScreen.search("MArrow%02u", i + 1)->setAnimation(m_arrowAnmTransform);
+    }
     m_downloadAnmTransform = J2DAnmLoaderDataBase::Load("EnterRoomCode.bck", lanEntryArchive);
     m_downloadScreen.search("NSlMap")->setAnimation(m_downloadAnmTransform);
     m_selectAnmTransform = J2DAnmLoaderDataBase::Load("EnterRoomCode.bck", lanEntryArchive);
     m_downloadScreen.search("NRandom")->setAnimation(m_selectAnmTransform);
     m_downloadScreen.search("OK_wb11")->setAnimation(m_selectAnmTransform);
-    m_arrowAnmTransform = J2DAnmLoaderDataBase::Load("SelectPackLayout.bck", m_archive);
-    for (u32 i = 0; i < 2; i++) {
-        m_mainScreen.search("MArrow%02u", i + 1)->setAnimation(m_arrowAnmTransform);
-    }
     for (u32 i = 0; i < m_replayAnmTransforms.count(); i++) {
         m_replayAnmTransforms[i] = J2DAnmLoaderDataBase::Load("Line.bck", m_archive);
         m_replayScreens[i].setAnimation(m_replayAnmTransforms[i]);
@@ -87,9 +87,11 @@ SceneReplay::SceneReplay(JKRArchive *archive, JKRHeap *heap) : Scene(archive, he
 }
 
 SceneReplay::~SceneReplay() {
-    m_loading = false;
-    OSSendMessage(&m_queue, nullptr, OS_MESSAGE_NOBLOCK);
-    OSJoinThread(&m_loadThread, nullptr);
+    if (m_loadStack) {
+        m_loading = false;
+        OSSendMessage(&m_queue, nullptr, OS_MESSAGE_NOBLOCK);
+        OSJoinThread(&m_loadThread, nullptr);
+    }
 }
 
 void SceneReplay::init() {

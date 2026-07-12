@@ -15,13 +15,16 @@ use crate::clients::Clients;
 use crate::config::{Config, SharedConfig};
 use crate::connection::Connection;
 use crate::crypto::{ChaCha20Rng, Key};
-use crate::formats::online::FrameRate;
+use crate::formats::online::BUFFER_SIZE;
+use crate::frequency::Frequency;
 use crate::message::Message;
 use crate::options::NetSimOptions;
 use crate::rooms::Rooms;
+use crate::update::{SharedUpdate, Update};
 
 pub struct Shard {
     config: SharedConfig,
+    update: SharedUpdate,
     server_k: Key,
     link: Link,
     random_state: RandomState,
@@ -35,6 +38,7 @@ impl Shard {
     pub fn new(
         net_sim_options: NetSimOptions,
         config: SharedConfig,
+        update: SharedUpdate,
         server_k: Key,
         socket: UdpSocket,
         message_receiver: Receiver<Message>,
@@ -56,6 +60,7 @@ impl Shard {
         };
         Self {
             config,
+            update,
             server_k,
             link,
             random_state: RandomState::new(),
@@ -68,18 +73,20 @@ impl Shard {
 
     pub fn run(mut self) -> ! {
         let mut config = Cache::new(self.config.clone());
+        let mut update = Cache::new(self.update.clone());
         let mut tick_counter = 0;
         let mut message = None;
         loop {
             let now = Instant::now();
             let config = config.load();
+            let update = update.load().as_ref().as_ref();
             match message {
                 Some(Message::Read { buffer, addr }) => {
                     self.read(now, config, tick_counter, addr, buffer.as_slice());
                     self.link.send(buffer);
                 }
-                Some(Message::Write { frame_rate, client_slots }) => {
-                    self.write(now, config, frame_rate);
+                Some(Message::Write { frequency, client_slots }) => {
+                    self.write(now, config, update, frequency);
                     self.client_slots = client_slots;
                     tick_counter += 1;
                 }
@@ -106,9 +113,7 @@ impl Shard {
                 }
             }
             Entry::Vacant(v) if connection_count < config.max_connections_per_shard => {
-                let Some((client_cookie, message)) = message.split_first_chunk() else {
-                    return;
-                };
+                let Some((client_cookie, message)) = message.split_first_chunk() else { return };
                 let shard_cookie = self.random_state.hash_one((tick_counter >> 12, addr));
                 let shard_cookie = shard_cookie.to_be_bytes();
                 if *client_cookie != shard_cookie {
@@ -125,14 +130,21 @@ impl Shard {
         }
     }
 
-    fn write(&mut self, now: Instant, config: &Config, frame_rate: FrameRate) {
+    fn write(
+        &mut self,
+        now: Instant,
+        config: &Config,
+        update: Option<&Update>,
+        frequency: Frequency,
+    ) {
         let player_count = self.clients.player_count();
         self.connections.retain(|addr, connection| {
-            let mut message = [0u8; 512];
+            let mut message = [0u8; BUFFER_SIZE as usize];
             let message_len = connection.write(
                 now,
                 config,
-                frame_rate,
+                update,
+                frequency,
                 &mut message,
                 &self.clients,
                 player_count,

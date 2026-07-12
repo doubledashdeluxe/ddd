@@ -9,7 +9,20 @@ CubeUDPSocket::CubeUDPSocket() {}
 CubeUDPSocket::~CubeUDPSocket() {}
 
 s32 CubeUDPSocket::open() {
-    return CubeSocket::open(SO_SOCK_DGRAM);
+    s32 result = CubeSocket::open(SO_SOCK_DGRAM);
+    if (result < 0) {
+        close();
+        return result;
+    }
+
+    u32 size = 0x8000;
+    result = SOSetSockOpt(m_socket, 0xffff, 0x1002, &size, sizeof(size));
+    if (result < 0) {
+        close();
+        return result;
+    }
+
+    return m_socket;
 }
 
 s32 CubeUDPSocket::close() {

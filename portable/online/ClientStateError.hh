@@ -10,6 +10,7 @@ public:
     ClientState &read(ClientReadHandler &handler) override;
     ClientState &writeStateIdle() override;
     ClientState &writeStateServer(const ClientStateServerWriteInfo &writeInfo) override;
+    ClientState &writeStateUpdate(const ClientStateUpdateWriteInfo &writeInfo) override;
     ClientState &writeStateMode(const ClientStateModeWriteInfo &writeInfo) override;
     ClientState &writeStatePack(const ClientStatePackWriteInfo &writeInfo) override;
     ClientState &writeStateRoom(const ClientStateRoomWriteInfo &writeInfo) override;

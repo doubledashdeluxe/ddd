@@ -7,6 +7,7 @@ extern "C" {
 #include <dolphin/OSThread.h>
 }
 #include <payload/Lock.hh>
+#include <portable/New.hh>
 
 enum {
     X1 = 1 << 0,
@@ -25,9 +26,9 @@ extern "C" volatile u32 ppcirqflag;
 namespace IOS {
 
 void Resource::Init() {
+    ppcirqflag = 1 << 30;
     OSSetInterruptHandler(27, HandleInterrupt);
     OSUnmaskInterrupts(1 << (31 - 27));
-    ppcctrl = IY2 | IY1 | X2;
 }
 
 void Resource::Sync(Request &request) {
@@ -35,6 +36,7 @@ void Resource::Sync(Request &request) {
 
     Lock<NoInterrupts> lock;
 
+    request.user.reboot = 0;
     request.user.next = nullptr;
     if (s_request) {
         Request *prev;
@@ -46,13 +48,34 @@ void Resource::Sync(Request &request) {
         s_request = &request;
     }
 
-    OSThreadQueue *queue = reinterpret_cast<OSThreadQueue *>(request.user._04);
+    OSThreadQueue *queue = new (request.user._08) OSThreadQueue;
     OSInitThreadQueue(queue);
     OSSleepThread(queue);
+    queue->~OSThreadQueue();
 }
 
-bool Resource::SyncReboot(Request & /* request */) {
-    return false;
+bool Resource::SyncReboot(Request &request) {
+    DCache::Flush(&request, offsetof(Request, user));
+
+    Lock<NoInterrupts> lock;
+
+    request.user.reboot = 1;
+    request.user.next = nullptr;
+    if (s_request) {
+        Request *prev;
+        for (prev = s_request; prev->user.next; prev = prev->user.next) {}
+        prev->user.next = &request;
+    } else {
+        ppcmsg = Memory::CachedToPhysical(&request);
+        ppcctrl = IY2 | IY1 | X1;
+        s_request = &request;
+    }
+
+    OSThreadQueue *queue = new (request.user._08) OSThreadQueue;
+    OSInitThreadQueue(queue);
+    OSSleepThread(queue);
+    queue->~OSThreadQueue();
+    return !request.user.reboot;
 }
 
 void Resource::HandleInterrupt(s16 /* interrupt */, OSContext * /* context */) {
@@ -63,7 +86,7 @@ void Resource::HandleInterrupt(s16 /* interrupt */, OSContext * /* context */) {
         ppcirqflag = 1 << 30;
 
         DCache::Invalidate(reply, offsetof(Request, user));
-        OSThreadQueue *queue = reinterpret_cast<OSThreadQueue *>(reply->user._04);
+        OSThreadQueue *queue = reinterpret_cast<OSThreadQueue *>(reply->user._08);
         OSWakeupThread(queue);
 
         ppcctrl = IY2 | IY1 | X2;
@@ -74,6 +97,18 @@ void Resource::HandleInterrupt(s16 /* interrupt */, OSContext * /* context */) {
         ppcirqflag = 1 << 30;
 
         if (s_request) {
+            OSThreadQueue *queue = reinterpret_cast<OSThreadQueue *>(s_request->user._08);
+            switch (s_request->user.reboot) {
+            case 1:
+                s_request->user.reboot = 2;
+                return;
+            case 2:
+                ppcctrl = IY2 | IY1 | X2;
+                s_request->user.reboot = 0;
+                OSWakeupThread(queue);
+                break;
+            }
+
             s_request = s_request->user.next;
             if (s_request) {
                 ppcmsg = Memory::CachedToPhysical(s_request);

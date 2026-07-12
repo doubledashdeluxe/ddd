@@ -4,6 +4,7 @@
 #include "cube/VI.hh"
 
 struct Context {
+    u32 iosVersion;
     bool hasVirtualDI;
     void *commonArchive;
     u32 commonArchiveSize;

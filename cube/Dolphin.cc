@@ -17,9 +17,7 @@ bool Dolphin::ok() const {
     return Resource::ok();
 }
 
-bool Dolphin::getVersion(DolphinVersion &version) {
-    Array<char, 64> versionString;
-
+bool Dolphin::getVersion(Array<char, 64> &versionString, DolphinVersion &version) {
     alignas(0x20) IoctlvPair pairs[1];
     pairs[0].data = versionString.values();
     pairs[0].size = versionString.count();
