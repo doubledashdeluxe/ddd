@@ -37,7 +37,7 @@ impl Update {
         });
         let changelog = if let Some(entry) = entry {
             let entry = entry?;
-            anyhow::ensure!(entry.compression_method() == CompressionMethod::Deflate);
+            anyhow::ensure!(entry.compression_method() == CompressionMethod::DEFLATE);
             let wayfinder = entry.wayfinder();
             let entry = archive.get_entry(wayfinder)?;
             let (changelog, _) = yazi::decompress(entry.data(), Format::Raw)

@@ -30,7 +30,7 @@ fn main() -> Result<()> {
 
             let path = input.strip_prefix(&options.input)?.to_string_lossy();
             let (mut entry, config) =
-                output.new_file(&path).compression_method(CompressionMethod::Deflate).start()?;
+                output.new_file(&path).compression_method(CompressionMethod::DEFLATE).start()?;
             let mut encoder = Encoder::boxed();
             encoder.set_level(CompressionLevel::Specific(10));
             let stream = encoder.stream(&mut entry);
