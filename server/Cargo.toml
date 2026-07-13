@@ -15,7 +15,7 @@ log = { version = "0.4.32", features = ["max_level_debug", "std"] }
 noise-protocol = "0.2.1"
 orion = "0.17.15"
 rand = { version = "0.10.1", default-features = false, features = ["sys_rng"] }
-rawzip = "0.4.4"
+rawzip = "0.5.1"
 scc = "3.7.2"
 signal-hook = "0.4.4"
 yansi = { version = "1.0.1", features = ["detect-env"] }

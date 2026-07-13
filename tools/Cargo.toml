@@ -12,5 +12,5 @@ bpaf = "0.9.26"
 crrl = { git = "https://github.com/pornin/crrl", rev = "4cc7cbbe8796ee8d459b815d81318603279879e4" }
 getrandom = "0.4.3"
 object = { version = "0.39.1", default-features = false, features = ["build_core", "elf", "read_core"] }
-rawzip = "0.4.4"
+rawzip = "0.5.1"
 yazi = "0.2.1"
