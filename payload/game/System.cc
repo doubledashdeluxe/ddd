@@ -96,7 +96,9 @@ void System::Run() {
             PadMgr::Framework();
         }
         netGameMgr->framework();
-        AppMgr::Draw();
+        if (s_display->drawing()) {
+            AppMgr::Draw();
+        }
         s_display->endDraw();
         perfOverlay->endDraw();
 

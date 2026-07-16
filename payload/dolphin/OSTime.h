@@ -2,9 +2,10 @@
 
 #include <portable/Types.h>
 
+u32 OSGetTick(void);
 s64 OSGetTime(void);
 void OSSetTime(s64 time);
-s64 OSGetSystemTime();
+s64 OSGetSystemTime(void);
 
 typedef struct {
     int sec;

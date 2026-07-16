@@ -1,5 +1,8 @@
 #include "JUTVideo.hh"
 
+#include "jsystem/JFWDisplay.hh"
+#include "jsystem/JUTXfb.hh"
+
 extern "C" {
 #include <dolphin/VI.h>
 }
@@ -46,6 +49,24 @@ void JUTVideo::setRenderMode(const GXRenderModeObj * /* renderMode */) {
     s_renderMode.vfilter[6] = 0;
 
     REPLACED(setRenderMode)(&s_renderMode);
+}
+
+u32 JUTVideo::FrameStart() {
+    return s_frameStart;
+}
+
+u32 JUTVideo::FrameDuration() {
+    return s_frameDuration;
+}
+
+void JUTVideo::PreRetraceProc(u32 retraceCount) {
+    JUTXfb *xfb = JUTXfb::Instance();
+    JFWDisplay *display = JFWDisplay::Instance();
+    if (xfb && xfb->m_state == JUTXfb::State::Drawing && display) {
+        display->delayFrame();
+    }
+
+    REPLACED(PreRetraceProc)(retraceCount);
 }
 
 GXRenderModeObj JUTVideo::s_renderMode;

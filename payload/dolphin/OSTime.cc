@@ -1,3 +1,4 @@
+#ifdef __CWCC__
 extern "C" {
 #include "OSTime.h"
 
@@ -8,7 +9,6 @@ extern "C" {
 
 extern "C" s64 systemTimeOffset;
 
-#ifdef __CWCC__
 extern "C" void OSSetTime(s64 time) {
     Lock<NoInterrupts> lock;
 

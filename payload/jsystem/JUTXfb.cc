@@ -6,6 +6,10 @@ extern "C" {
 #include <assert.h>
 }
 
+JUTXfb *JUTXfb::Instance() {
+    return s_instance;
+}
+
 void JUTXfb::initiate(u16 width, u16 height, JKRHeap *heap, s32 /* count */) {
     m_count = 1;
     VI *vi = VI::Instance();

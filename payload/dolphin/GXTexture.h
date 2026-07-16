@@ -24,3 +24,5 @@ REPLACE void GXInitTexObj(GXTexObj *obj, void *image_ptr, u16 width, u16 height,
         s32 wrap_s, s32 wrap_t, BOOL mipmap);
 
 REPLACE void GXInitTlutObj(GXTlutObj *tlut_obj, void *lut, s32 fmt, u16 n_entries);
+
+void GXInvalidateTexAll(void);

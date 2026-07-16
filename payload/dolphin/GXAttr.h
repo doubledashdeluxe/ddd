@@ -66,4 +66,6 @@ void GXSetVtxAttrFmt(u32 vtxFmt, u32 attr, u8 compCnt, u32 compType, u8 fract);
 void REPLACED(GXSetArray)(u32 attr, const void *base, u8 stride);
 REPLACE void GXSetArray(u32 attr, const void *base, u8 stride);
 
+void GXInvalidateVtxCache(void);
+
 void GXSetTexCoordGen2(u32 coord, u32 genType, u32 genSrc, u32 mtx, BOOL normalize, u32 postMtx);

@@ -1,5 +1,7 @@
 #include "PerfOverlay.hh"
 
+#include "payload/Lock.hh"
+
 #include <cube/Clock.hh>
 #include <cube/Memory.hh>
 extern "C" {
@@ -7,10 +9,13 @@ extern "C" {
 #include <dolphin/VI.h>
 }
 #include <jsystem/J2DOrthoGraph.hh>
+#include <jsystem/JFWDisplay.hh>
 #include <jsystem/JKRExpHeap.hh>
-#include <payload/Lock.hh>
+#include <jsystem/JUTReport.hh>
 
 void PerfOverlay::beginFrame() {
+    JUTReport(2, 14, "%u", JFWDisplay::Instance()->delayedFrames());
+
     m_drawBar.calc(*this);
     m_calcBar.calc(*this);
 

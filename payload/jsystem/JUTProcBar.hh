@@ -5,7 +5,10 @@
 
 class JUTProcBar {
 public:
+    REPLACE void clear();
     REPLACE void draw();
+
+    static JUTProcBar *Create();
 
 private:
     u8 _000[0x134 - 0x000];
