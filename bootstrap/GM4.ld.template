@@ -1,5 +1,8 @@
+/* Resources:
+   - https://github.com/emukidid/swiss-gc/blob/v0.6r2073/cube/swiss/source/aram/sidestep.c#L329 */
+
 PHDRS {
-    text PT_LOAD;
+    text PT_LOAD; /* Swiss wants this to go first at file offset 0x100 exactly. */
     first PT_LOAD;
     rodata PT_LOAD;
     data PT_LOAD;
