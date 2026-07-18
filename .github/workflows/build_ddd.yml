@@ -1,6 +1,9 @@
 name: Build DDD
 
-on: [push, pull_request]
+on:
+  push:
+    branches-ignore: [dependabot/**]
+  pull_request:
 
 env:
   llvm-version: 22.1.8

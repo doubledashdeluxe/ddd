@@ -1,6 +1,9 @@
 name: Build ddd-server
 
-on: [push, pull_request]
+on:
+  push:
+    branches-ignore: [dependabot/**]
+  pull_request:
 
 jobs:
   build:
