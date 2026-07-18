@@ -9,6 +9,8 @@
 
 #include "portable/Algorithm.hh"
 
+#include <formats/Online.hh>
+
 bool DNS::resolveA(const Resolvers &resolvers, const char *name, Optional<u32> &address) {
     return resolve(resolvers, name, address, m_aEntries, A);
 }
@@ -124,7 +126,7 @@ void DNS::resetEntries() {
 }
 
 bool DNS::readResponse(s64 now) {
-    u8 buffer[512];
+    u8 buffer[BufferSize];
     Address resolver;
     s32 result = m_socket.recvFrom(buffer, Count(buffer), resolver);
     if (result < 0x00c) {
@@ -216,7 +218,7 @@ bool DNS::readResponse(const u8 *buffer, u32 offset, SRVEntry &entry, u16 rdleng
 }
 
 bool DNS::writeQuery(const Name &name, u16 qtype) {
-    u8 buffer[512];
+    u8 buffer[BufferSize];
     u16 flags = 0;
     flags |= 1 << 8; // RD
     Bytes::WriteBE<u16>(buffer, 0x000, m_id);

@@ -36,7 +36,7 @@ extern "C" int LLVMFuzzerTestOneInput(const u8 *data, size_t size) {
         size -= 2;
 
         chunk.clear();
-        chunkSize = std::min<size_t>({chunkSize, size, 512});
+        chunkSize = std::min<size_t>({chunkSize, size, BufferSize});
         chunk.insert(chunk.begin(), data, data + chunkSize);
         data += chunkSize;
         size -= chunkSize;
