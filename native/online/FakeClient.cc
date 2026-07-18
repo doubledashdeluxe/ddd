@@ -179,6 +179,7 @@ ClientState &FakeClient::writeStateRace() {
     writeInfo.karts[0].itemFrames[1] = MinClientFrame;
     writeInfo.karts[0].rank = 0;
     writeInfo.itemCounts.fill(0);
+    writeInfo.latency = 0;
     writeInfo.delayedFrames = 0;
     return m_state->writeStateRace(writeInfo);
 }

@@ -231,11 +231,13 @@ pub fn client_state_race() -> impl ComplexDataType {
     let karts = ArrayType::new(client_race_kart(), 0, MAX_CLIENT_KART_COUNT);
     let item_count: SimpleDataType<u8> = SimpleDataType::new();
     let item_counts = ArrayType::new(item_count, 16, 16);
+    let latency: SimpleDataType<u16> = SimpleDataType::new();
     let delayed_frames: SimpleDataType<u32> = SimpleDataType::new();
     StructType::new("ClientStateRace")
         .with_field("frame", frame)
         .with_field("karts", karts)
         .with_field("item_counts", item_counts)
+        .with_field("latency", latency)
         .with_field("delayed_frames", delayed_frames)
 }
 

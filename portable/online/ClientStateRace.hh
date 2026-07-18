@@ -100,6 +100,7 @@ public:
     u32 getKartsCount();
     ClientRaceKartWriter &kartsElementWriter(u32 i0);
     u8 getItemCountsElement(u32 i0);
+    u16 getLatency();
     u32 getDelayedFrames();
 
     u32 getInputsCount();

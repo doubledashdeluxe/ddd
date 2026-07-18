@@ -175,6 +175,7 @@ void RaceClient::write() {
     for (u32 i = 0; i < m_writeInfo.itemCounts.count(); i++) {
         m_writeInfo.itemCounts[i] = itemObjMgr->moveCount(i);
     }
+    m_writeInfo.latency = m_latency;
     m_writeInfo.delayedFrames = JFWDisplay::Instance()->delayedFrames();
     CubeClient::Instance()->writeStateRace(m_writeInfo);
 }
