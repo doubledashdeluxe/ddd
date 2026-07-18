@@ -17,13 +17,12 @@ private:
     CubeSocket(const CubeSocket &);
     CubeSocket &operator=(const CubeSocket &);
 
+    s32 setRecvBuf(u32 size);
     s32 setIsBlocking(bool isBlocking);
 
+    s32 setSockOpt(s32 level, s32 optname, const void *optval, s32 optlen);
     s32 fcntl(s32 command, s32 argument);
 
-protected:
     s32 m_socket;
-
-private:
     u64 m_generation;
 };

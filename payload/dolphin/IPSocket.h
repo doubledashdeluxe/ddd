@@ -13,6 +13,14 @@ enum {
 };
 
 enum {
+    SO_SOL_SOCKET = 0xffff,
+};
+
+enum {
+    SO_SO_RCVBUF = 0x1002,
+};
+
+enum {
     SO_F_GETFL = 3,
     SO_F_SETFL = 4,
 };

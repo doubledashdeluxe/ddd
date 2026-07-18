@@ -2,6 +2,7 @@
 
 #include "payload/network/CubeNetwork.hh"
 
+#include <cube/Platform.hh>
 extern "C" {
 #include <dolphin/IPRoute.h>
 #include <dolphin/IPSocket.h>
@@ -21,6 +22,14 @@ s32 CubeSocket::open(s32 type) {
     m_socket = SOSocket(AF_INET, type, 0);
     if (m_socket < 0) {
         return m_socket;
+    }
+
+    if (!Platform::IsDolphin()) {
+        s32 result = setRecvBuf(32 * 1024);
+        if (result < 0) {
+            close();
+            return result;
+        }
     }
 
     s32 result = setIsBlocking(false);
@@ -82,11 +91,23 @@ s32 CubeSocket::sendTo(const void *buffer, u32 size, const Address *address) {
     return SOSendTo(m_socket, buffer, size, 0, &addr);
 }
 
+s32 CubeSocket::setRecvBuf(u32 size) {
+    return setSockOpt(SO_SOL_SOCKET, SO_SO_RCVBUF, &size, sizeof(size));
+}
+
 s32 CubeSocket::setIsBlocking(bool isBlocking) {
     s32 flags = fcntl(SO_F_GETFL, 0);
     flags &= ~(1 << 2);
     flags |= (!isBlocking << 2);
     return fcntl(SO_F_SETFL, flags);
+}
+
+s32 CubeSocket::setSockOpt(s32 level, s32 optname, const void *optval, s32 optlen) {
+    if (m_generation != CubeNetwork::Instance().generation()) {
+        return SO_ENETRESET;
+    }
+
+    return SOSetSockOpt(m_socket, level, optname, optval, optlen);
 }
 
 s32 CubeSocket::fcntl(s32 command, s32 argument) {
