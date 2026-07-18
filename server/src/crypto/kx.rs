@@ -12,7 +12,7 @@ pub const M2_SIZE: usize = 48;
 
 #[cfg(test)]
 fn ik_1(client_k: Key, server_pk: PublicKey, m1: &mut [u8]) -> ClientState {
-    assert!(m1.len() == M1_SIZE);
+    assert_eq!(m1.len(), M1_SIZE);
     let pattern = patterns::noise_ik();
     let is_initiator = true;
     let prologue = "";
@@ -26,8 +26,8 @@ fn ik_1(client_k: Key, server_pk: PublicKey, m1: &mut [u8]) -> ClientState {
 }
 
 pub fn ik_2(server_k: Key, m1: &[u8], m2: &mut [u8]) -> Result<(PublicKey, Session)> {
-    assert!(m1.len() == M1_SIZE);
-    assert!(m2.len() == M2_SIZE);
+    assert_eq!(m1.len(), M1_SIZE);
+    assert_eq!(m2.len(), M2_SIZE);
     let pattern = patterns::noise_ik();
     let is_initiator = false;
     let prologue = "";
@@ -48,7 +48,7 @@ pub fn ik_2(server_k: Key, m1: &[u8], m2: &mut [u8]) -> Result<(PublicKey, Sessi
 
 #[cfg(test)]
 fn ik_3(client_state: ClientState, m2: &[u8]) -> Result<Session> {
-    assert!(m2.len() == M2_SIZE);
+    assert_eq!(m2.len(), M2_SIZE);
     let mut handshake_state = client_state.handshake_state;
     handshake_state.read_message(m2, &mut [])?;
     let (write_cipher, read_cipher) = handshake_state.get_ciphers();
