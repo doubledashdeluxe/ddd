@@ -394,7 +394,7 @@ compile_commands = []
 repo_dir = os.path.dirname(os.path.abspath(__file__))
 
 asset_arc_files = []
-for in_dir in sorted(glob.glob(os.path.join('assets', '*'))):
+for in_dir in sorted(glob.glob(os.path.join('data', 'archives', '*'))):
     in_files = sorted(glob.glob(os.path.join(in_dir, '**'), recursive=True))
     arc_file = os.path.join('$builddir', in_dir + '.arc')
     asset_arc_files += [arc_file]
