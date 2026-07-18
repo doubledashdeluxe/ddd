@@ -104,7 +104,7 @@ jobs:
       - name: Test
         run: |
           python build.py --ci --llvm-dir tools/llvm -- tests
-          out/tests
+          build/tests
 
   fuzz:
     name: Fuzz

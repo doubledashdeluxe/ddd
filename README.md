@@ -23,11 +23,11 @@ If you already have the compiler installed, you can find the relevant files in `
 - `./bin/lmgr11.dll` -> `tools/cw/lmgr11.dll`
 - `./PowerPC_EABI_Tools/Command_Line_Tools/mwcceppc.exe` -> `tools/cw/mwcceppc.exe`
 
-You can then simply run `build.py` to build the project. The `out` directory will contain the generated binary.
+You can then simply run `build.py` to build the project. The `build/ddd` directory will contain the generated binary.
 
 ## Running tests
 
-You can launch `out/tests` to run all tests.
+You can launch `build/tests` to run all tests.
 
 ## Formatting
 

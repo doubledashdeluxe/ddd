@@ -13,7 +13,7 @@ def run_fuzzer_binary(fuzzer_binary):
 
 
 pattern = '*.exe' if 'win' in sys.platform or 'msys' in sys.platform else '*'
-paths = glob.glob(os.path.join('out', 'fuzzers', '**', pattern), recursive=True)
+paths = glob.glob(os.path.join('build', 'fuzzers', '**', pattern), recursive=True)
 fuzzer_binaries = [path for path in paths if os.path.isfile(path)]
 with concurrent.futures.ThreadPoolExecutor() as executor:
     procs = executor.map(run_fuzzer_binary, fuzzer_binaries)

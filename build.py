@@ -210,7 +210,6 @@ n.variable('ninja_required_version', '1.3')
 n.newline()
 
 n.variable('builddir', 'build')
-n.variable('outdir', 'out')
 n.newline()
 
 n.variable('bin2c', os.path.join('tools', 'bin2c.py'))
@@ -844,7 +843,7 @@ for target in native_code_in_files:
         }
         compile_commands += [compile_command]
 
-test_binary = os.path.join('$outdir', 'tests')
+test_binary = os.path.join('$builddir', 'tests')
 if is_windows():
     test_binary += '.exe'
 n.build(
@@ -874,7 +873,7 @@ for out_file in native_code_out_files['fuzzers']:
     base, _ = os.path.splitext(out_file)
     base, _ = os.path.splitext(base)
     target = out_file.split(os.path.sep)[3]
-    fuzzer_binary = os.path.join('$outdir', os.path.join(*base.split(os.path.sep)[2:]))
+    fuzzer_binary = os.path.join('$builddir', os.path.join(*base.split(os.path.sep)[2:]))
     if is_windows():
         fuzzer_binary += '.exe'
     fuzzer_binaries += [fuzzer_binary]
