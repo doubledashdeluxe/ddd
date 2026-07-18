@@ -8,13 +8,20 @@ extern "C" {
 #include <dolphin/OSTime.h>
 #include <dolphin/VI.h>
 }
+#include <game/RaceClient.hh>
 #include <jsystem/J2DOrthoGraph.hh>
 #include <jsystem/JFWDisplay.hh>
 #include <jsystem/JKRExpHeap.hh>
 #include <jsystem/JUTReport.hh>
 
 void PerfOverlay::beginFrame() {
-    JUTReport(2, 14, "%u", JFWDisplay::Instance()->delayedFrames());
+    RaceClient *raceClient = RaceClient::Instance();
+    u16 latency = raceClient ? raceClient->latency() : 0;
+    if (latency) {
+        JUTReport(2, 14, "%u %u", JFWDisplay::Instance()->delayedFrames(), latency);
+    } else {
+        JUTReport(2, 14, "%u", JFWDisplay::Instance()->delayedFrames());
+    }
 
     m_drawBar.calc(*this);
     m_calcBar.calc(*this);

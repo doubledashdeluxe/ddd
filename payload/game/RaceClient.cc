@@ -23,6 +23,10 @@ u16 RaceClient::clientFrame() const {
     return m_clientFrame;
 }
 
+u16 RaceClient::latency() const {
+    return m_latency;
+}
+
 s32 RaceClient::drift() const {
     if (m_drifts.empty()) {
         return 0;
@@ -196,6 +200,7 @@ RaceClient::RaceClient()
     : m_ok(true)
     , m_serverFrame(0)
     , m_clientFrame(MinClientFrame - 1)
+    , m_latency(0)
     , m_drift(0) {
     for (u32 i = 0; i < m_kartDiffs.count(); i++) {
         m_kartDiffs[i].inputs.fill(0);
@@ -241,6 +246,9 @@ bool RaceClient::clientStateRace(const ClientStateRaceReadInfo &readInfo) {
         m_drifts.pushBack(drift);
     }
     m_serverFrame = info->frame;
+    if (info->clientFrame > m_clientFrame) {
+        m_latency = Frame() + 1 - info->clientFrame;
+    }
     m_clientFrame = info->clientFrame;
 
     const OnlineInfo &onlineInfo = OnlineInfo::Instance();

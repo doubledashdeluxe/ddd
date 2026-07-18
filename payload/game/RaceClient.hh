@@ -15,6 +15,7 @@ public:
 
     bool ok() const;
     u16 clientFrame() const;
+    u16 latency() const;
     s32 drift() const;
     void adjustDrift(s32 adjustment);
     void setHasItem(u32 kartIndex, u32 characterIndex);
@@ -90,6 +91,7 @@ private:
     bool m_ok;
     u16 m_serverFrame;
     u16 m_clientFrame;
+    u16 m_latency;
     s32 m_drift;
     Ring<s32, 60> m_drifts;
     Array<Ring<KartState, 30>, MaxRoomKartCount> m_kartStates;
