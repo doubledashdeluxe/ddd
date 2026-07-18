@@ -1,3 +1,10 @@
+// clang-format off
+//
+// Resources:
+// - https://en.wikipedia.org/w/index.php?title=List_of_languages_by_total_number_of_speakers
+//
+// clang-format on
+
 #include "StorageScanner.hh"
 
 #include "payload/Lock.hh"
@@ -84,6 +91,7 @@ void StorageScanner::notify() {
 }
 
 void *StorageScanner::run() {
+    // The order is by number of L2 speakers according to Wikipedia.
     m_languages = (u32[KartLocale::Language::Count]){
             KartLocale::Language::English,
             KartLocale::Language::French,
