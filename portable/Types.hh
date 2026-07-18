@@ -29,7 +29,7 @@ alignment_assert(Aligner<4>, 4);
 
 template <>
 struct Aligner<8> {
-    double aligner;
+    f64 aligner;
 };
 alignment_assert(Aligner<8>, 8);
 
