@@ -29,4 +29,5 @@ struct ClientStateRaceWriteInfo {
     u8 kartCount;
     Array<Kart, MaxClientKartCount> karts;
     Array<u16, 16> itemCounts;
+    u32 delayedFrames;
 };

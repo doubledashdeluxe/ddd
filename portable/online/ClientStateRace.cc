@@ -312,6 +312,10 @@ u8 ClientStateRace::getItemCountsElement(u32 i0) {
     return m_writeInfo.itemCounts[i0];
 }
 
+u32 ClientStateRace::getDelayedFrames() {
+    return m_writeInfo.delayedFrames;
+}
+
 u32 ClientStateRace::getInputsCount() {
     return m_writeInfo.karts[m_kartIndex].inputCount;
 }

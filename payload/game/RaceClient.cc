@@ -7,6 +7,7 @@
 #include "game/RaceInfo.hh"
 #include "game/RaceMgr.hh"
 
+#include <jsystem/JFWDisplay.hh>
 #include <payload/online/CubeClient.hh>
 
 extern "C" {
@@ -170,6 +171,7 @@ void RaceClient::write() {
     for (u32 i = 0; i < m_writeInfo.itemCounts.count(); i++) {
         m_writeInfo.itemCounts[i] = itemObjMgr->moveCount(i);
     }
+    m_writeInfo.delayedFrames = JFWDisplay::Instance()->delayedFrames();
     CubeClient::Instance()->writeStateRace(m_writeInfo);
 }
 

@@ -586,7 +586,8 @@ impl Room {
 
     pub fn set_race(&mut self, client_pk: &PublicKey, race: ClientStateRace) -> Result<()> {
         anyhow::ensure!(self.has_race_state());
-        let ClientStateRace { frame: client_frame, karts: mut client_karts, item_counts } = race;
+        let ClientStateRace { frame: client_frame, karts: mut client_karts, item_counts, .. } =
+            race;
         anyhow::ensure!(client_frame >= MIN_CLIENT_FRAME);
         let kart_indices: heapless::Vec<_, MAX_CLIENT_KART_COUNT> = self
             .karts
