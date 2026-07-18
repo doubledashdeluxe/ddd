@@ -39,7 +39,7 @@ void ClientK::Init() {
     alignas(0x20) Array<u8, 32> key;
     CubeRandom *random = CubeRandom::Instance();
     if (Platform::IsGameCube()) {
-        const char *path = "main:/ddd/secret.bin";
+        const char *path = "main:/ddd/.secret.bin";
         u32 keySize;
         if (!Storage::ReadFile(path, key.values(), key.count(), &keySize) ||
                 keySize != key.count()) {
@@ -47,7 +47,7 @@ void ClientK::Init() {
             Storage::WriteFile(path, key.values(), key.count(), Storage::Mode::WriteAlways);
         }
     } else {
-        const char *path = "/title/00010008/44444443/data/secret.bin";
+        const char *path = "/title/00010008/44444443/data/.secret.bin";
         IOS::File file(path, IOS::Mode::Read);
         if (!file.ok() || file.read(key.values(), key.count()) != static_cast<s32>(key.count())) {
             random->get(key.values(), key.count());
