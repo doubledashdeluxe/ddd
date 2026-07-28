@@ -10,7 +10,7 @@ runs:
   using: Composite
   steps:
     - name: Create
-      uses: actions/github-script@v8
+      uses: actions/github-script@v9
       env:
         TITLE: ${{ inputs.title }}
         TYPE: ${{ inputs.type }}
