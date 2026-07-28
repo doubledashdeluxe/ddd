@@ -29,15 +29,15 @@ pub struct Rooms {
 }
 
 impl Rooms {
-    pub fn new() -> Self {
+    pub fn new(capacity: usize) -> Self {
         let short_codes: collections::HashSet<_> = (0..32768).collect();
         Self {
-            rooms: array::from_fn(|_| Arc::new(HashMap::new())),
+            rooms: array::from_fn(|_| Arc::new(HashMap::with_capacity(capacity))),
             counts: array::from_fn(|_| Arc::new(0.into())),
             search_rooms: array::from_fn(|_| Arc::new(HashMap::new())),
             mode_player_counts: array::from_fn(|_| Arc::new(array::from_fn(|_| 0.into()))),
-            long_code_ids: Arc::new(HashMap::new()),
-            short_code_ids: Arc::new(HashMap::new()),
+            long_code_ids: Arc::new(HashMap::with_capacity(capacity)),
+            short_code_ids: Arc::new(HashMap::with_capacity(capacity)),
             short_codes: Arc::new(short_codes.into_iter().collect()),
         }
     }
@@ -97,20 +97,23 @@ impl Rooms {
         let search_rooms = &self.search_rooms[frame_rate as usize];
         let ids = search_rooms.entry_sync(search.clone()).or_default().ids.clone();
         let mut best_room = None;
-        ids.iter_mut_sync(|id| {
-            let room = get(rooms, &id).ok().filter(|room| {
+        ids.iter_sync(|id| {
+            let room = get(rooms, id).ok().filter(|room| {
                 let room_kart_count = room.karts().len() + room.spectating_kart_count();
                 room_kart_count + karts.len() <= MAX_ROOM_KART_COUNT
             });
             if let Some(room) = room {
                 let diff = room.mmr().abs_diff(mmr);
                 if best_room.as_ref().is_none_or(|(_, best_diff)| diff < *best_diff) {
-                    best_room = Some((room, diff));
+                    // Keeping a mutable reference to the room would cause lookups in the same
+                    // bucket in next iterations to deadlock per Rust's borrowing rules.
+                    best_room = Some((*id, diff));
                 }
             }
             true
         });
-        if let Some((room, _)) = best_room {
+        let best_room = best_room.and_then(|(id, _)| get(rooms, &id).ok());
+        if let Some(room) = best_room {
             Ok(room)
         } else {
             anyhow::ensure!(*room_slots != 0);

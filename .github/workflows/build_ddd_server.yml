@@ -26,6 +26,13 @@ jobs:
         run: git describe --tags --abbrev=0 > data/version.txt
       - name: Build
         run: cargo build --release
+      - name: Flood
+        run: |
+          cargo run --release --bin flood -- -p 2 --cookie
+          cargo run --release --bin flood -- -p 2 --kx
+          cargo run --release --bin flood -- -p 2 --connection
+          cargo run --release --bin flood -- -p 2 --identity
+          cargo run --release --bin flood -- -p 2 --search
       - name: Upload result
         uses: actions/upload-artifact@v7
         with:

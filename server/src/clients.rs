@@ -23,9 +23,9 @@ pub struct Clients {
 }
 
 impl Clients {
-    pub fn new() -> Self {
+    pub fn new(capacity: usize) -> Self {
         Self {
-            clients: Arc::new(HashMap::new()),
+            clients: Arc::new(HashMap::with_capacity(capacity)),
             count: Arc::new(AtomicUsize::new(0)),
             player_count: Arc::new(AtomicUsize::new(0)),
         }

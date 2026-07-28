@@ -10,8 +10,7 @@ use crate::crypto::{Key, PublicKey};
 pub const M1_SIZE: usize = 96;
 pub const M2_SIZE: usize = 48;
 
-#[cfg(test)]
-fn ik_1(client_k: Key, server_pk: PublicKey, m1: &mut [u8]) -> ClientState {
+pub fn ik_1(client_k: Key, server_pk: PublicKey, m1: &mut [u8]) -> ClientState {
     assert_eq!(m1.len(), M1_SIZE);
     let pattern = patterns::noise_ik();
     let is_initiator = true;
@@ -46,22 +45,19 @@ pub fn ik_2(server_k: Key, m1: &[u8], m2: &mut [u8]) -> Result<(PublicKey, Sessi
     Ok((client_pk, session))
 }
 
-#[cfg(test)]
-fn ik_3(client_state: ClientState, m2: &[u8]) -> Result<Session> {
+pub fn ik_3(client_state: ClientState, m2: &[u8]) -> Result<Session> {
     assert_eq!(m2.len(), M2_SIZE);
     let mut handshake_state = client_state.handshake_state;
     handshake_state.read_message(m2, &mut [])?;
     let (write_cipher, read_cipher) = handshake_state.get_ciphers();
     let (read_k, _) = read_cipher.extract();
     let (write_k, _) = write_cipher.extract();
-    let session = Session::new(read_k, write_k);
-    Ok(session)
+    Ok(Session::new(read_k, write_k))
 }
 
-type HandshakeState = noise_protocol::HandshakeState<X25519, ChaCha20Poly1305, Blake2b>;
+pub type HandshakeState = noise_protocol::HandshakeState<X25519, ChaCha20Poly1305, Blake2b>;
 
-#[cfg(test)]
-struct ClientState {
+pub struct ClientState {
     handshake_state: HandshakeState,
 }
 

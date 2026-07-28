@@ -26,12 +26,12 @@ pub struct Config {
 impl Config {
     pub fn new() -> Self {
         Self {
-            motd: "It works!".parse().unwrap(),
+            motd: "It works!".try_into().unwrap(),
             shards: 0,
-            buffers_per_shard: 1000,
-            max_connections_per_shard: 2000,
-            max_clients: 10000,
-            max_rooms_per_frame_rate: 10000,
+            buffers_per_shard: 5000,
+            max_connections_per_shard: 5000,
+            max_clients: 20000,
+            max_rooms_per_frame_rate: 20000,
             max_spectators_per_room: 1000,
         }
     }
@@ -48,6 +48,12 @@ impl Config {
             debug!("{line}");
         }
         Ok(config)
+    }
+}
+
+impl Default for Config {
+    fn default() -> Self {
+        Self::new()
     }
 }
 

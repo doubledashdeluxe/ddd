@@ -7,7 +7,7 @@ use std::time::{Duration, Instant};
 
 use anyhow::{Context, Result};
 use heapless::linear_map::{self, LinearMap};
-use log::debug;
+use log::trace;
 use rand::seq::SliceRandom;
 use rand::{Rng, RngExt, SeedableRng};
 
@@ -98,7 +98,7 @@ impl Room {
         match_count: u8,
         rng: &mut impl Rng,
     ) -> Self {
-        debug!("-> {id}");
+        trace!("-> {id}");
         let is_race = match mode_index {
             ModeIndex::Versus => true,
             ModeIndex::Balloon => false,
@@ -858,7 +858,7 @@ impl Room {
 
 impl Drop for Room {
     fn drop(&mut self) {
-        debug!("<- {}", self.id);
+        trace!("<- {}", self.id);
     }
 }
 

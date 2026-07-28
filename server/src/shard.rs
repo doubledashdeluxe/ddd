@@ -1,8 +1,8 @@
 use std::collections::BTreeMap;
 use std::collections::hash_map::{Entry, HashMap};
 use std::hash::{BuildHasher, RandomState};
-use std::net::{SocketAddr, UdpSocket};
-use std::sync::mpsc::{Receiver, RecvTimeoutError, SyncSender};
+use std::net::SocketAddr;
+use std::sync::mpsc::RecvTimeoutError;
 use std::time::{Duration, Instant};
 
 use arc_swap::Cache;
@@ -20,13 +20,15 @@ use crate::frequency::Frequency;
 use crate::message::Message;
 use crate::options::NetSimOptions;
 use crate::rooms::Rooms;
+use crate::sender::Sender;
 use crate::update::{SharedUpdate, Update};
+use crate::{BufferSender, MessageReceiver};
 
-pub struct Shard {
+pub struct Shard<S: Sender> {
     config: SharedConfig,
     update: SharedUpdate,
     server_k: Key,
-    link: Link,
+    link: Link<S>,
     random_state: RandomState,
     connections: HashMap<SocketAddr, Connection>,
     clients: Clients,
@@ -34,15 +36,15 @@ pub struct Shard {
     rooms: Rooms,
 }
 
-impl Shard {
+impl<S: Sender> Shard<S> {
     pub fn new(
         net_sim_options: NetSimOptions,
         config: SharedConfig,
         update: SharedUpdate,
         server_k: Key,
-        socket: UdpSocket,
-        message_receiver: Receiver<Message>,
-        buffer_sender: SyncSender<Buffer>,
+        sender: S,
+        message_receiver: MessageReceiver,
+        buffer_sender: BufferSender,
         clients: Clients,
         rooms: Rooms,
     ) -> Self {
@@ -50,7 +52,7 @@ impl Shard {
             drops: 1.0 - (1.0 - net_sim_options.drops).sqrt(),
             latency: net_sim_options.latency / 2,
             jitter: net_sim_options.jitter / 2,
-            socket,
+            sender,
             message_receiver,
             buffer_sender,
             buffers: vec![Buffer::new(); config.load().buffers_per_shard * 5],
@@ -163,26 +165,26 @@ impl Shard {
     }
 }
 
-struct Link {
+struct Link<S: Sender> {
     drops: f64,
     latency: u64,
     jitter: u64,
-    socket: UdpSocket,
-    message_receiver: Receiver<Message>,
-    buffer_sender: SyncSender<Buffer>,
+    sender: S,
+    message_receiver: MessageReceiver,
+    buffer_sender: BufferSender,
     buffers: Vec<Buffer>,
     events: BTreeMap<(Instant, usize), Event>,
     event_index: usize,
     rng: ChaCha20Rng,
 }
 
-impl Link {
+impl<S: Sender> Link<S> {
     fn recv(&mut self, now: Instant) -> Option<Message> {
         for (_, event) in self.events.extract_if(..(now, usize::MAX), |_, _| true) {
             match event {
                 Event::Read { buffer, addr } => return Some(Message::Read { buffer, addr }),
                 Event::Write { buffer, addr } => {
-                    if let Err(e) = self.socket.send_to(buffer.as_slice(), addr) {
+                    if let Err(e) = self.sender.send_to(buffer.as_slice(), addr) {
                         error!("{e}");
                     }
                     self.buffers.push(buffer);
@@ -231,7 +233,7 @@ impl Link {
                 let event = Event::Write { buffer, addr };
                 self.events.insert(event_key, event);
             }
-        } else if let Err(e) = self.socket.send_to(buf, addr) {
+        } else if let Err(e) = self.sender.send_to(buf, addr) {
             error!("{e}");
         }
     }

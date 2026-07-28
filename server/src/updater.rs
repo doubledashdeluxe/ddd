@@ -1,10 +1,10 @@
 use std::collections::HashMap;
-use std::sync::mpsc::SyncSender;
 use std::thread;
 use std::time::Instant;
 
 use arc_swap::Cache;
 
+use crate::MessageSender;
 use crate::clients::Clients;
 use crate::config::SharedConfig;
 use crate::crypto::ChaCha20Rng;
@@ -14,7 +14,7 @@ use crate::rooms::Rooms;
 
 pub struct Updater {
     config: SharedConfig,
-    message_senders: Vec<SyncSender<Message>>,
+    message_senders: Vec<MessageSender>,
     clients: Clients,
     rooms: Rooms,
     frequency: Frequency,
@@ -23,7 +23,7 @@ pub struct Updater {
 impl Updater {
     pub const fn new(
         config: SharedConfig,
-        message_senders: Vec<SyncSender<Message>>,
+        message_senders: Vec<MessageSender>,
         clients: Clients,
         rooms: Rooms,
         frequency: Frequency,

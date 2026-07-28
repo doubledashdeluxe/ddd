@@ -46,11 +46,12 @@ where
     bpaf::construct!([flag, arg]).fallback(T::default()).display_fallback()
 }
 
+#[derive(Clone, Copy, Debug, Default)]
 pub struct Options {
     pub net_sim: NetSimOptions,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug, Default)]
 pub struct NetSimOptions {
     pub drops: f64,
     pub latency: u64,

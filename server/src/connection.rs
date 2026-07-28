@@ -1,7 +1,7 @@
 use std::net::SocketAddr;
 use std::time::{Duration, Instant};
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 
 use crate::clients::Clients;
 use crate::config::Config;
@@ -39,15 +39,15 @@ impl Connection {
         clients: &Clients,
         client_slots: &mut usize,
     ) -> Result<()> {
-        let plaintext_len = message
-            .len()
-            .checked_sub(Session::MAC_SIZE + Session::NONCE_SIZE)
-            .context("Invalid message length")?;
+        let plaintext_len = message.len().checked_sub(Session::MAC_SIZE + Session::NONCE_SIZE);
+        // Returning an error here would allow an off-path attacker with a spoofed IP address to
+        // break the connection.
+        let Some(plaintext_len) = plaintext_len else { return Ok(()) };
         let mut plaintext = [0u8; BUFFER_SIZE as usize];
         let plaintext = &mut plaintext[..plaintext_len];
-        match self.session.decrypt(message, plaintext) {
-            Ok(()) => (),
-            Err(_) => return Ok(()),
+        if self.session.decrypt(message, plaintext).is_err() {
+            // Same rationale here
+            return Ok(());
         }
         let mut client = match self.state {
             State::Kx { .. } => {
@@ -77,9 +77,9 @@ impl Connection {
         match self.state {
             State::Kx { m2 } => match frequency {
                 Frequency::SixtyHz => {
-                    let message = &mut message[..kx::M2_SIZE];
+                    let message = &mut message[..m2.len()];
                     message.copy_from_slice(&m2);
-                    Ok(Some(kx::M2_SIZE))
+                    Ok(Some(m2.len()))
                 }
                 _ => Ok(None),
             },

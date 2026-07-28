@@ -1,3 +1,4 @@
+#![allow(clippy::result_unit_err)]
 #![allow(clippy::trivially_copy_pass_by_ref)]
 #![allow(clippy::unnecessary_wraps)]
 #![allow(dead_code)]
@@ -213,6 +214,7 @@ impl ItemId {
         }
     }
 
+    #[must_use]
     pub const fn base(self) -> Self {
         match self {
             Self::TripleGreenShells => Self::GreenShell,

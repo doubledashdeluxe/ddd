@@ -4,7 +4,7 @@ use std::net::SocketAddr;
 use std::time::{Duration, Instant};
 
 use anyhow::{Result, anyhow};
-use log::debug;
+use log::{debug, trace};
 use rand::{Rng, RngExt};
 
 use crate::config::Config;
@@ -30,7 +30,7 @@ pub struct Client {
 
 impl Client {
     pub fn new(now: Instant, addr: SocketAddr, pk: PublicKey) -> Self {
-        debug!("-> {addr}");
+        trace!("-> {addr}");
         let expiration = now + Duration::from_mins(2);
         let state = State::Idle;
         let client_state = None;
@@ -473,7 +473,7 @@ impl Client {
 
 impl Drop for Client {
     fn drop(&mut self) {
-        debug!("<- {}", self.addr);
+        trace!("<- {}", self.addr);
     }
 }
 

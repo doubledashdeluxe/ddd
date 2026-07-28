@@ -1,34 +1,34 @@
 use std::hash::{BuildHasher, RandomState};
-use std::net::UdpSocket;
-use std::sync::mpsc::{Receiver, SyncSender, TrySendError};
 
 use log::error;
 
-use crate::buffer::Buffer;
 use crate::message::Message;
+use crate::receiver::Receiver;
+use crate::{BufferReceiver, MessageSender};
 
-pub struct Listener {
-    socket: UdpSocket,
-    message_senders: Vec<SyncSender<Message>>,
-    buffer_receiver: Receiver<Buffer>,
+pub struct Listener<R: Receiver> {
+    receiver: R,
+    message_senders: Vec<MessageSender>,
+    buffer_receiver: BufferReceiver,
 }
 
-impl Listener {
+impl<R: Receiver> Listener<R> {
     pub const fn new(
-        socket: UdpSocket,
-        message_senders: Vec<SyncSender<Message>>,
-        buffer_receiver: Receiver<Buffer>,
+        receiver: R,
+        message_senders: Vec<MessageSender>,
+        buffer_receiver: BufferReceiver,
     ) -> Self {
-        Self { socket, message_senders, buffer_receiver }
+        Self { receiver, message_senders, buffer_receiver }
     }
 
     pub fn run(self) -> ! {
         let random_state = RandomState::new();
         loop {
+            // It's fine to unwrap because this can only fail if all shards have crashed.
             let mut buffer = self.buffer_receiver.recv().unwrap();
             buffer.reset_len();
             let (len, addr) = loop {
-                match self.socket.recv_from(buffer.as_mut_slice()) {
+                match self.receiver.recv_from(buffer.as_mut_slice()) {
                     Ok(r) => break r,
                     Err(e) => {
                         error!("{e}");
@@ -38,10 +38,11 @@ impl Listener {
             buffer.set_len(len);
             let index = random_state.hash_one(addr) as usize % self.message_senders.len();
             let message = Message::Read { buffer, addr };
-            match self.message_senders[index].try_send(message) {
-                Err(TrySendError::Full(_)) => (),
-                r => r.unwrap(),
-            }
+            // It's fine to unwrap because this can only fail if the shard has crashed.
+            // We don't want `try_send` because we cannot recover dropped buffers.
+            // The downside is that the listener can be bottlenecked by the slowest shard, but only
+            // once its queue is full.
+            self.message_senders[index].send(message).unwrap();
         }
     }
 }

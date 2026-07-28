@@ -33,6 +33,13 @@ impl Buffer {
         self.as_mut_slice().copy_from_slice(buffer);
         self.len
     }
+
+    pub fn copy_to(&self, buffer: &mut [u8]) -> usize {
+        let len = buffer.len().min(self.len);
+        let buffer = &mut buffer[..len];
+        buffer.copy_from_slice(&self.as_slice()[..len]);
+        len
+    }
 }
 
 const MAX_LEN: usize = BUFFER_SIZE as usize;
