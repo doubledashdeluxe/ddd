@@ -65,24 +65,22 @@ SceneNameSelect::SceneNameSelect(JKRArchive *archive, JKRHeap *heap) : Scene(arc
 SceneNameSelect::~SceneNameSelect() {}
 
 void SceneNameSelect::init() {
-    if (SequenceApp::Instance()->prevScene() == SceneType::ProfileSelect) {
-        m_padCount = SequenceInfo::Instance().m_padCount;
+    m_padCount = SequenceInfo::Instance().m_padCount;
 
-        for (u32 i = 0; i < 4; i++) {
-            m_mainScreen.search("ENplay%u", i + 1)->m_isVisible = i < m_padCount;
-        }
+    for (u32 i = 0; i < 4; i++) {
+        m_mainScreen.search("ENplay%u", i + 1)->m_isVisible = i < m_padCount;
+    }
 
-        J2DPicture *picture = m_padCountScreen.search("Cstok_p")->downcast<J2DPicture>();
-        Array<char, 32> name;
-        snprintf(name.values(), name.count(), "Player%lu.bti", m_padCount);
-        picture->changeTexture(name.values(), 0);
+    J2DPicture *picture = m_padCountScreen.search("Cstok_p")->downcast<J2DPicture>();
+    Array<char, 32> name;
+    snprintf(name.values(), name.count(), "Player%lu.bti", m_padCount);
+    picture->changeTexture(name.values(), 0);
 
-        readNames();
-        SequenceApp::Instance()->ready(SceneType::ServerSelect);
+    readNames();
+    SequenceApp::Instance()->ready(SceneType::ServerSelect);
 
-        for (u32 i = 0; i < m_nameEntryHelpers.count(); i++) {
-            m_nameEntryHelpers[i]->init(m_unsavedNames[i].values());
-        }
+    for (u32 i = 0; i < m_nameEntryHelpers.count(); i++) {
+        m_nameEntryHelpers[i]->init(m_unsavedNames[i].values());
     }
 
     slideIn();

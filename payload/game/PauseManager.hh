@@ -14,8 +14,10 @@ public:
     REPLACE void reset();
     REPLACE void draw();
     void exec();
+    void startResult();
 
     static PauseManager *Instance();
+    static s32 PauseChoice();
 
 private:
     bool m_isLAN;

@@ -203,9 +203,11 @@ void SceneModeSelect::clientStateError() {
 }
 
 void SceneModeSelect::slideIn() {
-    if (SequenceApp::Instance()->prevScene() != SceneType::PackSelect) {
-        m_roomType = OnlineInfo::Instance().m_roomType;
-        m_playerCountIsVisible = m_roomType == RoomType::Worldwide;
+    m_roomType = OnlineInfo::Instance().m_roomType;
+    m_playerCountIsVisible = m_roomType == RoomType::Worldwide;
+    if (SequenceApp::Instance()->prevScene() == SceneType::PackSelect) {
+        m_modeIndex = OnlineInfo::Instance().m_modeIndex;
+    } else {
         m_modeIndex = 0;
     }
     for (u32 i = 0; i < m_descs.count(); i++) {

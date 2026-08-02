@@ -49,6 +49,9 @@ public:
     bool isErrorValid();
     void setError();
 
+    bool isMatchIndexValid(u8 matchIndex);
+    void setMatchIndex(u8 matchIndex);
+
     bool isKartIndicesCountValid(u32 kartIndicesCount);
     void setKartIndicesCount(u32 kartIndicesCount);
     bool isKartIndicesElementValid(u32 i0, u8 kartIndicesElement);

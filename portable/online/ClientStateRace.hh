@@ -15,6 +15,7 @@ class ClientStateRace
     , public ServerRaceStateMainReader<ClientStateRace>
     , public ServerRaceKartReader<ClientStateRace>
     , public ItemEventReader<ClientStateRace>
+    , public ServerResultReader<ClientStateRace>
     , public ClientStateWriter<ClientStateRace>::Race
     , public ClientStateRaceWriter<ClientStateRace>
     , public ClientRaceKartWriter<ClientStateRace>
@@ -25,6 +26,7 @@ public:
     ~ClientStateRace() override;
     bool needsSockets() override;
     ClientState &read(ClientReadHandler &handler) override;
+    ClientState &writeStateRoom(const ClientStateRoomWriteInfo &writeInfo) override;
     ClientState &writeStatePoll(const ClientStatePollWriteInfo &writeInfo) override;
     ClientState &writeStateRace(const ClientStateRaceWriteInfo &writeInfo) override;
 
@@ -43,6 +45,8 @@ public:
     bool isErrorValid();
     void setError();
 
+    bool isMatchIndexValid(u8 matchIndex);
+    void setMatchIndex(u8 matchIndex);
     bool isFrameValid(u16 frame);
     void setFrame(u16 frame);
     bool isClientFrameValid(u16 clientFrame);
@@ -52,6 +56,11 @@ public:
     bool isKartsCountValid(u32 kartsCount);
     void setKartsCount(u32 kartsCount);
     ServerRaceKartReader *kartsElementReader(u32 i0);
+    bool isEndFrameValid(u16 endFrame);
+    void setEndFrame(u16 endFrame);
+    bool isResultsCountValid(u32 resultsCount);
+    void setResultsCount(u32 resultsCount);
+    ServerResultReader *resultsElementReader(u32 i0);
 
     bool isKartFrameValid(u16 kartFrame);
     void setKartFrame(u16 kartFrame);
@@ -82,6 +91,10 @@ public:
     bool isItemEventsCountValid(u32 itemEventsCount);
     void setItemEventsCount(u32 itemEventsCount);
     ItemEventReader *itemEventsElementReader(u32 i0);
+    bool isLapValid(u8 lap);
+    void setLap(u8 lap);
+    bool isTimeValid(u32 time);
+    void setTime(u32 time);
 
     bool isEventFrameValid(u8 itemFrame);
     void setEventFrame(u8 itemFrame);
@@ -93,6 +106,11 @@ public:
     void setEventPosX(s16 eventPosX);
     bool isEventPosZValid(s16 eventPosZ);
     void setEventPosZ(s16 eventPosZ);
+
+    bool isKartIndexValid(u8 kartIndex);
+    void setKartIndex(u8 kartIndex);
+    bool isPointsValid(u16 points);
+    void setPoints(u16 points);
 
     ClientStateRaceWriter &raceWriter();
 
@@ -118,6 +136,8 @@ public:
     u32 getItemEventsCount();
     ItemEventWriter &itemEventsElementWriter(u32 i0);
     u8 getRank();
+    u8 getLap();
+    u32 getTime();
 
     u8 getEventFrame();
     s8 getEventStickY();
@@ -131,6 +151,7 @@ private:
 
     u32 m_kartIndex;
     u32 m_itemEventIndex;
+    u32 m_resultIndex;
     ReadInfo m_readInfo;
     WriteInfo m_writeInfo;
 };

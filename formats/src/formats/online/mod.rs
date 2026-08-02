@@ -12,7 +12,7 @@ pub fn format() -> Format {
     let default_port = SimpleConstant::new("DEFAULT_PORT", 3549u16);
     let buffer_size = SimpleConstant::new("BUFFER_SIZE", 1152u16);
     let update_version = SimpleConstant::new("UPDATE_VERSION", 1u8);
-    let protocol_version = SimpleConstant::new("PROTOCOL_VERSION", 21u16);
+    let protocol_version = SimpleConstant::new("PROTOCOL_VERSION", 22u16);
     let max_lap_count = SimpleConstant::new("MAX_LAP_COUNT", 9u8);
     let min_match_count = SimpleConstant::new("MIN_MATCH_COUNT", 1u8);
     let max_match_count = SimpleConstant::new("MAX_MATCH_COUNT", 96u8);
@@ -44,6 +44,7 @@ pub fn format() -> Format {
     let max_item_event_count = SimpleConstant::new("MAX_ITEM_EVENT_COUNT", MAX_ITEM_EVENT_COUNT);
     let min_stick_y = SimpleConstant::new("MIN_STICK_Y", -3i8);
     let max_stick_y = SimpleConstant::new("MAX_STICK_Y", 3i8);
+    let max_time = SimpleConstant::new("MAX_TIME", 5_999_999u32);
     Format::new("Online")
         .with_constant(default_port)
         .with_constant(buffer_size)
@@ -76,6 +77,7 @@ pub fn format() -> Format {
         .with_constant(max_item_event_count)
         .with_constant(min_stick_y)
         .with_constant(max_stick_y)
+        .with_constant(max_time)
         .with_type(frame_rate())
         .with_type(mode_index())
         .with_type(room_option_code_type())
@@ -145,6 +147,7 @@ pub fn format() -> Format {
         .with_type(server_poll_state())
         .with_type(server_state_poll())
         .with_type(server_race_kart())
+        .with_type(server_result())
         .with_type(server_race_state_main())
         .with_type(server_race_state())
         .with_type(server_state_race())

@@ -6,6 +6,7 @@
 #include "game/OnlineInfo.hh"
 #include "game/RaceInfo.hh"
 #include "game/RaceMgr.hh"
+#include "game/SequenceInfo.hh"
 
 #include <jsystem/JFWDisplay.hh>
 #include <payload/online/CubeClient.hh>
@@ -17,6 +18,10 @@ extern "C" {
 
 bool RaceClient::ok() const {
     return m_ok;
+}
+
+u16 RaceClient::serverFrame() const {
+    return m_serverFrame;
 }
 
 u16 RaceClient::clientFrame() const {
@@ -44,6 +49,18 @@ void RaceClient::adjustDrift(s32 adjustment) {
     for (u32 i = 0; i < m_drifts.count(); i++) {
         m_drifts[i] += adjustment;
     }
+}
+
+u16 RaceClient::endFrame() const {
+    return m_endFrame;
+}
+
+bool RaceClient::hasResults() const {
+    return m_hasResults;
+}
+
+const Array<s32, 8> &RaceClient::pointDiffs() const {
+    return m_pointDiffs;
 }
 
 void RaceClient::setHasItem(u32 kartIndex, u32 characterIndex) {
@@ -170,6 +187,10 @@ void RaceClient::write() {
         kart.velZ = ConvertVel(vel.z);
         const KartChecker *kartChecker = raceMgr->kartChecker(kartIndex);
         kart.rank = kartChecker->rank() - 1;
+        u32 lapCount = kartChecker->lapCount();
+        u32 lap = Clamp<s32>(kartChecker->lap(), 0, lapCount);
+        kart.time = lap > 0 ? kartChecker->lapTotalTime(lap - 1).m_time : 0;
+        kart.lap = lap < lapCount ? lap + 1 : 0;
     }
     const ItemObjMgr *itemObjMgr = ItemObjMgr::Instance();
     for (u32 i = 0; i < m_writeInfo.itemCounts.count(); i++) {
@@ -178,6 +199,8 @@ void RaceClient::write() {
     m_writeInfo.latency = m_latency;
     m_writeInfo.delayedFrames = JFWDisplay::Instance()->delayedFrames();
     CubeClient::Instance()->writeStateRace(m_writeInfo);
+
+    m_ok = m_ok && frame < MinClientFrame + 18 * 60 * 60;
 }
 
 void RaceClient::Create() {
@@ -197,12 +220,23 @@ u32 RaceClient::Frame() {
     return MinClientFrame + RaceMgr::Instance()->frame();
 }
 
+bool RaceClient::RankedKartIndexComparator::operator()(const u32 &a, const u32 &b) {
+    if (points[a] != points[b]) {
+        return points[a] > points[b];
+    }
+
+    return prevPoints[a] <= prevPoints[b];
+}
+
 RaceClient::RaceClient()
     : m_ok(true)
     , m_serverFrame(0)
     , m_clientFrame(MinClientFrame - 1)
     , m_latency(0)
-    , m_drift(0) {
+    , m_drift(0)
+    , m_endFrame(UINT16_MAX)
+    , m_hasResults(false)
+    , m_pointDiffs(0) {
     for (u32 i = 0; i < m_kartDiffs.count(); i++) {
         m_kartDiffs[i].inputs.fill(0);
         m_kartDiffs[i].driver = 0;
@@ -214,6 +248,7 @@ RaceClient::RaceClient()
         m_kartDiffs[i].itemEventCounter = 0;
     }
     const OnlineInfo &onlineInfo = OnlineInfo::Instance();
+    m_writeInfo.matchIndex = onlineInfo.m_matchIndex;
     m_writeInfo.kartCount = onlineInfo.m_localKartCount;
     for (u32 i = 0; i < m_writeInfo.kartCount; i++) {
         u32 kartIndex = onlineInfo.m_localKartIndices[i];
@@ -251,10 +286,12 @@ bool RaceClient::clientStateRace(const ClientStateRaceReadInfo &readInfo) {
         m_latency = Frame() + 1 - info->clientFrame;
     }
     m_clientFrame = info->clientFrame;
+    m_endFrame = info->endFrame;
 
     const OnlineInfo &onlineInfo = OnlineInfo::Instance();
     const RaceInfo &raceInfo = RaceInfo::Instance();
     u32 kartCount = raceInfo.getKartCount();
+    const RaceMgr *raceMgr = RaceMgr::Instance();
     const KartCtrl *kartCtrl = KartCtrl::Instance();
     ItemObjMgr *itemObjMgr = ItemObjMgr::Instance();
     for (u32 i = 0, j = 0; i < kartCount && j < info->kartCount; i++) {
@@ -272,6 +309,20 @@ bool RaceClient::clientStateRace(const ClientStateRaceReadInfo &readInfo) {
         }
         kartDiff.itemFrames = kart.itemFrames;
         kartDiff.itemIDs = kart.itemIDs;
+        KartChecker *kartChecker = raceMgr->kartChecker(i);
+        bool raceEnd = kart.lap == 0;
+        u8 lap = raceEnd ? kartChecker->lapCount() : kart.lap - 1;
+        if (lap > 0 && lap <= kartChecker->lap()) {
+            u32 time = kart.time;
+            u32 prevTime = lap < 2 ? 0 : kartChecker->lapTotalTime(lap - 2).m_time;
+            if (time >= prevTime && (raceEnd || time <= kartChecker->totalTime().m_time)) {
+                kartChecker->lapTotalTime(lap - 1).m_time = time;
+                kartChecker->lapTime(lap - 1).m_time = time - prevTime;
+                if (raceEnd) {
+                    kartChecker->totalTime().m_time = time;
+                }
+            }
+        }
         if (onlineInfo.m_karts[i].local) {
             continue;
         }
@@ -406,6 +457,49 @@ bool RaceClient::clientStateRace(const ClientStateRaceReadInfo &readInfo) {
             kartStates[j].vel += velDiff;
         }
     }
+
+    if (m_hasResults) {
+        return true;
+    }
+
+    if (!readInfo.resultCount) {
+        return true;
+    }
+
+    m_ok = m_ok && readInfo.resultCount == kartCount;
+    if (!m_ok) {
+        return true;
+    }
+
+    const Array<ReadInfo::Result, 8> &results = readInfo.results;
+    for (u32 i = 0; i < kartCount; i++) {
+        const ReadInfo::Result &result = results[i];
+        if (result.kartIndex >= kartCount) {
+            m_ok = false;
+        }
+        for (u32 j = i + 1; j < kartCount; j++) {
+            if (results[j].kartIndex == result.kartIndex) {
+                m_ok = false;
+            }
+        }
+    }
+    if (!m_ok) {
+        return true;
+    }
+
+    SequenceInfo &sequenceInfo = SequenceInfo::Instance();
+    Array<u32, 8> prevPoints = sequenceInfo.m_points;
+    sequenceInfo.m_prevGPRankedKartIndices = sequenceInfo.m_gpRankedKartIndices;
+    for (u32 i = 0; i < kartCount; i++) {
+        const ReadInfo::Result &result = results[i];
+        sequenceInfo.m_points[result.kartIndex] = result.points;
+        sequenceInfo.m_raceRankedKartIndices[i] = result.kartIndex;
+        sequenceInfo.m_gpRankedKartIndices[i] = i;
+        m_pointDiffs[i] = result.points - prevPoints[result.kartIndex];
+    }
+    RankedKartIndexComparator comparator = {sequenceInfo.m_points, prevPoints};
+    Sort(sequenceInfo.m_gpRankedKartIndices, kartCount, comparator);
+    m_hasResults = true;
     return true;
 }
 

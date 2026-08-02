@@ -274,6 +274,15 @@ void ClientStateRoom::setMmr(u16 mmr) {
     m_readInfo.info.getOrEmplace().karts[m_kartIndex].mmr = mmr;
 }
 
+bool ClientStateRoom::isPointsValid(u16 points) {
+    const Optional<ReadInfo::Info> &info = m_readInfo.info;
+    return !info || !info->continuing || points == info->karts[m_kartIndex].points;
+}
+
+void ClientStateRoom::setPoints(u16 points) {
+    m_readInfo.info.getOrEmplace().karts[m_kartIndex].points = points;
+}
+
 bool ClientStateRoom::isIndexValid(u8 index) {
     return index < MaxClientPlayerCount;
 }

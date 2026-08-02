@@ -1,11 +1,14 @@
 #include "Result2D.hh"
 
+#include "game/EffectMgr.hh"
 #include "game/GameAudioMain.hh"
 #include "game/J2DManager.hh"
 #include "game/Kart2DCommon.hh"
 #include "game/OnlineInfo.hh"
 #include "game/OnlineTimer.hh"
+#include "game/PauseChoice.hh"
 #include "game/Race2D.hh"
+#include "game/RaceClient.hh"
 #include "game/RaceInfo.hh"
 #include "game/RaceMgr.hh"
 #include "game/RaceMode.hh"
@@ -282,6 +285,10 @@ void Result2D::calc(const KartGamePad *pad) {
     OnlineTimer::Instance()->calc();
 }
 
+void Result2D::start() {
+    m_pointDiffs = RaceClient::Instance()->pointDiffs();
+}
+
 void Result2D::end() {
     m_endFrame = 1;
 }
@@ -296,6 +303,12 @@ void Result2D::SetGPClr() {
         default:
             s_state = State::OnlineMatch;
             break;
+        }
+        const OnlineInfo &onlineInfo = OnlineInfo::Instance();
+        if (onlineInfo.m_matchIndex + 1 < onlineInfo.m_matchCount) {
+            s_selector = PauseChoice::PlayerList;
+        } else {
+            s_selector = PauseChoice::PersonalRoom;
         }
         OnlineTimer::Instance()->init(30);
     } else {
@@ -379,17 +392,22 @@ void Result2D::drawOnline() {
 }
 
 void Result2D::setDrawOnline() {
-    setSelectorScale(s_selector == 8);
+    setSelectorScale(s_selector == PauseChoice::Title);
 }
 
 void Result2D::selectorOnline(const KartGamePad *pad) {
     const JUTGamePad::CButton &button = pad->button();
-    if (button.repeat() & JUTGamePad::PAD_MSTICK_UP) {
-        s_selector = s_selector == 8 ? 5 : 8;
-        selectorCommon();
-    }
-    if (button.repeat() & JUTGamePad::PAD_MSTICK_DOWN) {
-        s_selector = s_selector == 8 ? 5 : 8;
+    if (button.repeat() & (JUTGamePad::PAD_MSTICK_UP | JUTGamePad::PAD_MSTICK_DOWN)) {
+        if (s_selector == PauseChoice::Title) {
+            const OnlineInfo &onlineInfo = OnlineInfo::Instance();
+            if (onlineInfo.m_matchIndex < onlineInfo.m_matchCount) {
+                s_selector = PauseChoice::PlayerList;
+            } else {
+                s_selector = PauseChoice::PersonalRoom;
+            }
+        } else {
+            s_selector = PauseChoice::Title;
+        }
         selectorCommon();
     }
 }
@@ -403,10 +421,12 @@ void Result2D::calcOnlineMatch() {
     u32 kartCount = RaceInfo::Instance().getKartCount();
     s32 frame = m_frame - 75 + (8 - kartCount) * 5;
     if (frame >= 0 && frame < 100 && frame % 10 == 9) {
+        const Array<s32, 8> &pointDiffs = RaceClient::Instance()->pointDiffs();
         for (u32 i = 0; i < kartCount; i++) {
-            if (m_pointDiffs[i] > 0) {
-                m_pointDiffs[i]--;
-            }
+            s32 step = (abs(pointDiffs[i]) + 10 - 1) / 10;
+            step = Min<s32>(step, abs(m_pointDiffs[i]));
+            step = pointDiffs[i] >= 0 ? -step : step;
+            m_pointDiffs[i] += step;
         }
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_SCORE_POINT_ADD);
     }
@@ -414,6 +434,12 @@ void Result2D::calcOnlineMatch() {
 
 void Result2D::calcOnlineTotal() {
     calcOnlineCommon(true, false);
+    const OnlineInfo &onlineInfo = OnlineInfo::Instance();
+    if (m_frame == 0 && onlineInfo.m_roomType == RoomType::Personal &&
+            onlineInfo.m_matchIndex == onlineInfo.m_matchCount) {
+        Vec3f pos(304.0f, 224.0f, 0.0f);
+        EffectMgr::Instance()->createEmt2D("mk_secretKami", pos);
+    }
 }
 
 void Result2D::calcOnlineCommon(bool hasPrev, bool hasNext) {
@@ -495,6 +521,7 @@ void Result2D::setOnlineMatch() {
     const RaceInfo &raceInfo = RaceInfo::Instance();
     u32 kartCount = raceInfo.getKartCount();
     Kart2DCommon *kart2DCommon = Kart2DCommon::Instance();
+    const Array<s32, 8> &pointDiffs = RaceClient::Instance()->pointDiffs();
     for (u32 i = 0; i < kartCount; i++) {
         for (u32 j = 0; j < Count(m_gpLines[i].timeDigits); j++) {
             m_gpLines[i].timeDigits[j].picture->m_isVisible = false;
@@ -504,8 +531,7 @@ void Result2D::setOnlineMatch() {
         }
         m_gpPointScreens[i]->m_isVisible = true;
         char plusText[5];
-        s32 points[8] = {10, 8, 6, 4, 3, 2, 1, 0};
-        s32 count = snprintf(plusText, Count(plusText), "%+" PRId32, points[i]);
+        s32 count = snprintf(plusText, Count(plusText), "%+" PRId32, pointDiffs[i]);
         s32 maxCount = onlineInfo.m_roomType == RoomType::Worldwide ? 4 : 3;
         count = Clamp<s32>(count, 0, maxCount);
         u32 offset = maxCount - count;

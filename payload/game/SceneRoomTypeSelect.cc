@@ -82,23 +82,25 @@ SceneRoomTypeSelect::SceneRoomTypeSelect(JKRArchive *archive, JKRHeap *heap)
 SceneRoomTypeSelect::~SceneRoomTypeSelect() {}
 
 void SceneRoomTypeSelect::init() {
+    const SequenceInfo &sequenceInfo = SequenceInfo::Instance();
+    m_padCount = sequenceInfo.m_padCount;
+    m_statusCount = sequenceInfo.m_statusCount;
     if (SequenceApp::Instance()->prevScene() == SceneType::ServerSelect) {
-        const SequenceInfo &sequenceInfo = SequenceInfo::Instance();
-        m_padCount = sequenceInfo.m_padCount;
-        m_statusCount = sequenceInfo.m_statusCount;
         m_roomTypeIndex = 0;
+    } else {
+        m_roomTypeIndex = OnlineInfo::Instance().m_roomType;
+    }
 
-        m_tandemScreen.search("Ns1234")->m_isVisible = m_statusCount + 0 == m_padCount;
-        m_tandemScreen.search("Ns12_3_4")->m_isVisible = m_statusCount + 1 == m_padCount;
-        m_tandemScreen.search("Ns12_34")->m_isVisible = m_statusCount + 2 == m_padCount;
-        for (u32 i = 0, j = 1; i < 3; i++) {
-            for (u32 k = 1; k < 4 - i; j++, k++) {
-                m_tandemScreen.search("SMm%u", j)->m_isVisible = m_statusCount > k;
-                m_tandemScreen.search("SMpb%u", 1 + i + j)->m_isVisible = m_statusCount > k;
-            }
-            for (u32 k = 1; k < 4; k++) {
-                m_tandemScreen.search("SMpm%u", 1 + i * 4 + k)->m_isVisible = m_padCount > k;
-            }
+    m_tandemScreen.search("Ns1234")->m_isVisible = m_statusCount + 0 == m_padCount;
+    m_tandemScreen.search("Ns12_3_4")->m_isVisible = m_statusCount + 1 == m_padCount;
+    m_tandemScreen.search("Ns12_34")->m_isVisible = m_statusCount + 2 == m_padCount;
+    for (u32 i = 0, j = 1; i < 3; i++) {
+        for (u32 k = 1; k < 4 - i; j++, k++) {
+            m_tandemScreen.search("SMm%u", j)->m_isVisible = m_statusCount > k;
+            m_tandemScreen.search("SMpb%u", 1 + i + j)->m_isVisible = m_statusCount > k;
+        }
+        for (u32 k = 1; k < 4; k++) {
+            m_tandemScreen.search("SMpm%u", 1 + i * 4 + k)->m_isVisible = m_padCount > k;
         }
     }
 

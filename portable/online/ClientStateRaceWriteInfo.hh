@@ -23,8 +23,11 @@ struct ClientStateRaceWriteInfo {
         u8 itemEventCounter;
         Ring<ItemEvent, MaxItemEventCount> itemEvents;
         u8 rank;
+        u8 lap;
+        u32 time;
     };
 
+    u8 matchIndex;
     u16 frame;
     u8 kartCount;
     Array<Kart, MaxClientKartCount> karts;

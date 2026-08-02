@@ -23,6 +23,7 @@ private:
     bool clientStateRoom(const ClientStateRoomReadInfo &readInfo) override;
     bool clientStateTeam(const ClientStateTeamReadInfo &readInfo) override;
     bool clientStatePoll(const ClientStatePollReadInfo &readInfo) override;
+    bool clientStateRace(const ClientStateRaceReadInfo &readInfo) override;
     void clientStateError() override;
 
     void slideIn();

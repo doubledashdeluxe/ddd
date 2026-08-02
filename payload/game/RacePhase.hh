@@ -14,7 +14,8 @@ public:
         Running = 17,
         Wait = 18,
         Ending = 19,
-        // ...
+        PersonalRoom = 20, // Added
+        PlayerList = 21,   // Added
     };
 
 private:

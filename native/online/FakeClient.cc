@@ -152,6 +152,7 @@ ClientState &FakeClient::writeStateTeam() {
 
 ClientState &FakeClient::writeStatePoll() {
     ClientStatePollWriteInfo writeInfo;
+    writeInfo.matchIndex = 0;
     writeInfo.packCourseCount = 1;
     writeInfo.kartCount = 2;
     auto &ready = writeInfo.ready.emplace();
@@ -165,6 +166,7 @@ ClientState &FakeClient::writeStatePoll() {
 
 ClientState &FakeClient::writeStateRace() {
     ClientStateRaceWriteInfo writeInfo;
+    writeInfo.matchIndex = 0;
     writeInfo.frame = 0;
     writeInfo.kartCount = 1;
     writeInfo.karts[0].inputCount = 1;
@@ -178,6 +180,8 @@ ClientState &FakeClient::writeStateRace() {
     writeInfo.karts[0].itemFrames[0] = MinClientFrame;
     writeInfo.karts[0].itemFrames[1] = MinClientFrame;
     writeInfo.karts[0].rank = 0;
+    writeInfo.karts[0].lap = 0;
+    writeInfo.karts[0].time = 0;
     writeInfo.itemCounts.fill(0);
     writeInfo.latency = 0;
     writeInfo.delayedFrames = 0;

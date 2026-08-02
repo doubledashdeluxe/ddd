@@ -90,6 +90,8 @@ public:
     ServerPlayerReader *playersElementReader(u32 i0);
     bool isMmrValid(u16 mmr);
     void setMmr(u16 mmr);
+    bool isPointsValid(u16 points);
+    void setPoints(u16 points);
 
     bool isIndexValid(u8 index);
     void setIndex(u8 index);

@@ -147,10 +147,12 @@ pub fn server_kart() -> impl ComplexDataType {
     let local: SimpleDataType<u8> = SimpleDataType::new();
     let players = ArrayType::new(server_player(), MIN_KART_PLAYER_COUNT, MAX_KART_PLAYER_COUNT);
     let mmr: SimpleDataType<u16> = SimpleDataType::new();
+    let points: SimpleDataType<u16> = SimpleDataType::new();
     StructType::new("ServerKart")
         .with_field("local", local)
         .with_field("players", players)
         .with_field("mmr", mmr)
+        .with_field("points", points)
 }
 
 pub fn server_player() -> impl ComplexDataType {
@@ -193,15 +195,20 @@ pub fn server_poll_state() -> impl ComplexDataType {
 }
 
 pub fn server_poll_state_pending() -> impl ComplexDataType {
+    let match_index: SimpleDataType<u8> = SimpleDataType::new();
     let kart_index: SimpleDataType<u8> = SimpleDataType::new();
     let kart_indices = ArrayType::new(kart_index, 0, MAX_ROOM_KART_COUNT);
-    StructType::new("ServerPollStatePending").with_field("kart_indices", kart_indices)
+    StructType::new("ServerPollStatePending")
+        .with_field("match_index", match_index)
+        .with_field("kart_indices", kart_indices)
 }
 
 pub fn server_poll_state_ready() -> impl ComplexDataType {
+    let match_index: SimpleDataType<u8> = SimpleDataType::new();
     let karts = ArrayType::new(server_poll_kart(), 2, MAX_ROOM_KART_COUNT);
     let selected_kart_index: SimpleDataType<u8> = SimpleDataType::new();
     StructType::new("ServerPollStateReady")
+        .with_field("match_index", match_index)
         .with_field("karts", karts)
         .with_field("selected_kart_index", selected_kart_index)
 }
@@ -228,15 +235,21 @@ pub fn server_race_state() -> impl ComplexDataType {
 }
 
 pub fn server_race_state_main() -> impl ComplexDataType {
+    let match_index: SimpleDataType<u8> = SimpleDataType::new();
     let frame: SimpleDataType<u16> = SimpleDataType::new();
     let client_frame: SimpleDataType<u16> = SimpleDataType::new();
     let kart_flags: SimpleDataType<u8> = SimpleDataType::new();
     let karts = ArrayType::new(server_race_kart(), 0, MAX_ROOM_KART_COUNT);
+    let end_frame: SimpleDataType<u16> = SimpleDataType::new();
+    let results = ArrayType::new(server_result(), 0, MAX_ROOM_KART_COUNT);
     StructType::new("ServerRaceStateMain")
+        .with_field("match_index", match_index)
         .with_field("frame", frame)
         .with_field("client_frame", client_frame)
         .with_field("kart_flags", kart_flags)
         .with_field("karts", karts)
+        .with_field("end_frame", end_frame)
+        .with_field("results", results)
 }
 
 pub fn server_race_kart() -> impl ComplexDataType {
@@ -255,6 +268,8 @@ pub fn server_race_kart() -> impl ComplexDataType {
     let item_ids = ArrayType::new(item_id(), KART_CHARACTER_COUNT, KART_CHARACTER_COUNT);
     let item_event_counter: SimpleDataType<u8> = SimpleDataType::new();
     let item_events = ArrayType::new(item_event(), 0, MAX_ITEM_EVENT_COUNT);
+    let lap: SimpleDataType<u8> = SimpleDataType::new();
+    let time: SimpleDataType<u32> = SimpleDataType::new();
     StructType::new("ServerRaceKart")
         .with_field("kart_frame", kart_frame)
         .with_field("inputs", inputs)
@@ -269,6 +284,16 @@ pub fn server_race_kart() -> impl ComplexDataType {
         .with_field("item_ids", item_ids)
         .with_field("item_event_counter", item_event_counter)
         .with_field("item_events", item_events)
+        .with_field("lap", lap)
+        .with_field("time", time)
+}
+
+pub fn server_result() -> impl ComplexDataType {
+    let kart_index: SimpleDataType<u8> = SimpleDataType::new();
+    let points: SimpleDataType<u16> = SimpleDataType::new();
+    StructType::new("ServerResult")
+        .with_field("kart_index", kart_index)
+        .with_field("points", points)
 }
 
 pub const MAX_MOTD_LENGTH: usize = 99;

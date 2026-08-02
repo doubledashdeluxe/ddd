@@ -114,6 +114,7 @@ void SceneCoursePoll::init() {
         m_courseShuffleIndices[i] = i;
     }
 
+    m_writeInfo.matchIndex = onlineInfo.m_matchIndex;
     m_writeInfo.packCourseCount = m_courseCount;
     m_writeInfo.kartCount = m_kartCount;
     ClientStatePollWriteInfo::Ready &ready = m_writeInfo.ready.emplace();

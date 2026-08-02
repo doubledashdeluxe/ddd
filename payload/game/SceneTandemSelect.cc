@@ -5,6 +5,7 @@
 #include "game/KartGamePad.hh"
 #include "game/MenuTitleLine.hh"
 #include "game/OnlineBackground.hh"
+#include "game/OnlineInfo.hh"
 #include "game/SequenceApp.hh"
 #include "game/SequenceInfo.hh"
 
@@ -142,20 +143,22 @@ SceneTandemSelect::SceneTandemSelect(JKRArchive *archive, JKRHeap *heap) : Scene
 SceneTandemSelect::~SceneTandemSelect() {}
 
 void SceneTandemSelect::init() {
+    m_padCount = SequenceInfo::Instance().m_padCount;
+    m_partitionCount = m_padCount == 4 ? 3 : 2;
     if (SequenceApp::Instance()->prevScene() == SceneType::NameSelect) {
-        m_padCount = SequenceInfo::Instance().m_padCount;
-        m_partitionCount = m_padCount == 4 ? 3 : 2;
         m_partitionIndex = 0;
-
-        for (u32 i = 2; i <= 4; i++) {
-            m_mainScreen.search("N_C%up", i)->m_isVisible = i == m_padCount;
-        }
-
-        J2DPicture *picture = m_padCountScreen.search("Cstok_p")->downcast<J2DPicture>();
-        Array<char, 32> name;
-        snprintf(name.values(), name.count(), "Player%lu.bti", m_padCount);
-        picture->changeTexture(name.values(), 0);
+    } else {
+        m_partitionIndex = OnlineInfo::Instance().m_partitionIndex;
     }
+
+    for (u32 i = 2; i <= 4; i++) {
+        m_mainScreen.search("N_C%up", i)->m_isVisible = i == m_padCount;
+    }
+
+    J2DPicture *picture = m_padCountScreen.search("Cstok_p")->downcast<J2DPicture>();
+    Array<char, 32> name;
+    snprintf(name.values(), name.count(), "Player%lu.bti", m_padCount);
+    picture->changeTexture(name.values(), 0);
 
     slideIn();
 }
@@ -276,6 +279,7 @@ void SceneTandemSelect::stateIdle() {
         m_nextScene = SceneType::ServerSelect;
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE_LITTLE);
         SequenceInfo::Instance().m_statusCount = GetStatusCount(m_padCount, m_partitionIndex);
+        OnlineInfo::Instance().m_partitionIndex = m_partitionIndex;
         slideOut();
     } else if (button.risingEdge() & PAD_BUTTON_B) {
         m_nextScene = SceneType::NameSelect;

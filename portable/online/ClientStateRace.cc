@@ -2,6 +2,7 @@
 
 #include "portable/online/ClientStateError.hh"
 #include "portable/online/ClientStatePoll.hh"
+#include "portable/online/ClientStateRoom.hh"
 
 ClientStateRace::ClientStateRace(const ClientPlatform &platform, Connection &connection,
         const ClientStateRaceWriteInfo &writeInfo)
@@ -9,6 +10,7 @@ ClientStateRace::ClientStateRace(const ClientPlatform &platform, Connection &con
     , m_writeInfo(writeInfo) {
     m_connections.emplaceBack()->reset(&connection);
     m_readInfo.ok = true;
+    m_readInfo.resultCount = 0;
 }
 
 ClientStateRace::~ClientStateRace() {}
@@ -25,6 +27,11 @@ ClientState &ClientStateRace::read(ClientReadHandler &handler) {
     }
 
     return *this;
+}
+
+ClientState &ClientStateRace::writeStateRoom(const ClientStateRoomWriteInfo &writeInfo) {
+    Connection &connection = *m_connections.front()->release();
+    return *(new (m_platform.allocator) ClientStateRoom(m_platform, connection, writeInfo));
 }
 
 ClientState &ClientStateRace::writeStatePoll(const ClientStatePollWriteInfo &writeInfo) {
@@ -88,9 +95,19 @@ void ClientStateRace::setError() {
     m_readInfo.ok = false;
 }
 
+bool ClientStateRace::isMatchIndexValid(u8 /* matchIndex */) {
+    return true;
+}
+
+void ClientStateRace::setMatchIndex(u8 matchIndex) {
+    if (matchIndex != m_writeInfo.matchIndex) {
+        m_readInfo.ok = false;
+    }
+}
+
 bool ClientStateRace::isFrameValid(u16 frame) {
     const Optional<ReadInfo::Info> &info = m_readInfo.info;
-    return !info || frame > info->frame;
+    return !info || frame >= info->frame;
 }
 
 void ClientStateRace::setFrame(u16 frame) {
@@ -128,6 +145,28 @@ void ClientStateRace::setKartsCount(u32 kartsCount) {
 
 ServerRaceKartReader<ClientStateRace> *ClientStateRace::kartsElementReader(u32 i0) {
     m_kartIndex = i0;
+    return this;
+}
+
+bool ClientStateRace::isEndFrameValid(u16 endFrame) {
+    const Optional<ReadInfo::Info> &info = m_readInfo.info;
+    return !info || endFrame <= info->endFrame;
+}
+
+void ClientStateRace::setEndFrame(u16 endFrame) {
+    m_readInfo.info.getOrEmplace().endFrame = endFrame;
+}
+
+bool ClientStateRace::isResultsCountValid(u32 resultsCount) {
+    return !m_readInfo.resultCount || resultsCount == m_readInfo.resultCount;
+}
+
+void ClientStateRace::setResultsCount(u32 resultsCount) {
+    m_readInfo.resultCount = resultsCount;
+}
+
+ServerResultReader<ClientStateRace> *ClientStateRace::resultsElementReader(u32 i0) {
+    m_resultIndex = i0;
     return this;
 }
 
@@ -248,6 +287,22 @@ ItemEventReader<ClientStateRace> *ClientStateRace::itemEventsElementReader(u32 i
     return this;
 }
 
+bool ClientStateRace::isLapValid(u8 lap) {
+    return lap <= MaxLapCount;
+}
+
+void ClientStateRace::setLap(u8 lap) {
+    m_readInfo.info.getOrEmplace().karts[m_kartIndex].lap = lap;
+}
+
+bool ClientStateRace::isTimeValid(u32 time) {
+    return time <= MaxTime;
+}
+
+void ClientStateRace::setTime(u32 time) {
+    m_readInfo.info.getOrEmplace().karts[m_kartIndex].time = time;
+}
+
 bool ClientStateRace::isEventFrameValid(u8 eventFrame) {
     return eventFrame < MaxKartInputCount;
 }
@@ -289,6 +344,22 @@ bool ClientStateRace::isEventPosZValid(s16 /* eventPosZ */) {
 
 void ClientStateRace::setEventPosZ(s16 eventPosZ) {
     m_readInfo.info.getOrEmplace().karts[m_kartIndex].itemEvents[m_itemEventIndex].posZ = eventPosZ;
+}
+
+bool ClientStateRace::isKartIndexValid(u8 kartIndex) {
+    return !m_readInfo.resultCount || kartIndex == m_readInfo.results[m_resultIndex].kartIndex;
+}
+
+void ClientStateRace::setKartIndex(u8 kartIndex) {
+    m_readInfo.results[m_resultIndex].kartIndex = kartIndex;
+}
+
+bool ClientStateRace::isPointsValid(u16 points) {
+    return !m_readInfo.resultCount || points == m_readInfo.results[m_resultIndex].points;
+}
+
+void ClientStateRace::setPoints(u16 points) {
+    m_readInfo.results[m_resultIndex].points = points;
 }
 
 ClientStateRaceWriter<ClientStateRace> &ClientStateRace::raceWriter() {
@@ -379,6 +450,14 @@ ItemEventWriter<ClientStateRace> &ClientStateRace::itemEventsElementWriter(u32 i
 
 u8 ClientStateRace::getRank() {
     return m_writeInfo.karts[m_kartIndex].rank;
+}
+
+u8 ClientStateRace::getLap() {
+    return m_writeInfo.karts[m_kartIndex].lap;
+}
+
+u32 ClientStateRace::getTime() {
+    return m_writeInfo.karts[m_kartIndex].time;
 }
 
 u8 ClientStateRace::getEventFrame() {

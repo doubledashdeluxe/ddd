@@ -28,6 +28,15 @@ const char *SequenceInfo::modeNameTextureName() const {
     }
 }
 
+void SequenceInfo::setClrGPCourse() {
+    if (!m_isOnline) {
+        REPLACED(setClrGPCourse)();
+        return;
+    }
+
+    OnlineInfo::Instance().m_matchIndex++;
+}
+
 SequenceInfo &SequenceInfo::Instance() {
     return s_instance;
 }

@@ -5,6 +5,7 @@
 #include <jsystem/J2DPicture.hh>
 #include <jsystem/J2DScreen.hh>
 #include <payload/Replace.hh>
+#include <portable/Array.hh>
 
 class Result2D {
 public:
@@ -31,6 +32,7 @@ public:
     void REPLACED(calc)(const KartGamePad *pad);
     REPLACE void calc(const KartGamePad *pad);
     bool getAnmEnd() const;
+    void start();
     void end();
 
     static void REPLACED(SetGPClr)();
@@ -201,7 +203,7 @@ private:
     s32 m_anmEndFrame;
     s32 m_lineColorFrame;
     u8 _1994[0x199c - 0x1994];
-    s32 m_pointDiffs[8];
+    Array<s32, 8> m_pointDiffs;
     f32 m_gpLineXs[8];
     GPScale m_gpScales[8];
     u8 m_gpLayoutAlpha;

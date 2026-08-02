@@ -433,6 +433,7 @@
 8013f0cc loadData__12SceneFactoryFlP7JKRHeap
 8013f6e8 createScene__12SceneFactoryFlP7JKRHeap
 8013fb34 init__12SequenceInfoFv
+8013fd14 setClrGPCourse__12SequenceInfoFv
 801401b0 padPlayer__12SequenceInfoCFPC11KartGamePad
 801449c8 setS__11Race2DParamFf
 801449d0 setY__11Race2DParamFf
@@ -450,8 +451,8 @@
 8014e9ac getCharacterInfo__6Race2DFllRfRfRf
 8014e9dc getCharacterColor__6Race2DFlllR7GXColorR7GXColorRUc
 8014efd8 getItemInfo__6Race2DFlllRfRfRf
-8014f22c calcLapInit__6Race2DFv
-8014f2b8 calcLap__6Race2DFv
+8014f22c CalcLapInit__6Race2DFv
+8014f2b8 CalcLap__6Race2DFv
 8014fa54 calcItem__6Race2DFv
 801508cc getStartScaleB__6Race2DFlRf
 80150d18 getStartCharPos__6Race2DFllRf
@@ -500,6 +501,8 @@
 80184234 GetKartWeight__8KartInfoFUl
 801842a0 GetDriverWeight__8KartInfoFUl
 801842c4 GetDefaultKartID__8KartInfoFUl
+80185338 checkLap__11KartCheckerFb
+80185928 forceRaceEnd__11KartCheckerFv
 80188344 checkRank__7RaceMgrFv
 8018899c calcRace__7RaceMgrFv
 80188a54 framework__7RaceMgrFv
@@ -634,6 +637,7 @@
 801e03b4 calc__15NameEntryHelperFv
 801e0428 draw__15NameEntryHelperFP15J2DGraphContext
 801e0b04 selectOut__Q215NameEntryHelper13NameEntryDrumFv
+801fd744 createEmt2D__9EffectMgrFPCcRC5Vec3f
 80208528 clearKartItemUseTriggerList__10ItemObjMgrFv
 802090bc stockItemToKart__10ItemObjMgrFUlUlUlbUc
 802090f0 equipItemToKart__10ItemObjMgrFUlUlUlbUc
@@ -795,5 +799,6 @@
 803d5cb8 s_instance__12Kart2DCommon
 803d5cd0 s_instance__14MenuBackground
 803d5cd8 s_instance__13MenuTitleLine
+803d5d40 s_instance__9EffectMgr
 803d5d80 s_instance__10ItemObjMgr
 803d63c8 s_instance__8KartCtrl

@@ -353,7 +353,9 @@ void SceneServerSelect::wait() {
 
 void SceneServerSelect::slideIn() {
     m_serverCount = CubeServerManager::Instance()->serverCount();
-    if (SequenceApp::Instance()->prevScene() != SceneType::RoomTypeSelect) {
+    if (SequenceApp::Instance()->prevScene() == SceneType::RoomTypeSelect) {
+        m_serverIndex = OnlineInfo::Instance().m_serverIndex;
+    } else {
         m_serverIndex = 0;
     }
     m_rowIndex = m_serverIndex;

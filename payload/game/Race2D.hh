@@ -86,8 +86,6 @@ private:
     };
 
     void setup();
-    void REPLACED(calcLap)();
-    REPLACE void calcLap();
     void REPLACED(calcPlayerMark)();
     REPLACE void calcPlayerMark();
     void REPLACED(anmTA)(s32 status);
@@ -109,6 +107,9 @@ private:
     f32 getThunderCharScale(s32 frame);
     void getStartLapTimePos(s32 frame, s32 index, f32 &x);
     void getGoalLapTimePos(s32 frame, s32 index, f32 &x);
+
+    static void REPLACED(CalcLap)();
+    REPLACE static void CalcLap();
 
     u8 _0000[0x01b4 - 0x0000];
     J2DGraphContext *m_graphContext;

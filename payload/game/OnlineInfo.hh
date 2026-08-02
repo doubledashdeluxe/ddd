@@ -13,6 +13,7 @@ public:
 
     Array<u32, 4> m_profileIndices;
     Array<Array<char, 4>, 4> m_names;
+    u32 m_partitionIndex;
     Array<Kart, 4> m_localKarts;
     u32 m_serverIndex;
     u32 m_roomType;
@@ -31,6 +32,8 @@ public:
     u8 m_teamCount;
     u8 m_maxTeamSize;
     bool m_isDuel;
+    u8 m_matchCount;
+    u8 m_matchIndex;
     Array<u8, MaxRoomKartCount> m_teams;
     Array<Array<u8, 2>, 4> m_padIndices;
     bool m_hasIDs;

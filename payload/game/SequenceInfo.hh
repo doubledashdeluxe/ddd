@@ -2,6 +2,8 @@
 
 #include "game/KartGamePad.hh"
 
+#include <portable/Array.hh>
+
 class SequenceInfo {
 public:
     u32 getBattleMode() const;
@@ -10,6 +12,8 @@ public:
     s32 padPlayer(const KartGamePad *pad) const;
 
     void init();
+    void REPLACED(setClrGPCourse)();
+    REPLACE void setClrGPCourse();
 
     static SequenceInfo &Instance();
 
@@ -35,12 +39,13 @@ private:
     u8 _040[0x298 - 0x040];
 
 public:
-    u32 m_points[8];
-    u32 m_raceRankedKartIndices[8];
-    u32 m_gpRankedKartIndices[8];
+    Array<u32, 8> m_points;
+    Array<u32, 8> m_raceRankedKartIndices;
+    Array<u32, 8> m_gpRankedKartIndices;
+    Array<u32, 8> m_prevGPRankedKartIndices;
 
 private:
-    u8 _2f8[0x44c - 0x2f8];
+    u8 _318[0x44c - 0x318];
 
     static SequenceInfo s_instance;
 };

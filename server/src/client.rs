@@ -164,8 +164,7 @@ impl Client {
                             let id = room.id();
                             let spectating_counter = 0;
                             let spectating = room.insert(config, karts)?;
-                            let continuing = room.has_room_lock();
-                            Ok(RoomInfo { counter, id, spectating_counter, spectating, continuing })
+                            Ok(RoomInfo { counter, id, spectating_counter, spectating })
                         })
                     }
                     (ClientRoomState::New(new), Some(room_info))
@@ -185,8 +184,7 @@ impl Client {
                             let counter = new.room_counter;
                             let spectating_counter = 0;
                             let spectating = false;
-                            let continuing = false;
-                            RoomInfo { counter, id, spectating_counter, spectating, continuing }
+                            RoomInfo { counter, id, spectating_counter, spectating }
                         })
                     }
                     (ClientRoomState::Code(code), Some(room_info))
@@ -204,8 +202,7 @@ impl Client {
                             let spectating_counter = 0;
                             let karts = karts();
                             let spectating = room.insert(config, karts)?;
-                            let continuing = room.has_room_lock();
-                            Ok(RoomInfo { counter, id, spectating_counter, spectating, continuing })
+                            Ok(RoomInfo { counter, id, spectating_counter, spectating })
                         })
                     }
                     (ClientRoomState::Main(main), Some(room_info)) => {
@@ -218,8 +215,8 @@ impl Client {
                             };
                             room.set_options(&self.pk, main.options)?;
                             room.set_continuing(&self.pk, main.continuing != 0)?;
-                            let continuing = room.has_room_lock();
-                            Ok(RoomInfo { spectating_counter, spectating, continuing, ..room_info })
+                            room.set_ready(&self.pk);
+                            Ok(RoomInfo { spectating_counter, spectating, ..room_info })
                         })
                     }
                     _ => Err(anyhow!("Unexpected client room state")),
@@ -266,7 +263,7 @@ impl Client {
                     || Err(anyhow!("Unexpected client race state")),
                     |room_info| {
                         let mut room = rooms.get(&room_info.id)?;
-                        room.set_race(&self.pk, race)?;
+                        room.set_race_state(&self.pk, race)?;
                         Ok(room_info)
                     },
                 );
@@ -393,8 +390,12 @@ impl Client {
                                         .map(&Player::player)
                                         .cloned()
                                         .collect();
-                                    let mmr = kart.mmr();
-                                    ServerKart { local, players, mmr }
+                                    ServerKart {
+                                        local,
+                                        players,
+                                        mmr: kart.mmr(),
+                                        points: kart.points,
+                                    }
                                 })
                                 .collect();
                             let pack = room.pack();
@@ -409,7 +410,7 @@ impl Client {
                                 spectating_counter: room_info.spectating_counter,
                                 spectating: room_info.spectating.into(),
                                 options: room.options().clone(),
-                                continuing: room_info.continuing.into(),
+                                continuing: room.has_room_lock().into(),
                             }
                         });
                         let Ok(main) = main else {
@@ -522,5 +523,4 @@ struct RoomInfo {
     id: u128,
     spectating_counter: u32,
     spectating: bool,
-    continuing: bool,
 }

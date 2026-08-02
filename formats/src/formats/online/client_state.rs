@@ -257,6 +257,8 @@ pub fn client_race_kart() -> impl ComplexDataType {
     let item_event_counter: SimpleDataType<u8> = SimpleDataType::new();
     let item_events = ArrayType::new(item_event(), 0, MAX_ITEM_EVENT_COUNT);
     let rank: SimpleDataType<u8> = SimpleDataType::new();
+    let lap: SimpleDataType<u8> = SimpleDataType::new();
+    let time: SimpleDataType<u32> = SimpleDataType::new();
     StructType::new("ClientRaceKart")
         .with_field("inputs", inputs)
         .with_field("driver", driver)
@@ -270,6 +272,8 @@ pub fn client_race_kart() -> impl ComplexDataType {
         .with_field("item_event_counter", item_event_counter)
         .with_field("item_events", item_events)
         .with_field("rank", rank)
+        .with_field("lap", lap)
+        .with_field("time", time)
 }
 
 pub const MAX_PLATFORM_LENGTH: usize = 31;

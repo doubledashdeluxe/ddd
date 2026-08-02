@@ -100,6 +100,16 @@ void ClientStatePoll::setError() {
     m_readInfo.ok = false;
 }
 
+bool ClientStatePoll::isMatchIndexValid(u8 /* matchIndex */) {
+    return true;
+}
+
+void ClientStatePoll::setMatchIndex(u8 matchIndex) {
+    if (matchIndex != m_writeInfo.matchIndex) {
+        m_readInfo.ok = false;
+    }
+}
+
 bool ClientStatePoll::isKartIndicesCountValid(u32 kartIndicesCount) {
     return kartIndicesCount >= m_readInfo.kartIndices.count() &&
             kartIndicesCount <= m_writeInfo.kartCount;

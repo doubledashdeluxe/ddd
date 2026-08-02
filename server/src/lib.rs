@@ -23,6 +23,7 @@ pub mod options;
 mod pack;
 mod player;
 mod receiver;
+mod results;
 mod room;
 mod rooms;
 mod sender;

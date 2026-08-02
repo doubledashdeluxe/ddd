@@ -14,6 +14,7 @@ struct Kart {
     u8 playerCount;
     Array<Player, MaxKartPlayerCount> players;
     u16 mmr;
+    u16 points;
 };
 
 bool operator==(const Player &a, const Player &b);

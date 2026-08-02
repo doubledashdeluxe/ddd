@@ -61,12 +61,16 @@ void ScenePlayerList::init() {
     const CourseManager *courseManager = CourseManager::Instance();
     const RaceInfo &raceInfo = RaceInfo::Instance();
     u32 packIndex = SequenceInfo::Instance().m_packIndex;
+    m_writeInfo.matchIndex = OnlineInfo::Instance().m_matchIndex;
     m_writeInfo.packCourseCount = courseManager->courseCount(true, raceInfo.isRace(), packIndex);
     m_writeInfo.kartCount = raceInfo.getKartCount();
 
     s32 prevScene = SequenceApp::Instance()->prevScene();
     if (prevScene != SceneType::CharacterSelect) {
         System::GetDisplay()->startFadeIn(15);
+    }
+    if (prevScene == SceneType::None) {
+        GameAudio::Main::Instance()->startSequenceBgm(SoundID::JA_BGM_SELECT);
     }
 
     if ((prevScene == SceneType::CharacterSelect || prevScene == SceneType::MapSelect) &&
@@ -123,6 +127,10 @@ bool ScenePlayerList::clientStatePoll(const ClientStatePollReadInfo &readInfo) {
     if (readInfo.ready) {
         OnlineTimer::Instance()->init(0);
     }
+    return true;
+}
+
+bool ScenePlayerList::clientStateRace(const ClientStateRaceReadInfo & /* readInfo */) {
     return true;
 }
 

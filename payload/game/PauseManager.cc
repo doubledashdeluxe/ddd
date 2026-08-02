@@ -6,6 +6,7 @@
 #include "game/KartGamePad.hh"
 #include "game/NetGameMgr.hh"
 #include "game/OnlineTimer.hh"
+#include "game/PauseChoice.hh"
 #include "game/RaceInfo.hh"
 #include "game/RaceMgr.hh"
 #include "game/ResMgr.hh"
@@ -177,7 +178,7 @@ void PauseManager::exec() {
             return;
         }
 
-        s_pauseChoice = 13;
+        s_pauseChoice = PauseChoice::None;
         m_paused = true;
         m_wasCanceled = false;
         m_pause2D->init();
@@ -216,6 +217,14 @@ void PauseManager::exec() {
     }
 }
 
+void PauseManager::startResult() {
+    m_result2D->start();
+}
+
 PauseManager *PauseManager::Instance() {
     return s_instance;
+}
+
+s32 PauseManager::PauseChoice() {
+    return s_pauseChoice;
 }

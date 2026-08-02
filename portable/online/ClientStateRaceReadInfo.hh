@@ -23,6 +23,8 @@ struct ClientStateRaceReadInfo {
         u8 itemEventCounter;
         u8 itemEventCount;
         Array<ItemEvent, MaxItemEventCount> itemEvents;
+        u8 lap;
+        u32 time;
     };
 
     struct Info {
@@ -31,8 +33,16 @@ struct ClientStateRaceReadInfo {
         u8 kartFlags;
         u8 kartCount;
         Array<Kart, MaxRoomKartCount> karts;
+        u16 endFrame;
+    };
+
+    struct Result {
+        u8 kartIndex;
+        u16 points;
     };
 
     bool ok;
     Optional<Info> info;
+    u8 resultCount;
+    Array<Result, MaxRoomKartCount> results;
 };

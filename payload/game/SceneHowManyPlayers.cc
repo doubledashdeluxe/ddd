@@ -64,6 +64,8 @@ void SceneHowManyPlayers::init() {
         m_padCount = 1;
         System::GetDisplay()->startFadeIn(15);
         GameAudio::Main::Instance()->startSequenceBgm(SoundID::JA_BGM_SELECT);
+    } else {
+        m_padCount = SequenceInfo::Instance().m_padCount;
     }
 
     slideIn();

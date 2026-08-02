@@ -17,6 +17,7 @@ struct ClientStatePollWriteInfo {
         Optional<u8> courseIndex;
     };
 
+    u8 matchIndex;
     u8 packCourseCount;
     u8 kartCount;
     Optional<Ready> ready;

@@ -7,6 +7,7 @@
 #include "game/RaceClient.hh"
 #include "game/RaceInfo.hh"
 #include "game/RaceMode.hh"
+#include "game/RacePhase.hh"
 #include "game/SceneType.hh"
 #include "game/SequenceInfo.hh"
 #include "game/System.hh"
@@ -55,12 +56,16 @@ void RaceApp::calc() {
         adjustment = -drift;
     } else if (drift < 0) {
         adjustment = 1;
-    } else if (drift > 0 && m_raceMgr->loopFrame() & 1) {
+    } else if (drift > 0 && m_raceMgr->loopFrame() & 1 && !raceClient->hasResults()) {
         adjustment = -1;
     }
     if (adjustment >= 0) {
-        u32 clientFrame = raceClient->clientFrame() - MinClientFrame;
-        adjustment = Min<s32>(adjustment, clientFrame - m_raceMgr->frame() + 30 - 1);
+        u32 clientFrame = raceClient->clientFrame();
+        adjustment = Min<s32>(adjustment, clientFrame - RaceClient::Frame() + 30 - 1);
+    }
+    if (adjustment >= 0 && !raceClient->hasResults()) {
+        u32 serverFrame = raceClient->serverFrame();
+        adjustment = Min<s32>(adjustment, serverFrame - RaceClient::Frame() + 30 - 1);
     }
     raceClient->adjustDrift(adjustment);
     do {
@@ -94,6 +99,17 @@ void RaceApp::ctrlRace() {
         break;
     case SceneType::PackSelect:
         m_nextScene = SceneType::MapSelect;
+        break;
+    }
+
+    switch (m_raceMgr->raceDirector()->racePhase()) {
+    case RacePhase::PersonalRoom:
+        m_nextScene = SceneType::PersonalRoom;
+        m_state = 3;
+        break;
+    case RacePhase::PlayerList:
+        m_nextScene = SceneType::PlayerList;
+        m_state = 3;
         break;
     }
 }

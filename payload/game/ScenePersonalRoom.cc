@@ -13,6 +13,7 @@
 #include "game/ResMgr.hh"
 #include "game/RoomOption.hh"
 #include "game/RoomType.hh"
+#include "game/SceneFactory.hh"
 #include "game/SequenceApp.hh"
 #include "game/SequenceInfo.hh"
 #include "game/System.hh"
@@ -28,6 +29,12 @@ extern "C" {
 }
 
 ScenePersonalRoom::ScenePersonalRoom(JKRArchive *archive, JKRHeap *heap) : Scene(archive, heap) {
+    SceneFactory *sceneFactory = SceneFactory::Instance();
+    JKRArchive *titleLineArchive = sceneFactory->archive(SceneFactory::ArchiveType::TitleLine);
+
+    OnlineBackground::Create(m_archive);
+    MenuTitleLine::Create(titleLineArchive, heap);
+
     m_mainScreen.set("PersonalRoom.blo", 0x20000, m_archive);
     for (u32 i = 0; i < m_charScreens.count(); i++) {
         m_charScreens[i].set("PersonalRoomChar.blo", 0x20000, m_archive);
@@ -168,6 +175,11 @@ void ScenePersonalRoom::init() {
     m_optionCount = 0;
     m_entryIndex = 0;
 
+    s32 prevScene = SequenceApp::Instance()->prevScene();
+    if (prevScene != SceneType::None) {
+        onlineInfo.m_roomCounter++;
+    }
+
     m_writeInfo.isSearch = m_isSearch;
     if (m_isSearch || m_isHost) {
         m_isRace = RaceInfo::Instance().isRace();
@@ -180,7 +192,7 @@ void ScenePersonalRoom::init() {
         m_writeInfo.packHash = pack.hash();
     }
     m_writeInfo.isHost = m_isHost;
-    m_writeInfo.roomCounter = onlineInfo.m_roomCounter++;
+    m_writeInfo.roomCounter = onlineInfo.m_roomCounter;
     if (!m_isHost) {
         m_writeInfo.roomCode = onlineInfo.m_roomCode;
     }
@@ -189,9 +201,14 @@ void ScenePersonalRoom::init() {
     if (m_isSearch) {
         u8 format = onlineInfo.m_format;
         m_writeInfo.options.format = format;
-        m_writeInfo.options.matchCount = format == RoomOptionFormat::Duel ? 5 : 0;
+        m_writeInfo.options.matchCount = format == RoomOptionFormat::Duel ? 5 : 1;
     }
     m_writeInfo.continuing = false;
+
+    if (prevScene == SceneType::None) {
+        System::GetDisplay()->startFadeIn(15);
+        GameAudio::Main::Instance()->startSequenceBgm(SoundID::JA_BGM_SELECT);
+    }
 
     wait();
 }
@@ -457,6 +474,7 @@ bool ScenePersonalRoom::clientStateRoom(const ClientStateRoomReadInfo &readInfo)
             onlineInfo.m_localKartIndices[localKartCount++] = i;
             localPlayerCount += kart.playerCount;
         }
+        sequenceInfo.m_points[i] = kart.points;
     }
     onlineInfo.m_localKartCount = localKartCount;
     onlineInfo.m_localPlayerCount = localPlayerCount;
@@ -557,6 +575,9 @@ bool ScenePersonalRoom::clientStateRoom(const ClientStateRoomReadInfo &readInfo)
     bool isDuel = info->options.format == RoomOptionFormat::Duel;
     onlineInfo.m_isDuel = isDuel;
 
+    onlineInfo.m_matchCount = options.matchCount;
+    onlineInfo.m_matchIndex = 0;
+
     u8 courseSelection = options.courseSelection;
     switch (courseSelection) {
     case RoomOptionCourseSelection::Poll:
@@ -596,6 +617,10 @@ bool ScenePersonalRoom::clientStateRoom(const ClientStateRoomReadInfo &readInfo)
         u32 targetKart = isDuel ? i : spectating ? 0 : onlineInfo.m_localKartIndices[i];
         raceInfo.setConsoleTarget(i, targetKart, spectating);
     }
+    return true;
+}
+
+bool ScenePersonalRoom::clientStateRace(const ClientStateRaceReadInfo & /* readInfo */) {
     return true;
 }
 

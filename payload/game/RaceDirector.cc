@@ -1,5 +1,6 @@
 #include "RaceDirector.hh"
 
+#include "game/PauseChoice.hh"
 #include "game/PauseManager.hh"
 #include "game/RaceClient.hh"
 #include "game/RacePhase.hh"
@@ -11,6 +12,10 @@ u32 RaceDirector::racePhase() const {
 
 bool RaceDirector::isFrameRenewal() const {
     return m_isFrameRenewal;
+}
+
+bool RaceDirector::raceEnd() const {
+    return m_raceEnd;
 }
 
 void RaceDirector::calc(s32 adjustment) {
@@ -83,4 +88,39 @@ void RaceDirector::doRunning(bool r4) {
     }
 
     REPLACED(doRunning)(r4);
+}
+
+void RaceDirector::doEnding() {
+    RaceClient *raceClient = RaceClient::Instance();
+    if (raceClient && m_endingState == 4 && m_frame == 59) {
+        if (!raceClient->hasResults()) {
+            return;
+        }
+
+        PauseManager::Instance()->startResult();
+    }
+
+    REPLACED(doEnding)();
+}
+
+void RaceDirector::checkPauseChoice() {
+    switch (PauseManager::PauseChoice()) {
+    case PauseChoice::PersonalRoom:
+        setPhaseWait(RacePhase::PersonalRoom, true, true, 35);
+        return;
+    case PauseChoice::PlayerList:
+        setPhaseWait(RacePhase::PlayerList, true, true, 35);
+        return;
+    }
+
+    REPLACED(checkPauseChoice)();
+}
+
+bool RaceDirector::checkRaceEnd() const {
+    RaceClient *raceClient = RaceClient::Instance();
+    if (raceClient) {
+        return RaceClient::Frame() + 1 >= raceClient->endFrame();
+    }
+
+    return REPLACED(checkRaceEnd)();
 }

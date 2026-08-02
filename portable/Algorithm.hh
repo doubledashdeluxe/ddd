@@ -62,6 +62,13 @@ void Fill(T (&a)[N], U value) {
     }
 }
 
+template <typename T, size_t N>
+void Copy(T (&a)[N], const T (&b)[N]) {
+    for (size_t i = 0; i < N; i++) {
+        a[i] = b[i];
+    }
+}
+
 namespace detail {
 
 template <typename T, bool RegOptimized>

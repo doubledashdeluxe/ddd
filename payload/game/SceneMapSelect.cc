@@ -137,8 +137,11 @@ void SceneMapSelect::init() {
     m_rowIndex = m_mapIndex / 3;
     m_rowIndex = Min(m_rowIndex, m_rowCount - Min<u32>(m_rowCount, 2));
 
-    m_writeInfo.packCourseCount = m_mapCount;
-    m_writeInfo.kartCount = raceInfo.getKartCount();
+    if (m_isOnline) {
+        m_writeInfo.matchIndex = OnlineInfo::Instance().m_matchIndex;
+        m_writeInfo.packCourseCount = m_mapCount;
+        m_writeInfo.kartCount = raceInfo.getKartCount();
+    }
 
     slideIn();
 }

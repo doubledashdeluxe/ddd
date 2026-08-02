@@ -176,19 +176,23 @@ void SceneFormatSelect::clientStateError() {
 void SceneFormatSelect::slideIn() {
     const SequenceInfo &sequenceInfo = SequenceInfo::Instance();
     m_packIndex = sequenceInfo.m_packIndex;
+    m_formatCount = sequenceInfo.m_statusCount == 1 ? 4 : 3;
+    const OnlineInfo &onlineInfo = OnlineInfo::Instance();
     if (SequenceApp::Instance()->prevScene() == SceneType::PackSelect) {
-        m_formatCount = sequenceInfo.m_statusCount == 1 ? 4 : 3;
         m_formatIndex = 0;
-
-        for (u32 i = 0; i < FormatCount; i++) {
-            m_mainScreen.search("Format%u", i + 1)->m_isVisible = i < m_formatCount;
-        }
-        m_formatCountAnmTransformFrame = m_formatCount;
+    } else {
+        m_formatIndex = onlineInfo.m_format;
     }
+
+    for (u32 i = 0; i < FormatCount; i++) {
+        m_mainScreen.search("Format%u", i + 1)->m_isVisible = i < m_formatCount;
+    }
+    m_formatCountAnmTransformFrame = m_formatCount;
     for (u32 i = 0; i < m_playerCounts.count(); i++) {
         m_playerCounts[i] = "...";
     }
 
+    m_writeInfo.modeIndex = onlineInfo.m_modeIndex;
     const CourseManager *courseManager = CourseManager::Instance();
     const RaceInfo &raceInfo = RaceInfo::Instance();
     u32 packCount = courseManager->packCount(true, raceInfo.isRace());

@@ -293,16 +293,6 @@ void Race2D::setup() {
     }
 }
 
-void Race2D::calcLap() {
-    if (SequenceInfo::Instance().m_isOnline && OnlineInfo::Instance().m_spectating) {
-        u32 kartIndex = J2DManager::StatusKart(0);
-        KartChecker *kartChecker = RaceMgr::Instance()->kartChecker(kartIndex);
-        s_preLap[0] = kartChecker->lap();
-    }
-
-    REPLACED(calcLap)();
-}
-
 void Race2D::anmTA(s32 status) {
     if (SequenceInfo::Instance().m_isOnline && OnlineInfo::Instance().m_spectating) {
         m_lapTimes[0].lapFrame = 246;
@@ -421,4 +411,26 @@ void Race2D::getStartCharPos(s32 frame, s32 index, f32 &f1) {
     } else {
         f1 -= J2DPane::GetARShift();
     }
+}
+
+void Race2D::CalcLap() {
+    bool isOnline = SequenceInfo::Instance().m_isOnline;
+    if (isOnline && OnlineInfo::Instance().m_spectating) {
+        u32 kartIndex = J2DManager::StatusKart(0);
+        KartChecker *kartChecker = RaceMgr::Instance()->kartChecker(kartIndex);
+        s_preLap[0] = kartChecker->lap();
+    }
+
+    if (isOnline && RaceMgr::Instance()->raceDirector()->raceEnd()) {
+        u32 statusCount = RaceInfo::Instance().getStatusCount();
+        for (u32 i = 0; i < statusCount; i++) {
+            u32 kartIndex = J2DManager::StatusKart(i);
+            KartChecker *kartChecker = RaceMgr::Instance()->kartChecker(kartIndex);
+            if (!kartChecker->raceEnd()) {
+                return;
+            }
+        }
+    }
+
+    REPLACED(CalcLap)();
 }

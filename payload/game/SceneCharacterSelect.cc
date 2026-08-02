@@ -213,6 +213,7 @@ void SceneCharacterSelect::init() {
     }
     m_spinFrame = 0;
 
+    m_writeInfo.matchIndex = onlineInfo.m_matchIndex;
     const CourseManager *courseManager = CourseManager::Instance();
     u32 packIndex = sequenceInfo.m_packIndex;
     m_writeInfo.packCourseCount = courseManager->courseCount(true, raceInfo.isRace(), packIndex);

@@ -14,10 +14,14 @@ public:
     };
 
     bool ok() const;
+    u16 serverFrame() const;
     u16 clientFrame() const;
     u16 latency() const;
     s32 drift() const;
     void adjustDrift(s32 adjustment);
+    u16 endFrame() const;
+    bool hasResults() const;
+    const Array<s32, 8> &pointDiffs() const;
     void setHasItem(u32 kartIndex, u32 characterIndex);
     bool hasItem(u32 kartIndex, u32 characterIndex) const;
     u32 itemID(u32 kartIndex, u32 characterIndex) const;
@@ -57,6 +61,13 @@ private:
         Ring<ItemEvent, MaxItemEventCount> itemEvents;
     };
 
+    struct RankedKartIndexComparator {
+        bool operator()(const u32 &a, const u32 &b);
+
+        const Array<u32, 8> &points;
+        const Array<u32, 8> &prevPoints;
+    };
+
     RaceClient();
     virtual ~RaceClient();
 
@@ -94,6 +105,9 @@ private:
     u16 m_latency;
     s32 m_drift;
     Ring<s32, 60> m_drifts;
+    u16 m_endFrame;
+    bool m_hasResults;
+    Array<s32, 8> m_pointDiffs;
     Array<Ring<KartState, 30>, MaxRoomKartCount> m_kartStates;
     Array<KartDiff, MaxRoomKartCount> m_kartDiffs;
     WriteInfo m_writeInfo;

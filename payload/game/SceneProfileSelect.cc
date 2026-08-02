@@ -92,13 +92,15 @@ void SceneProfileSelect::init() {
         kart2DCommon->changeUnicodeTexture(names[i].values(), 3, m_profileScreens[i], "Name");
     }
 
+    m_padCount = SequenceInfo::Instance().m_padCount;
     if (SequenceApp::Instance()->prevScene() == SceneType::HowManyPlayers) {
-        m_padCount = SequenceInfo::Instance().m_padCount;
         for (u32 i = 0; i < m_profileIndices.count(); i++) {
             m_profileIndices[i] = i < m_padCount ? i : ProfileCount;
         }
 
         SequenceApp::Instance()->ready(SceneType::NameSelect);
+    } else {
+        m_profileIndices = OnlineInfo::Instance().m_profileIndices;
     }
     m_selectedFlags = 0;
 
