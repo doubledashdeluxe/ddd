@@ -3,7 +3,7 @@
 - [arith64](https://github.com/glitchub/arith64)
 - [FatFs](https://elm-chan.org/fsw/ff) R0.16
 - [inih](https://github.com/benhoyt/inih) r62
-- [lwjson](https://docs.majerle.eu/projects/lwjson) 1.8.1
+- [lwjson](https://docs.majerle.eu/projects/lwjson) 1.9.0
 - [lwprintf](https://docs.majerle.eu/projects/lwprintf) 1.1.0
 - [miniz](https://github.com/richgel999/miniz) 3.1.2
 - [Monocypher](https://monocypher.org) 4.0.3
