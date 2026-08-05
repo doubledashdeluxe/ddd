@@ -1,5 +1,5 @@
 use std::fmt::Write as _;
-use std::fs::File;
+use std::fs::{self, File};
 use std::io::{Read, Write as _};
 use std::iter;
 use std::net::UdpSocket;
@@ -32,6 +32,8 @@ fn main() -> Result<()> {
     anyhow::ensure!(options.net_sim.latency <= 1000);
     anyhow::ensure!(options.net_sim.jitter <= 1000);
 
+    fs::create_dir_all("run")?;
+
     debug!("Loading configuration...");
     let config = Config::read()?;
     let config = Arc::new(ArcSwap::from_pointee(config));
@@ -42,14 +44,14 @@ fn main() -> Result<()> {
     let update = Arc::new(ArcSwap::from_pointee(update));
     debug!("Loaded update.");
 
-    let server_k = if let Ok(mut file) = File::open("k.bin") {
+    let server_k = if let Ok(mut file) = File::open("run/k.bin") {
         let mut server_k = <X25519 as DH>::Key::new();
         anyhow::ensure!(file.metadata()?.len() == server_k.len() as u64);
         file.read_exact(server_k.as_mut())?;
         server_k
     } else {
         let server_k = X25519::genkey();
-        let mut file = File::create_new("k.bin")?;
+        let mut file = File::create_new("run/k.bin")?;
         file.write_all(server_k.as_slice())?;
         server_k
     };

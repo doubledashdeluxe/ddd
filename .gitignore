@@ -2,6 +2,7 @@
 __pycache__
 build
 out
+run
 target
 tools/cw
 tools/llvm

@@ -37,7 +37,7 @@ impl Config {
     }
 
     pub fn read() -> Result<Self, Error> {
-        let config = match fs::read_to_string("ddd-server.conf") {
+        let config = match fs::read_to_string("run/ddd-server.conf") {
             Err(e) if e.kind() == ErrorKind::NotFound => {
                 debug!("ddd-server.conf not found, using default configuration");
                 Self::new()
