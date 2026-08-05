@@ -17,9 +17,7 @@ fn main() -> Result<()> {
     let mut bss_start = None;
     let mut bss_end = 0;
     for segment in file.segments() {
-        let SegmentFlags::Elf { p_flags } = segment.flags() else {
-            continue;
-        };
+        let SegmentFlags::Elf { p_flags, .. } = segment.flags() else { continue };
         let data = segment.data()?;
         let index = if p_flags & elf::PF_X == elf::PF_X {
             anyhow::ensure!(text_index < 7);

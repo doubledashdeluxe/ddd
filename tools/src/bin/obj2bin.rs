@@ -15,7 +15,7 @@ fn main() -> Result<()> {
     let mut segments: Vec<_> = file
         .segments()
         .filter(|segment| {
-            let SegmentFlags::Elf { p_flags } = segment.flags() else { return false };
+            let SegmentFlags::Elf { p_flags, .. } = segment.flags() else { return false };
             let x = p_flags & elf::PF_X == elf::PF_X;
             match options.kind {
                 Kind::Insts => x,
