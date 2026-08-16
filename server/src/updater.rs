@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::sync::Arc;
 use std::thread;
 use std::time::Instant;
 
@@ -15,8 +16,8 @@ use crate::rooms::Rooms;
 pub struct Updater {
     config: SharedConfig,
     message_senders: Vec<MessageSender>,
-    clients: Clients,
-    rooms: Rooms,
+    clients: Arc<Clients>,
+    rooms: Arc<Rooms>,
     frequency: Frequency,
 }
 
@@ -24,8 +25,8 @@ impl Updater {
     pub const fn new(
         config: SharedConfig,
         message_senders: Vec<MessageSender>,
-        clients: Clients,
-        rooms: Rooms,
+        clients: Arc<Clients>,
+        rooms: Arc<Rooms>,
         frequency: Frequency,
     ) -> Self {
         Self { config, message_senders, clients, rooms, frequency }

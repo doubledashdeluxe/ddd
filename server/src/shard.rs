@@ -2,6 +2,7 @@ use std::collections::BTreeMap;
 use std::collections::hash_map::{Entry, HashMap};
 use std::hash::{BuildHasher, RandomState};
 use std::net::SocketAddr;
+use std::sync::Arc;
 use std::sync::mpsc::RecvTimeoutError;
 use std::time::{Duration, Instant};
 
@@ -31,9 +32,9 @@ pub struct Shard<S: Sender> {
     link: Link<S>,
     random_state: RandomState,
     connections: HashMap<SocketAddr, Connection>,
-    clients: Clients,
+    clients: Arc<Clients>,
     client_slots: usize,
-    rooms: Rooms,
+    rooms: Arc<Rooms>,
 }
 
 impl<S: Sender> Shard<S> {
@@ -45,8 +46,8 @@ impl<S: Sender> Shard<S> {
         sender: S,
         message_receiver: MessageReceiver,
         buffer_sender: BufferSender,
-        clients: Clients,
-        rooms: Rooms,
+        clients: Arc<Clients>,
+        rooms: Arc<Rooms>,
     ) -> Self {
         let link = Link {
             drops: 1.0 - (1.0 - net_sim_options.drops).sqrt(),

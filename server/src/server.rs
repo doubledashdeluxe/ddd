@@ -1,3 +1,4 @@
+use std::sync::Arc;
 use std::sync::mpsc;
 use std::thread::Builder;
 
@@ -34,8 +35,8 @@ pub fn spawn(
         buffer_sender.send(Buffer::new())?;
     }
 
-    let clients = Clients::new(config.load().max_clients);
-    let rooms = Rooms::new(config.load().max_rooms_per_frame_rate);
+    let clients = Arc::new(Clients::new(config.load().max_clients));
+    let rooms = Arc::new(Rooms::new(config.load().max_rooms_per_frame_rate));
 
     let message_senders: Result<_> = senders
         .enumerate()

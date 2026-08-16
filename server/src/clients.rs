@@ -1,7 +1,6 @@
 use std::collections;
 use std::net::SocketAddr;
 use std::ops::{Deref, DerefMut};
-use std::sync::Arc;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::Instant;
 
@@ -15,19 +14,18 @@ use crate::crypto::PublicKey;
 use crate::frequency::Frequency;
 use crate::rooms::Rooms;
 
-#[derive(Clone, Default)]
 pub struct Clients {
-    clients: Arc<HashMap<PublicKey, Client>>,
-    count: Arc<AtomicUsize>,
-    player_count: Arc<AtomicUsize>,
+    clients: HashMap<PublicKey, Client>,
+    count: AtomicUsize,
+    player_count: AtomicUsize,
 }
 
 impl Clients {
     pub fn new(capacity: usize) -> Self {
         Self {
-            clients: Arc::new(HashMap::with_capacity(capacity)),
-            count: Arc::new(AtomicUsize::new(0)),
-            player_count: Arc::new(AtomicUsize::new(0)),
+            clients: HashMap::with_capacity(capacity),
+            count: AtomicUsize::new(0),
+            player_count: AtomicUsize::new(0),
         }
     }
 

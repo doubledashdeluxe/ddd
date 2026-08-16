@@ -17,28 +17,27 @@ use crate::mmr::Mmr;
 use crate::pack::Pack;
 use crate::room::{CodePair, Room};
 
-#[derive(Clone)]
 pub struct Rooms {
-    rooms: [Arc<HashMap<u128, Room>>; 2],
-    counts: [Arc<AtomicUsize>; 2],
-    search_rooms: [Arc<HashMap<Search, SearchRooms>>; 2],
-    mode_player_counts: [Arc<[AtomicUsize; MODE_INDEX_COUNT]>; 2],
-    long_code_ids: Arc<HashMap<u64, u128>>,
-    short_code_ids: Arc<HashMap<u64, u128>>,
-    short_codes: Arc<Queue<u64>>,
+    rooms: [HashMap<u128, Room>; 2],
+    counts: [AtomicUsize; 2],
+    search_rooms: [HashMap<Search, SearchRooms>; 2],
+    mode_player_counts: [[AtomicUsize; MODE_INDEX_COUNT]; 2],
+    long_code_ids: HashMap<u64, u128>,
+    short_code_ids: HashMap<u64, u128>,
+    short_codes: Queue<u64>,
 }
 
 impl Rooms {
     pub fn new(capacity: usize) -> Self {
         let short_codes: collections::HashSet<_> = (0..32768).collect();
         Self {
-            rooms: array::from_fn(|_| Arc::new(HashMap::with_capacity(capacity))),
-            counts: array::from_fn(|_| Arc::new(0.into())),
-            search_rooms: array::from_fn(|_| Arc::new(HashMap::new())),
-            mode_player_counts: array::from_fn(|_| Arc::new(array::from_fn(|_| 0.into()))),
-            long_code_ids: Arc::new(HashMap::with_capacity(capacity)),
-            short_code_ids: Arc::new(HashMap::with_capacity(capacity)),
-            short_codes: Arc::new(short_codes.into_iter().collect()),
+            rooms: array::from_fn(|_| HashMap::with_capacity(capacity)),
+            counts: array::from_fn(|_| 0.into()),
+            search_rooms: array::from_fn(|_| HashMap::new()),
+            mode_player_counts: array::from_fn(|_| array::from_fn(|_| 0.into())),
+            long_code_ids: HashMap::with_capacity(capacity),
+            short_code_ids: HashMap::with_capacity(capacity),
+            short_codes: short_codes.into_iter().collect(),
         }
     }
 
@@ -199,11 +198,11 @@ impl Rooms {
         });
     }
 
-    const fn rooms_by_frame_rate(&self, frame_rate: FrameRate) -> &Arc<HashMap<u128, Room>> {
+    const fn rooms_by_frame_rate(&self, frame_rate: FrameRate) -> &HashMap<u128, Room> {
         &self.rooms[frame_rate as usize]
     }
 
-    fn rooms_by_id(&self, id: &u128) -> &Arc<HashMap<u128, Room>> {
+    fn rooms_by_id(&self, id: &u128) -> &HashMap<u128, Room> {
         &self.rooms[(id % 2) as usize]
     }
 
@@ -237,7 +236,7 @@ impl Rooms {
     }
 }
 
-fn get<'a>(rooms: &'a Arc<HashMap<u128, Room>>, id: &u128) -> Result<RoomRef<'a>> {
+fn get<'a>(rooms: &'a HashMap<u128, Room>, id: &u128) -> Result<RoomRef<'a>> {
     rooms.get_sync(id).map(RoomRef::new).context("Room not found")
 }
 
