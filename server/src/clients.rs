@@ -13,6 +13,7 @@ use crate::config::Config;
 use crate::crypto::PublicKey;
 use crate::frequency::Frequency;
 use crate::rooms::Rooms;
+use crate::storage::Storage;
 
 pub struct Clients {
     clients: HashMap<PublicKey, Client>,
@@ -75,13 +76,15 @@ impl Clients {
         client_room_ids: &mut collections::HashMap<PublicKey, Option<u128>>,
         rooms: &Rooms,
         room_slots: &mut usize,
+        storage: &Storage,
         rng: &mut impl Rng,
     ) {
         client_room_ids.clear();
         let mut count = 0;
         let mut player_count = 0;
         self.clients.retain_sync(|pk, client| {
-            let retain = client.update(now, config, frequency, rooms, room_slots, rng).is_ok();
+            let retain =
+                client.update(now, config, frequency, rooms, room_slots, storage, rng).is_ok();
             if retain {
                 count += 1;
                 player_count += client.player_count();

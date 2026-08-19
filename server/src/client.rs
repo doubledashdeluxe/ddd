@@ -4,8 +4,9 @@ use std::net::SocketAddr;
 use std::time::{Duration, Instant};
 
 use anyhow::{Result, anyhow};
+use heapless::{LinearMap, Vec};
 use log::{debug, trace};
-use rand::{Rng, RngExt};
+use rand::Rng;
 
 use crate::config::Config;
 use crate::crypto::PublicKey;
@@ -13,11 +14,11 @@ use crate::formats::online::*;
 use crate::formats::version;
 use crate::frequency::Frequency;
 use crate::kart::Kart;
-use crate::mmr::Mmr;
 use crate::pack::Pack;
 use crate::player::Player;
 use crate::room::Room;
 use crate::rooms::{Rooms, Search};
+use crate::storage::{PlayerId, Storage};
 use crate::update::Update;
 
 pub struct Client {
@@ -70,6 +71,7 @@ impl Client {
         frequency: Frequency,
         rooms: &Rooms,
         room_slots: &mut usize,
+        storage: &Storage,
         rng: &mut impl Rng,
     ) -> Result<()> {
         anyhow::ensure!(now < self.expiration);
@@ -88,7 +90,7 @@ impl Client {
             State::Idle => (None, None),
             State::Server { identity } => (identity, None),
             State::Update { identity, .. } => (identity, None),
-            State::Mode { identity } => (Some(identity), None),
+            State::Mode { identity, .. } => (Some(identity), None),
             State::Pack { identity, .. } => (Some(identity), None),
             State::Room { identity, room_info } => (Some(identity), room_info),
             State::Team { identity, room_info } => (Some(identity), room_info),
@@ -113,29 +115,43 @@ impl Client {
             (ClientState::Update(update), identity, _) => {
                 State::Update { identity, state: update.client_update_state }
             }
-            (ClientState::Mode(_), Some(identity), _) => State::Mode { identity },
+            (ClientState::Mode(_), Some(identity), _) => {
+                let mmrs = (0..identity.players.len())
+                    .map(|i| {
+                        let id = PlayerId { client_pk: self.pk, index: i as u8 };
+                        storage
+                            .read_player(&id, |player| player.map(|p| p.mmrs.clone()))
+                            .unwrap_or_default()
+                    })
+                    .collect();
+                State::Mode { identity, mmrs }
+            }
             (ClientState::Pack(pack), Some(identity), _) => State::Pack { identity, pack },
             (ClientState::Room(room), Some(identity), room_info) => {
-                let mut karts = || {
+                let karts = || {
                     let kart_count = identity.kart_count as usize;
-                    let karts: heapless::Vec<_, _> = (0..kart_count)
+                    let karts: Vec<_, _> = (0..kart_count)
                         .map(|i| {
                             let players = &identity.players;
                             let tandem_count = players.len() - kart_count;
 
-                            let mut player = |i| {
+                            let player = |i| {
                                 let index = i as u8;
                                 let player: &ClientPlayer = &players[i];
                                 let name = player.name;
-                                let player = ServerPlayer { index, name };
-                                let mmr = rng.random_range(..=9999);
-                                Player::new(player, mmr)
+                                let id = PlayerId { client_pk: self.pk, index };
+                                storage.read_player(&id, |player| Player {
+                                    player: ServerPlayer { index, name },
+                                    mmrs: player.map_or(LinearMap::new(), |p| p.mmrs.clone()),
+                                    match_count: player.map_or(0, |p| p.race_count),
+                                    play_time: player.map_or(Duration::ZERO, |p| p.play_time),
+                                })
                             };
 
                             let players = if i < tandem_count {
-                                heapless::Vec::from([player(i / 2 + 0), player(i / 2 + 1)])
+                                Vec::from([player(i / 2 + 0), player(i / 2 + 1)])
                             } else {
-                                heapless::Vec::from([player(i + tandem_count)])
+                                Vec::from([player(i + tandem_count)])
                             };
                             Kart::new(self.pk, players)
                         })
@@ -347,11 +363,18 @@ impl Client {
                 let update = ServerStateUpdate { server_update_state: state };
                 ServerState::Update(update)
             }
-            State::Mode { identity } => {
+            State::Mode { identity, mmrs } => {
                 let mode_player_counts = rooms.mode_player_counts(identity.frame_rate);
-                let modes = array::from_fn(|i| ServerMode {
-                    mmrs: (0..identity.players.len()).map(|j| (i * 4 + j) as u16 * 179).collect(),
-                    player_count: mode_player_counts[i] as u16,
+                let modes = array::from_fn(|i| {
+                    let mmrs = (0..identity.players.len())
+                        .map(|j| {
+                            mmrs[j]
+                                .iter()
+                                .find(|(mode_index, _)| **mode_index as usize == i)
+                                .map_or(0, |(_, mmr)| *mmr)
+                        })
+                        .collect();
+                    ServerMode { mmrs, player_count: mode_player_counts[i] as u16 }
                 });
                 let mode = ServerStateMode { modes };
                 ServerState::Mode(mode)
@@ -387,13 +410,12 @@ impl Client {
                                     let players = kart
                                         .players()
                                         .iter()
-                                        .map(&Player::player)
-                                        .cloned()
+                                        .map(|player| player.player.clone())
                                         .collect();
                                     ServerKart {
                                         local,
                                         players,
-                                        mmr: kart.mmr(),
+                                        mmr: kart.mmr(room.mode_index()),
                                         points: kart.points,
                                     }
                                 })
@@ -481,14 +503,38 @@ impl Drop for Client {
 #[derive(Clone, Debug)]
 enum State {
     Idle,
-    Server { identity: Option<ClientIdentitySpecified> },
-    Update { identity: Option<ClientIdentitySpecified>, state: ClientUpdateState },
-    Mode { identity: ClientIdentitySpecified },
-    Pack { identity: ClientIdentitySpecified, pack: ClientStatePack },
-    Room { identity: ClientIdentitySpecified, room_info: Option<RoomInfo> },
-    Team { identity: ClientIdentitySpecified, room_info: Option<RoomInfo> },
-    Poll { identity: ClientIdentitySpecified, room_info: Option<RoomInfo> },
-    Race { identity: ClientIdentitySpecified, room_info: Option<RoomInfo>, frame: u16 },
+    Server {
+        identity: Option<ClientIdentitySpecified>,
+    },
+    Update {
+        identity: Option<ClientIdentitySpecified>,
+        state: ClientUpdateState,
+    },
+    Mode {
+        identity: ClientIdentitySpecified,
+        mmrs: Vec<LinearMap<ModeIndex, u16, MODE_INDEX_COUNT>, MAX_CLIENT_PLAYER_COUNT>,
+    },
+    Pack {
+        identity: ClientIdentitySpecified,
+        pack: ClientStatePack,
+    },
+    Room {
+        identity: ClientIdentitySpecified,
+        room_info: Option<RoomInfo>,
+    },
+    Team {
+        identity: ClientIdentitySpecified,
+        room_info: Option<RoomInfo>,
+    },
+    Poll {
+        identity: ClientIdentitySpecified,
+        room_info: Option<RoomInfo>,
+    },
+    Race {
+        identity: ClientIdentitySpecified,
+        room_info: Option<RoomInfo>,
+        frame: u16,
+    },
 }
 
 impl State {
@@ -497,7 +543,7 @@ impl State {
             Self::Idle => None,
             Self::Server { identity } => identity.as_ref(),
             Self::Update { identity, .. } => identity.as_ref(),
-            Self::Mode { identity } => Some(identity),
+            Self::Mode { identity, .. } => Some(identity),
             Self::Pack { identity, .. } => Some(identity),
             Self::Room { identity, .. } => Some(identity),
             Self::Team { identity, .. } => Some(identity),

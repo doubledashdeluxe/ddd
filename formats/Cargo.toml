@@ -7,5 +7,8 @@ license.workspace = true
 bpaf = "0.9.26"
 heapless = "0.9.3"
 
+[dev-dependencies]
+serde = { version = "1.0.229", features = ["derive"] }
+
 [lints]
 workspace = true

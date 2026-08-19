@@ -75,7 +75,7 @@ fn main() -> Result<()> {
     let senders = iter::repeat_with(|| Ok(socket.try_clone()?)).take(shards);
     let receiver = socket.try_clone()?;
 
-    server::spawn(options, &config, &update, &server_k, shards, senders, receiver)?;
+    server::spawn(options, &config, &update, &server_k, shards, senders, receiver, "run")?;
 
     for () in sighup::sighup()? {
         debug!("Reloading configuration...");

@@ -40,7 +40,7 @@ impl<L: VariantList> ComplexDataType for SimpleEnumType<L> {
     fn rs(&self) -> String {
         format!(
             concat!(
-                "#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]\n",
+                "#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, serde::Serialize, serde::Deserialize)]\n",
                 "pub enum {} {{\n",
                 "{}}}\n",
                 "\n",

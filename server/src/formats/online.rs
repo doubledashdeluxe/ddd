@@ -257,3 +257,54 @@ impl ItemId {
         }
     }
 }
+
+impl ServerRoomOptions {
+    pub const fn code_type(&self) -> RoomOptionCodeType {
+        match self {
+            Self::RaceOptions(options) => options.code_type,
+            Self::BattleOptions(options) => options.code_type,
+        }
+    }
+
+    pub const fn format(&self) -> RoomOptionFormat {
+        match self {
+            Self::RaceOptions(options) => options.format,
+            Self::BattleOptions(options) => options.format,
+        }
+    }
+
+    pub const fn engine_size(&self) -> Option<RoomOptionEngineSize> {
+        match self {
+            Self::RaceOptions(options) => Some(options.engine_size),
+            Self::BattleOptions(_) => None,
+        }
+    }
+
+    pub const fn item_mode(&self) -> Option<RoomOptionItemMode> {
+        match self {
+            Self::RaceOptions(options) => Some(options.item_mode),
+            Self::BattleOptions(_) => None,
+        }
+    }
+
+    pub const fn lap_count(&self) -> Option<u8> {
+        match self {
+            Self::RaceOptions(options) => Some(options.lap_count),
+            Self::BattleOptions(_) => None,
+        }
+    }
+
+    pub const fn match_count(&self) -> u8 {
+        match self {
+            Self::RaceOptions(options) => options.match_count,
+            Self::BattleOptions(options) => options.match_count,
+        }
+    }
+
+    pub const fn course_selection(&self) -> RoomOptionCourseSelection {
+        match self {
+            Self::RaceOptions(options) => options.course_selection,
+            Self::BattleOptions(options) => options.course_selection,
+        }
+    }
+}

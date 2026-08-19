@@ -1,8 +1,9 @@
-use std::sync::Arc;
-use std::sync::mpsc;
+use std::path::Path;
+use std::sync::{Arc, mpsc};
 use std::thread::Builder;
 
 use anyhow::Result;
+use log::trace;
 use noise_protocol::U8Array;
 
 use crate::buffer::Buffer;
@@ -16,6 +17,8 @@ use crate::receiver::Receiver;
 use crate::rooms::Rooms;
 use crate::sender::Sender;
 use crate::shard::Shard;
+use crate::storage::Storage;
+use crate::storage::worker::Worker as StorageWorker;
 use crate::update::SharedUpdate;
 use crate::updater::Updater;
 
@@ -27,6 +30,7 @@ pub fn spawn(
     shards: usize,
     senders: impl Iterator<Item = Result<impl Sender>>,
     receiver: impl Receiver,
+    storage_path: impl AsRef<Path>,
 ) -> Result<()> {
     let buffers_per_shard = config.load().buffers_per_shard;
     let buffers = shards * buffers_per_shard;
@@ -37,6 +41,17 @@ pub fn spawn(
 
     let clients = Arc::new(Clients::new(config.load().max_clients));
     let rooms = Arc::new(Rooms::new(config.load().max_rooms_per_frame_rate));
+
+    let (batch_sender, batch_receiver) =
+        mpsc::sync_channel(2 * config.load().max_rooms_per_frame_rate);
+    let (storage, storage_init) = Storage::load(batch_sender, storage_path)?;
+    let storage = Arc::new(storage);
+    trace!("Next player number: {}", storage_init.player_number);
+    trace!("Next room number: {}", storage_init.room_number);
+    trace!("Next race number: {}", storage_init.race_number);
+
+    let storage_worker = StorageWorker::new(batch_receiver, storage_init);
+    Builder::new().name("storage".to_owned()).spawn(move || storage_worker.run())?;
 
     let message_senders: Result<_> = senders
         .enumerate()
@@ -67,6 +82,7 @@ pub fn spawn(
             message_senders.clone(),
             clients.clone(),
             rooms.clone(),
+            storage.clone(),
             frequency,
         );
         Builder::new().name(format!("updater/{i}")).spawn(move || updater.run())?;

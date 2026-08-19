@@ -13,9 +13,10 @@ use scc::{HashSet, Queue};
 use crate::crypto::PublicKey;
 use crate::formats::online::*;
 use crate::kart::Kart;
-use crate::mmr::Mmr;
+use crate::mmr;
 use crate::pack::Pack;
 use crate::room::{CodePair, Room};
+use crate::storage::Storage;
 
 pub struct Rooms {
     rooms: [HashMap<u128, Room>; 2],
@@ -91,10 +92,10 @@ impl Rooms {
         rng: &mut impl Rng,
     ) -> Result<RoomRef<'_>> {
         anyhow::ensure!(search.pack.course_count != 0);
-        let mmr = karts.mmr();
+        let mmr = mmr::mmr(karts.iter().map(|kart| kart.mmr(search.mode_index)));
         let rooms = self.rooms_by_frame_rate(frame_rate);
         let search_rooms = &self.search_rooms[frame_rate as usize];
-        let ids = search_rooms.entry_sync(search.clone()).or_default().ids.clone();
+        let ids = search_rooms.entry_sync(search).or_default().ids.clone();
         let mut best_room = None;
         ids.iter_sync(|id| {
             let room = get(rooms, id).ok().filter(|room| {
@@ -156,11 +157,12 @@ impl Rooms {
         &self,
         frame_rate: FrameRate,
         client_room_ids: &collections::HashMap<PublicKey, Option<u128>>,
+        storage: &Storage,
     ) {
         let rooms = self.rooms_by_frame_rate(frame_rate);
         let mut count = 0;
         rooms.retain_sync(|_, room| {
-            let retain = room.update(client_room_ids).is_ok();
+            let retain = room.update(client_room_ids, storage).is_ok();
             if retain {
                 count += 1;
             }
@@ -264,7 +266,7 @@ impl DerefMut for RoomRef<'_> {
     }
 }
 
-#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub struct Search {
     pub mode_index: ModeIndex,
     pub pack: Pack,

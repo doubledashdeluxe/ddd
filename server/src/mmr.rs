@@ -1,11 +1,5 @@
-pub trait Mmr {
-    fn mmr(&self) -> u16;
-}
-
-impl<T: Mmr> Mmr for [T] {
-    fn mmr(&self) -> u16 {
-        let mmr: u32 = self.iter().map(|kart| u32::from(kart.mmr())).sum();
-        let mmr = mmr / self.len() as u32;
-        mmr as u16
-    }
+pub fn mmr(mmrs: impl IntoIterator<Item = u16>) -> u16 {
+    let mut count = 0;
+    let sum: u32 = mmrs.into_iter().map(u32::from).inspect(|_| count += 1).sum();
+    sum.checked_div(count).unwrap_or(0) as u16
 }

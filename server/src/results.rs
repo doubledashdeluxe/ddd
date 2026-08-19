@@ -4,24 +4,25 @@ use crate::formats::online::*;
 use crate::kart::Kart;
 
 pub fn compute(
-    karts: &mut Vec<Kart, MAX_ROOM_KART_COUNT>,
+    karts: &Vec<Kart, MAX_ROOM_KART_COUNT>,
     race_karts: &Vec<Option<ServerRaceKart>, MAX_ROOM_KART_COUNT>,
 ) -> Vec<ServerResult, MAX_ROOM_KART_COUNT> {
     let mut results: Vec<_, _> = karts
         .iter()
         .enumerate()
-        .map(|(i, kart)| ServerResult { kart_index: i as u8, points: kart.points })
+        .map(|(i, kart)| {
+            let result_time = match &race_karts[i] {
+                Some(race_kart) if race_kart.lap == 0 => race_kart.time,
+                _ => MAX_TIME,
+            };
+            ServerResult { kart_index: i as u8, result_time, points: kart.points }
+        })
         .collect();
 
-    results.sort_unstable_by_key(|result| {
-        let kart = &race_karts[result.kart_index as usize];
-        let kart = kart.as_ref().filter(|kart| kart.lap == 0);
-        kart.map_or(MAX_TIME, |kart| kart.time)
-    });
+    results.sort_unstable_by_key(|result| result.result_time);
 
     for (i, result) in results.iter_mut().enumerate() {
         result.points += POINTS[karts.len() - 2][i];
-        karts[result.kart_index as usize].points = result.points;
     }
 
     results

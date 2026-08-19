@@ -290,9 +290,11 @@ pub fn server_race_kart() -> impl ComplexDataType {
 
 pub fn server_result() -> impl ComplexDataType {
     let kart_index: SimpleDataType<u8> = SimpleDataType::new();
+    let time: SimpleDataType<u32> = SimpleDataType::new();
     let points: SimpleDataType<u16> = SimpleDataType::new();
     StructType::new("ServerResult")
         .with_field("kart_index", kart_index)
+        .with_field("result_time", time)
         .with_field("points", points)
 }
 

@@ -354,6 +354,12 @@ void ClientStateRace::setKartIndex(u8 kartIndex) {
     m_readInfo.results[m_resultIndex].kartIndex = kartIndex;
 }
 
+bool ClientStateRace::isResultTimeValid(u32 /* resultTime */) {
+    return true;
+}
+
+void ClientStateRace::setResultTime(u32 /* resultTime */) {}
+
 bool ClientStateRace::isPointsValid(u16 points) {
     return !m_readInfo.resultCount || points == m_readInfo.results[m_resultIndex].points;
 }

@@ -1,6 +1,6 @@
 use crate::crypto::PublicKey;
-use crate::formats::online::MAX_KART_PLAYER_COUNT;
-use crate::mmr::Mmr;
+use crate::formats::online::{MAX_KART_PLAYER_COUNT, ModeIndex};
+use crate::mmr;
 use crate::player::Player;
 
 use heapless::Vec;
@@ -24,10 +24,12 @@ impl Kart {
     pub fn players(&self) -> &[Player] {
         &self.players
     }
-}
 
-impl Mmr for Kart {
-    fn mmr(&self) -> u16 {
-        self.players.mmr()
+    pub fn players_mut(&mut self) -> &mut [Player] {
+        &mut self.players
+    }
+
+    pub fn mmr(&self, mode_index: ModeIndex) -> u16 {
+        mmr::mmr(self.players.iter().map(|player| *player.mmrs.get(&mode_index).unwrap_or(&0)))
     }
 }

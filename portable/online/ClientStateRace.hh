@@ -109,6 +109,8 @@ public:
 
     bool isKartIndexValid(u8 kartIndex);
     void setKartIndex(u8 kartIndex);
+    bool isResultTimeValid(u32 resultTime);
+    void setResultTime(u32 resultTime);
     bool isPointsValid(u16 points);
     void setPoints(u16 points);
 

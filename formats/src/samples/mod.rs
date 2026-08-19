@@ -2,11 +2,17 @@
 #![allow(clippy::unnecessary_wraps)]
 #![allow(dead_code)]
 
+#[cfg(test)]
 mod one_constant;
+#[cfg(test)]
 mod one_field;
+#[cfg(test)]
 mod one_variant;
+#[cfg(test)]
 mod two_constants;
+#[cfg(test)]
 mod two_fields;
+#[cfg(test)]
 mod two_variants;
 
 #[cfg(test)]

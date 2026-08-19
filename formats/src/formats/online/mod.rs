@@ -12,7 +12,7 @@ pub fn format() -> Format {
     let default_port = SimpleConstant::new("DEFAULT_PORT", 3549u16);
     let buffer_size = SimpleConstant::new("BUFFER_SIZE", 1152u16);
     let update_version = SimpleConstant::new("UPDATE_VERSION", 1u8);
-    let protocol_version = SimpleConstant::new("PROTOCOL_VERSION", 22u16);
+    let protocol_version = SimpleConstant::new("PROTOCOL_VERSION", 23u16);
     let max_lap_count = SimpleConstant::new("MAX_LAP_COUNT", 9u8);
     let min_match_count = SimpleConstant::new("MIN_MATCH_COUNT", 1u8);
     let max_match_count = SimpleConstant::new("MAX_MATCH_COUNT", 96u8);
@@ -37,6 +37,8 @@ pub fn format() -> Format {
     let max_team_count = SimpleConstant::new("MAX_TEAM_COUNT", MAX_TEAM_COUNT);
     let format_count = SimpleConstant::new("FORMAT_COUNT", FORMAT_COUNT);
     let max_room_kart_count = SimpleConstant::new("MAX_ROOM_KART_COUNT", MAX_ROOM_KART_COUNT);
+    let max_room_player_count =
+        SimpleConstant::new("MAX_ROOM_PLAYER_COUNT", MAX_ROOM_KART_COUNT * MAX_KART_PLAYER_COUNT);
     let min_kart_player_count = SimpleConstant::new("MIN_KART_PLAYER_COUNT", MIN_KART_PLAYER_COUNT);
     let max_kart_player_count = SimpleConstant::new("MAX_KART_PLAYER_COUNT", MAX_KART_PLAYER_COUNT);
     let min_client_frame = SimpleConstant::new("MIN_CLIENT_FRAME", 360u16);
@@ -70,6 +72,7 @@ pub fn format() -> Format {
         .with_constant(max_team_count)
         .with_constant(format_count)
         .with_constant(max_room_kart_count)
+        .with_constant(max_room_player_count)
         .with_constant(min_kart_player_count)
         .with_constant(max_kart_player_count)
         .with_constant(min_client_frame)

@@ -5,10 +5,11 @@ use std::collections::hash_map::{Entry, HashMap};
 use std::iter;
 use std::mem;
 use std::ops::BitOr;
-use std::time::{Duration, Instant};
+use std::time::{Duration, Instant, SystemTime};
 
 use anyhow::{Context, Result};
 use heapless::linear_map::{self, LinearMap};
+use jiff::Timestamp;
 use log::trace;
 use rand::seq::SliceRandom;
 use rand::{Rng, RngExt, SeedableRng};
@@ -18,9 +19,11 @@ use crate::crypto::{ChaCha20Rng, PublicKey};
 use crate::formats::online::*;
 use crate::item;
 use crate::kart::Kart;
-use crate::mmr::Mmr;
+use crate::mmr;
 use crate::pack::Pack;
 use crate::results;
+use crate::storage::race;
+use crate::storage::{Player, Race, Storage};
 
 pub struct Room {
     host_pk: Option<PublicKey>,
@@ -168,6 +171,10 @@ impl Room {
         self.karts.iter().map(|kart| kart.players().len()).sum()
     }
 
+    pub fn mmr(&self) -> u16 {
+        mmr::mmr(self.karts.iter().map(|kart| kart.mmr(self.mode_index)))
+    }
+
     pub fn spectating_kart_count(&self) -> usize {
         self.spectating_karts.values().map(|karts| karts.len()).sum()
     }
@@ -193,30 +200,23 @@ impl Room {
     }
 
     pub const fn code(&self) -> Option<u64> {
-        match (&self.code_pair, self.code_type()) {
+        match (&self.code_pair, self.options.code_type()) {
             (Some(code_pair), RoomOptionCodeType::Long) => Some(code_pair.long),
             (Some(code_pair), RoomOptionCodeType::Short) => Some(code_pair.short),
             (None, _) => None,
         }
     }
 
-    const fn code_type(&self) -> RoomOptionCodeType {
-        match &self.options {
-            ServerRoomOptions::RaceOptions(options) => options.code_type,
-            ServerRoomOptions::BattleOptions(options) => options.code_type,
-        }
-    }
-
     const fn is_duel(&self) -> bool {
-        matches!(self.format(), RoomOptionFormat::Duel)
+        matches!(self.options.format(), RoomOptionFormat::Duel)
     }
 
     const fn has_teams(&self) -> bool {
-        matches!(self.format(), RoomOptionFormat::TeamsOf2 | RoomOptionFormat::TeamsOf4)
+        matches!(self.options.format(), RoomOptionFormat::TeamsOf2 | RoomOptionFormat::TeamsOf4)
     }
 
     fn team_count(&self) -> u8 {
-        let max_team_size = match self.format() {
+        let max_team_size = match self.options.format() {
             RoomOptionFormat::TeamsOf2 => 2,
             RoomOptionFormat::TeamsOf4 => 4,
             _ => 1,
@@ -255,27 +255,6 @@ impl Room {
                     break;
                 }
             }
-        }
-    }
-
-    const fn format(&self) -> RoomOptionFormat {
-        match &self.options {
-            ServerRoomOptions::RaceOptions(options) => options.format,
-            ServerRoomOptions::BattleOptions(options) => options.format,
-        }
-    }
-
-    const fn match_count(&self) -> u8 {
-        match &self.options {
-            ServerRoomOptions::RaceOptions(options) => options.match_count,
-            ServerRoomOptions::BattleOptions(options) => options.match_count,
-        }
-    }
-
-    const fn course_selection(&self) -> RoomOptionCourseSelection {
-        match &self.options {
-            ServerRoomOptions::RaceOptions(options) => options.course_selection,
-            ServerRoomOptions::BattleOptions(options) => options.course_selection,
         }
     }
 
@@ -552,7 +531,7 @@ impl Room {
                 Some(course_index)
             }
         };
-        let course_selection = self.course_selection();
+        let course_selection = self.options.course_selection();
         let is_host = self.is_host(client_pk);
         match course_selection {
             RoomOptionCourseSelection::Poll => {
@@ -568,6 +547,7 @@ impl Room {
         let State::Poll {
             team_state,
             match_index,
+            match_start,
             state,
             karts: server_karts,
             host_course_index,
@@ -604,6 +584,7 @@ impl Room {
             self.state = State::new_race(
                 team_state.clone(),
                 *match_index,
+                *match_start,
                 state,
                 server_karts,
                 *host_course_index,
@@ -780,7 +761,11 @@ impl Room {
         Ok(())
     }
 
-    pub fn update(&mut self, client_room_ids: &HashMap<PublicKey, Option<u128>>) -> Result<()> {
+    pub fn update(
+        &mut self,
+        client_room_ids: &HashMap<PublicKey, Option<u128>>,
+        storage: &Storage,
+    ) -> Result<()> {
         let present = |client_pk: &PublicKey| {
             client_room_ids.get(client_pk).is_some_and(|room_id| *room_id == Some(self.id))
         };
@@ -806,8 +791,6 @@ impl Room {
             .flat_map(|karts| karts.iter().map(|kart| kart.players().len()))
             .sum();
 
-        let match_count = self.match_count();
-        let course_selection = self.course_selection();
         match &mut self.state {
             State::Room { deadline, .. } if self.host_pk.is_none() => {
                 self.spectating_karts.retain(|_, karts| {
@@ -825,7 +808,7 @@ impl Room {
                     && self.pending_clients.is_empty()
                 {
                     for kart in &mut self.karts {
-                        kart.points = kart.mmr();
+                        kart.points = kart.mmr(self.mode_index);
                     }
                     if self.has_teams() {
                         let deadline = Instant::now();
@@ -844,12 +827,14 @@ impl Room {
             State::Poll {
                 team_state,
                 match_index,
+                match_start,
                 state,
                 karts,
                 host_course_index,
                 deadline,
                 ..
             } if Instant::now() >= *deadline => {
+                let course_selection = self.options.course_selection();
                 for (kart_index, kart) in self.karts.iter().enumerate() {
                     let kart_index = kart_index as u8;
                     let is_host = Some(kart.client_pk()) == self.host_pk.as_ref();
@@ -878,6 +863,7 @@ impl Room {
                 self.state = State::new_race(
                     team_state.clone(),
                     *match_index,
+                    *match_start,
                     state,
                     karts,
                     *host_course_index,
@@ -885,7 +871,17 @@ impl Room {
                     &mut self.rng,
                 );
             }
-            State::Race { team_state, match_index, karts, states, end_frame, results, .. } => {
+            State::Race {
+                team_state,
+                match_index,
+                match_start,
+                poll_state,
+                karts,
+                states,
+                end_frame,
+                results,
+                ..
+            } => {
                 let frame = states.len() as u16;
                 let count =
                     karts.iter().filter_map(Option::as_ref).filter(|kart| kart.lap == 0).count();
@@ -894,8 +890,16 @@ impl Room {
                 } else if count != 0 {
                     *end_frame = (*end_frame).min(frame.saturating_add(30 * 60));
                 }
-                if frame >= *end_frame + 5 * 60 {
-                    *results = results::compute(&mut self.karts, karts);
+                if results.is_empty() && frame >= *end_frame + 5 * 60 {
+                    *results = results::compute(&self.karts, karts);
+                    let match_start = SystemTime::from(*match_start);
+                    let match_duration = match_start.elapsed().unwrap_or(Duration::ZERO);
+                    for kart in &mut self.karts {
+                        for player in kart.players_mut() {
+                            player.match_count += 1;
+                            player.play_time += match_duration;
+                        }
+                    }
                 }
                 let kart_flags = karts
                     .iter()
@@ -920,9 +924,88 @@ impl Room {
                         item_event.event_frame < MAX_KART_INPUT_COUNT as u8
                     });
                 }
-                if !results.is_empty() {
+                let continuing = if results.is_empty() {
+                    false
+                } else {
+                    let kart = |(i, kart): (_, &Kart)| {
+                        let players = kart
+                            .players()
+                            .iter()
+                            .map(|player| race::Player {
+                                index: player.index(),
+                                number: 0,
+                                name: player.name(),
+                                mmr: *player.mmrs.get(&self.mode_index).unwrap_or(&0),
+                            })
+                            .collect();
+                        let team =
+                            team_state.as_ref().map_or(i as u8, |team_state| team_state.teams[i]);
+                        let poll_index = poll_state
+                            .karts
+                            .iter()
+                            .position(|kart| kart.kart_index == i as u8)
+                            .unwrap();
+                        let poll_kart = &poll_state.karts[poll_index];
+                        let result_index =
+                            results.iter().position(|kart| kart.kart_index == i as u8).unwrap();
+                        let result = &results[result_index];
+                        race::Kart {
+                            client_pk: *kart.client_pk(),
+                            players,
+                            points: kart.points,
+                            team,
+                            poll_index: poll_index as u8,
+                            characters: poll_kart.character_ids,
+                            kart: poll_kart.kart_id,
+                            course_index: poll_kart.course_index,
+                            result_index: result_index as u8,
+                            result_time: result.result_time,
+                            result_points: result.points,
+                        }
+                    };
+
+                    let players = self
+                        .karts
+                        .iter()
+                        .flat_map(|kart| {
+                            kart.players().iter().map(|player| Player {
+                                client_pk: *kart.client_pk(),
+                                index: player.index(),
+                                name: player.name(),
+                                mmrs: player.mmrs.clone(),
+                                race_count: player.match_count,
+                                play_time: player.play_time,
+                            })
+                        })
+                        .collect();
+                    let karts = self.karts.iter().enumerate().map(kart).collect();
+                    let race = Race {
+                        room_id: self.id,
+                        room_number: 0,
+                        karts,
+                        spectator_count: self.spectator_count as u64,
+                        mode: self.mode_index,
+                        pack: self.pack,
+                        code_type: self.options.code_type(),
+                        format: self.options.format(),
+                        engine_size: self.options.engine_size(),
+                        item_mode: self.options.item_mode(),
+                        lap_count: self.options.lap_count(),
+                        race_count: self.options.match_count(),
+                        course_selection: self.options.course_selection(),
+                        race_index: *match_index,
+                        start: *match_start,
+                        selected_kart_index: poll_state.selected_kart_index,
+                        end: Timestamp::now(),
+                    };
+                    storage.store(players, race).is_ok()
+                };
+                if continuing {
+                    for result in results {
+                        self.karts[result.kart_index as usize].points = result.points;
+                    }
                     *match_index += 1;
-                    if *match_index < match_count {
+                    if *match_index < self.options.match_count() {
                         self.state = State::new_poll(
                             team_state.take(),
                             *match_index,
@@ -950,12 +1033,6 @@ impl Drop for Room {
     }
 }
 
-impl Mmr for Room {
-    fn mmr(&self) -> u16 {
-        self.karts.mmr()
-    }
-}
-
 #[derive(Clone, Copy, Debug)]
 pub struct CodePair {
     pub long: u64,
@@ -974,6 +1051,7 @@ enum State {
     Poll {
         team_state: Option<ServerTeamStateMain>,
         match_index: u8,
+        match_start: Timestamp,
         state: ServerPollStatePending,
         karts: LinearMap<u8, ServerPollKart, MAX_ROOM_KART_COUNT>,
         host_course_index: Option<u8>,
@@ -983,6 +1061,7 @@ enum State {
     Race {
         team_state: Option<ServerTeamStateMain>,
         match_index: u8,
+        match_start: Timestamp,
         poll_state: ServerPollStateReady,
         inputs: heapless::Vec<Inputs, MAX_ROOM_KART_COUNT>,
         karts: heapless::Vec<Option<ServerRaceKart>, MAX_ROOM_KART_COUNT>,
@@ -1017,6 +1096,7 @@ impl State {
         Self::Poll {
             team_state,
             match_index,
+            match_start: Timestamp::now(),
             state: ServerPollStatePending { match_index, kart_indices: heapless::Vec::new() },
             karts: LinearMap::new(),
             host_course_index: None,
@@ -1028,6 +1108,7 @@ impl State {
     fn new_race(
         team_state: Option<ServerTeamStateMain>,
         match_index: u8,
+        match_start: Timestamp,
         poll_state: &ServerPollStatePending,
         server_karts: &mut LinearMap<u8, ServerPollKart, MAX_ROOM_KART_COUNT>,
         host_course_index: Option<u8>,
@@ -1051,6 +1132,7 @@ impl State {
         Self::Race {
             team_state,
             match_index,
+            match_start,
             poll_state: ServerPollStateReady { match_index, karts, selected_kart_index },
             inputs,
             karts: iter::repeat_n(None, kart_count).collect(),

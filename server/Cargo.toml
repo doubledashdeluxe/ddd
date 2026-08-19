@@ -9,14 +9,17 @@ anyhow = "1.0.102"
 arc-swap = "1.9.1"
 bpaf = "0.9.26"
 cini = "1.0.0"
-heapless = "0.9.3"
-jiff = "0.2.28"
+ct-codecs = "1.1.7"
+heapless = { version = "0.9.3", features = ["serde"] }
+jiff = { version = "0.2.28", features = ["serde"] }
 log = { version = "0.4.32", features = ["max_level_debug", "std"] }
 noise-protocol = "0.2.1"
 orion = "0.17.15"
 rand = { version = "0.10.1", default-features = false, features = ["sys_rng"] }
 rawzip = "0.5.1"
 scc = "3.7.2"
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.151"
 signal-hook = "0.4.4"
 yansi = { version = "1.0.1", features = ["detect-env"] }
 yazi = "0.2.1"

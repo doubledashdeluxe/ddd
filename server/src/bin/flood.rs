@@ -1,3 +1,5 @@
+use std::fs;
+use std::io::ErrorKind;
 use std::iter;
 use std::ops::Add;
 use std::sync::Arc;
@@ -27,6 +29,12 @@ fn main() -> Result<()> {
 
     let options = Options::default();
 
+    match fs::remove_dir_all("run/flood") {
+        Err(e) if e.kind() == ErrorKind::NotFound => (),
+        r => r?,
+    }
+    fs::create_dir_all("run/flood")?;
+
     let config = Config::new();
     let config = Arc::new(ArcSwap::from_pointee(config));
 
@@ -42,7 +50,7 @@ fn main() -> Result<()> {
     let senders = senders.into_iter().map(Ok);
     let (flood_senders, receiver) = mpsc::channel(shards, buffers_per_shard);
 
-    server::spawn(options, &config, &update, &server_k, shards, senders, receiver)?;
+    server::spawn(options, &config, &update, &server_k, shards, senders, receiver, "run/flood")?;
 
     let server_pk = X25519::pubkey(&server_k);
 

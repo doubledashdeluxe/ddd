@@ -30,6 +30,7 @@ mod sender;
 pub mod server;
 mod shard;
 pub mod sighup;
+pub mod storage;
 pub mod update;
 mod updater;
 mod weight;
