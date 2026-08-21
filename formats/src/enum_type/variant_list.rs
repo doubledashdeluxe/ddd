@@ -94,7 +94,7 @@ impl<L: VariantList, T: DataType> VariantList for (L, Variant<T>) {
             L::count(),
             self.1.data_type().rs_read(&variable_name).replace('\n', "\n                "),
             self.1.name(),
-            &variable_name,
+            variable_name,
         )
     }
 
@@ -111,7 +111,7 @@ impl<L: VariantList, T: DataType> VariantList for (L, Variant<T>) {
             ),
             self.0.rs_write(),
             self.1.name(),
-            &variable_name,
+            variable_name,
             L::count(),
             self.1.data_type().rs_write(&variable_name).replace('\n', "\n                "),
         )
