@@ -14,6 +14,7 @@
 #include <cube/DiscID.hh>
 #include <cube/Platform.hh>
 #include <jsystem/J2DAnmLoaderDataBase.hh>
+#include <payload/CourseManager.hh>
 #include <payload/online/CubeClient.hh>
 #include <payload/online/CubeServerManager.hh>
 
@@ -146,7 +147,7 @@ void SceneServerSelect::init() {
     }
     m_writeInfo.kartCount = sequenceInfo.m_statusCount;
 
-    if (CubeServerManager::Instance()->lock()) {
+    if (CubeServerManager::Instance()->lock() && CourseManager::Instance()->lock()) {
         slideIn();
     } else {
         wait();
@@ -248,7 +249,11 @@ void SceneServerSelect::calc() {
         m_serverScreens[i].animationMaterials();
     }
 
-    client->writeStateServer(m_writeInfo);
+    if (m_writeInfo.raceCourses.empty() && m_writeInfo.battleCourses.empty()) {
+        client->writeStateIdle();
+    } else {
+        client->writeStateServer(m_writeInfo);
+    }
 }
 
 SceneServerSelect::DescText::DescText(SceneServerSelect &scene, u32 descIndex)
@@ -287,13 +292,15 @@ bool SceneServerSelect::clientStateServer(const ClientStateServerReadInfo &readI
         const Optional<Address> &address = serverInfo.address;
         const Optional<u16> &protocolVersion = serverInfo.protocolVersion;
         const Optional<Array<char, MaxVersionLength + 1>> &version = serverInfo.version;
+        const Optional<u16> &courseCount = serverInfo.courseCount;
         const Optional<Array<char, MaxMotdLength + 1>> &motd = serverInfo.motd;
         const Optional<u16> &uncappedPlayerCount = serverInfo.playerCount;
         bool versionIsCompatible = serverInfo.versionIsCompatible;
         bool updateIsAvailable = serverInfo.updateIsAvailable;
         Array<char, MaxMotdLength + 1> prevDesc = m_descs[i];
         Array<char, MaxMotdLength + 1> &desc = m_descs[i];
-        if (motd) {
+        if (courseCount == m_writeInfo.raceCourses.count() + m_writeInfo.battleCourses.count() &&
+                motd) {
             desc = *motd;
         } else if (protocolVersion && version && !versionIsCompatible) {
             snprintf(desc.values(), desc.count(), "%s%s (%u)", String(8), version->values(),
@@ -317,7 +324,8 @@ bool SceneServerSelect::clientStateServer(const ClientStateServerReadInfo &readI
             m_descOffsets[i] = 0;
         }
         J2DPicture *&descColorPicture = m_descColorPictures[i];
-        if (motd) {
+        if (courseCount == m_writeInfo.raceCourses.count() + m_writeInfo.battleCourses.count() &&
+                motd) {
             descColorPicture = m_colorScreen.search("Ok")->downcast<J2DPicture>();
         } else if (protocolVersion && version && !versionIsCompatible) {
             descColorPicture = m_colorScreen.search("Error")->downcast<J2DPicture>();
@@ -361,6 +369,14 @@ void SceneServerSelect::slideIn() {
     m_rowIndex = m_serverIndex;
     m_rowIndex = Min(m_rowIndex, m_serverCount - Min<u32>(m_serverCount, 5));
 
+    CourseManager *courseManager = CourseManager::Instance();
+    for (u32 i = 0; i < courseManager->courseCount(true); i++) {
+        *m_writeInfo.raceCourses.emplaceBack() = courseManager->course(true, i).archiveHash();
+    }
+    for (u32 i = 0; i < courseManager->courseCount(false); i++) {
+        *m_writeInfo.battleCourses.emplaceBack() = courseManager->course(false, i).archiveHash();
+    }
+
     MenuTitleLine::Instance()->drop("SelectServer.bti");
     for (u32 i = 0; i < m_serverAlphas.count(); i++) {
         u32 serverIndex = m_rowIndex + i;
@@ -403,7 +419,7 @@ void SceneServerSelect::nextScene() {
 }
 
 void SceneServerSelect::stateWait() {
-    if (CubeServerManager::Instance()->lock()) {
+    if (CubeServerManager::Instance()->lock() && CourseManager::Instance()->lock()) {
         slideIn();
     }
 }

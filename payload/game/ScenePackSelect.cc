@@ -247,8 +247,8 @@ const char *ScenePackSelect::DescText::getPart(u32 partIndex) {
     const CourseManager *courseManager = CourseManager::Instance();
     const RaceInfo &raceInfo = RaceInfo::Instance();
     u32 packIndex = m_scene.m_rowIndex + m_descIndex;
-    const CourseManager::Course &course =
-            courseManager->course(m_scene.m_isOnline, raceInfo.isRace(), packIndex, partIndex);
+    const CourseManager::Course &course = courseManager->courseByName(m_scene.m_isOnline,
+            raceInfo.isRace(), packIndex, partIndex);
     return course.name();
 }
 
@@ -320,7 +320,7 @@ void ScenePackSelect::slideIn() {
         m_writeInfo.packCount = m_packCount;
         for (u32 i = 0; i < m_packCount; i++) {
             const CourseManager::Pack &pack = courseManager->pack(m_isOnline, raceInfo.isRace(), i);
-            m_writeInfo.packs[i].courseCount = pack.courseIndices().count();
+            m_writeInfo.packs[i].courseCount = pack.courseIndicesByHash().count();
             m_writeInfo.packs[i].hash = pack.hash();
         }
         m_writeInfo.packIndex.reset();
@@ -491,7 +491,7 @@ void ScenePackSelect::refreshPacks() {
         kart2DCommon->changeUnicodeTexture(pack.name(), namePictureCount, screen, "Name");
         DescText descText(*this, i);
         u64 descOffset = Max<u64>(m_descOffset, 300) - 300;
-        u32 courseCount = pack.courseIndices().count();
+        u32 courseCount = pack.courseIndicesByHash().count();
         u32 descPictureCount = 42 - m_playerCountIsVisible * 6;
         descText.refresh(descOffset, courseCount, descPictureCount, screen, "Desc");
         kart2DCommon->changeNumberTexture<3>(courseCount, screen, "CCount", true);

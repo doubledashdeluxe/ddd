@@ -120,7 +120,6 @@ ClientState &FakeClient::writeStateRoom() {
     writeInfo.isSearch = false;
     writeInfo.modeIndex = 0;
     writeInfo.isRace = true;
-    writeInfo.packCourseCount = 1;
     writeInfo.packHash.fill(0xff);
     writeInfo.isHost = true;
     writeInfo.roomCounter = 0;

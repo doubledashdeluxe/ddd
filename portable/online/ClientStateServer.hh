@@ -53,6 +53,8 @@ public:
     ServerIdentityUnspecifiedReader *unspecifiedReader();
     ServerIdentitySpecifiedReader *specifiedReader();
 
+    bool isCourseCountValid(u16 courseCount);
+    void setCourseCount(u16 courseCount);
     bool isMotdCountValid(u32 motdCount);
     void setMotdCount(u32 motdCount);
     bool isMotdElementValid(u32 i0, u8 motdElement);
@@ -79,6 +81,12 @@ public:
     u32 getPlayersCount();
     ClientPlayerWriter &playersElementWriter(u32 i0);
     u8 getKartCount();
+    u32 getRaceCoursesCount();
+    u8 getRaceCoursesElement(u32 i0, u32 i1);
+    u8 getRaceCourseOffset();
+    u32 getBattleCoursesCount();
+    u8 getBattleCoursesElement(u32 i0, u32 i1);
+    u8 getBattleCourseOffset();
 
     u8 getProfile();
     u8 getNameElement(u32 i0);
@@ -95,4 +103,6 @@ private:
     ReadInfo m_readInfo;
     const WriteInfo *m_writeInfo;
     u32 m_playerIndex;
+    u32 m_raceCourseOffset;
+    u32 m_battleCourseOffset;
 };

@@ -48,12 +48,24 @@ pub fn client_identity_specified() -> impl ComplexDataType {
     let platform = ArrayType::new(platform_element, 0, MAX_PLATFORM_LENGTH);
     let players = ArrayType::new(client_player(), MIN_CLIENT_PLAYER_COUNT, MAX_CLIENT_PLAYER_COUNT);
     let kart_count: SimpleDataType<u8> = SimpleDataType::new();
+    let race_course_element: SimpleDataType<u8> = SimpleDataType::new();
+    let race_course = ArrayType::new(race_course_element, 32, 32);
+    let race_courses = ArrayType::new(race_course, 0, 12);
+    let race_course_offset: SimpleDataType<u8> = SimpleDataType::new();
+    let battle_course_element: SimpleDataType<u8> = SimpleDataType::new();
+    let battle_course = ArrayType::new(battle_course_element, 32, 32);
+    let battle_courses = ArrayType::new(battle_course, 0, 12);
+    let battle_course_offset: SimpleDataType<u8> = SimpleDataType::new();
     StructType::new("ClientIdentitySpecified")
         .with_field("frame_rate", frame_rate())
         .with_field("region", region)
         .with_field("platform", platform)
         .with_field("players", players)
         .with_field("kart_count", kart_count)
+        .with_field("race_courses", race_courses)
+        .with_field("race_course_offset", race_course_offset)
+        .with_field("battle_courses", battle_courses)
+        .with_field("battle_course_offset", battle_course_offset)
 }
 
 pub fn client_player() -> impl ComplexDataType {
@@ -120,27 +132,23 @@ pub fn client_room_state() -> impl ComplexDataType {
 }
 
 pub fn client_room_state_search() -> impl ComplexDataType {
-    let pack_course_count: SimpleDataType<u8> = SimpleDataType::new();
-    let pack_hash_element: SimpleDataType<u8> = SimpleDataType::new();
-    let pack_hash = ArrayType::new(pack_hash_element, 32, 32);
+    let pack_course_index: SimpleDataType<u8> = SimpleDataType::new();
+    let pack_course_indices = ArrayType::new(pack_course_index, 1, MAX_COURSE_COUNT);
     let room_counter: SimpleDataType<u32> = SimpleDataType::new();
     StructType::new("ClientRoomStateSearch")
         .with_field("mode_index", mode_index())
-        .with_field("pack_course_count", pack_course_count)
-        .with_field("pack_hash", pack_hash)
+        .with_field("pack_course_indices", pack_course_indices)
         .with_field("format", room_option_format())
         .with_field("room_counter", room_counter)
 }
 
 pub fn client_room_state_new() -> impl ComplexDataType {
-    let pack_course_count: SimpleDataType<u8> = SimpleDataType::new();
-    let pack_hash_element: SimpleDataType<u8> = SimpleDataType::new();
-    let pack_hash = ArrayType::new(pack_hash_element, 32, 32);
+    let pack_course_index: SimpleDataType<u8> = SimpleDataType::new();
+    let pack_course_indices = ArrayType::new(pack_course_index, 1, MAX_COURSE_COUNT);
     let room_counter: SimpleDataType<u32> = SimpleDataType::new();
     StructType::new("ClientRoomStateNew")
         .with_field("mode_index", mode_index())
-        .with_field("pack_course_count", pack_course_count)
-        .with_field("pack_hash", pack_hash)
+        .with_field("pack_course_indices", pack_course_indices)
         .with_field("room_counter", room_counter)
 }
 
@@ -278,4 +286,5 @@ pub fn client_race_kart() -> impl ComplexDataType {
 
 pub const MAX_PLATFORM_LENGTH: usize = 31;
 pub const MAX_UPDATE_INDEX_COUNT: usize = 8;
+pub const MAX_COURSE_COUNT: usize = 224;
 pub const MAX_KART_INPUT_COUNT: usize = 30;

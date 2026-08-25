@@ -12,7 +12,7 @@ pub fn format() -> Format {
     let default_port = SimpleConstant::new("DEFAULT_PORT", 3549u16);
     let buffer_size = SimpleConstant::new("BUFFER_SIZE", 1152u16);
     let update_version = SimpleConstant::new("UPDATE_VERSION", 1u8);
-    let protocol_version = SimpleConstant::new("PROTOCOL_VERSION", 23u16);
+    let protocol_version = SimpleConstant::new("PROTOCOL_VERSION", 24u16);
     let max_lap_count = SimpleConstant::new("MAX_LAP_COUNT", 9u8);
     let min_match_count = SimpleConstant::new("MIN_MATCH_COUNT", 1u8);
     let max_match_count = SimpleConstant::new("MAX_MATCH_COUNT", 96u8);
@@ -26,7 +26,7 @@ pub fn format() -> Format {
     let max_client_kart_count = SimpleConstant::new("MAX_CLIENT_KART_COUNT", MAX_CLIENT_KART_COUNT);
     let kart_character_count = SimpleConstant::new("KART_CHARACTER_COUNT", KART_CHARACTER_COUNT);
     let player_name_length = SimpleConstant::new("PLAYER_NAME_LENGTH", PLAYER_NAME_LENGTH);
-    let mode_index_count = SimpleConstant::new("MODE_INDEX_COUNT", MODE_INDEX_COUNT);
+    let max_course_count = SimpleConstant::new("MAX_COURSE_COUNT", MAX_COURSE_COUNT);
     let max_motd_length = SimpleConstant::new("MAX_MOTD_LENGTH", MAX_MOTD_LENGTH);
     let max_update_size = SimpleConstant::new("MAX_UPDATE_SIZE", 256 * 256 * 1024u32);
     let max_update_changelog_length =
@@ -34,6 +34,7 @@ pub fn format() -> Format {
     let max_update_index_count =
         SimpleConstant::new("MAX_UPDATE_INDEX_COUNT", MAX_UPDATE_INDEX_COUNT);
     let update_chunk_size = SimpleConstant::new("UPDATE_CHUNK_SIZE", UPDATE_CHUNK_SIZE);
+    let mode_index_count = SimpleConstant::new("MODE_INDEX_COUNT", MODE_INDEX_COUNT);
     let max_team_count = SimpleConstant::new("MAX_TEAM_COUNT", MAX_TEAM_COUNT);
     let format_count = SimpleConstant::new("FORMAT_COUNT", FORMAT_COUNT);
     let max_room_kart_count = SimpleConstant::new("MAX_ROOM_KART_COUNT", MAX_ROOM_KART_COUNT);
@@ -63,12 +64,13 @@ pub fn format() -> Format {
         .with_constant(max_client_kart_count)
         .with_constant(kart_character_count)
         .with_constant(player_name_length)
-        .with_constant(mode_index_count)
+        .with_constant(max_course_count)
         .with_constant(max_motd_length)
         .with_constant(max_update_size)
         .with_constant(max_update_changelog_length)
         .with_constant(max_update_index_count)
         .with_constant(update_chunk_size)
+        .with_constant(mode_index_count)
         .with_constant(max_team_count)
         .with_constant(format_count)
         .with_constant(max_room_kart_count)

@@ -495,7 +495,8 @@ bool SceneReplay::load(const Array<u32, 12> &nextReplayIndices) {
         if (replayIndex >= m_replayCount) {
             continue;
         }
-        const CourseManager::Course &course = courseManager->course(false, true, 0, replayIndex);
+        const CourseManager::Course &course =
+                courseManager->courseByHash(false, true, 0, replayIndex);
         UniquePtr<ResTIMG> &logo = findLogo(nextReplayIndices, replayIndex);
         if (!logo.get()) {
             void *texture = course.loadLogo(m_heap);

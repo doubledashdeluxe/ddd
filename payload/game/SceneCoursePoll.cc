@@ -124,7 +124,15 @@ void SceneCoursePoll::init() {
         ready.karts[i].kartID = onlineInfo.m_kartIDs[i];
     }
     if (onlineInfo.m_hasCourseSelection) {
-        ready.courseIndex = sequenceInfo.m_mapIndex;
+        const CourseManager::Pack &pack =
+                courseManager->pack(true, raceInfo.isRace(), sequenceInfo.m_packIndex);
+        u32 courseIndex = pack.courseIndicesByName()[sequenceInfo.m_mapIndex];
+        for (u32 i = 0; i < m_courseCount; i++) {
+            if (pack.courseIndicesByHash()[i] == courseIndex) {
+                ready.courseIndex = i;
+                break;
+            }
+        }
     }
 
     m_courseAlphas.fill(0);
@@ -270,7 +278,6 @@ bool SceneCoursePoll::clientStatePoll(const ClientStatePollReadInfo &readInfo) {
         return true;
     }
 
-    const SequenceInfo &sequenceInfo = SequenceInfo::Instance();
     const OnlineInfo &onlineInfo = OnlineInfo::Instance();
     Kart2DCommon *kart2DCommon = Kart2DCommon::Instance();
     for (; m_nameCount < kartIndices.count(); m_nameCount++) {
@@ -295,9 +302,9 @@ bool SceneCoursePoll::clientStatePoll(const ClientStatePollReadInfo &readInfo) {
                 picture->m_cornerColors = cornerColors;
             }
         }
-        if (kart.local && onlineInfo.m_hasCourseSelection) {
+        if (kart.local && m_writeInfo.ready->courseIndex) {
             Lock<Mutex> lock(m_mutex);
-            m_courseIndices[m_nameCount] = sequenceInfo.m_mapIndex;
+            m_courseIndices[m_nameCount] = *m_writeInfo.ready->courseIndex;
             refreshCourses();
         }
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CURSOL);
@@ -481,7 +488,7 @@ void SceneCoursePoll::stateIdle() {
         const RaceInfo &raceInfo = RaceInfo::Instance();
         const CourseManager *courseManager = CourseManager::Instance();
         u32 courseIndex = m_courseIndices[*m_selectedKartIndex];
-        const CourseManager::Course &course = courseManager->course(true, raceInfo.isRace(),
+        const CourseManager::Course &course = courseManager->courseByHash(true, raceInfo.isRace(),
                 sequenceInfo.m_packIndex, courseIndex);
         ResMgr::LoadExtendedCourseData(&course, 2);
         spin();
@@ -593,7 +600,7 @@ bool SceneCoursePoll::load(const Array<u32, MaxRoomKartCount> &courseIndices) {
                 nameImage = &m_nameImages[j];
             }
         }
-        const CourseManager::Course &course = courseManager->course(true, raceInfo.isRace(),
+        const CourseManager::Course &course = courseManager->courseByHash(true, raceInfo.isRace(),
                 sequenceInfo.m_packIndex, courseIndex);
         if (!thumbnail->get()) {
             void *texture = course.loadThumbnail(m_heap);

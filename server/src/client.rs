@@ -98,15 +98,45 @@ impl Client {
             State::Race { identity, room_info, .. } => (Some(identity), room_info),
         };
         self.state = match (client_state, identity, room_info) {
-            (ClientState::Server(server), _, _) => {
+            (ClientState::Server(server), identity, _) => {
+                let update_courses = |courses: &mut Vec<[u8; 32], MAX_COURSE_COUNT>,
+                                      client_courses: &[_],
+                                      client_course_offset| {
+                    for (i, client_course) in client_courses.iter().enumerate() {
+                        let offset = client_course_offset as usize + i;
+                        if let Some(course) = courses.get_mut(offset) {
+                            *course = *client_course;
+                        } else if offset == courses.len() {
+                            let _ = courses.push(*client_course);
+                        }
+                    }
+                };
+
                 let identity = match server.client_identity {
                     ClientIdentity::Unspecified(_) => None,
-                    ClientIdentity::Specified(identity) => {
+                    ClientIdentity::Specified(client_identity) => {
                         anyhow::ensure!(server.protocol_version == PROTOCOL_VERSION);
-                        let player_count = identity.players.len();
-                        let kart_count = identity.kart_count as usize;
+                        let player_count = client_identity.players.len();
+                        let kart_count = client_identity.kart_count as usize;
                         anyhow::ensure!(kart_count >= player_count.div_ceil(2));
                         anyhow::ensure!(kart_count <= player_count);
+                        let mut identity = identity.unwrap_or(Identity {
+                            frame_rate: client_identity.frame_rate,
+                            players: client_identity.players,
+                            kart_count: client_identity.kart_count,
+                            race_courses: Box::new(Vec::new()),
+                            battle_courses: Box::new(Vec::new()),
+                        });
+                        update_courses(
+                            &mut identity.race_courses,
+                            &client_identity.race_courses,
+                            client_identity.race_course_offset,
+                        );
+                        update_courses(
+                            &mut identity.battle_courses,
+                            &client_identity.battle_courses,
+                            client_identity.battle_course_offset,
+                        );
                         Some(identity)
                     }
                 };
@@ -171,11 +201,15 @@ impl Client {
                         let frame_rate = identity.frame_rate;
                         let karts = karts();
                         let mode_index = search.mode_index;
-                        let pack =
-                            Pack { course_count: search.pack_course_count, hash: search.pack_hash };
+                        let courses = if mode_index.is_race() {
+                            &identity.race_courses
+                        } else {
+                            &identity.battle_courses
+                        };
+                        let pack = Pack::new(courses, &search.pack_course_indices)?;
                         let format = search.format;
-                        let search = Search { mode_index, pack, format };
-                        let room = rooms.search(room_slots, frame_rate, &karts, search, rng);
+                        let room = rooms
+                            .search(room_slots, frame_rate, &karts, mode_index, pack, format, rng);
                         room.and_then(|mut room| {
                             let id = room.id();
                             let spectating_counter = 0;
@@ -193,8 +227,12 @@ impl Client {
                         let frame_rate = identity.frame_rate;
                         let karts = karts();
                         let mode_index = new.mode_index;
-                        let pack =
-                            Pack { course_count: new.pack_course_count, hash: new.pack_hash };
+                        let courses = if mode_index.is_race() {
+                            &identity.race_courses
+                        } else {
+                            &identity.battle_courses
+                        };
+                        let pack = Pack::new(courses, &new.pack_course_indices)?;
                         let id = rooms.insert(room_slots, frame_rate, karts, mode_index, pack, rng);
                         id.map(|id| {
                             let counter = new.room_counter;
@@ -321,7 +359,11 @@ impl Client {
             State::Idle => return Ok(None),
             State::Server { identity } => {
                 let server_identity = if identity.is_some() {
+                    let course_count = identity.as_ref().map_or(0, |identity| {
+                        identity.race_courses.len() + identity.battle_courses.len()
+                    }) as u16;
                     let specified = ServerIdentitySpecified {
+                        course_count,
                         motd: config.motd.clone().into_bytes(),
                         player_count: player_count as u16,
                     };
@@ -389,8 +431,7 @@ impl Client {
                     RoomOptionFormat::Duel,
                 ];
                 let format_player_counts = formats.map(|format| {
-                    let pack = Pack { course_count: pack_course_count, hash: pack_hash };
-                    let search = Search { mode_index, pack, format };
+                    let search = Search { mode_index, pack_course_count, pack_hash, format };
                     rooms.search_player_count(identity.frame_rate, &search) as u16
                 });
                 let player_count = format_player_counts.iter().sum();
@@ -425,8 +466,8 @@ impl Client {
                                 karts,
                                 spectator_count: room.spectator_count() as u16,
                                 mode_index: room.mode_index(),
-                                pack_course_count: pack.course_count,
-                                pack_hash: pack.hash,
+                                pack_course_count: pack.courses().len() as u8,
+                                pack_hash: *pack.hash(),
                                 room_counter: room_info.counter,
                                 room_code: room.code().unwrap_or(u64::MAX),
                                 spectating_counter: room_info.spectating_counter,
@@ -504,41 +545,41 @@ impl Drop for Client {
 enum State {
     Idle,
     Server {
-        identity: Option<ClientIdentitySpecified>,
+        identity: Option<Identity>,
     },
     Update {
-        identity: Option<ClientIdentitySpecified>,
+        identity: Option<Identity>,
         state: ClientUpdateState,
     },
     Mode {
-        identity: ClientIdentitySpecified,
+        identity: Identity,
         mmrs: Vec<LinearMap<ModeIndex, u16, MODE_INDEX_COUNT>, MAX_CLIENT_PLAYER_COUNT>,
     },
     Pack {
-        identity: ClientIdentitySpecified,
+        identity: Identity,
         pack: ClientStatePack,
     },
     Room {
-        identity: ClientIdentitySpecified,
+        identity: Identity,
         room_info: Option<RoomInfo>,
     },
     Team {
-        identity: ClientIdentitySpecified,
+        identity: Identity,
         room_info: Option<RoomInfo>,
     },
     Poll {
-        identity: ClientIdentitySpecified,
+        identity: Identity,
         room_info: Option<RoomInfo>,
     },
     Race {
-        identity: ClientIdentitySpecified,
+        identity: Identity,
         room_info: Option<RoomInfo>,
         frame: u16,
     },
 }
 
 impl State {
-    const fn identity(&self) -> Option<&ClientIdentitySpecified> {
+    const fn identity(&self) -> Option<&Identity> {
         match self {
             Self::Idle => None,
             Self::Server { identity } => identity.as_ref(),
@@ -561,6 +602,15 @@ impl State {
             _ => None,
         }
     }
+}
+
+#[derive(Clone, Debug)]
+struct Identity {
+    frame_rate: FrameRate,
+    players: Vec<ClientPlayer, MAX_CLIENT_PLAYER_COUNT>,
+    kart_count: u8,
+    race_courses: Box<Vec<[u8; 32], MAX_COURSE_COUNT>>,
+    battle_courses: Box<Vec<[u8; 32], MAX_COURSE_COUNT>>,
 }
 
 #[derive(Clone, Copy, Debug)]

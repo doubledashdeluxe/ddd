@@ -170,7 +170,7 @@ void ClientStateRoom::setModeIndex(u8 modeIndex) {
 
 bool ClientStateRoom::isPackCourseCountValid(u8 packCourseCount) {
     if (m_writeInfo.isSearch || m_writeInfo.isHost) {
-        return packCourseCount == m_writeInfo.packCourseCount;
+        return packCourseCount == m_writeInfo.packCourseIndices.count();
     } else {
         const Optional<ReadInfo::Info> &info = m_readInfo.info;
         return !info || packCourseCount == info->packCourseCount;
@@ -475,12 +475,12 @@ u8 ClientStateRoom::getModeIndex() {
     return m_writeInfo.modeIndex;
 }
 
-u8 ClientStateRoom::getPackCourseCount() {
-    return m_writeInfo.packCourseCount;
+u32 ClientStateRoom::getPackCourseIndicesCount() {
+    return m_writeInfo.packCourseIndices.count();
 }
 
-u8 ClientStateRoom::getPackHashElement(u32 i0) {
-    return m_writeInfo.packHash[i0];
+u8 ClientStateRoom::getPackCourseIndicesElement(u32 i0) {
+    return m_writeInfo.packCourseIndices[i0];
 }
 
 u8 ClientStateRoom::getFormat() {

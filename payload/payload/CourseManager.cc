@@ -24,16 +24,25 @@ extern "C" {
 }
 
 CourseManager::Pack::Pack(Ring<u8, MaxCourseCount> courseIndices)
-    : m_courseIndices(courseIndices) {}
+    : m_courseIndicesByHash(courseIndices)
+    , m_courseIndicesByName(courseIndices) {}
 
 CourseManager::Pack::~Pack() {}
 
-const Ring<u8, MaxCourseCount> &CourseManager::Pack::courseIndices() const {
-    return m_courseIndices;
+const Ring<u8, MaxCourseCount> &CourseManager::Pack::courseIndicesByHash() const {
+    return m_courseIndicesByHash;
 }
 
-Ring<u8, MaxCourseCount> &CourseManager::Pack::courseIndices() {
-    return m_courseIndices;
+Ring<u8, MaxCourseCount> &CourseManager::Pack::courseIndicesByHash() {
+    return m_courseIndicesByHash;
+}
+
+const Ring<u8, MaxCourseCount> &CourseManager::Pack::courseIndicesByName() const {
+    return m_courseIndicesByName;
+}
+
+Ring<u8, MaxCourseCount> &CourseManager::Pack::courseIndicesByName() {
+    return m_courseIndicesByName;
 }
 
 const Hash &CourseManager::Pack::hash() const {
@@ -301,7 +310,7 @@ Optional<u32> CourseManager::searchPack(bool isOnline, bool isRace, u32 courseCo
     u32 packCount = this->packCount(isOnline, isRace);
     for (u32 i = 0; i < packCount; i++) {
         const Pack &pack = this->pack(isOnline, isRace, i);
-        if (pack.courseIndices().count() == courseCount && pack.hash() == hash) {
+        if (pack.courseIndicesByHash().count() == courseCount && pack.hash() == hash) {
             return i;
         }
     }
@@ -313,10 +322,24 @@ u32 CourseManager::courseCount(bool isOnline, bool isRace, u32 packIndex) const 
     return isRace ? raceCourseCount(packIndex) : battleCourseCount(packIndex);
 }
 
-const CourseManager::Course &CourseManager::course(bool isOnline, bool isRace, u32 packIndex,
+const CourseManager::Course &CourseManager::courseByHash(bool isOnline, bool isRace, u32 packIndex,
         u32 index) const {
     packIndex = ConvertPackIndex(isOnline, packIndex);
-    return isRace ? raceCourse(packIndex, index) : battleCourse(packIndex, index);
+    return isRace ? raceCourseByHash(packIndex, index) : battleCourseByHash(packIndex, index);
+}
+
+const CourseManager::Course &CourseManager::courseByName(bool isOnline, bool isRace, u32 packIndex,
+        u32 index) const {
+    packIndex = ConvertPackIndex(isOnline, packIndex);
+    return isRace ? raceCourseByName(packIndex, index) : battleCourseByName(packIndex, index);
+}
+
+u32 CourseManager::courseCount(bool isRace) const {
+    return isRace ? raceCourseCount() : battleCourseCount();
+}
+
+const CourseManager::Course &CourseManager::course(bool isRace, u32 index) const {
+    return isRace ? raceCourse(index) : battleCourse(index);
 }
 
 void CourseManager::Init() {
@@ -392,19 +415,27 @@ const CourseManager::Pack &CourseManager::battlePack(u32 index) const {
 }
 
 u32 CourseManager::raceCourseCount(u32 packIndex) const {
-    return racePack(packIndex).courseIndices().count();
+    return racePack(packIndex).courseIndicesByHash().count();
 }
 
 u32 CourseManager::battleCourseCount(u32 packIndex) const {
-    return battlePack(packIndex).courseIndices().count();
+    return battlePack(packIndex).courseIndicesByHash().count();
 }
 
-const CourseManager::Course &CourseManager::raceCourse(u32 packIndex, u32 index) const {
-    return raceCourse(racePack(packIndex).courseIndices()[index]);
+const CourseManager::Course &CourseManager::raceCourseByHash(u32 packIndex, u32 index) const {
+    return raceCourse(racePack(packIndex).courseIndicesByHash()[index]);
 }
 
-const CourseManager::Course &CourseManager::battleCourse(u32 packIndex, u32 index) const {
-    return battleCourse(battlePack(packIndex).courseIndices()[index]);
+const CourseManager::Course &CourseManager::battleCourseByHash(u32 packIndex, u32 index) const {
+    return battleCourse(battlePack(packIndex).courseIndicesByHash()[index]);
+}
+
+const CourseManager::Course &CourseManager::raceCourseByName(u32 packIndex, u32 index) const {
+    return raceCourse(racePack(packIndex).courseIndicesByName()[index]);
+}
+
+const CourseManager::Course &CourseManager::battleCourseByName(u32 packIndex, u32 index) const {
+    return battleCourse(battlePack(packIndex).courseIndicesByName()[index]);
 }
 
 u32 CourseManager::raceCourseCount() const {
@@ -886,7 +917,7 @@ void CourseManager::hashBattlePacks() {
 
 void CourseManager::hashPacks(Ring<DefaultPack, DefaultPackCount> &defaultPacks,
         Ring<CustomPack, MaxCustomPackCount> &customPacks, CourseIndexComparator::Accessor access) {
-    sortPackCourses(defaultPacks, customPacks, access, &CourseManager::compareCourseIndicesByHash);
+    sortPackCoursesByHash(defaultPacks, customPacks, access);
     for (u32 i = 0; i < defaultPacks.count(); i++) {
         hashPack(defaultPacks[i], access);
     }
@@ -899,34 +930,44 @@ void CourseManager::hashPack(Pack &pack, CourseIndexComparator::Accessor access)
     Hash &packHash = pack.hash();
     crypto_blake2b_ctx ctx;
     crypto_blake2b_init(&ctx, packHash.count());
-    const Ring<u8, MaxCourseCount> &courseIndices = pack.courseIndices();
+    const Ring<u8, MaxCourseCount> &courseIndices = pack.courseIndicesByHash();
     for (u32 i = 0; i < courseIndices.count(); i++) {
-        const Hash &courseHash = (this->*access)(i).archiveHash();
+        const Hash &courseHash = (this->*access)(courseIndices[i]).archiveHash();
         crypto_blake2b_update(&ctx, courseHash.values(), courseHash.count());
     }
     crypto_blake2b_final(&ctx, packHash.values());
 }
 
 void CourseManager::sortRacePackCoursesByName() {
-    sortPackCourses(m_defaultRacePacks, m_customRacePacks, &CourseManager::raceCourse,
-            &CourseManager::compareCourseIndicesByName);
+    sortPackCoursesByName(m_defaultRacePacks, m_customRacePacks, &CourseManager::raceCourse);
 }
 
 void CourseManager::sortBattlePackCoursesByName() {
-    sortPackCourses(m_defaultBattlePacks, m_customBattlePacks, &CourseManager::battleCourse,
-            &CourseManager::compareCourseIndicesByName);
+    sortPackCoursesByName(m_defaultBattlePacks, m_customBattlePacks, &CourseManager::battleCourse);
 }
 
-void CourseManager::sortPackCourses(Ring<DefaultPack, DefaultPackCount> &defaultPacks,
-        Ring<CustomPack, MaxCustomPackCount> &customPacks, CourseIndexComparator::Accessor access,
-        CourseIndexComparator::Comparator compare) {
-    CourseIndexComparator comparator = {*this, access, compare};
+void CourseManager::sortPackCoursesByHash(Ring<DefaultPack, DefaultPackCount> &defaultPacks,
+        Ring<CustomPack, MaxCustomPackCount> &customPacks, CourseIndexComparator::Accessor access) {
+    CourseIndexComparator comparator = {*this, access, &CourseManager::compareCourseIndicesByHash};
     for (u32 i = 0; i < defaultPacks.count(); i++) {
-        Ring<u8, MaxCourseCount> &courseIndices = defaultPacks[i].courseIndices();
+        Ring<u8, MaxCourseCount> &courseIndices = defaultPacks[i].courseIndicesByHash();
         Sort(courseIndices, courseIndices.count(), comparator);
     }
     for (u32 i = 0; i < customPacks.count(); i++) {
-        Ring<u8, MaxCourseCount> &courseIndices = customPacks[i].courseIndices();
+        Ring<u8, MaxCourseCount> &courseIndices = customPacks[i].courseIndicesByHash();
+        Sort(courseIndices, courseIndices.count(), comparator);
+    }
+}
+
+void CourseManager::sortPackCoursesByName(Ring<DefaultPack, DefaultPackCount> &defaultPacks,
+        Ring<CustomPack, MaxCustomPackCount> &customPacks, CourseIndexComparator::Accessor access) {
+    CourseIndexComparator comparator = {*this, access, &CourseManager::compareCourseIndicesByName};
+    for (u32 i = 0; i < defaultPacks.count(); i++) {
+        Ring<u8, MaxCourseCount> &courseIndices = defaultPacks[i].courseIndicesByName();
+        Sort(courseIndices, courseIndices.count(), comparator);
+    }
+    for (u32 i = 0; i < customPacks.count(); i++) {
+        Ring<u8, MaxCourseCount> &courseIndices = customPacks[i].courseIndicesByName();
         Sort(courseIndices, courseIndices.count(), comparator);
     }
 }

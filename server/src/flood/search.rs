@@ -66,6 +66,10 @@ impl Flood for Search {
                 platform: (*b"Wii").into(),
                 players: [ClientPlayer { profile: 0, name: *b"AAA" }].into(),
                 kart_count: 1,
+                race_courses: [[0; _]; 1].into(),
+                race_course_offset: 0,
+                battle_courses: [].into(),
+                battle_course_offset: 0,
             };
             let server = ClientStateServer {
                 update_version: UPDATE_VERSION,
@@ -96,8 +100,7 @@ impl Flood for Search {
             }
             let search = ClientRoomStateSearch {
                 mode_index: ModeIndex::Versus,
-                pack_course_count: 16,
-                pack_hash: [0; _],
+                pack_course_indices: [0; 1].into(),
                 format: RoomOptionFormat::FreeForAll,
                 room_counter: 0,
             };

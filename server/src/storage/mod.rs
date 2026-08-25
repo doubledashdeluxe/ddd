@@ -16,10 +16,10 @@ use crate::formats::online::*;
 use crate::storage::batch::Batch;
 use crate::storage::init::Init;
 
-pub mod base64;
 pub mod race;
 pub mod worker;
 
+mod base64;
 mod batch;
 mod init;
 mod player;

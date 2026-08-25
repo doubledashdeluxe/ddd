@@ -43,10 +43,12 @@ pub fn server_identity_unspecified() -> impl ComplexDataType {
 }
 
 pub fn server_identity_specified() -> impl ComplexDataType {
+    let course_count: SimpleDataType<u16> = SimpleDataType::new();
     let motd_element: SimpleDataType<u8> = SimpleDataType::new();
     let motd = ArrayType::new(motd_element, 0, MAX_MOTD_LENGTH);
     let player_count: SimpleDataType<u16> = SimpleDataType::new();
     StructType::new("ServerIdentitySpecified")
+        .with_field("course_count", course_count)
         .with_field("motd", motd)
         .with_field("player_count", player_count)
 }

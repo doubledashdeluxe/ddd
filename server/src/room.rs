@@ -527,7 +527,7 @@ impl Room {
         let course_index = match course_index {
             ClientCourseIndex::Unspecified(()) => None,
             ClientCourseIndex::Specified(course_index) => {
-                anyhow::ensure!(course_index < self.pack.course_count);
+                anyhow::ensure!(course_index < self.pack.courses().len() as u8);
                 Some(course_index)
             }
         };
@@ -564,7 +564,7 @@ impl Room {
             };
             let course_index = match course_index {
                 Some(course_index) if !is_host_selection => course_index,
-                _ => self.rng.random_range(..self.pack.course_count),
+                _ => self.rng.random_range(..self.pack.courses().len()) as u8,
             };
             let server_kart = ServerPollKart {
                 kart_index,
@@ -848,7 +848,7 @@ impl Room {
                             break kart_id;
                         }
                     };
-                    let course_index = self.rng.random_range(..self.pack.course_count);
+                    let course_index = self.rng.random_range(..self.pack.courses().len()) as u8;
                     let kart = ServerPollKart { kart_index, character_ids, kart_id, course_index };
                     state.kart_indices.push(kart_index).unwrap();
                     v.insert(kart).unwrap();
@@ -857,8 +857,9 @@ impl Room {
                     }
                 }
                 if course_selection == RoomOptionCourseSelection::Host {
-                    host_course_index
-                        .get_or_insert_with(|| self.rng.random_range(..self.pack.course_count));
+                    host_course_index.get_or_insert_with(|| {
+                        self.rng.random_range(..self.pack.courses().len()) as u8
+                    });
                 }
                 self.state = State::new_race(
                     team_state.clone(),
@@ -979,13 +980,16 @@ impl Room {
                         })
                         .collect();
                     let karts = self.karts.iter().enumerate().map(kart).collect();
+                    let selected_course_index =
+                        poll_state.karts[poll_state.selected_kart_index as usize].course_index;
                     let race = Race {
                         room_id: self.id,
                         room_number: 0,
                         karts,
                         spectator_count: self.spectator_count as u64,
                         mode: self.mode_index,
-                        pack: self.pack,
+                        pack_course_count: self.pack.courses().len(),
+                        pack_hash: *self.pack.hash(),
                         code_type: self.options.code_type(),
                         format: self.options.format(),
                         engine_size: self.options.engine_size(),
@@ -996,6 +1000,7 @@ impl Room {
                         race_index: *match_index,
                         start: *match_start,
                         selected_kart_index: poll_state.selected_kart_index,
+                        course_hash: self.pack.courses()[selected_course_index as usize],
                         end: Timestamp::now(),
                     };
                     storage.store(players, race).is_ok()

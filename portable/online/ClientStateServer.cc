@@ -11,7 +11,10 @@ extern "C" {
 #include <string.h>
 }
 
-ClientStateServer::ClientStateServer(const ClientPlatform &platform) : ClientState(platform) {
+ClientStateServer::ClientStateServer(const ClientPlatform &platform)
+    : ClientState(platform)
+    , m_raceCourseOffset(0)
+    , m_battleCourseOffset(0) {
     m_platform.socket.close();
 }
 
@@ -63,6 +66,11 @@ ClientState &ClientStateServer::writeStateServer(const WriteInfo &writeInfo) {
         m_writeInfo = &writeInfo;
 
         ClientState::write(*this);
+
+        if (m_writeIndex == 0) {
+            m_raceCourseOffset = (m_raceCourseOffset + 12) % writeInfo.raceCourses.count();
+            m_battleCourseOffset = (m_battleCourseOffset + 12) % writeInfo.battleCourses.count();
+        }
     }
 
     return *this;
@@ -163,10 +171,18 @@ ServerIdentityUnspecifiedReader<ClientStateServer> *ClientStateServer::unspecifi
 }
 
 ServerIdentitySpecifiedReader<ClientStateServer> *ClientStateServer::specifiedReader() {
-    if (m_readInfo.servers[m_writeIndex].versionIsCompatible) {
+    if (m_readInfo.servers[m_readIndex].versionIsCompatible) {
         return this;
     }
     return nullptr;
+}
+
+bool ClientStateServer::isCourseCountValid(u16 /* courseCount */) {
+    return true;
+}
+
+void ClientStateServer::setCourseCount(u16 courseCount) {
+    m_readInfo.servers[m_readIndex].courseCount = courseCount;
 }
 
 bool ClientStateServer::isMotdCountValid(u32 /* motdCount */) {
@@ -259,6 +275,30 @@ ClientPlayerWriter<ClientStateServer> &ClientStateServer::playersElementWriter(u
 
 u8 ClientStateServer::getKartCount() {
     return m_writeInfo->kartCount;
+}
+
+u32 ClientStateServer::getRaceCoursesCount() {
+    return Min<u32>(m_writeInfo->raceCourses.count() - m_raceCourseOffset, 12);
+}
+
+u8 ClientStateServer::getRaceCoursesElement(u32 i0, u32 i1) {
+    return m_writeInfo->raceCourses[i0 + m_raceCourseOffset][i1];
+}
+
+u8 ClientStateServer::getRaceCourseOffset() {
+    return m_raceCourseOffset;
+}
+
+u32 ClientStateServer::getBattleCoursesCount() {
+    return Min<u32>(m_writeInfo->battleCourses.count() - m_battleCourseOffset, 12);
+}
+
+u8 ClientStateServer::getBattleCoursesElement(u32 i0, u32 i1) {
+    return m_writeInfo->battleCourses[i0 + m_battleCourseOffset][i1];
+}
+
+u8 ClientStateServer::getBattleCourseOffset() {
+    return m_battleCourseOffset;
 }
 
 u8 ClientStateServer::getProfile() {

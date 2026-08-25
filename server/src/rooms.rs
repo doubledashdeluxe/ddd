@@ -88,13 +88,21 @@ impl Rooms {
         room_slots: &mut usize,
         frame_rate: FrameRate,
         karts: &[Kart],
-        search: Search,
+        mode_index: ModeIndex,
+        pack: Pack,
+        format: RoomOptionFormat,
         rng: &mut impl Rng,
     ) -> Result<RoomRef<'_>> {
-        anyhow::ensure!(search.pack.course_count != 0);
-        let mmr = mmr::mmr(karts.iter().map(|kart| kart.mmr(search.mode_index)));
+        anyhow::ensure!(pack.courses().len() != 0);
+        let mmr = mmr::mmr(karts.iter().map(|kart| kart.mmr(mode_index)));
         let rooms = self.rooms_by_frame_rate(frame_rate);
         let search_rooms = &self.search_rooms[frame_rate as usize];
+        let search = Search {
+            mode_index,
+            pack_course_count: pack.courses().len() as u8,
+            pack_hash: *pack.hash(),
+            format,
+        };
         let ids = search_rooms.entry_sync(search).or_default().ids.clone();
         let mut best_room = None;
         ids.iter_sync(|id| {
@@ -120,7 +128,7 @@ impl Rooms {
             *room_slots -= 1;
             let room_entry = self.vacant_room_entry(frame_rate, rng);
             let id = *room_entry.key();
-            let room = Room::new_worldwide(search.mode_index, search.pack, id, search.format, rng);
+            let room = Room::new_worldwide(search.mode_index, pack, id, search.format, rng);
             let room = room_entry.insert_entry(room);
             ids.insert_sync(id).unwrap();
             Ok(RoomRef::new(room))
@@ -136,7 +144,7 @@ impl Rooms {
         pack: Pack,
         rng: &mut impl Rng,
     ) -> Result<u128> {
-        anyhow::ensure!(pack.course_count != 0);
+        anyhow::ensure!(pack.courses().len() != 0);
         anyhow::ensure!(*room_slots != 0);
         *room_slots -= 1;
         let room_entry = self.vacant_room_entry(frame_rate, rng);
@@ -269,7 +277,8 @@ impl DerefMut for RoomRef<'_> {
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub struct Search {
     pub mode_index: ModeIndex,
-    pub pack: Pack,
+    pub pack_course_count: u8,
+    pub pack_hash: [u8; 32],
     pub format: RoomOptionFormat,
 }
 

@@ -132,8 +132,8 @@ public:
     ClientRoomStateMainWriter &mainWriter();
 
     u8 getModeIndex();
-    u8 getPackCourseCount();
-    u8 getPackHashElement(u32 i0);
+    u32 getPackCourseIndicesCount();
+    u8 getPackCourseIndicesElement(u32 i0);
     u8 getFormat();
     u32 getRoomCounter();
 

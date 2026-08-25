@@ -1,13 +1,16 @@
 #pragma once
 
+#include "portable/Ring.hh"
 #include "portable/crypto/Types.hh"
 #include "portable/online/RoomOptions.hh"
+
+#include <formats/Online.hh>
 
 struct ClientStateRoomWriteInfo {
     bool isSearch;
     u8 modeIndex;
     bool isRace;
-    u8 packCourseCount;
+    Ring<u8, MaxCourseCount> packCourseIndices;
     Hash packHash;
     bool isHost;
     u32 roomCounter;

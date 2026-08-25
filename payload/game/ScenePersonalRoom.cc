@@ -188,7 +188,7 @@ void ScenePersonalRoom::init() {
         u32 packIndex = SequenceInfo::Instance().m_packIndex;
         const CourseManager *courseManager = CourseManager::Instance();
         const CourseManager::Pack &pack = courseManager->pack(true, m_isRace, packIndex);
-        m_writeInfo.packCourseCount = pack.courseIndices().count();
+        m_writeInfo.packCourseIndices = pack.courseIndicesByHash();
         m_writeInfo.packHash = pack.hash();
     }
     m_writeInfo.isHost = m_isHost;

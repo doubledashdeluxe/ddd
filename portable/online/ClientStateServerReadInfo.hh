@@ -13,6 +13,7 @@ struct ClientStateServerReadInfo {
         Optional<u8> updateVersion;
         Optional<u16> protocolVersion;
         Optional<Array<char, MaxVersionLength + 1>> version;
+        Optional<u16> courseCount;
         Optional<Array<char, MaxMotdLength + 1>> motd;
         Optional<u16> playerCount;
         bool versionIsCompatible;

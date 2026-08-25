@@ -29,6 +29,18 @@ impl TryFrom<Frequency> for FrameRate {
     }
 }
 
+impl ModeIndex {
+    pub const fn is_race(self) -> bool {
+        match self {
+            Self::Versus => true,
+            Self::Balloon => false,
+            Self::Escape => false,
+            Self::Bomb => false,
+            Self::TimeAttack => true,
+        }
+    }
+}
+
 impl CharacterId {
     pub const fn weight(self) -> Weight {
         match self {

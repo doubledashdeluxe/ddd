@@ -4,6 +4,7 @@
 #include "payload/ZIPFile.hh"
 
 #include <cube/storage/Storage.hh>
+#include <formats/Online.hh>
 #include <game/MinimapConfig.hh>
 #include <jsystem/JKRHeap.hh>
 #include <portable/Array.hh>
@@ -19,8 +20,10 @@ public:
         Pack(Ring<u8, MaxCourseCount> courseIndices);
         virtual ~Pack();
 
-        const Ring<u8, MaxCourseCount> &courseIndices() const;
-        Ring<u8, MaxCourseCount> &courseIndices();
+        const Ring<u8, MaxCourseCount> &courseIndicesByHash() const;
+        Ring<u8, MaxCourseCount> &courseIndicesByHash();
+        const Ring<u8, MaxCourseCount> &courseIndicesByName() const;
+        Ring<u8, MaxCourseCount> &courseIndicesByName();
         const Hash &hash() const;
         Hash &hash();
 
@@ -29,7 +32,8 @@ public:
         virtual const char *version() const = 0;
 
     protected:
-        Ring<u8, MaxCourseCount> m_courseIndices;
+        Ring<u8, MaxCourseCount> m_courseIndicesByHash;
+        Ring<u8, MaxCourseCount> m_courseIndicesByName;
         Hash m_hash;
     };
 
@@ -62,7 +66,10 @@ public:
     const Pack &pack(bool isOnline, bool isRace, u32 index) const;
     Optional<u32> searchPack(bool isOnline, bool isRace, u32 courseCount, const Hash &hash) const;
     u32 courseCount(bool isOnline, bool isRace, u32 packIndex) const;
-    const Course &course(bool isOnline, bool isRace, u32 packIndex, u32 index) const;
+    const Course &courseByHash(bool isOnline, bool isRace, u32 packIndex, u32 index) const;
+    const Course &courseByName(bool isOnline, bool isRace, u32 packIndex, u32 index) const;
+    u32 courseCount(bool isRace) const;
+    const Course &course(bool isRace, u32 index) const;
 
     static void Init();
     static CourseManager *Instance();
@@ -203,8 +210,10 @@ private:
     const Pack &battlePack(u32 index) const;
     u32 raceCourseCount(u32 packIndex) const;
     u32 battleCourseCount(u32 packIndex) const;
-    const Course &raceCourse(u32 packIndex, u32 index) const;
-    const Course &battleCourse(u32 packIndex, u32 index) const;
+    const Course &raceCourseByHash(u32 packIndex, u32 index) const;
+    const Course &battleCourseByHash(u32 packIndex, u32 index) const;
+    const Course &raceCourseByName(u32 packIndex, u32 index) const;
+    const Course &battleCourseByName(u32 packIndex, u32 index) const;
     u32 raceCourseCount() const;
     u32 battleCourseCount() const;
     const Course &raceCourse(u32 index) const;
@@ -240,9 +249,12 @@ private:
     void hashPack(Pack &pack, CourseIndexComparator::Accessor access);
     void sortRacePackCoursesByName();
     void sortBattlePackCoursesByName();
-    void sortPackCourses(Ring<DefaultPack, DefaultPackCount> &defaultPacks,
+    void sortPackCoursesByHash(Ring<DefaultPack, DefaultPackCount> &defaultPacks,
             Ring<CustomPack, MaxCustomPackCount> &customPacks,
-            CourseIndexComparator::Accessor access, CourseIndexComparator::Comparator compare);
+            CourseIndexComparator::Accessor access);
+    void sortPackCoursesByName(Ring<DefaultPack, DefaultPackCount> &defaultPacks,
+            Ring<CustomPack, MaxCustomPackCount> &customPacks,
+            CourseIndexComparator::Accessor access);
 
     bool findPrefix(ZIPFile &zipFile, const char *filePath, Array<char, 128> &prefix) const;
     bool hashFile(ZIPFile &zipFile, const char *filePath, Hash &hash) const;

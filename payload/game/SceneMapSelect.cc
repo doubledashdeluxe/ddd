@@ -654,7 +654,7 @@ void SceneMapSelect::stateSelect() {
             System::GetDisplay()->startFadeOut(15);
             const CourseManager *courseManager = CourseManager::Instance();
             const RaceInfo &raceInfo = RaceInfo::Instance();
-            const CourseManager::Course &course = courseManager->course(m_isOnline,
+            const CourseManager::Course &course = courseManager->courseByName(m_isOnline,
                     raceInfo.isRace(), sequenceInfo.m_packIndex, m_mapIndex);
             ResMgr::LoadExtendedCourseData(&course, 2);
         }
@@ -799,8 +799,8 @@ bool SceneMapSelect::load(const Array<u32, 12> &nextMapIndices) {
         if (mapIndex >= m_mapCount) {
             continue;
         }
-        const CourseManager::Course &course = courseManager->course(m_isOnline, raceInfo.isRace(),
-                sequenceInfo.m_packIndex, mapIndex);
+        const CourseManager::Course &course = courseManager->courseByName(m_isOnline,
+                raceInfo.isRace(), sequenceInfo.m_packIndex, mapIndex);
         UniquePtr<ResTIMG> &thumbnail = findTexture(m_thumbnails, nextMapIndices, mapIndex);
         if (!thumbnail.get()) {
             void *texture = course.loadThumbnail(m_heap);

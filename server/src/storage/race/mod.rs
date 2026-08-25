@@ -6,7 +6,7 @@ use jiff::Timestamp;
 use serde::{Deserialize, Serialize};
 
 use crate::formats::online::*;
-use crate::pack::Pack;
+use crate::storage::base64;
 
 mod kart;
 mod player;
@@ -19,7 +19,9 @@ pub struct Race {
     pub karts: Vec<Kart, MAX_ROOM_KART_COUNT>,
     pub spectator_count: u64,
     pub mode: ModeIndex,
-    pub pack: Pack,
+    pub pack_course_count: usize,
+    #[serde(with = "base64")]
+    pub pack_hash: [u8; 32],
     pub code_type: RoomOptionCodeType,
     pub format: RoomOptionFormat,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -33,5 +35,7 @@ pub struct Race {
     pub race_index: u8,
     pub start: Timestamp,
     pub selected_kart_index: u8,
+    #[serde(with = "base64")]
+    pub course_hash: [u8; 32],
     pub end: Timestamp,
 }

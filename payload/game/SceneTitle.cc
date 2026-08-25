@@ -269,7 +269,7 @@ void SceneTitle::stateIdle() {
                 u32 courseCount = courseManager->courseCount(false, true, packIndex);
                 u32 courseIndex = CubeRandom::Instance()->get(courseCount);
                 const CourseManager::Course &course =
-                        courseManager->course(false, true, packIndex, courseIndex);
+                        courseManager->courseByHash(false, true, packIndex, courseIndex);
                 u32 courseOrder = raceInfo.getConsoleCount() < 2 ? 2 : 1;
                 ResMgr::LoadExtendedCourseData(&course, courseOrder);
                 fadeOut();
