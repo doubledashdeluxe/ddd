@@ -6,10 +6,10 @@ use heapless::LinearMap;
 use jiff::fmt::serde::unsigned_duration::required;
 use serde::{Deserialize, Serialize};
 
+use crate::base64;
 use crate::crypto::PublicKey;
 use crate::formats::online::{MODE_INDEX_COUNT, ModeIndex};
 use crate::player::Name;
-use crate::storage::base64;
 
 mod id;
 

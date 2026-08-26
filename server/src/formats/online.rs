@@ -4,6 +4,7 @@
 #![allow(dead_code)]
 
 use std::array;
+use std::fmt::{self, Display, Formatter};
 
 use rand::distr::{Distribution, StandardUniform};
 use rand::{Rng, RngExt};
@@ -16,6 +17,16 @@ include!(concat!(env!("OUT_DIR"), "/online.rs"));
 pub type CharacterId = CharacterID;
 pub type KartId = KartID;
 pub type ItemId = ItemID;
+
+impl Display for FrameRate {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        let frame_rate = match self {
+            Self::SixtyHz => "60 Hz",
+            Self::FiftyHz => "50 Hz",
+        };
+        write!(f, "{frame_rate}")
+    }
+}
 
 impl TryFrom<Frequency> for FrameRate {
     type Error = ();
@@ -38,6 +49,30 @@ impl ModeIndex {
             Self::Bomb => false,
             Self::TimeAttack => true,
         }
+    }
+}
+
+impl Display for RoomOptionEngineSize {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        let engine_size = match self {
+            Self::Small => "50cc",
+            Self::Medium => "100cc",
+            Self::Large => "150cc",
+            Self::Mirror => "Mirror",
+        };
+        write!(f, "{engine_size}")
+    }
+}
+
+impl Display for RoomOptionItemMode {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        let item_mode = match self {
+            Self::Recommended => "Recommended Items",
+            Self::Basic => "Basic Items",
+            Self::Frantic => "Frantic Items",
+            Self::None => "No Items",
+        };
+        write!(f, "{item_mode}")
     }
 }
 

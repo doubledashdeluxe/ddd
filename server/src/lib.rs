@@ -3,12 +3,15 @@ use std::sync::mpsc::{Receiver, SyncSender};
 use crate::buffer::Buffer;
 use crate::message::Message;
 
+mod base64;
 mod buffer;
 mod client;
 mod clients;
 pub mod config;
 mod connection;
+pub mod courses;
 pub mod crypto;
+mod dir_entry;
 pub mod flood;
 pub mod formats;
 mod frequency;
@@ -33,6 +36,7 @@ pub mod sighup;
 pub mod storage;
 pub mod update;
 mod updater;
+mod webhook;
 mod weight;
 
 type BufferSender = SyncSender<Buffer>;

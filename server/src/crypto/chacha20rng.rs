@@ -13,7 +13,7 @@ pub struct ChaCha20Rng {
 
 impl Debug for ChaCha20Rng {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(f, "ChaCha20Rng {{}}")
+        f.debug_struct("ChaCha20Rng").finish_non_exhaustive()
     }
 }
 

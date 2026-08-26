@@ -5,8 +5,9 @@ use heapless::Vec;
 use jiff::Timestamp;
 use serde::{Deserialize, Serialize};
 
+use crate::base64;
+use crate::crypto::PublicKey;
 use crate::formats::online::*;
-use crate::storage::base64;
 
 mod kart;
 mod player;
@@ -14,8 +15,13 @@ mod player;
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Race {
     #[serde(skip)]
+    pub number: u64,
+    #[serde(skip)]
     pub room_id: u128,
     pub room_number: u64,
+    pub frame_rate: FrameRate,
+    #[serde(skip)]
+    pub host_pk: Option<PublicKey>,
     pub karts: Vec<Kart, MAX_ROOM_KART_COUNT>,
     pub spectator_count: u64,
     pub mode: ModeIndex,

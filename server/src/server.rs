@@ -9,6 +9,7 @@ use noise_protocol::U8Array;
 use crate::buffer::Buffer;
 use crate::clients::Clients;
 use crate::config::SharedConfig;
+use crate::courses::SharedCourses;
 use crate::crypto::Key;
 use crate::frequency::Frequency;
 use crate::listener::Listener;
@@ -17,15 +18,16 @@ use crate::receiver::Receiver;
 use crate::rooms::Rooms;
 use crate::sender::Sender;
 use crate::shard::Shard;
-use crate::storage::Storage;
-use crate::storage::worker::Worker as StorageWorker;
+use crate::storage::{Storage, Worker as StorageWorker};
 use crate::update::SharedUpdate;
 use crate::updater::Updater;
+use crate::webhook::Worker as WebhookWorker;
 
 pub fn spawn(
     options: Options,
     config: &SharedConfig,
     update: &SharedUpdate,
+    courses: &SharedCourses,
     server_k: &Key,
     shards: usize,
     senders: impl Iterator<Item = Result<impl Sender>>,
@@ -50,7 +52,12 @@ pub fn spawn(
     trace!("Next room number: {}", storage_init.room_number);
     trace!("Next race number: {}", storage_init.race_number);
 
-    let storage_worker = StorageWorker::new(batch_receiver, storage_init);
+    let (webhook_race_sender, webhook_race_receiver) =
+        mpsc::sync_channel(2 * config.load().max_rooms_per_frame_rate);
+    let webhook_worker = WebhookWorker::new(courses.clone(), webhook_race_receiver);
+    Builder::new().name("webhook".to_owned()).spawn(|| webhook_worker.run())?;
+
+    let storage_worker = StorageWorker::new(batch_receiver, storage_init, webhook_race_sender);
     Builder::new().name("storage".to_owned()).spawn(move || storage_worker.run())?;
 
     let message_senders: Result<_> = senders

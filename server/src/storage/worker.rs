@@ -3,11 +3,12 @@ use std::fmt::Write;
 use std::fs;
 use std::hash::Hash;
 use std::path::PathBuf;
-use std::sync::mpsc::Receiver;
+use std::sync::mpsc::{Receiver, SyncSender};
 
 use anyhow::Result;
 use log::error;
 use serde::Serialize;
+use serde_json::ser::{PrettyFormatter, Serializer};
 
 use crate::storage::batch::Batch;
 use crate::storage::init::Init;
@@ -28,10 +29,15 @@ pub struct Worker {
     file_name_buf: String,
     tmp_path_buf: PathBuf,
     path_buf: PathBuf,
+    webhook_race_sender: SyncSender<Race>,
 }
 
 impl Worker {
-    pub fn new(batch_receiver: Receiver<Batch>, init: Init) -> Self {
+    pub fn new(
+        batch_receiver: Receiver<Batch>,
+        init: Init,
+        webhook_race_sender: SyncSender<Race>,
+    ) -> Self {
         Self {
             batch_receiver,
             path: init.path,
@@ -45,6 +51,7 @@ impl Worker {
             file_name_buf: String::new(),
             tmp_path_buf: PathBuf::new(),
             path_buf: PathBuf::new(),
+            webhook_race_sender,
         }
     }
 
@@ -57,6 +64,9 @@ impl Worker {
                 }
             }
             if let Err(e) = self.write_race(&mut batch.race) {
+                error!("{e}");
+            }
+            if let Err(e) = self.webhook_race_sender.try_send(batch.race) {
                 error!("{e}");
             }
         }
@@ -75,14 +85,16 @@ impl Worker {
                 player.number = self.player_number(player_id);
             }
         }
-        let race_number = self.race_number;
-        self.race_number = race_number.strict_add(1);
-        self.write(race, race_number, "races")
+        race.number = self.race_number;
+        self.race_number = race.number.strict_add(1);
+        self.write(race, race.number, "races")
     }
 
     fn write<T: Serialize>(&mut self, x: &T, number: u64, dir: &str) -> Result<()> {
         self.buf.clear();
-        serde_json::to_writer_pretty(&mut self.buf, x)?;
+        let formatter = PrettyFormatter::with_indent(b"    ");
+        let mut serializer = Serializer::with_formatter(&mut self.buf, formatter);
+        x.serialize(&mut serializer)?;
 
         self.file_name_buf.clear();
         write!(self.file_name_buf, "{number}.json")?;

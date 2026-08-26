@@ -12,6 +12,7 @@ use log::info;
 use noise_protocol::DH;
 
 use ddd_server::config::Config;
+use ddd_server::courses::Courses;
 use ddd_server::crypto::x25519::X25519;
 use ddd_server::flood::counters::Counters;
 use ddd_server::flood::mpmc;
@@ -41,6 +42,9 @@ fn main() -> Result<()> {
     let update = None;
     let update = Arc::new(ArcSwap::from_pointee(update));
 
+    let courses = Courses::read()?;
+    let courses = Arc::new(ArcSwap::from_pointee(courses));
+
     let server_k = X25519::genkey();
 
     let shards = flood_options.parallelism;
@@ -50,7 +54,17 @@ fn main() -> Result<()> {
     let senders = senders.into_iter().map(Ok);
     let (flood_senders, receiver) = mpsc::channel(shards, buffers_per_shard);
 
-    server::spawn(options, &config, &update, &server_k, shards, senders, receiver, "run/flood")?;
+    server::spawn(
+        options,
+        &config,
+        &update,
+        &courses,
+        &server_k,
+        shards,
+        senders,
+        receiver,
+        "run/flood",
+    )?;
 
     let server_pk = X25519::pubkey(&server_k);
 

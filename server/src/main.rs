@@ -13,6 +13,7 @@ use log::{debug, error, info};
 use noise_protocol::{DH, U8Array};
 
 use ddd_server::config::Config;
+use ddd_server::courses::Courses;
 use ddd_server::crypto::x25519::X25519;
 use ddd_server::formats::online::DEFAULT_PORT;
 use ddd_server::formats::version;
@@ -43,6 +44,11 @@ fn main() -> Result<()> {
     let update = Update::read()?;
     let update = Arc::new(ArcSwap::from_pointee(update));
     debug!("Loaded update.");
+
+    debug!("Loading courses...");
+    let courses = Courses::read()?;
+    let courses = Arc::new(ArcSwap::from_pointee(courses));
+    debug!("Loaded courses.");
 
     let server_k = if let Ok(mut file) = File::open("run/k.bin") {
         let mut server_k = <X25519 as DH>::Key::new();
@@ -75,27 +81,26 @@ fn main() -> Result<()> {
     let senders = iter::repeat_with(|| Ok(socket.try_clone()?)).take(shards);
     let receiver = socket.try_clone()?;
 
-    server::spawn(options, &config, &update, &server_k, shards, senders, receiver, "run")?;
+    server::spawn(
+        options, &config, &update, &courses, &server_k, shards, senders, receiver, "run",
+    )?;
 
     for () in sighup::sighup()? {
-        debug!("Reloading configuration...");
-        match Config::read() {
-            Ok(new_config) => {
-                config.store(Arc::new(new_config));
-                debug!("Reloaded configuration.");
-            }
-            Err(e) => error!("Failed to reload configuration: {e}"),
-        }
-
-        debug!("Reloading update...");
-        match Update::read() {
-            Ok(new_update) => {
-                update.store(Arc::new(new_update));
-                debug!("Reloaded update.");
-            }
-            Err(e) => error!("Failed to reload update: {e}"),
-        }
+        reload(Config::read, &config, "config");
+        reload(Update::read, &update, "update");
+        reload(Courses::read, &courses, "courses");
     }
 
     unreachable!()
+}
+
+fn reload<T>(reload: fn() -> Result<T>, x: &Arc<ArcSwap<T>>, name: &str) {
+    debug!("Reloading {name}...");
+    match reload() {
+        Ok(new) => {
+            x.store(Arc::new(new));
+            debug!("Reloaded {name}.");
+        }
+        Err(e) => error!("Failed to reload {name}: {e}"),
+    }
 }

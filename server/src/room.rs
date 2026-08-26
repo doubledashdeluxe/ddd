@@ -106,14 +106,7 @@ impl Room {
         rng: &mut impl Rng,
     ) -> Self {
         trace!("-> {id}");
-        let is_race = match mode_index {
-            ModeIndex::Versus => true,
-            ModeIndex::Balloon => false,
-            ModeIndex::Escape => false,
-            ModeIndex::Bomb => false,
-            ModeIndex::TimeAttack => true,
-        };
-        let options = if is_race {
+        let options = if mode_index.is_race() {
             let options = RoomOptionsRace {
                 race: (),
                 code_type: RoomOptionCodeType::Long,
@@ -763,6 +756,7 @@ impl Room {
 
     pub fn update(
         &mut self,
+        frame_rate: FrameRate,
         client_room_ids: &HashMap<PublicKey, Option<u128>>,
         storage: &Storage,
     ) -> Result<()> {
@@ -983,8 +977,11 @@ impl Room {
                     let selected_course_index =
                         poll_state.karts[poll_state.selected_kart_index as usize].course_index;
                     let race = Race {
+                        number: 0,
                         room_id: self.id,
                         room_number: 0,
+                        frame_rate,
+                        host_pk: self.host_pk,
                         karts,
                         spectator_count: self.spectator_count as u64,
                         mode: self.mode_index,

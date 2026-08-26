@@ -170,7 +170,7 @@ impl Rooms {
         let rooms = self.rooms_by_frame_rate(frame_rate);
         let mut count = 0;
         rooms.retain_sync(|_, room| {
-            let retain = room.update(client_room_ids, storage).is_ok();
+            let retain = room.update(frame_rate, client_room_ids, storage).is_ok();
             if retain {
                 count += 1;
             }
