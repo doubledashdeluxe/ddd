@@ -436,9 +436,9 @@ dependencies = [
 
 [[package]]
 name = "sdd"
-version = "4.8.8"
+version = "4.8.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1836bad8bdc9c6d665b63202da3d9c6d60ed1e597cae63620e21ebf89a3595a9"
+checksum = "f95d4cc3459db1e608946153c95cf20158af0b86131ae4ae451f90f54549e7d1"
 dependencies = [
  "saa",
 ]
