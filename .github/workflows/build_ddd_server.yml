@@ -3,6 +3,7 @@ name: Build ddd-server
 on:
   push:
     branches-ignore: [dependabot/**]
+    tags: ['**']
   pull_request:
 
 jobs:

@@ -2,8 +2,7 @@ name: Tag version
 
 on:
   push:
-    branches:
-      - '*'
+    branches-ignore: [dependabot/**]
 
 jobs:
   tag-version:
