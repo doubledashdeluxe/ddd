@@ -1058,7 +1058,10 @@ if args.clean:
 
 if not is_windows():
     os.environ['WINEDEBUG'] = '-all'
-    subprocess.Popen('winepath')
+    try:
+        subprocess.Popen('winepath')
+    except FileNotFoundError:
+        pass
 
 try:
     proc = subprocess.run(('ninja', '-f', out_file.name, *ninja_argv))
