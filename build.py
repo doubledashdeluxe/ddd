@@ -1054,6 +1054,10 @@ if args.clean:
     if not ('-t', 'clean') in itertools.pairwise(ninja_argv):
         ninja_argv.extend(['-t', 'clean'])
 
+if not is_windows():
+    os.environ['WINEDEBUG'] = '-all'
+    subprocess.Popen('winepath')
+
 try:
     proc = subprocess.run(('ninja', '-f', out_file.name, *ninja_argv))
 except KeyboardInterrupt:
