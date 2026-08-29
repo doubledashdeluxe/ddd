@@ -221,7 +221,7 @@ n.variable('meta', os.path.join('tools', 'meta.py'))
 if is_windows():
     n.variable('mwcc', os.path.join('tools', 'cw', 'modified_mwcceppc'))
 else:
-    n.variable('mwcc', os.path.join('tools', 'mwcc.py'))
+    n.variable('mwcc', os.path.join('target', 'release', 'mwcc'))
 n.variable('obj2bin', os.path.join('target', 'release', 'obj2bin'))
 n.variable('obj2dol', os.path.join('target', 'release', 'obj2dol'))
 n.variable('patch', os.path.join('target', 'release', 'patch'))
@@ -238,13 +238,9 @@ n.rule(
 )
 n.newline()
 
-if is_windows():
-    c_command = '$mwcc -MDfile $out.d $flags -c $in -o $out'
-else:
-    c_command = f'{sys.executable} $mwcc -MDfile $out.d $flags -c $in -o $out'
 n.rule(
     'c',
-    command = c_command,
+    command = '$mwcc -MDfile $out.d $flags -c $in -o $out',
     depfile = '$out.d',
     deps = 'gcc',
     description = 'C $out',
@@ -259,13 +255,9 @@ n.rule(
 )
 n.newline()
 
-if is_windows():
-    cc_command = '$mwcc -MDfile $out.d $flags -c $in -o $out'
-else:
-    cc_command = f'{sys.executable} $mwcc -MDfile $out.d $flags -c $in -o $out'
 n.rule(
     'cc',
-    command = cc_command,
+    command = '$mwcc -MDfile $out.d $flags -c $in -o $out',
     depfile = '$out.d',
     deps = 'gcc',
     description = 'CC $out',
@@ -406,6 +398,7 @@ n.newline()
 cargo_dirs = {
     'formats': ['ddd-formats'],
     'tools': [
+        'mwcc',
         'obj2bin',
         'obj2dol',
         'patch',
@@ -524,7 +517,10 @@ for target in code_in_files:
                 'flags': get_flags(tool, 'cube', target, format_code_dirs, args),
             },
             order_only = format_hh_files,
-            implicit=os.path.join('tools', 'cw', 'modified_mwcceppc.exe'),
+            implicit = [
+                os.path.join('tools', 'cw', 'modified_mwcceppc.exe'),
+                '$mwcc',
+            ],
         )
         n.newline()
         base, _ = os.path.splitext(tmp_file)
