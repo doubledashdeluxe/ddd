@@ -215,14 +215,20 @@ n.newline()
 n.variable('bin2c', os.path.join('tools', 'bin2c.py'))
 n.variable('cp', os.path.join('tools', 'cp.py'))
 n.variable('dir2arc', os.path.join('tools', 'dir2arc.py'))
+n.variable('ddd-formats', os.path.join('target', 'release', 'ddd-formats'))
 n.variable('file_patcher', os.path.join('tools', 'file_patcher.py'))
 n.variable('meta', os.path.join('tools', 'meta.py'))
 if is_windows():
     n.variable('mwcc', os.path.join('tools', 'cw', 'modified_mwcceppc'))
 else:
     n.variable('mwcc', os.path.join('tools', 'mwcc.py'))
+n.variable('obj2bin', os.path.join('target', 'release', 'obj2bin'))
+n.variable('obj2dol', os.path.join('target', 'release', 'obj2dol'))
+n.variable('patch', os.path.join('target', 'release', 'patch'))
 n.variable('port', os.path.join('tools', 'port.py'))
 n.variable('script', os.path.join('tools', 'script.py'))
+n.variable('split', os.path.join('target', 'release', 'split'))
+n.variable('zip', os.path.join('target', 'release', 'zip'))
 n.newline()
 
 n.rule(
@@ -242,6 +248,14 @@ n.rule(
     depfile = '$out.d',
     deps = 'gcc',
     description = 'C $out',
+)
+n.newline()
+
+n.rule(
+    'cargo',
+    command = 'cargo -q --color always build -r --bin $target',
+    description = 'CARGO $out',
+    restat = True,
 )
 n.newline()
 
@@ -274,7 +288,7 @@ n.newline()
 
 n.rule(
     'format',
-    command = 'cargo -q --color always run -r --bin ddd-formats -- --$format --hh --output $out',
+    command = '$ddd-formats --$format --hh --output $out',
     description = 'FORMAT $out',
 )
 n.newline()
@@ -326,21 +340,21 @@ n.newline()
 
 n.rule(
     'obj2bin',
-    command = 'cargo -q --color always run -r --bin obj2bin -- -$kind $in $out',
+    command = '$obj2bin -$kind $in $out',
     description = 'OBJ2BIN $out',
 )
 n.newline()
 
 n.rule(
     'obj2dol',
-    command = 'cargo -q --color always run -r --bin obj2dol -- $in $out',
+    command = '$obj2dol $in $out',
     description = 'OBJ2DOL $out',
 )
 n.newline()
 
 n.rule(
     'patch',
-    command = 'cargo -q --color always run -r --bin patch -- $in $out',
+    command = '$patch $in $out',
     description = 'PATCH $out'
 )
 n.newline()
@@ -367,14 +381,14 @@ n.newline()
 
 n.rule(
     'split',
-    command = 'cargo -q --color always run -r --bin split -- $in $out',
+    command = '$split $in $out',
     description = 'SPLIT $out',
 )
 n.newline()
 
 n.rule(
     'zip',
-    command = 'cargo -q --color always run -r --bin zip -- $in_dir $out $key',
+    command = '$zip -- $in_dir $out $key',
     description = 'ZIP $out',
 )
 n.newline()
@@ -388,6 +402,30 @@ n.build(
     ]
 )
 n.newline()
+
+cargo_dirs = {
+    'formats': ['ddd-formats'],
+    'tools': [
+        'obj2bin',
+        'obj2dol',
+        'patch',
+        'split',
+        'zip',
+    ],
+}
+for cargo_dir in cargo_dirs:
+    for target in cargo_dirs[cargo_dir]:
+        n.build(
+            os.path.join('target', 'release', target),
+            'cargo',
+            [
+                *sorted(glob.glob(os.path.join(cargo_dir, '**'), recursive=True)),
+                os.path.join('data', 'version.txt'),
+            ],
+            variables = {
+                'target': target,
+            },
+        )
 
 compile_commands = []
 
@@ -425,10 +463,6 @@ for arc_file in asset_arc_files:
     n.newline()
 
 format_kc_names = ['online', 'version']
-format_implicit = [
-    *sorted(glob.glob(os.path.join('formats', '**'), recursive=True)),
-    os.path.join('data', 'version.txt'),
-]
 format_code_dirs = []
 format_hh_files = []
 for format_kc_name in format_kc_names:
@@ -442,10 +476,10 @@ for format_kc_name in format_kc_names:
     n.build(
         hh_file,
         'format',
-        implicit = format_implicit,
+        implicit = '$ddd-formats',
         variables = {
             'format': format_kc_name,
-        }
+        },
     )
     n.newline()
 
@@ -500,7 +534,7 @@ for target in code_in_files:
             out_file,
             'split',
             tmp_file,
-            implicit = sorted(glob.glob(os.path.join('tools', '**'), recursive=True)),
+            implicit = '$split',
         )
 
 n.build(
@@ -532,7 +566,7 @@ n.build(
         os.path.join('$builddir', 'payload', f'payload.o'),
         os.path.join('payload', 'Symbols.txt'),
     ],
-    implicit = sorted(glob.glob(os.path.join('tools', '**'), recursive=True)),
+    implicit = '$patch',
 )
 n.newline()
 
@@ -609,7 +643,7 @@ for region in ['P', 'E', 'J']:
             variables = {
                 'kind': kind.lower(),
             },
-            implicit = sorted(glob.glob(os.path.join('tools', '**'), recursive=True)),
+            implicit = '$obj2bin',
         )
         n.newline()
 
@@ -664,7 +698,7 @@ n.build(
     os.path.join('$builddir', 'channel', 'channel.dol'),
     'obj2dol',
     os.path.join('$builddir', 'channel', 'channel.elf'),
-    implicit = sorted(glob.glob(os.path.join('tools', '**'), recursive=True)),
+    implicit = '$obj2dol',
 )
 n.newline()
 
@@ -717,7 +751,7 @@ n.build(
     os.path.join('$builddir', 'ddd', 'boot.dol'),
     'obj2dol',
     os.path.join('$builddir', 'bootstrap', 'bootstrap.elf'),
-    implicit = sorted(glob.glob(os.path.join('tools', '**'), recursive=True)),
+    implicit = '$obj2dol',
 )
 n.newline()
 
@@ -776,7 +810,7 @@ n.build(
         'in_dir': os.path.join('$builddir', 'ddd'),
         'key': os.path.join('data', 'keys', 'update-ed25519-dev.bin'),
     },
-    implicit = sorted(glob.glob(os.path.join('tools', '**'), recursive=True)),
+    implicit = '$zip',
 )
 n.newline()
 
