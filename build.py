@@ -212,23 +212,25 @@ n.newline()
 n.variable('builddir', 'build')
 n.newline()
 
+exe_ext = '.exe' if is_windows() else ''
+
 n.variable('bin2c', os.path.join('tools', 'bin2c.py'))
 n.variable('cp', os.path.join('tools', 'cp.py'))
 n.variable('dir2arc', os.path.join('tools', 'dir2arc.py'))
-n.variable('ddd-formats', os.path.join('target', 'release', 'ddd-formats'))
+n.variable('ddd-formats', os.path.join('target', 'release', f'ddd-formats{exe_ext}'))
 n.variable('file_patcher', os.path.join('tools', 'file_patcher.py'))
 n.variable('meta', os.path.join('tools', 'meta.py'))
 if is_windows():
-    n.variable('mwcc', os.path.join('tools', 'cw', 'modified_mwcceppc'))
+    n.variable('mwcc', os.path.join('tools', 'cw', 'modified_mwcceppc.exe'))
 else:
-    n.variable('mwcc', os.path.join('target', 'release', 'mwcc'))
-n.variable('obj2bin', os.path.join('target', 'release', 'obj2bin'))
-n.variable('obj2dol', os.path.join('target', 'release', 'obj2dol'))
-n.variable('patch', os.path.join('target', 'release', 'patch'))
+    n.variable('mwcc', os.path.join('target', 'release', f'mwcc{exe_ext}'))
+n.variable('obj2bin', os.path.join('target', 'release', f'obj2bin{exe_ext}'))
+n.variable('obj2dol', os.path.join('target', 'release', f'obj2dol{exe_ext}'))
+n.variable('patch', os.path.join('target', 'release', f'patch{exe_ext}'))
 n.variable('port', os.path.join('tools', 'port.py'))
 n.variable('script', os.path.join('tools', 'script.py'))
-n.variable('split', os.path.join('target', 'release', 'split'))
-n.variable('zip', os.path.join('target', 'release', 'zip'))
+n.variable('split', os.path.join('target', 'release', f'split{exe_ext}'))
+n.variable('zip', os.path.join('target', 'release', f'zip{exe_ext}'))
 n.newline()
 
 n.rule(
@@ -409,7 +411,7 @@ cargo_dirs = {
 for cargo_dir in cargo_dirs:
     for target in cargo_dirs[cargo_dir]:
         n.build(
-            os.path.join('target', 'release', target),
+            os.path.join('target', 'release', f'{target}{exe_ext}'),
             'cargo',
             [
                 *sorted(glob.glob(os.path.join(cargo_dir, '**'), recursive=True)),
