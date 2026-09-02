@@ -581,9 +581,9 @@ checksum = "68f5acb362a0e75c2a963532fa7fabf13dff81626dc494df16488d30befcbea0"
 
 [[package]]
 name = "scc"
-version = "3.8.6"
+version = "3.8.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f8af0b99483d1c3e59471d4f0cb58b244169436a8979c889a91a3f697075ea01"
+checksum = "b61e66d981128945ef7253d1dcaff636423acfebdee22cd2d8dfd4eb89e4d134"
 dependencies = [
  "saa",
  "sdd",
