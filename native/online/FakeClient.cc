@@ -183,6 +183,7 @@ ClientState &FakeClient::writeStateRace() {
     writeInfo.karts[0].time = 0;
     writeInfo.itemCounts.fill(0);
     writeInfo.latency = 0;
+    writeInfo.stability = 0;
     writeInfo.delayedFrames = 0;
     return m_state->writeStateRace(writeInfo);
 }

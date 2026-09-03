@@ -33,5 +33,6 @@ struct ClientStateRaceWriteInfo {
     Array<Kart, MaxClientKartCount> karts;
     Array<u16, 16> itemCounts;
     u16 latency;
+    u8 stability;
     u32 delayedFrames;
 };

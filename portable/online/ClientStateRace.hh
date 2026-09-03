@@ -121,6 +121,7 @@ public:
     ClientRaceKartWriter &kartsElementWriter(u32 i0);
     u8 getItemCountsElement(u32 i0);
     u16 getLatency();
+    u8 getStability();
     u32 getDelayedFrames();
 
     u32 getInputsCount();

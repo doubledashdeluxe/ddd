@@ -206,6 +206,7 @@ void RaceClient::write() {
         m_writeInfo.itemCounts[i] = itemObjMgr->moveCount(i);
     }
     m_writeInfo.latency = m_latency;
+    m_writeInfo.stability = m_stability;
     m_writeInfo.delayedFrames = JFWDisplay::Instance()->delayedFrames();
     CubeClient::Instance()->writeStateRace(m_writeInfo);
 

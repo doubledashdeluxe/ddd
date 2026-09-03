@@ -393,6 +393,10 @@ u16 ClientStateRace::getLatency() {
     return m_writeInfo.latency;
 }
 
+u8 ClientStateRace::getStability() {
+    return m_writeInfo.stability;
+}
+
 u32 ClientStateRace::getDelayedFrames() {
     return m_writeInfo.delayedFrames;
 }
