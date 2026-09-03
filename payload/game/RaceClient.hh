@@ -17,6 +17,7 @@ public:
     u16 serverFrame() const;
     u16 clientFrame() const;
     u16 latency() const;
+    u8 stability() const;
     s32 drift() const;
     void adjustDrift(s32 adjustment);
     u16 endFrame() const;
@@ -103,6 +104,8 @@ private:
     u16 m_serverFrame;
     u16 m_clientFrame;
     u16 m_latency;
+    u8 m_stability;
+    u64 m_stabilityFlags;
     s32 m_drift;
     Ring<s32, 60> m_drifts;
     u16 m_endFrame;

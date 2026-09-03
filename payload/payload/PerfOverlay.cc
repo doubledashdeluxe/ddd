@@ -18,7 +18,8 @@ void PerfOverlay::beginFrame() {
     RaceClient *raceClient = RaceClient::Instance();
     u16 latency = raceClient ? raceClient->latency() : 0;
     if (latency) {
-        JUTReport(2, 14, "%u %u", JFWDisplay::Instance()->delayedFrames(), latency);
+        u8 stability = raceClient->stability();
+        JUTReport(2, 14, "%u %u %u", JFWDisplay::Instance()->delayedFrames(), latency, stability);
     } else {
         JUTReport(2, 14, "%u", JFWDisplay::Instance()->delayedFrames());
     }

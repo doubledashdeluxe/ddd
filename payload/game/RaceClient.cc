@@ -32,6 +32,10 @@ u16 RaceClient::latency() const {
     return m_latency;
 }
 
+u8 RaceClient::stability() const {
+    return m_stability;
+}
+
 s32 RaceClient::drift() const {
     if (m_drifts.empty()) {
         return 0;
@@ -143,6 +147,11 @@ void RaceClient::calcAfter() {
 }
 
 void RaceClient::read() {
+    if (m_stabilityFlags >> 63) {
+        m_stability--;
+    }
+    m_stabilityFlags <<= 1;
+
     CubeClient::Instance()->read(*this);
 }
 
@@ -233,6 +242,8 @@ RaceClient::RaceClient()
     , m_serverFrame(0)
     , m_clientFrame(MinClientFrame - 1)
     , m_latency(0)
+    , m_stability(0)
+    , m_stabilityFlags(0)
     , m_drift(0)
     , m_endFrame(UINT16_MAX)
     , m_hasResults(false)
@@ -284,6 +295,9 @@ bool RaceClient::clientStateRace(const ClientStateRaceReadInfo &readInfo) {
     m_serverFrame = info->frame;
     if (info->clientFrame > m_clientFrame) {
         m_latency = Frame() + 1 - info->clientFrame;
+
+        m_stability++;
+        m_stabilityFlags |= 1;
     }
     m_clientFrame = info->clientFrame;
     m_endFrame = info->endFrame;
