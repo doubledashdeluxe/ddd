@@ -14,7 +14,7 @@ heapless = { version = "0.9.3", features = ["serde"] }
 jiff = { version = "0.2.28", features = ["serde"] }
 log = { version = "0.4.32", features = ["max_level_debug", "std"] }
 noise-protocol = "0.2.1"
-orion = "0.17.15"
+orion = "0.18.0"
 rand = { version = "0.10.1", default-features = false, features = ["sys_rng"] }
 rawzip = "0.5.1"
 rustls-graviola = "0.4.0"
