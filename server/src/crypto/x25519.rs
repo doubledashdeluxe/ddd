@@ -16,20 +16,20 @@ impl DH for X25519 {
     }
 
     fn genkey() -> Self::Key {
-        let k = PrivateKey::generate();
-        Self::Key::from_slice(k.unprotected_as_bytes())
+        let k = PrivateKey::generate().unwrap();
+        Self::Key::from_slice(k.unprotected_as_ref())
     }
 
     fn pubkey(k: &Self::Key) -> Self::Pubkey {
-        let k = PrivateKey::from_slice(k.as_slice()).unwrap();
+        let k = PrivateKey::try_from(k.as_slice()).unwrap();
         let pk = PublicKey::try_from(&k).unwrap();
-        pk.to_bytes()
+        pk.as_ref().try_into().unwrap()
     }
 
     fn dh(k: &Self::Key, pk: &Self::Pubkey) -> Result<Self::Output, ()> {
-        let k = PrivateKey::from_slice(k.as_slice()).unwrap();
+        let k = PrivateKey::try_from(k.as_slice()).unwrap();
         let pk = PublicKey::from(*pk);
         let sk = x25519::key_agreement(&k, &pk).map_err(|_| ())?;
-        Ok(Self::Output::from_slice(sk.unprotected_as_bytes()))
+        Ok(Self::Output::from_slice(sk.unprotected_as_ref()))
     }
 }

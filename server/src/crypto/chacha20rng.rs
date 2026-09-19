@@ -1,7 +1,7 @@
 use std::convert::Infallible;
 use std::fmt::{self, Debug, Formatter};
 
-use orion::hazardous::stream::chacha20::{self, Nonce, SecretKey};
+use orion::hazardous::stream::chacha20::{self, ChaCha20, Nonce, SecretKey};
 use rand::rand_core::utils;
 use rand::{SeedableRng, TryCryptoRng, TryRng};
 use zeroize::Zeroize;
@@ -34,11 +34,11 @@ impl TryRng for ChaCha20Rng {
         while !dst.is_empty() {
             if self.offset == self.buffer.len() {
                 let secret_key = &self.buffer[..chacha20::CHACHA_KEYSIZE];
-                let secret_key = SecretKey::from_slice(secret_key).unwrap();
+                let secret_key = SecretKey::try_from(secret_key).unwrap();
                 let nonce = [0; chacha20::IETF_CHACHA_NONCESIZE];
-                let nonce = Nonce::from_slice(&nonce).unwrap();
-                let plaintext = [0; BUFFERSIZE];
-                chacha20::encrypt(&secret_key, &nonce, 0, &plaintext, &mut self.buffer).unwrap();
+                let nonce = Nonce::try_from(&nonce).unwrap();
+                self.buffer.fill(0);
+                ChaCha20::new(&secret_key, &nonce).xor_keystream_into(&mut self.buffer).unwrap();
                 self.offset = chacha20::CHACHA_KEYSIZE;
                 zeroize_offset = self.offset;
             }
