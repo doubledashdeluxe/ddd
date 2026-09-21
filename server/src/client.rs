@@ -13,7 +13,7 @@ use crate::crypto::PublicKey;
 use crate::formats::online::*;
 use crate::formats::version;
 use crate::frequency::Frequency;
-use crate::kart::Kart;
+use crate::kart::{Kart, Platform, Region};
 use crate::pack::Pack;
 use crate::player::Player;
 use crate::room::Room;
@@ -21,6 +21,7 @@ use crate::rooms::{Rooms, Search};
 use crate::storage::{PlayerId, Storage};
 use crate::update::Update;
 
+#[derive(Debug)]
 pub struct Client {
     expiration: Instant,
     addr: SocketAddr,
@@ -122,6 +123,8 @@ impl Client {
                         anyhow::ensure!(kart_count <= player_count);
                         let mut identity = identity.unwrap_or(Identity {
                             frame_rate: client_identity.frame_rate,
+                            region: client_identity.region.into(),
+                            platform: client_identity.platform.into(),
                             players: client_identity.players,
                             kart_count: client_identity.kart_count,
                             race_courses: Box::new(Vec::new()),
@@ -183,7 +186,7 @@ impl Client {
                             } else {
                                 Vec::from([player(i + tandem_count)])
                             };
-                            Kart::new(self.pk, players)
+                            Kart::new(self.pk, identity.region, identity.platform.clone(), players)
                         })
                         .collect();
                     karts
@@ -607,6 +610,8 @@ impl State {
 #[derive(Clone, Debug)]
 struct Identity {
     frame_rate: FrameRate,
+    region: Region,
+    platform: Platform,
     players: Vec<ClientPlayer, MAX_CLIENT_PLAYER_COUNT>,
     kart_count: u8,
     race_courses: Box<Vec<[u8; 32], MAX_COURSE_COUNT>>,

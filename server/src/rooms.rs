@@ -18,6 +18,7 @@ use crate::pack::Pack;
 use crate::room::{CodePair, Room};
 use crate::storage::Storage;
 
+#[derive(Debug)]
 pub struct Rooms {
     rooms: [HashMap<u128, Room>; 2],
     counts: [AtomicUsize; 2],
@@ -81,6 +82,11 @@ impl Rooms {
     fn get_id(&self, code: u64) -> Result<u128> {
         let ids = if code >> (15 * 3) == 0 { &self.short_code_ids } else { &self.long_code_ids };
         ids.read_sync(&code, |_, id| *id).context("Room ID not found")
+    }
+
+    pub fn iter(&self, frame_rate: FrameRate, mut f: impl FnMut(&Room) -> bool) -> bool {
+        let rooms = self.rooms_by_frame_rate(frame_rate);
+        rooms.iter_sync(|_, room| f(room))
     }
 
     pub fn search(
@@ -282,7 +288,7 @@ pub struct Search {
     pub format: RoomOptionFormat,
 }
 
-#[derive(Default)]
+#[derive(Debug, Default)]
 struct SearchRooms {
     ids: Arc<HashSet<u128>>,
     player_count: usize,

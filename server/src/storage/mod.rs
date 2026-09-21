@@ -1,6 +1,8 @@
+pub use crate::storage::batch::Batch;
 pub use crate::storage::player::Id as PlayerId;
 pub use crate::storage::player::Player;
 pub use crate::storage::race::Race;
+pub use crate::storage::stats::Stats;
 pub use crate::storage::worker::Worker;
 
 use std::fs::{self, DirEntry};
@@ -9,18 +11,21 @@ use std::sync::mpsc::SyncSender;
 
 use anyhow::{Context, Result, anyhow};
 use heapless::Vec;
+use jiff::Timestamp;
+use jiff::tz::TimeZone;
 use scc::HashMap;
 
 use crate::dir_entry;
 use crate::formats::online::*;
-use crate::storage::batch::Batch;
 use crate::storage::init::Init;
+use crate::website::Init as WebsiteInit;
 
 pub mod race;
 
 mod batch;
 mod init;
 mod player;
+mod stats;
 mod worker;
 
 #[derive(Debug)]
@@ -30,13 +35,18 @@ pub struct Storage {
 }
 
 impl Storage {
-    pub fn load(batch_sender: SyncSender<Batch>, path: impl AsRef<Path>) -> Result<(Self, Init)> {
+    pub fn load(
+        batch_sender: SyncSender<Batch>,
+        path: impl AsRef<Path>,
+    ) -> Result<(Self, Init, WebsiteInit)> {
         let path = path.as_ref();
 
         let tmp_path = path.join("tmp");
         fs::create_dir_all(&tmp_path)?;
 
         let mut init = Init::new(path.to_owned(), tmp_path);
+        let mut website_init = WebsiteInit::default();
+        let now = Timestamp::now().to_zoned(TimeZone::UTC).into();
 
         let players_path = path.join("players");
         fs::create_dir_all(&players_path)?;
@@ -48,12 +58,16 @@ impl Storage {
 
             let player: Player = dir_entry::read_json(&entry, "player")?;
             let id = player.id();
+            let name = player.name;
             players.insert_sync(id, player).map_err(|_| anyhow!("duplicate player {id:?}"))?;
 
             init.player_numbers.insert(id, number);
+
+            website_init.player_numbers.insert(id, number);
+            website_init.player_names.insert(number, name);
         }
 
-        let races_path = path.join("races");
+        let races_path = path.join("matches");
         fs::create_dir_all(&races_path)?;
         for entry in fs::read_dir(&races_path)? {
             let entry = entry?;
@@ -65,9 +79,25 @@ impl Storage {
             let room_number = race.room_number;
             let next_room_number = room_number.checked_add(1).context("too many rooms")?;
             init.room_number = init.room_number.max(next_room_number);
+
+            website_init.rankings.add(now, &race);
+            website_init.stats.add(&race);
         }
 
-        Ok((Self { batch_sender, players }, init))
+        let stats_path = path.join("stats");
+        fs::create_dir_all(&stats_path)?;
+        for entry in fs::read_dir(&stats_path)? {
+            let entry = entry?;
+
+            let dt = dir_entry::extract_json_stem(&entry, "stats")?;
+
+            let mut stats: Stats = dir_entry::read_json(&entry, "stats")?;
+            stats.dt = dt;
+
+            website_init.stats.max(&stats);
+        }
+
+        Ok((Self { batch_sender, players }, init, website_init))
     }
 
     pub fn read_player<R>(&self, player_id: &PlayerId, f: impl Fn(Option<&Player>) -> R) -> R {

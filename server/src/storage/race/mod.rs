@@ -36,8 +36,10 @@ pub struct Race {
     pub item_mode: Option<RoomOptionItemMode>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub lap_count: Option<u8>,
+    #[serde(rename = "match_count")]
     pub race_count: u8,
     pub course_selection: RoomOptionCourseSelection,
+    #[serde(rename = "match_index")]
     pub race_index: u8,
     pub start: Timestamp,
     pub selected_kart_index: u8,

@@ -15,6 +15,7 @@ use crate::frequency::Frequency;
 use crate::rooms::Rooms;
 use crate::storage::Storage;
 
+#[derive(Debug)]
 pub struct Clients {
     clients: HashMap<PublicKey, Client>,
     count: AtomicUsize,

@@ -1,9 +1,8 @@
 use std::hash::{BuildHasher, RandomState};
 
-use log::error;
-
 use crate::message::Message;
 use crate::receiver::Receiver;
+use crate::result_ext::ResultExt;
 use crate::{BufferReceiver, MessageSender};
 
 pub struct Listener<R: Receiver> {
@@ -28,11 +27,8 @@ impl<R: Receiver> Listener<R> {
             let mut buffer = self.buffer_receiver.recv().unwrap();
             buffer.reset_len();
             let (len, addr) = loop {
-                match self.receiver.recv_from(buffer.as_mut_slice()) {
-                    Ok(r) => break r,
-                    Err(e) => {
-                        error!("{e}");
-                    }
+                if let Some(r) = self.receiver.recv_from(buffer.as_mut_slice()).log_err() {
+                    break r;
                 }
             };
             buffer.set_len(len);

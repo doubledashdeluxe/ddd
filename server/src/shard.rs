@@ -7,7 +7,6 @@ use std::sync::mpsc::RecvTimeoutError;
 use std::time::{Duration, Instant};
 
 use arc_swap::Cache;
-use log::error;
 use noise_protocol::U8Array;
 use rand::RngExt;
 
@@ -20,6 +19,7 @@ use crate::formats::online::BUFFER_SIZE;
 use crate::frequency::Frequency;
 use crate::message::Message;
 use crate::options::NetSimOptions;
+use crate::result_ext::ResultExt;
 use crate::rooms::Rooms;
 use crate::sender::Sender;
 use crate::update::{SharedUpdate, Update};
@@ -185,9 +185,7 @@ impl<S: Sender> Link<S> {
             match event {
                 Event::Read { buffer, addr } => return Some(Message::Read { buffer, addr }),
                 Event::Write { buffer, addr } => {
-                    if let Err(e) = self.sender.send_to(buffer.as_slice(), addr) {
-                        error!("{e}");
-                    }
+                    self.sender.send_to(buffer.as_slice(), addr).log_err();
                     self.buffers.push(buffer);
                 }
             }
@@ -234,8 +232,8 @@ impl<S: Sender> Link<S> {
                 let event = Event::Write { buffer, addr };
                 self.events.insert(event_key, event);
             }
-        } else if let Err(e) = self.sender.send_to(buf, addr) {
-            error!("{e}");
+        } else {
+            self.sender.send_to(buf, addr).log_err();
         }
     }
 

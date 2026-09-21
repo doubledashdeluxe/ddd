@@ -1,0 +1,138 @@
+body {
+    font-family: system-ui, sans-serif;
+    max-width: 60rem;
+    margin: auto;
+    padding: 0 0.5rem;
+}
+
+nav {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin: 1rem 0;
+}
+
+ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+li + li {
+    margin-top: 0.5rem;
+}
+
+td {
+    padding: 0.25rem 0.5rem;
+}
+
+td[title] {
+    text-decoration: underline dotted;
+}
+
+td[title]:hover {
+    cursor: help;
+}
+
+a {
+    color: inherit;
+}
+
+.players {
+    border-spacing: 0 0.25rem;
+    display: block;
+    overflow: auto;
+    white-space: nowrap;
+}
+
+.players td {
+    border-style: solid;
+    border-width: 0.125rem 0 0.125rem 0;
+    padding: 0.25rem 0.5rem;
+}
+
+.players td:first-child {
+    border-left-width: 0.125rem;
+    border-radius: 0.5rem 0 0 0.5rem;
+}
+
+.players td:last-child {
+    border-right-width: 0.125rem;
+    border-radius: 0 0.5rem 0.5rem 0;
+}
+
+.match-players td:nth-child(3),
+.match-players td:nth-child(4),
+.match-players td:nth-child(5),
+.match-players td:nth-last-child(3),
+.match-players td:nth-last-child(2),
+.match-players td:nth-last-child(1),
+.room-players td:nth-child(2) {
+    text-align: right;
+}
+
+.team-0 td {
+    background-color: #ff5a5a66;
+    border-color: #ff5a5a99;
+}
+
+.team-1 td {
+    background-color: #006aff66;
+    border-color: #006aff99;
+}
+
+.team-2 td {
+    background-color: #00ff0066;
+    border-color: #00ff0099;
+}
+
+.team-3 td {
+    background-color: #ffff0066;
+    border-color: #ffff0099;
+}
+
+.team-4 td {
+    background-color: #ff80ff66;
+    border-color: #ff80ff99;
+}
+
+.team-5 td {
+    background-color: #c8712466;
+    border-color: #c8712499;
+}
+
+.team-6 td {
+    background-color: #00caf266;
+    border-color: #00caf299;
+}
+
+.team-7 td {
+    background-color: #9d4cff66;
+    border-color: #9d4cff99;
+}
+
+.room-players td {
+    background-color: #9696ff66;
+    border-color: #9696ff99;
+}
+
+.rankings, .stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+}
+
+.ranking, .stat {
+    background-color: #00000022;
+    border: 0.125rem solid #00000033;
+    border-radius: 0.5rem;
+    padding: 0.5rem 0.25rem;
+}
+
+.ranking h3, .stat h2 {
+    margin: 0.25rem 0.5rem 0.5rem 0.5rem;
+}
+
+.ranking td:nth-child(1),
+.ranking td:nth-child(3) {
+    text-align: right;
+}

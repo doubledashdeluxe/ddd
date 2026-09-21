@@ -1,4 +1,3 @@
-use std::path::Path;
 use std::sync::{Arc, mpsc};
 use std::thread::Builder;
 
@@ -22,6 +21,7 @@ use crate::storage::{Storage, Worker as StorageWorker};
 use crate::update::SharedUpdate;
 use crate::updater::Updater;
 use crate::webhook::Worker as WebhookWorker;
+use crate::website::Worker as WebsiteWorker;
 
 pub fn spawn(
     options: Options,
@@ -32,7 +32,7 @@ pub fn spawn(
     shards: usize,
     senders: impl Iterator<Item = Result<impl Sender>>,
     receiver: impl Receiver,
-    storage_path: impl AsRef<Path>,
+    base_path: &str,
 ) -> Result<()> {
     let buffers_per_shard = config.load().buffers_per_shard;
     let buffers = shards * buffers_per_shard;
@@ -46,18 +46,37 @@ pub fn spawn(
 
     let (batch_sender, batch_receiver) =
         mpsc::sync_channel(2 * config.load().max_rooms_per_frame_rate);
-    let (storage, storage_init) = Storage::load(batch_sender, storage_path)?;
+    let (storage, storage_init, rankings) = Storage::load(batch_sender, base_path)?;
     let storage = Arc::new(storage);
     trace!("Next player number: {}", storage_init.player_number);
     trace!("Next room number: {}", storage_init.room_number);
     trace!("Next race number: {}", storage_init.race_number);
+
+    let (website_message_sender, website_message_receiver) =
+        mpsc::sync_channel(2 * config.load().max_rooms_per_frame_rate);
+    let website_worker = WebsiteWorker::new(
+        config.clone(),
+        courses.clone(),
+        website_message_receiver,
+        rankings,
+        base_path,
+        rooms.clone(),
+    );
+    Builder::new().name("website".to_owned()).spawn(|| website_worker.run())?;
 
     let (webhook_race_sender, webhook_race_receiver) =
         mpsc::sync_channel(2 * config.load().max_rooms_per_frame_rate);
     let webhook_worker = WebhookWorker::new(courses.clone(), webhook_race_receiver);
     Builder::new().name("webhook".to_owned()).spawn(|| webhook_worker.run())?;
 
-    let storage_worker = StorageWorker::new(batch_receiver, storage_init, webhook_race_sender);
+    let storage_worker = StorageWorker::new(
+        batch_receiver,
+        storage_init,
+        website_message_sender,
+        webhook_race_sender,
+        clients.clone(),
+        rooms.clone(),
+    );
     Builder::new().name("storage".to_owned()).spawn(move || storage_worker.run())?;
 
     let message_senders: Result<_> = senders

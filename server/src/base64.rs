@@ -1,7 +1,17 @@
+use std::fmt::{self, Display};
+
 use ct_codecs::{Base64UrlSafe, Decoder, Encoder};
 use serde::de::Error as _;
 use serde::ser::Error as _;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
+
+pub fn display<const N: usize>(arr: &[u8; N]) -> impl Display {
+    fmt::from_fn(move |f| {
+        let mut s = [[0; 2]; N];
+        let s = Base64UrlSafe::encode_to_str(s.as_flattened_mut(), arr).unwrap();
+        s.fmt(f)
+    })
+}
 
 pub fn serialize<S: Serializer, const N: usize>(
     arr: &[u8; N],

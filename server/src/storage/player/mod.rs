@@ -15,11 +15,14 @@ mod id;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Player {
+    #[serde(skip)]
+    pub number: u64,
     #[serde(with = "base64")]
     pub client_pk: PublicKey,
     pub index: u8,
     pub name: Name,
     pub mmrs: LinearMap<ModeIndex, u16, MODE_INDEX_COUNT>,
+    #[serde(rename = "match_count")]
     pub race_count: u64,
     #[serde(with = "required")]
     pub play_time: Duration,

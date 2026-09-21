@@ -1,16 +1,15 @@
 use std::fmt::{self, Debug, Formatter};
 use std::fs;
-use std::sync::Arc;
 use std::sync::mpsc::Receiver;
 
 use anyhow::Result;
 use arc_swap::Cache;
-use log::error;
 use ureq::Agent;
 use ureq::http::HeaderValue;
-use ureq::tls::{TlsConfig, TlsProvider};
 
 use crate::courses::{Courses, SharedCourses};
+use crate::http;
+use crate::result_ext::ResultExt;
 use crate::storage;
 use crate::webhook::race::Race;
 
@@ -27,24 +26,14 @@ pub struct Worker {
 
 impl Worker {
     pub fn new(courses: SharedCourses, race_receiver: Receiver<storage::Race>) -> Self {
-        let crypto_provider = Arc::new(rustls_graviola::default_provider());
-        let agent = Agent::config_builder()
-            .tls_config(
-                TlsConfig::builder()
-                    .provider(TlsProvider::Rustls)
-                    .unversioned_rustls_crypto_provider(crypto_provider)
-                    .build(),
-            )
-            .build()
-            .new_agent();
         Self {
             courses,
             race_receiver,
-            username: "dev.ddd.gg".to_owned(),
+            username: "DDD Dev Server".to_owned(),
             avatar_url: "https://i.imgur.com/sTkpcT9.png".to_owned(),
-            url: "https://live.dev.ddd.gg".to_owned(),
+            url: "https://dev.ddd.gg".to_owned(),
             buf: vec![],
-            agent,
+            agent: http::agent(),
             webhook: Credential::load("run/webhook.txt"),
         }
     }
@@ -54,9 +43,7 @@ impl Worker {
         loop {
             let courses = courses.load();
             let mut race = self.race_receiver.recv().unwrap();
-            if let Err(e) = self.send_race(courses, &mut race) {
-                error!("{e}");
-            }
+            self.send_race(courses, &mut race).log_err();
         }
     }
 
