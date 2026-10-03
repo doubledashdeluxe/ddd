@@ -32,13 +32,13 @@ ClientState &ClientStatePack::read(ClientReadHandler &handler) {
     return *this;
 }
 
-ClientState &ClientStatePack::writeStateMode(const ClientStateModeWriteInfo &writeInfo) {
+ClientState &ClientStatePack::write(const ClientStateModeWriteInfo &writeInfo) {
     Connection &connection = *m_connections.front()->release();
     u8 playerCount = writeInfo.playerCount;
     return *(new (m_platform.allocator) ClientStateMode(m_platform, connection, playerCount));
 }
 
-ClientState &ClientStatePack::writeStatePack(const WriteInfo &writeInfo) {
+ClientState &ClientStatePack::write(const WriteInfo &writeInfo) {
     Optional<u32> packIndex = writeInfo.packIndex;
     m_writeInfo.packIndex = packIndex;
     if (packIndex) {
@@ -50,7 +50,7 @@ ClientState &ClientStatePack::writeStatePack(const WriteInfo &writeInfo) {
     return *this;
 }
 
-ClientState &ClientStatePack::writeStateRoom(const ClientStateRoomWriteInfo &writeInfo) {
+ClientState &ClientStatePack::write(const ClientStateRoomWriteInfo &writeInfo) {
     Connection &connection = *m_connections.front()->release();
     return *(new (m_platform.allocator) ClientStateRoom(m_platform, connection, writeInfo));
 }

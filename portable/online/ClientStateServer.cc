@@ -53,7 +53,7 @@ ClientState &ClientStateServer::read(ClientReadHandler &handler) {
     return *this;
 }
 
-ClientState &ClientStateServer::writeStateServer(const WriteInfo &writeInfo) {
+ClientState &ClientStateServer::write(const WriteInfo &writeInfo) {
     if (!m_platform.serverManager.isLocked()) {
         return *this;
     }
@@ -76,7 +76,7 @@ ClientState &ClientStateServer::writeStateServer(const WriteInfo &writeInfo) {
     return *this;
 }
 
-ClientState &ClientStateServer::writeStateUpdate(const ClientStateUpdateWriteInfo &writeInfo) {
+ClientState &ClientStateServer::write(const ClientStateUpdateWriteInfo &writeInfo) {
     Connection &connection = *m_connections[writeInfo.serverIndex].release();
     m_connections.reset();
     const Array<char, MaxVersionLength + 1> &version =
@@ -85,7 +85,7 @@ ClientState &ClientStateServer::writeStateUpdate(const ClientStateUpdateWriteInf
                     ClientStateUpdate(m_platform, connection, version, writeInfo));
 }
 
-ClientState &ClientStateServer::writeStateMode(const ClientStateModeWriteInfo &writeInfo) {
+ClientState &ClientStateServer::write(const ClientStateModeWriteInfo &writeInfo) {
     Connection &connection = *m_connections[writeInfo.serverIndex].release();
     m_connections.reset();
     u8 playerCount = writeInfo.playerCount;

@@ -30,12 +30,11 @@ ClientState &ClientStateUpdate::read(ClientReadHandler &handler) {
     return *this;
 }
 
-ClientState &ClientStateUpdate::writeStateServer(
-        const ClientStateServerWriteInfo & /* writeInfo */) {
+ClientState &ClientStateUpdate::write(const ClientStateServerWriteInfo & /* writeInfo */) {
     return *(new (m_platform.allocator) ClientStateServer(m_platform));
 }
 
-ClientState &ClientStateUpdate::writeStateUpdate(const WriteInfo &writeInfo) {
+ClientState &ClientStateUpdate::write(const WriteInfo &writeInfo) {
     m_writeInfo.data = writeInfo.data;
 
     ClientState::write(*this);

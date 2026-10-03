@@ -81,7 +81,7 @@ void SceneUpdate::calc() {
 
     {
         Lock<Mutex> lock(m_mutex);
-        client->writeStateUpdate(m_writeInfo);
+        client->write(m_writeInfo);
     }
 }
 
@@ -99,7 +99,7 @@ bool SceneUpdate::clientStateUpdate(const ClientStateUpdateReadInfo &readInfo) {
     return true;
 }
 
-void SceneUpdate::clientStateError() {
+void SceneUpdate::clientStateError(const ClientStateErrorReadInfo & /* readInfo */) {
     ErrorViewApp::Call(6);
 }
 

@@ -208,7 +208,7 @@ void RaceClient::write() {
     m_writeInfo.delayedFrames = JFWDisplay::Instance()->delayedFrames();
     m_writeInfo.latency = m_latency;
     m_writeInfo.stability = m_stability;
-    CubeClient::Instance()->writeStateRace(m_writeInfo);
+    CubeClient::Instance()->write(m_writeInfo);
 
     m_ok = m_ok && frame < MinClientFrame + 18 * 60 * 60;
 }
@@ -518,7 +518,7 @@ bool RaceClient::clientStateRace(const ClientStateRaceReadInfo &readInfo) {
     return true;
 }
 
-void RaceClient::clientStateError() {
+void RaceClient::clientStateError(const ClientStateErrorReadInfo & /* readInfo */) {
     ErrorViewApp::Call(6);
 }
 

@@ -47,18 +47,18 @@ ClientState &ClientStateRoom::read(ClientReadHandler &handler) {
     return *this;
 }
 
-ClientState &ClientStateRoom::writeStateMode(const ClientStateModeWriteInfo &writeInfo) {
+ClientState &ClientStateRoom::write(const ClientStateModeWriteInfo &writeInfo) {
     Connection &connection = *m_connections.front()->release();
     u8 playerCount = writeInfo.playerCount;
     return *(new (m_platform.allocator) ClientStateMode(m_platform, connection, playerCount));
 }
 
-ClientState &ClientStateRoom::writeStatePack(const ClientStatePackWriteInfo &writeInfo) {
+ClientState &ClientStateRoom::write(const ClientStatePackWriteInfo &writeInfo) {
     Connection &connection = *m_connections.front()->release();
     return *(new (m_platform.allocator) ClientStatePack(m_platform, connection, writeInfo));
 }
 
-ClientState &ClientStateRoom::writeStateRoom(const ClientStateRoomWriteInfo &writeInfo) {
+ClientState &ClientStateRoom::write(const ClientStateRoomWriteInfo &writeInfo) {
     m_writeInfo.spectatingCounter = writeInfo.spectatingCounter;
     m_writeInfo.spectating = writeInfo.spectating;
     m_writeInfo.options = writeInfo.options;
@@ -70,12 +70,12 @@ ClientState &ClientStateRoom::writeStateRoom(const ClientStateRoomWriteInfo &wri
     return *this;
 }
 
-ClientState &ClientStateRoom::writeStateTeam(const ClientStateTeamWriteInfo &writeInfo) {
+ClientState &ClientStateRoom::write(const ClientStateTeamWriteInfo &writeInfo) {
     Connection &connection = *m_connections.front()->release();
     return *(new (m_platform.allocator) ClientStateTeam(m_platform, connection, writeInfo));
 }
 
-ClientState &ClientStateRoom::writeStatePoll(const ClientStatePollWriteInfo &writeInfo) {
+ClientState &ClientStateRoom::write(const ClientStatePollWriteInfo &writeInfo) {
     Connection &connection = *m_connections.front()->release();
     return *(new (m_platform.allocator) ClientStatePoll(m_platform, connection, writeInfo));
 }

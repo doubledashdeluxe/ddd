@@ -9,43 +9,43 @@ ClientState::ClientState(const ClientPlatform &platform)
 
 ClientState::~ClientState() {}
 
-ClientState &ClientState::writeStateIdle() {
+ClientState &ClientState::write(const ClientStateIdleWriteInfo & /* writeInfo */) {
     return *(new (m_platform.allocator) ClientStateError(m_platform));
 }
 
-ClientState &ClientState::writeStateServer(const ClientStateServerWriteInfo & /* writeInfo */) {
+ClientState &ClientState::write(const ClientStateServerWriteInfo & /* writeInfo */) {
     return *(new (m_platform.allocator) ClientStateError(m_platform));
 }
 
-ClientState &ClientState::writeStateUpdate(const ClientStateUpdateWriteInfo & /* writeInfo */) {
+ClientState &ClientState::write(const ClientStateUpdateWriteInfo & /* writeInfo */) {
     return *(new (m_platform.allocator) ClientStateError(m_platform));
 }
 
-ClientState &ClientState::writeStateMode(const ClientStateModeWriteInfo & /* writeInfo */) {
+ClientState &ClientState::write(const ClientStateModeWriteInfo & /* writeInfo */) {
     return *(new (m_platform.allocator) ClientStateError(m_platform));
 }
 
-ClientState &ClientState::writeStatePack(const ClientStatePackWriteInfo & /* writeInfo */) {
+ClientState &ClientState::write(const ClientStatePackWriteInfo & /* writeInfo */) {
     return *(new (m_platform.allocator) ClientStateError(m_platform));
 }
 
-ClientState &ClientState::writeStateRoom(const ClientStateRoomWriteInfo & /* writeInfo */) {
+ClientState &ClientState::write(const ClientStateRoomWriteInfo & /* writeInfo */) {
     return *(new (m_platform.allocator) ClientStateError(m_platform));
 }
 
-ClientState &ClientState::writeStateTeam(const ClientStateTeamWriteInfo & /* writeInfo */) {
+ClientState &ClientState::write(const ClientStateTeamWriteInfo & /* writeInfo */) {
     return *(new (m_platform.allocator) ClientStateError(m_platform));
 }
 
-ClientState &ClientState::writeStatePoll(const ClientStatePollWriteInfo & /* writeInfo */) {
+ClientState &ClientState::write(const ClientStatePollWriteInfo & /* writeInfo */) {
     return *(new (m_platform.allocator) ClientStateError(m_platform));
 }
 
-ClientState &ClientState::writeStateRace(const ClientStateRaceWriteInfo & /* writeInfo */) {
+ClientState &ClientState::write(const ClientStateRaceWriteInfo & /* writeInfo */) {
     return *(new (m_platform.allocator) ClientStateError(m_platform));
 }
 
-ClientState &ClientState::writeStateError() {
+ClientState &ClientState::write(const ClientStateErrorWriteInfo & /* writeInfo */) {
     return *(new (m_platform.allocator) ClientStateError(m_platform));
 }
 

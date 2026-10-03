@@ -28,7 +28,7 @@ bool FakeClient::write() {
     return true;
 }
 
-bool FakeClient::clientStateIdle() {
+bool FakeClient::clientStateIdle(const ClientStateIdleReadInfo & /* readInfo */) {
     m_writer = &FakeClient::writeStateServer;
     return true;
 }
@@ -76,7 +76,7 @@ bool FakeClient::clientStateRace(const ClientStateRaceReadInfo & /* readInfo */)
     return true;
 }
 
-void FakeClient::clientStateError() {
+void FakeClient::clientStateError(const ClientStateErrorReadInfo & /* readInfo */) {
     m_writer = nullptr;
 }
 
@@ -87,7 +87,7 @@ ClientState &FakeClient::writeStateServer() {
     writeInfo.players[0].profile = 0;
     writeInfo.players[0].name = "AAA";
     writeInfo.kartCount = 1;
-    return m_state->writeStateServer(writeInfo);
+    return m_state->write(writeInfo);
 }
 
 ClientState &FakeClient::writeStateUpdate() {
@@ -96,14 +96,14 @@ ClientState &FakeClient::writeStateUpdate() {
     writeInfo.info.region = 'P';
     writeInfo.info.platform[0] = '\0';
     writeInfo.info.language = 0;
-    return m_state->writeStateUpdate(writeInfo);
+    return m_state->write(writeInfo);
 }
 
 ClientState &FakeClient::writeStateMode() {
     ClientStateModeWriteInfo writeInfo;
     writeInfo.playerCount = 1;
     writeInfo.serverIndex = 0;
-    return m_state->writeStateMode(writeInfo);
+    return m_state->write(writeInfo);
 }
 
 ClientState &FakeClient::writeStatePack() {
@@ -112,7 +112,7 @@ ClientState &FakeClient::writeStatePack() {
     writeInfo.packCount = 1;
     writeInfo.packs[0].courseCount = 1;
     writeInfo.packs[0].hash.fill(0xff);
-    return m_state->writeStatePack(writeInfo);
+    return m_state->write(writeInfo);
 }
 
 ClientState &FakeClient::writeStateRoom() {
@@ -134,7 +134,7 @@ ClientState &FakeClient::writeStateRoom() {
     writeInfo.options.courseSelection = 0;
     writeInfo.entryIndex = 0;
     writeInfo.continuing = true;
-    return m_state->writeStateRoom(writeInfo);
+    return m_state->write(writeInfo);
 }
 
 ClientState &FakeClient::writeStateTeam() {
@@ -146,7 +146,7 @@ ClientState &FakeClient::writeStateTeam() {
     writeInfo.entryIndex = 0;
     writeInfo.teamCount = 2;
     writeInfo.continuing = true;
-    return m_state->writeStateTeam(writeInfo);
+    return m_state->write(writeInfo);
 }
 
 ClientState &FakeClient::writeStatePoll() {
@@ -160,7 +160,7 @@ ClientState &FakeClient::writeStatePoll() {
     ready.karts[0].characterIDs[1] = CharacterID::Luigi;
     ready.karts[0].kartID = KartID::Mario;
     ready.courseIndex = 0;
-    return m_state->writeStatePoll(writeInfo);
+    return m_state->write(writeInfo);
 }
 
 ClientState &FakeClient::writeStateRace() {
@@ -185,7 +185,7 @@ ClientState &FakeClient::writeStateRace() {
     writeInfo.delayedFrames = 0;
     writeInfo.latency = 0;
     writeInfo.stability = 0;
-    return m_state->writeStateRace(writeInfo);
+    return m_state->write(writeInfo);
 }
 
 bool FakeClient::updateState(ClientState &nextState) {

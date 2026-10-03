@@ -379,7 +379,7 @@ void ScenePersonalRoom::calc() {
         }
         m_writeInfo.entryIndex = m_entryIndex;
     }
-    client->writeStateRoom(m_writeInfo);
+    client->write(m_writeInfo);
 }
 
 bool ScenePersonalRoom::clientStateMode(const ClientStateModeReadInfo & /* readInfo */) {
@@ -624,7 +624,7 @@ bool ScenePersonalRoom::clientStateRace(const ClientStateRaceReadInfo & /* readI
     return true;
 }
 
-void ScenePersonalRoom::clientStateError() {
+void ScenePersonalRoom::clientStateError(const ClientStateErrorReadInfo & /* readInfo */) {
     ErrorViewApp::Call(6);
 }
 

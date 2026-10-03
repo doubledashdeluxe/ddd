@@ -14,17 +14,17 @@ bool ClientStateIdle::needsSockets() {
 }
 
 ClientState &ClientStateIdle::read(ClientReadHandler &handler) {
-    if (!handler.clientStateIdle()) {
+    if (!handler.clientStateIdle((ClientStateIdleReadInfo){})) {
         return *(new (m_platform.allocator) ClientStateError(m_platform));
     }
 
     return *this;
 }
 
-ClientState &ClientStateIdle::writeStateIdle() {
+ClientState &ClientStateIdle::write(const ClientStateIdleWriteInfo & /* writeInfo */) {
     return *this;
 }
 
-ClientState &ClientStateIdle::writeStateServer(const ClientStateServerWriteInfo & /* writeInfo */) {
+ClientState &ClientStateIdle::write(const ClientStateServerWriteInfo & /* writeInfo */) {
     return *(new (m_platform.allocator) ClientStateServer(m_platform));
 }

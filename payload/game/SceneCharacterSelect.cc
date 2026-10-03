@@ -534,7 +534,7 @@ void SceneCharacterSelect::calc() {
 
     OnlineTimer::Instance()->calc();
 
-    client->writeStatePoll(m_writeInfo);
+    client->write(m_writeInfo);
 }
 
 bool SceneCharacterSelect::clientStatePoll(const ClientStatePollReadInfo &readInfo) {
@@ -545,7 +545,7 @@ bool SceneCharacterSelect::clientStatePoll(const ClientStatePollReadInfo &readIn
     return true;
 }
 
-void SceneCharacterSelect::clientStateError() {
+void SceneCharacterSelect::clientStateError(const ClientStateErrorReadInfo & /* readInfo */) {
     ErrorViewApp::Call(6);
 }
 

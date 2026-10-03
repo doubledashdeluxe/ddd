@@ -8,6 +8,6 @@ public:
     ~ClientStateIdle() override;
     bool needsSockets() override;
     ClientState &read(ClientReadHandler &handler) override;
-    ClientState &writeStateIdle() override;
-    ClientState &writeStateServer(const ClientStateServerWriteInfo &writeInfo) override;
+    ClientState &write(const ClientStateIdleWriteInfo &writeInfo) override;
+    ClientState &write(const ClientStateServerWriteInfo &writeInfo) override;
 };

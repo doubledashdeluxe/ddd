@@ -164,7 +164,7 @@ void SceneRoomCodeEnter::calc() {
     ClientStateModeWriteInfo writeInfo;
     writeInfo.playerCount = SequenceInfo::Instance().m_padCount;
     writeInfo.serverIndex = OnlineInfo::Instance().m_serverIndex;
-    client->writeStateMode(writeInfo);
+    client->write(writeInfo);
 }
 
 bool SceneRoomCodeEnter::clientStateMode(const ClientStateModeReadInfo & /* readInfo */) {
@@ -179,7 +179,7 @@ bool SceneRoomCodeEnter::clientStateRoom(const ClientStateRoomReadInfo & /* read
     return true;
 }
 
-void SceneRoomCodeEnter::clientStateError() {
+void SceneRoomCodeEnter::clientStateError(const ClientStateErrorReadInfo & /* readInfo */) {
     ErrorViewApp::Call(6);
 }
 

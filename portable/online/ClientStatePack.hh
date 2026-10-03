@@ -19,9 +19,9 @@ public:
     ~ClientStatePack() override;
     bool needsSockets() override;
     ClientState &read(ClientReadHandler &handler) override;
-    ClientState &writeStateMode(const ClientStateModeWriteInfo &writeInfo) override;
-    ClientState &writeStatePack(const ClientStatePackWriteInfo &writeInfo) override;
-    ClientState &writeStateRoom(const ClientStateRoomWriteInfo &writeInfo) override;
+    ClientState &write(const ClientStateModeWriteInfo &writeInfo) override;
+    ClientState &write(const ClientStatePackWriteInfo &writeInfo) override;
+    ClientState &write(const ClientStateRoomWriteInfo &writeInfo) override;
 
     ServerStateServerReader<void> *serverReader();
     ServerStateUpdateReader<void> *updateReader();

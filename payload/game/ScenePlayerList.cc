@@ -111,7 +111,7 @@ void ScenePlayerList::calc() {
 
     OnlineTimer::Instance()->calc();
 
-    client->writeStatePoll(m_writeInfo);
+    client->write(m_writeInfo);
 }
 
 bool ScenePlayerList::clientStateRoom(const ClientStateRoomReadInfo & /* readInfo */) {
@@ -134,7 +134,7 @@ bool ScenePlayerList::clientStateRace(const ClientStateRaceReadInfo & /* readInf
     return true;
 }
 
-void ScenePlayerList::clientStateError() {
+void ScenePlayerList::clientStateError(const ClientStateErrorReadInfo & /* readInfo */) {
     ErrorViewApp::Call(6);
 }
 

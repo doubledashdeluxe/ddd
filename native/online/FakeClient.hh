@@ -31,7 +31,7 @@ public:
 private:
     typedef ClientState &(FakeClient::*Writer)();
 
-    bool clientStateIdle() override;
+    bool clientStateIdle(const ClientStateIdleReadInfo &readInfo) override;
     bool clientStateServer(const ClientStateServerReadInfo &readInfo) override;
     bool clientStateUpdate(const ClientStateUpdateReadInfo &readInfo) override;
     bool clientStateMode(const ClientStateModeReadInfo &readInfo) override;
@@ -40,7 +40,7 @@ private:
     bool clientStateTeam(const ClientStateTeamReadInfo &readInfo) override;
     bool clientStatePoll(const ClientStatePollReadInfo &readInfo) override;
     bool clientStateRace(const ClientStateRaceReadInfo &readInfo) override;
-    void clientStateError() override;
+    void clientStateError(const ClientStateErrorReadInfo &readInfo) override;
 
     ClientState &writeStateServer();
     ClientState &writeStateUpdate();

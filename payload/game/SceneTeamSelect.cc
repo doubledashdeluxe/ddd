@@ -291,7 +291,7 @@ void SceneTeamSelect::calc() {
         m_writeInfo.kartTeams = m_teams;
         m_writeInfo.entryIndex = m_entryIndex;
     }
-    client->writeStateTeam(m_writeInfo);
+    client->write(m_writeInfo);
 }
 
 bool SceneTeamSelect::clientStateRoom(const ClientStateRoomReadInfo & /* readInfo */) {
@@ -339,7 +339,7 @@ bool SceneTeamSelect::clientStateTeam(const ClientStateTeamReadInfo &readInfo) {
     return true;
 }
 
-void SceneTeamSelect::clientStateError() {
+void SceneTeamSelect::clientStateError(const ClientStateErrorReadInfo & /* readInfo */) {
     ErrorViewApp::Call(6);
 }
 

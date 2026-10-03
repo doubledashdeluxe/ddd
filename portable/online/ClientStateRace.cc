@@ -29,17 +29,17 @@ ClientState &ClientStateRace::read(ClientReadHandler &handler) {
     return *this;
 }
 
-ClientState &ClientStateRace::writeStateRoom(const ClientStateRoomWriteInfo &writeInfo) {
+ClientState &ClientStateRace::write(const ClientStateRoomWriteInfo &writeInfo) {
     Connection &connection = *m_connections.front()->release();
     return *(new (m_platform.allocator) ClientStateRoom(m_platform, connection, writeInfo));
 }
 
-ClientState &ClientStateRace::writeStatePoll(const ClientStatePollWriteInfo &writeInfo) {
+ClientState &ClientStateRace::write(const ClientStatePollWriteInfo &writeInfo) {
     Connection &connection = *m_connections.front()->release();
     return *(new (m_platform.allocator) ClientStatePoll(m_platform, connection, writeInfo));
 }
 
-ClientState &ClientStateRace::writeStateRace(const ClientStateRaceWriteInfo &writeInfo) {
+ClientState &ClientStateRace::write(const ClientStateRaceWriteInfo &writeInfo) {
     m_writeInfo = writeInfo;
 
     ClientState::write(*this);

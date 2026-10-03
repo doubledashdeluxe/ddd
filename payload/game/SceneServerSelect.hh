@@ -37,10 +37,10 @@ private:
 
     typedef void (SceneServerSelect::*State)();
 
-    bool clientStateIdle() override;
+    bool clientStateIdle(const ClientStateIdleReadInfo &readInfo) override;
     bool clientStateServer(const ClientStateServerReadInfo &readInfo) override;
     bool clientStateMode(const ClientStateModeReadInfo &readInfo) override;
-    void clientStateError() override;
+    void clientStateError(const ClientStateErrorReadInfo &readInfo) override;
 
     void wait();
     void slideIn();

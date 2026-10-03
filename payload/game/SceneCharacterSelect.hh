@@ -21,7 +21,7 @@ private:
     typedef void (SceneCharacterSelect::*State)();
 
     bool clientStatePoll(const ClientStatePollReadInfo &readInfo) override;
-    void clientStateError() override;
+    void clientStateError(const ClientStateErrorReadInfo &readInfo) override;
 
     void slideIn();
     void slideOut();

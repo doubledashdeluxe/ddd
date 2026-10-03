@@ -29,9 +29,9 @@ public:
     ~ClientStatePoll() override;
     bool needsSockets() override;
     ClientState &read(ClientReadHandler &handler) override;
-    ClientState &writeStateMode(const ClientStateModeWriteInfo &writeInfo) override;
-    ClientState &writeStatePoll(const ClientStatePollWriteInfo &writeInfo) override;
-    ClientState &writeStateRace(const ClientStateRaceWriteInfo &writeInfo) override;
+    ClientState &write(const ClientStateModeWriteInfo &writeInfo) override;
+    ClientState &write(const ClientStatePollWriteInfo &writeInfo) override;
+    ClientState &write(const ClientStateRaceWriteInfo &writeInfo) override;
 
     ServerStateServerReader<void> *serverReader();
     ServerStateUpdateReader<void> *updateReader();

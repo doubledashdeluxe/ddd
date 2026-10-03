@@ -29,13 +29,13 @@ ClientState &ClientStatePoll::read(ClientReadHandler &handler) {
     return *this;
 }
 
-ClientState &ClientStatePoll::writeStateMode(const ClientStateModeWriteInfo &writeInfo) {
+ClientState &ClientStatePoll::write(const ClientStateModeWriteInfo &writeInfo) {
     Connection &connection = *m_connections.front()->release();
     u8 playerCount = writeInfo.playerCount;
     return *(new (m_platform.allocator) ClientStateMode(m_platform, connection, playerCount));
 }
 
-ClientState &ClientStatePoll::writeStatePoll(const ClientStatePollWriteInfo &writeInfo) {
+ClientState &ClientStatePoll::write(const ClientStatePollWriteInfo &writeInfo) {
     m_writeInfo.ready = writeInfo.ready;
 
     ClientState::write(*this);
@@ -43,7 +43,7 @@ ClientState &ClientStatePoll::writeStatePoll(const ClientStatePollWriteInfo &wri
     return *this;
 }
 
-ClientState &ClientStatePoll::writeStateRace(const ClientStateRaceWriteInfo &writeInfo) {
+ClientState &ClientStatePoll::write(const ClientStateRaceWriteInfo &writeInfo) {
     Connection &connection = *m_connections.front()->release();
     return *(new (m_platform.allocator) ClientStateRace(m_platform, connection, writeInfo));
 }

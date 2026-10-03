@@ -27,7 +27,7 @@ private:
 
     bool clientStateServer(const ClientStateServerReadInfo &readInfo) override;
     bool clientStateUpdate(const ClientStateUpdateReadInfo &readInfo) override;
-    void clientStateError() override;
+    void clientStateError(const ClientStateErrorReadInfo &readInfo) override;
 
     void wait();
     void info();

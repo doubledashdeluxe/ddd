@@ -28,22 +28,22 @@ ClientState &ClientStateMode::read(ClientReadHandler &handler) {
     return *this;
 }
 
-ClientState &ClientStateMode::writeStateServer(const ClientStateServerWriteInfo & /* writeInfo */) {
+ClientState &ClientStateMode::write(const ClientStateServerWriteInfo & /* writeInfo */) {
     return *(new (m_platform.allocator) ClientStateServer(m_platform));
 }
 
-ClientState &ClientStateMode::writeStateMode(const WriteInfo & /* writeInfo */) {
+ClientState &ClientStateMode::write(const WriteInfo & /* writeInfo */) {
     ClientState::write(*this);
 
     return *this;
 }
 
-ClientState &ClientStateMode::writeStatePack(const ClientStatePackWriteInfo &writeInfo) {
+ClientState &ClientStateMode::write(const ClientStatePackWriteInfo &writeInfo) {
     Connection &connection = *m_connections.front()->release();
     return *(new (m_platform.allocator) ClientStatePack(m_platform, connection, writeInfo));
 }
 
-ClientState &ClientStateMode::writeStateRoom(const ClientStateRoomWriteInfo &writeInfo) {
+ClientState &ClientStateMode::write(const ClientStateRoomWriteInfo &writeInfo) {
     Connection &connection = *m_connections.front()->release();
     return *(new (m_platform.allocator) ClientStateRoom(m_platform, connection, writeInfo));
 }

@@ -26,7 +26,7 @@ private:
     bool clientStateMode(const ClientStateModeReadInfo &readInfo) override;
     bool clientStatePack(const ClientStatePackReadInfo &readInfo) override;
     bool clientStateRoom(const ClientStateRoomReadInfo &readInfo) override;
-    void clientStateError() override;
+    void clientStateError(const ClientStateErrorReadInfo &readInfo) override;
 
     void slideIn();
     void slideOut();

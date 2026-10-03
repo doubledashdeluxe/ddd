@@ -74,7 +74,7 @@ private:
 
     bool clientStatePoll(const ClientStatePollReadInfo &readInfo) override;
     bool clientStateRace(const ClientStateRaceReadInfo &readInfo) override;
-    void clientStateError() override;
+    void clientStateError(const ClientStateErrorReadInfo &readInfo) override;
 
     template <typename T>
     static void UpdateItemEvents(Ring<T, MaxItemEventCount> &itemEvents) {

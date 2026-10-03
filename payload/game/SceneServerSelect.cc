@@ -250,9 +250,9 @@ void SceneServerSelect::calc() {
     }
 
     if (m_writeInfo.raceCourses.empty() && m_writeInfo.battleCourses.empty()) {
-        client->writeStateIdle();
+        client->write((ClientStateIdleWriteInfo){});
     } else {
-        client->writeStateServer(m_writeInfo);
+        client->write(m_writeInfo);
     }
 }
 
@@ -275,7 +275,7 @@ void SceneServerSelect::DescText::setAlpha(u8 alpha) {
     m_scene.m_descAlphas[m_descIndex] = alpha;
 }
 
-bool SceneServerSelect::clientStateIdle() {
+bool SceneServerSelect::clientStateIdle(const ClientStateIdleReadInfo & /* readInfo */) {
     return true;
 }
 
@@ -351,7 +351,7 @@ bool SceneServerSelect::clientStateMode(const ClientStateModeReadInfo & /* readI
     return true;
 }
 
-void SceneServerSelect::clientStateError() {
+void SceneServerSelect::clientStateError(const ClientStateErrorReadInfo & /* readInfo */) {
     ErrorViewApp::Call(6);
 }
 

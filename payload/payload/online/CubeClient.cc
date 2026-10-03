@@ -17,44 +17,44 @@ void CubeClient::read(ClientReadHandler &handler) {
     while (updateState(m_state->read(handler))) {}
 }
 
-void CubeClient::writeStateIdle() {
-    while (updateState(m_state->writeStateIdle())) {}
+void CubeClient::write(const ClientStateIdleWriteInfo &writeInfo) {
+    while (updateState(m_state->write(writeInfo))) {}
 }
 
-void CubeClient::writeStateServer(const ClientStateServerWriteInfo &writeInfo) {
-    while (updateState(m_state->writeStateServer(writeInfo))) {}
+void CubeClient::write(const ClientStateServerWriteInfo &writeInfo) {
+    while (updateState(m_state->write(writeInfo))) {}
 }
 
-void CubeClient::writeStateUpdate(const ClientStateUpdateWriteInfo &writeInfo) {
-    while (updateState(m_state->writeStateUpdate(writeInfo))) {}
+void CubeClient::write(const ClientStateUpdateWriteInfo &writeInfo) {
+    while (updateState(m_state->write(writeInfo))) {}
 }
 
-void CubeClient::writeStateMode(const ClientStateModeWriteInfo &writeInfo) {
-    while (updateState(m_state->writeStateMode(writeInfo))) {}
+void CubeClient::write(const ClientStateModeWriteInfo &writeInfo) {
+    while (updateState(m_state->write(writeInfo))) {}
 }
 
-void CubeClient::writeStatePack(const ClientStatePackWriteInfo &writeInfo) {
-    while (updateState(m_state->writeStatePack(writeInfo))) {}
+void CubeClient::write(const ClientStatePackWriteInfo &writeInfo) {
+    while (updateState(m_state->write(writeInfo))) {}
 }
 
-void CubeClient::writeStateRoom(const ClientStateRoomWriteInfo &writeInfo) {
-    while (updateState(m_state->writeStateRoom(writeInfo))) {}
+void CubeClient::write(const ClientStateRoomWriteInfo &writeInfo) {
+    while (updateState(m_state->write(writeInfo))) {}
 }
 
-void CubeClient::writeStateTeam(const ClientStateTeamWriteInfo &writeInfo) {
-    while (updateState(m_state->writeStateTeam(writeInfo))) {}
+void CubeClient::write(const ClientStateTeamWriteInfo &writeInfo) {
+    while (updateState(m_state->write(writeInfo))) {}
 }
 
-void CubeClient::writeStatePoll(const ClientStatePollWriteInfo &writeInfo) {
-    while (updateState(m_state->writeStatePoll(writeInfo))) {}
+void CubeClient::write(const ClientStatePollWriteInfo &writeInfo) {
+    while (updateState(m_state->write(writeInfo))) {}
 }
 
-void CubeClient::writeStateRace(const ClientStateRaceWriteInfo &writeInfo) {
-    while (updateState(m_state->writeStateRace(writeInfo))) {}
+void CubeClient::write(const ClientStateRaceWriteInfo &writeInfo) {
+    while (updateState(m_state->write(writeInfo))) {}
 }
 
-void CubeClient::writeStateError() {
-    while (updateState(m_state->writeStateError())) {}
+void CubeClient::write(const ClientStateErrorWriteInfo &writeInfo) {
+    while (updateState(m_state->write(writeInfo))) {}
 }
 
 void CubeClient::Init(JKRHeap *heap, SOConfig &config) {

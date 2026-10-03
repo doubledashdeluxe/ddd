@@ -1,5 +1,7 @@
 #pragma once
 
+#include "portable/online/ClientStateErrorReadInfo.hh"
+#include "portable/online/ClientStateIdleReadInfo.hh"
 #include "portable/online/ClientStateModeReadInfo.hh"
 #include "portable/online/ClientStatePackReadInfo.hh"
 #include "portable/online/ClientStatePollReadInfo.hh"
@@ -11,7 +13,7 @@
 
 class ClientReadHandler {
 public:
-    virtual bool clientStateIdle();
+    virtual bool clientStateIdle(const ClientStateIdleReadInfo &readInfo);
     virtual bool clientStateServer(const ClientStateServerReadInfo &readInfo);
     virtual bool clientStateUpdate(const ClientStateUpdateReadInfo &readInfo);
     virtual bool clientStateMode(const ClientStateModeReadInfo &readInfo);
@@ -20,5 +22,5 @@ public:
     virtual bool clientStateTeam(const ClientStateTeamReadInfo &readInfo);
     virtual bool clientStatePoll(const ClientStatePollReadInfo &readInfo);
     virtual bool clientStateRace(const ClientStateRaceReadInfo &readInfo);
-    virtual void clientStateError() = 0;
+    virtual void clientStateError(const ClientStateErrorReadInfo &readInfo) = 0;
 };

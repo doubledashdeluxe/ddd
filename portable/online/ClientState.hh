@@ -2,6 +2,8 @@
 
 #include "portable/online/ClientPlatform.hh"
 #include "portable/online/ClientReadHandler.hh"
+#include "portable/online/ClientStateErrorWriteInfo.hh"
+#include "portable/online/ClientStateIdleWriteInfo.hh"
 #include "portable/online/ClientStateModeWriteInfo.hh"
 #include "portable/online/ClientStatePackWriteInfo.hh"
 #include "portable/online/ClientStatePollWriteInfo.hh"
@@ -42,16 +44,16 @@ public:
     virtual ~ClientState();
     virtual bool needsSockets() = 0;
     virtual ClientState &read(ClientReadHandler &handler) = 0;
-    virtual ClientState &writeStateIdle();
-    virtual ClientState &writeStateServer(const ClientStateServerWriteInfo &writeInfo);
-    virtual ClientState &writeStateUpdate(const ClientStateUpdateWriteInfo &writeInfo);
-    virtual ClientState &writeStateMode(const ClientStateModeWriteInfo &writeInfo);
-    virtual ClientState &writeStatePack(const ClientStatePackWriteInfo &writeInfo);
-    virtual ClientState &writeStateRoom(const ClientStateRoomWriteInfo &writeInfo);
-    virtual ClientState &writeStateTeam(const ClientStateTeamWriteInfo &writeInfo);
-    virtual ClientState &writeStatePoll(const ClientStatePollWriteInfo &writeInfo);
-    virtual ClientState &writeStateRace(const ClientStateRaceWriteInfo &writeInfo);
-    virtual ClientState &writeStateError();
+    virtual ClientState &write(const ClientStateIdleWriteInfo &writeInfo);
+    virtual ClientState &write(const ClientStateServerWriteInfo &writeInfo);
+    virtual ClientState &write(const ClientStateUpdateWriteInfo &writeInfo);
+    virtual ClientState &write(const ClientStateModeWriteInfo &writeInfo);
+    virtual ClientState &write(const ClientStatePackWriteInfo &writeInfo);
+    virtual ClientState &write(const ClientStateRoomWriteInfo &writeInfo);
+    virtual ClientState &write(const ClientStateTeamWriteInfo &writeInfo);
+    virtual ClientState &write(const ClientStatePollWriteInfo &writeInfo);
+    virtual ClientState &write(const ClientStateRaceWriteInfo &writeInfo);
+    virtual ClientState &write(const ClientStateErrorWriteInfo &writeInfo);
 
 protected:
     void read(ConnectionState::Reader &reader);

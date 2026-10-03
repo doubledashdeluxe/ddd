@@ -230,9 +230,9 @@ void ScenePackSelect::calc() {
             ClientStateModeWriteInfo writeInfo;
             writeInfo.playerCount = sequenceInfo.m_padCount;
             writeInfo.serverIndex = OnlineInfo::Instance().m_serverIndex;
-            client->writeStateMode(writeInfo);
+            client->write(writeInfo);
         } else {
-            client->writeStatePack(m_writeInfo);
+            client->write(m_writeInfo);
         }
     }
 }
@@ -286,7 +286,7 @@ bool ScenePackSelect::clientStateTeam(const ClientStateTeamReadInfo & /* readInf
     return true;
 }
 
-void ScenePackSelect::clientStateError() {
+void ScenePackSelect::clientStateError(const ClientStateErrorReadInfo & /* readInfo */) {
     ErrorViewApp::Call(6);
 }
 

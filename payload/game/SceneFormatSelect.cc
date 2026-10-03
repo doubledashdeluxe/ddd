@@ -141,7 +141,7 @@ void SceneFormatSelect::calc() {
         m_playerCountScreens[i].animationMaterials();
     }
 
-    client->writeStatePack(m_writeInfo);
+    client->write(m_writeInfo);
 }
 
 bool SceneFormatSelect::clientStateMode(const ClientStateModeReadInfo & /* readInfo */) {
@@ -169,7 +169,7 @@ bool SceneFormatSelect::clientStateTeam(const ClientStateTeamReadInfo & /* readI
     return true;
 }
 
-void SceneFormatSelect::clientStateError() {
+void SceneFormatSelect::clientStateError(const ClientStateErrorReadInfo & /* readInfo */) {
     ErrorViewApp::Call(6);
 }
 

@@ -15,16 +15,16 @@ class CubeClient {
 public:
     void reset();
     void read(ClientReadHandler &handler);
-    void writeStateIdle();
-    void writeStateServer(const ClientStateServerWriteInfo &writeInfo);
-    void writeStateUpdate(const ClientStateUpdateWriteInfo &writeInfo);
-    void writeStateMode(const ClientStateModeWriteInfo &writeInfo);
-    void writeStatePack(const ClientStatePackWriteInfo &writeInfo);
-    void writeStateRoom(const ClientStateRoomWriteInfo &writeInfo);
-    void writeStateTeam(const ClientStateTeamWriteInfo &writeInfo);
-    void writeStatePoll(const ClientStatePollWriteInfo &writeInfo);
-    void writeStateRace(const ClientStateRaceWriteInfo &writeInfo);
-    void writeStateError();
+    void write(const ClientStateIdleWriteInfo &writeInfo);
+    void write(const ClientStateServerWriteInfo &writeInfo);
+    void write(const ClientStateUpdateWriteInfo &writeInfo);
+    void write(const ClientStateModeWriteInfo &writeInfo);
+    void write(const ClientStatePackWriteInfo &writeInfo);
+    void write(const ClientStateRoomWriteInfo &writeInfo);
+    void write(const ClientStateTeamWriteInfo &writeInfo);
+    void write(const ClientStatePollWriteInfo &writeInfo);
+    void write(const ClientStateRaceWriteInfo &writeInfo);
+    void write(const ClientStateErrorWriteInfo &writeInfo);
 
     static void Init(JKRHeap *heap, SOConfig &config);
     static CubeClient *Instance();

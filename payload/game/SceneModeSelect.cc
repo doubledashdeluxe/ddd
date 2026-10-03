@@ -146,7 +146,7 @@ void SceneModeSelect::calc() {
     ClientStateModeWriteInfo writeInfo;
     writeInfo.playerCount = SequenceInfo::Instance().m_padCount;
     writeInfo.serverIndex = OnlineInfo::Instance().m_serverIndex;
-    client->writeStateMode(writeInfo);
+    client->write(writeInfo);
 }
 
 SceneModeSelect::DescText::DescText(SceneModeSelect &scene, u32 descIndex)
@@ -198,7 +198,7 @@ bool SceneModeSelect::clientStatePack(const ClientStatePackReadInfo & /* readInf
     return true;
 }
 
-void SceneModeSelect::clientStateError() {
+void SceneModeSelect::clientStateError(const ClientStateErrorReadInfo & /* readInfo */) {
     ErrorViewApp::Call(6);
 }
 

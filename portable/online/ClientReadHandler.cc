@@ -1,6 +1,6 @@
 #include "ClientReadHandler.hh"
 
-bool ClientReadHandler::clientStateIdle() {
+bool ClientReadHandler::clientStateIdle(const ClientStateIdleReadInfo & /* readInfo */) {
     return false;
 }
 

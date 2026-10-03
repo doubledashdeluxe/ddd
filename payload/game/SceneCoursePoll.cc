@@ -260,7 +260,7 @@ void SceneCoursePoll::calc() {
         m_courseScreens[i].animationMaterials();
     }
 
-    client->writeStatePoll(m_writeInfo);
+    client->write(m_writeInfo);
 }
 
 bool SceneCoursePoll::clientStatePoll(const ClientStatePollReadInfo &readInfo) {
@@ -379,7 +379,7 @@ bool SceneCoursePoll::clientStatePoll(const ClientStatePollReadInfo &readInfo) {
     return true;
 }
 
-void SceneCoursePoll::clientStateError() {
+void SceneCoursePoll::clientStateError(const ClientStateErrorReadInfo & /* readInfo */) {
     ErrorViewApp::Call(6);
 }
 

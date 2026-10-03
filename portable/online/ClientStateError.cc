@@ -11,48 +11,46 @@ bool ClientStateError::needsSockets() {
 }
 
 ClientState &ClientStateError::read(ClientReadHandler &handler) {
-    handler.clientStateError();
+    handler.clientStateError((ClientStateErrorReadInfo){});
     return *this;
 }
 
-ClientState &ClientStateError::writeStateIdle() {
+ClientState &ClientStateError::write(const ClientStateIdleWriteInfo & /* writeInfo */) {
     return *this;
 }
 
-ClientState &ClientStateError::writeStateServer(
-        const ClientStateServerWriteInfo & /* writeInfo */) {
+ClientState &ClientStateError::write(const ClientStateServerWriteInfo & /* writeInfo */) {
     return *this;
 }
 
-ClientState &ClientStateError::writeStateUpdate(
-        const ClientStateUpdateWriteInfo & /* writeInfo */) {
+ClientState &ClientStateError::write(const ClientStateUpdateWriteInfo & /* writeInfo */) {
     return *this;
 }
 
-ClientState &ClientStateError::writeStateMode(const ClientStateModeWriteInfo & /* writeInfo */) {
+ClientState &ClientStateError::write(const ClientStateModeWriteInfo & /* writeInfo */) {
     return *this;
 }
 
-ClientState &ClientStateError::writeStatePack(const ClientStatePackWriteInfo & /* writeInfo */) {
+ClientState &ClientStateError::write(const ClientStatePackWriteInfo & /* writeInfo */) {
     return *this;
 }
 
-ClientState &ClientStateError::writeStateRoom(const ClientStateRoomWriteInfo & /* writeInfo */) {
+ClientState &ClientStateError::write(const ClientStateRoomWriteInfo & /* writeInfo */) {
     return *this;
 }
 
-ClientState &ClientStateError::writeStateTeam(const ClientStateTeamWriteInfo & /* writeInfo */) {
+ClientState &ClientStateError::write(const ClientStateTeamWriteInfo & /* writeInfo */) {
     return *this;
 }
 
-ClientState &ClientStateError::writeStatePoll(const ClientStatePollWriteInfo & /* writeInfo */) {
+ClientState &ClientStateError::write(const ClientStatePollWriteInfo & /* writeInfo */) {
     return *this;
 }
 
-ClientState &ClientStateError::writeStateRace(const ClientStateRaceWriteInfo & /* writeInfo */) {
+ClientState &ClientStateError::write(const ClientStateRaceWriteInfo & /* writeInfo */) {
     return *this;
 }
 
-ClientState &ClientStateError::writeStateError() {
+ClientState &ClientStateError::write(const ClientStateErrorWriteInfo & /* writeInfo */) {
     return *this;
 }

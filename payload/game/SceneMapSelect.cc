@@ -282,7 +282,7 @@ void SceneMapSelect::calc() {
     if (m_isOnline) {
         OnlineTimer::Instance()->calc();
 
-        client->writeStatePoll(m_writeInfo);
+        client->write(m_writeInfo);
     }
 }
 
@@ -294,7 +294,7 @@ bool SceneMapSelect::clientStatePoll(const ClientStatePollReadInfo &readInfo) {
     return true;
 }
 
-void SceneMapSelect::clientStateError() {
+void SceneMapSelect::clientStateError(const ClientStateErrorReadInfo & /* readInfo */) {
     ErrorViewApp::Call(6);
 }
 
