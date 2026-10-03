@@ -1,6 +1,7 @@
 #include "ClientStateError.hh"
 
-ClientStateError::ClientStateError(const ClientPlatform &platform) : ClientState(platform) {
+ClientStateError::ClientStateError(const ClientPlatform &platform)
+    : ClientState(platform, nullptr) {
     platform.socket.close();
 }
 

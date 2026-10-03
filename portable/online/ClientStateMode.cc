@@ -5,12 +5,9 @@
 #include "portable/online/ClientStateRoom.hh"
 #include "portable/online/ClientStateServer.hh"
 
-ClientStateMode::ClientStateMode(const ClientPlatform &platform, Connection &connection,
-        u8 playerCount)
-    : ClientState(platform)
-    , m_playerCount(playerCount) {
-    m_connections.emplaceBack()->reset(&connection);
-}
+ClientStateMode::ClientStateMode(const ClientPlatform &platform, ClientState &state, u8 playerCount)
+    : ClientState(platform, &state)
+    , m_playerCount(playerCount) {}
 
 ClientStateMode::~ClientStateMode() {}
 
@@ -39,13 +36,11 @@ ClientState &ClientStateMode::write(const WriteInfo & /* writeInfo */) {
 }
 
 ClientState &ClientStateMode::write(const ClientStatePackWriteInfo &writeInfo) {
-    Connection &connection = *m_connections.front()->release();
-    return *(new (m_platform.allocator) ClientStatePack(m_platform, connection, writeInfo));
+    return *(new (m_platform.allocator) ClientStatePack(m_platform, *this, writeInfo));
 }
 
 ClientState &ClientStateMode::write(const ClientStateRoomWriteInfo &writeInfo) {
-    Connection &connection = *m_connections.front()->release();
-    return *(new (m_platform.allocator) ClientStateRoom(m_platform, connection, writeInfo));
+    return *(new (m_platform.allocator) ClientStateRoom(m_platform, *this, writeInfo));
 }
 
 ServerStateServerReader<void> *ClientStateMode::serverReader() {

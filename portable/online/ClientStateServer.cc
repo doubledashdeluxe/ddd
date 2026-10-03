@@ -12,7 +12,7 @@ extern "C" {
 }
 
 ClientStateServer::ClientStateServer(const ClientPlatform &platform)
-    : ClientState(platform)
+    : ClientState(platform, nullptr)
     , m_raceCourseOffset(0)
     , m_battleCourseOffset(0) {
     m_platform.socket.close();
@@ -79,17 +79,18 @@ ClientState &ClientStateServer::write(const WriteInfo &writeInfo) {
 ClientState &ClientStateServer::write(const ClientStateUpdateWriteInfo &writeInfo) {
     Connection &connection = *m_connections[writeInfo.serverIndex].release();
     m_connections.reset();
+    m_connections.emplaceBack()->reset(&connection);
     const Array<char, MaxVersionLength + 1> &version =
             *m_readInfo.servers[writeInfo.serverIndex].version;
-    return *(new (m_platform.allocator)
-                    ClientStateUpdate(m_platform, connection, version, writeInfo));
+    return *(new (m_platform.allocator) ClientStateUpdate(m_platform, *this, version, writeInfo));
 }
 
 ClientState &ClientStateServer::write(const ClientStateModeWriteInfo &writeInfo) {
     Connection &connection = *m_connections[writeInfo.serverIndex].release();
     m_connections.reset();
+    m_connections.emplaceBack()->reset(&connection);
     u8 playerCount = writeInfo.playerCount;
-    return *(new (m_platform.allocator) ClientStateMode(m_platform, connection, playerCount));
+    return *(new (m_platform.allocator) ClientStateMode(m_platform, *this, playerCount));
 }
 
 ServerStateServerReader<ClientStateServer> *ClientStateServer::serverReader() {

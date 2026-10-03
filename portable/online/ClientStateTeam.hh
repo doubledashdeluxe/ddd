@@ -1,7 +1,6 @@
 #pragma once
 
 #include "portable/online/ClientState.hh"
-#include "portable/online/Connection.hh"
 
 #include <formats/Online.hh>
 
@@ -20,7 +19,7 @@ class ClientStateTeam
     , public ClientTeamStateWriter<ClientStateTeam>::Guest
     , public ClientTeamStateGuestWriter<ClientStateTeam> {
 public:
-    ClientStateTeam(const ClientPlatform &platform, Connection &connection,
+    ClientStateTeam(const ClientPlatform &platform, ClientState &state,
             const ClientStateTeamWriteInfo &writeInfo);
     ~ClientStateTeam() override;
     bool needsSockets() override;

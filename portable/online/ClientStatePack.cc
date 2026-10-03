@@ -4,13 +4,11 @@
 #include "portable/online/ClientStateMode.hh"
 #include "portable/online/ClientStateRoom.hh"
 
-ClientStatePack::ClientStatePack(const ClientPlatform &platform, Connection &connection,
+ClientStatePack::ClientStatePack(const ClientPlatform &platform, ClientState &state,
         const ClientStatePackWriteInfo &writeInfo)
-    : ClientState(platform)
+    : ClientState(platform, &state)
     , m_writeInfo(writeInfo)
-    , m_packIndex(0) {
-    m_connections.emplaceBack()->reset(&connection);
-}
+    , m_packIndex(0) {}
 
 ClientStatePack::~ClientStatePack() {}
 
@@ -33,9 +31,8 @@ ClientState &ClientStatePack::read(ClientReadHandler &handler) {
 }
 
 ClientState &ClientStatePack::write(const ClientStateModeWriteInfo &writeInfo) {
-    Connection &connection = *m_connections.front()->release();
     u8 playerCount = writeInfo.playerCount;
-    return *(new (m_platform.allocator) ClientStateMode(m_platform, connection, playerCount));
+    return *(new (m_platform.allocator) ClientStateMode(m_platform, *this, playerCount));
 }
 
 ClientState &ClientStatePack::write(const WriteInfo &writeInfo) {
@@ -51,8 +48,7 @@ ClientState &ClientStatePack::write(const WriteInfo &writeInfo) {
 }
 
 ClientState &ClientStatePack::write(const ClientStateRoomWriteInfo &writeInfo) {
-    Connection &connection = *m_connections.front()->release();
-    return *(new (m_platform.allocator) ClientStateRoom(m_platform, connection, writeInfo));
+    return *(new (m_platform.allocator) ClientStateRoom(m_platform, *this, writeInfo));
 }
 
 ServerStateServerReader<void> *ClientStatePack::serverReader() {

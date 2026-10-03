@@ -1,7 +1,6 @@
 #pragma once
 
 #include "portable/online/ClientState.hh"
-#include "portable/online/Connection.hh"
 
 class ClientStateUpdate
     : public ClientState
@@ -19,7 +18,7 @@ class ClientStateUpdate
     , public ClientUpdateStateWriter<ClientStateUpdate>::Data
     , public ClientUpdateStateDataWriter<ClientStateUpdate> {
 public:
-    ClientStateUpdate(const ClientPlatform &platform, Connection &connection,
+    ClientStateUpdate(const ClientPlatform &platform, ClientState &state,
             const Array<char, MaxVersionLength + 1> &version,
             const ClientStateUpdateWriteInfo &writeInfo);
     ~ClientStateUpdate() override;

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "portable/online/ClientState.hh"
-#include "portable/online/Connection.hh"
 
 #include <formats/Online.hh>
 
@@ -34,7 +33,7 @@ class ClientStateRoom
     , public RoomOptionsRaceWriter<ClientStateRoom>
     , public RoomOptionsBattleWriter<ClientStateRoom> {
 public:
-    ClientStateRoom(const ClientPlatform &platform, Connection &connection,
+    ClientStateRoom(const ClientPlatform &platform, ClientState &state,
             const ClientStateRoomWriteInfo &writeInfo);
     ~ClientStateRoom() override;
     bool needsSockets() override;

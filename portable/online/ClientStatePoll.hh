@@ -1,7 +1,6 @@
 #pragma once
 
 #include "portable/online/ClientState.hh"
-#include "portable/online/Connection.hh"
 
 #include <formats/Online.hh>
 
@@ -24,7 +23,7 @@ class ClientStatePoll
     , public ClientCourseIndexWriter<ClientStatePoll>::Unspecified
     , public ClientCourseIndexWriter<ClientStatePoll>::Specified {
 public:
-    ClientStatePoll(const ClientPlatform &platform, Connection &connection,
+    ClientStatePoll(const ClientPlatform &platform, ClientState &state,
             const ClientStatePollWriteInfo &writeInfo);
     ~ClientStatePoll() override;
     bool needsSockets() override;

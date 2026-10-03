@@ -1,7 +1,6 @@
 #pragma once
 
 #include "portable/online/ClientState.hh"
-#include "portable/online/Connection.hh"
 
 #include <formats/Online.hh>
 
@@ -14,7 +13,7 @@ class ClientStatePack
     , public ClientStateWriter<ClientStatePack>::Pack
     , public ClientStatePackWriter<ClientStatePack> {
 public:
-    ClientStatePack(const ClientPlatform &platform, Connection &connection,
+    ClientStatePack(const ClientPlatform &platform, ClientState &state,
             const ClientStatePackWriteInfo &writeInfo);
     ~ClientStatePack() override;
     bool needsSockets() override;

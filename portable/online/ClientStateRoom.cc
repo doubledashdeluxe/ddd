@@ -7,11 +7,10 @@
 #include "portable/online/ClientStatePoll.hh"
 #include "portable/online/ClientStateTeam.hh"
 
-ClientStateRoom::ClientStateRoom(const ClientPlatform &platform, Connection &connection,
+ClientStateRoom::ClientStateRoom(const ClientPlatform &platform, ClientState &state,
         const ClientStateRoomWriteInfo &writeInfo)
-    : ClientState(platform)
+    : ClientState(platform, &state)
     , m_writeInfo(writeInfo) {
-    m_connections.emplaceBack()->reset(&connection);
     m_readInfo.ok = true;
 }
 
@@ -48,14 +47,12 @@ ClientState &ClientStateRoom::read(ClientReadHandler &handler) {
 }
 
 ClientState &ClientStateRoom::write(const ClientStateModeWriteInfo &writeInfo) {
-    Connection &connection = *m_connections.front()->release();
     u8 playerCount = writeInfo.playerCount;
-    return *(new (m_platform.allocator) ClientStateMode(m_platform, connection, playerCount));
+    return *(new (m_platform.allocator) ClientStateMode(m_platform, *this, playerCount));
 }
 
 ClientState &ClientStateRoom::write(const ClientStatePackWriteInfo &writeInfo) {
-    Connection &connection = *m_connections.front()->release();
-    return *(new (m_platform.allocator) ClientStatePack(m_platform, connection, writeInfo));
+    return *(new (m_platform.allocator) ClientStatePack(m_platform, *this, writeInfo));
 }
 
 ClientState &ClientStateRoom::write(const ClientStateRoomWriteInfo &writeInfo) {
@@ -71,13 +68,11 @@ ClientState &ClientStateRoom::write(const ClientStateRoomWriteInfo &writeInfo) {
 }
 
 ClientState &ClientStateRoom::write(const ClientStateTeamWriteInfo &writeInfo) {
-    Connection &connection = *m_connections.front()->release();
-    return *(new (m_platform.allocator) ClientStateTeam(m_platform, connection, writeInfo));
+    return *(new (m_platform.allocator) ClientStateTeam(m_platform, *this, writeInfo));
 }
 
 ClientState &ClientStateRoom::write(const ClientStatePollWriteInfo &writeInfo) {
-    Connection &connection = *m_connections.front()->release();
-    return *(new (m_platform.allocator) ClientStatePoll(m_platform, connection, writeInfo));
+    return *(new (m_platform.allocator) ClientStatePoll(m_platform, *this, writeInfo));
 }
 
 ServerStateServerReader<void> *ClientStateRoom::serverReader() {

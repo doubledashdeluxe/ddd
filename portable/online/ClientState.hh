@@ -40,7 +40,7 @@ public:
         }
     };
 
-    ClientState(const ClientPlatform &platform);
+    ClientState(const ClientPlatform &platform, ClientState *state);
     virtual ~ClientState();
     virtual bool needsSockets() = 0;
     virtual ClientState &read(ClientReadHandler &handler) = 0;

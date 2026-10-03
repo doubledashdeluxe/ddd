@@ -1,7 +1,6 @@
 #pragma once
 
 #include "portable/online/ClientState.hh"
-#include "portable/online/Connection.hh"
 
 #include <formats/Online.hh>
 
@@ -15,7 +14,7 @@ class ClientStateMode
     , public ClientStateWriter<ClientStateMode>::Mode
     , public ClientStateModeWriter<ClientStateMode> {
 public:
-    ClientStateMode(const ClientPlatform &platform, Connection &connection, u8 playerCount);
+    ClientStateMode(const ClientPlatform &platform, ClientState &state, u8 playerCount);
     ~ClientStateMode() override;
     bool needsSockets() override;
     ClientState &read(ClientReadHandler &handler) override;

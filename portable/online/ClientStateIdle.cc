@@ -3,7 +3,7 @@
 #include "portable/online/ClientStateError.hh"
 #include "portable/online/ClientStateServer.hh"
 
-ClientStateIdle::ClientStateIdle(const ClientPlatform &platform) : ClientState(platform) {
+ClientStateIdle::ClientStateIdle(const ClientPlatform &platform) : ClientState(platform, nullptr) {
     platform.socket.close();
 }
 

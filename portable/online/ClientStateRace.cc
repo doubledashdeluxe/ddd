@@ -4,11 +4,10 @@
 #include "portable/online/ClientStatePoll.hh"
 #include "portable/online/ClientStateRoom.hh"
 
-ClientStateRace::ClientStateRace(const ClientPlatform &platform, Connection &connection,
+ClientStateRace::ClientStateRace(const ClientPlatform &platform, ClientState &state,
         const ClientStateRaceWriteInfo &writeInfo)
-    : ClientState(platform)
+    : ClientState(platform, &state)
     , m_writeInfo(writeInfo) {
-    m_connections.emplaceBack()->reset(&connection);
     m_readInfo.ok = true;
     m_readInfo.resultCount = 0;
 }
@@ -30,13 +29,11 @@ ClientState &ClientStateRace::read(ClientReadHandler &handler) {
 }
 
 ClientState &ClientStateRace::write(const ClientStateRoomWriteInfo &writeInfo) {
-    Connection &connection = *m_connections.front()->release();
-    return *(new (m_platform.allocator) ClientStateRoom(m_platform, connection, writeInfo));
+    return *(new (m_platform.allocator) ClientStateRoom(m_platform, *this, writeInfo));
 }
 
 ClientState &ClientStateRace::write(const ClientStatePollWriteInfo &writeInfo) {
-    Connection &connection = *m_connections.front()->release();
-    return *(new (m_platform.allocator) ClientStatePoll(m_platform, connection, writeInfo));
+    return *(new (m_platform.allocator) ClientStatePoll(m_platform, *this, writeInfo));
 }
 
 ClientState &ClientStateRace::write(const ClientStateRaceWriteInfo &writeInfo) {

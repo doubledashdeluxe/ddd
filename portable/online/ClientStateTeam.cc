@@ -6,11 +6,10 @@
 #include "portable/online/ClientStatePack.hh"
 #include "portable/online/ClientStatePoll.hh"
 
-ClientStateTeam::ClientStateTeam(const ClientPlatform &platform, Connection &connection,
+ClientStateTeam::ClientStateTeam(const ClientPlatform &platform, ClientState &state,
         const ClientStateTeamWriteInfo &writeInfo)
-    : ClientState(platform)
+    : ClientState(platform, &state)
     , m_writeInfo(writeInfo) {
-    m_connections.emplaceBack()->reset(&connection);
     m_readInfo.ok = true;
 }
 
@@ -31,14 +30,12 @@ ClientState &ClientStateTeam::read(ClientReadHandler &handler) {
 }
 
 ClientState &ClientStateTeam::write(const ClientStateModeWriteInfo &writeInfo) {
-    Connection &connection = *m_connections.front()->release();
     u8 playerCount = writeInfo.playerCount;
-    return *(new (m_platform.allocator) ClientStateMode(m_platform, connection, playerCount));
+    return *(new (m_platform.allocator) ClientStateMode(m_platform, *this, playerCount));
 }
 
 ClientState &ClientStateTeam::write(const ClientStatePackWriteInfo &writeInfo) {
-    Connection &connection = *m_connections.front()->release();
-    return *(new (m_platform.allocator) ClientStatePack(m_platform, connection, writeInfo));
+    return *(new (m_platform.allocator) ClientStatePack(m_platform, *this, writeInfo));
 }
 
 ClientState &ClientStateTeam::write(const ClientStateTeamWriteInfo &writeInfo) {
@@ -54,8 +51,7 @@ ClientState &ClientStateTeam::write(const ClientStateTeamWriteInfo &writeInfo) {
 }
 
 ClientState &ClientStateTeam::write(const ClientStatePollWriteInfo &writeInfo) {
-    Connection &connection = *m_connections.front()->release();
-    return *(new (m_platform.allocator) ClientStatePoll(m_platform, connection, writeInfo));
+    return *(new (m_platform.allocator) ClientStatePoll(m_platform, *this, writeInfo));
 }
 
 ServerStateServerReader<void> *ClientStateTeam::serverReader() {

@@ -5,11 +5,10 @@
 #include "portable/online/ClientStateMode.hh"
 #include "portable/online/ClientStateRace.hh"
 
-ClientStatePoll::ClientStatePoll(const ClientPlatform &platform, Connection &connection,
+ClientStatePoll::ClientStatePoll(const ClientPlatform &platform, ClientState &state,
         const ClientStatePollWriteInfo &writeInfo)
-    : ClientState(platform)
+    : ClientState(platform, &state)
     , m_writeInfo(writeInfo) {
-    m_connections.emplaceBack()->reset(&connection);
     m_readInfo.ok = true;
 }
 
@@ -30,9 +29,8 @@ ClientState &ClientStatePoll::read(ClientReadHandler &handler) {
 }
 
 ClientState &ClientStatePoll::write(const ClientStateModeWriteInfo &writeInfo) {
-    Connection &connection = *m_connections.front()->release();
     u8 playerCount = writeInfo.playerCount;
-    return *(new (m_platform.allocator) ClientStateMode(m_platform, connection, playerCount));
+    return *(new (m_platform.allocator) ClientStateMode(m_platform, *this, playerCount));
 }
 
 ClientState &ClientStatePoll::write(const ClientStatePollWriteInfo &writeInfo) {
@@ -44,8 +42,7 @@ ClientState &ClientStatePoll::write(const ClientStatePollWriteInfo &writeInfo) {
 }
 
 ClientState &ClientStatePoll::write(const ClientStateRaceWriteInfo &writeInfo) {
-    Connection &connection = *m_connections.front()->release();
-    return *(new (m_platform.allocator) ClientStateRace(m_platform, connection, writeInfo));
+    return *(new (m_platform.allocator) ClientStateRace(m_platform, *this, writeInfo));
 }
 
 ServerStateServerReader<void> *ClientStatePoll::serverReader() {

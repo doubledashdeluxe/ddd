@@ -4,12 +4,11 @@
 #include "portable/online/ClientStateError.hh"
 #include "portable/online/ClientStateServer.hh"
 
-ClientStateUpdate::ClientStateUpdate(const ClientPlatform &platform, Connection &connection,
+ClientStateUpdate::ClientStateUpdate(const ClientPlatform &platform, ClientState &state,
         const Array<char, MaxVersionLength + 1> &version,
         const ClientStateUpdateWriteInfo &writeInfo)
-    : ClientState(platform)
+    : ClientState(platform, &state)
     , m_writeInfo(writeInfo) {
-    m_connections.emplaceBack()->reset(&connection);
     m_readInfo.version = version;
 }
 

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "portable/online/ClientState.hh"
-#include "portable/online/Connection.hh"
 
 #include <formats/Online.hh>
 
@@ -21,7 +20,7 @@ class ClientStateRace
     , public ClientRaceKartWriter<ClientStateRace>
     , public ItemEventWriter<ClientStateRace> {
 public:
-    ClientStateRace(const ClientPlatform &platform, Connection &connection,
+    ClientStateRace(const ClientPlatform &platform, ClientState &state,
             const ClientStateRaceWriteInfo &writeInfo);
     ~ClientStateRace() override;
     bool needsSockets() override;
