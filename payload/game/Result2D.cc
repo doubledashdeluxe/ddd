@@ -13,7 +13,6 @@
 #include "game/RaceMgr.hh"
 #include "game/RaceMode.hh"
 #include "game/ResMgr.hh"
-#include "game/RoomType.hh"
 #include "game/SequenceInfo.hh"
 #include "game/System.hh"
 

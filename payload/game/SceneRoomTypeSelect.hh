@@ -1,6 +1,5 @@
 #pragma once
 
-#include "game/RoomType.hh"
 #include "game/Scene.hh"
 
 #include <jsystem/J2DScreen.hh>

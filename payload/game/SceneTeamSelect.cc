@@ -12,7 +12,6 @@
 #include "game/Race2D.hh"
 #include "game/RaceInfo.hh"
 #include "game/ResMgr.hh"
-#include "game/RoomType.hh"
 #include "game/SceneFactory.hh"
 #include "game/SequenceApp.hh"
 #include "game/System.hh"

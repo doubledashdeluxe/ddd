@@ -85,6 +85,7 @@ pub fn format() -> Format {
         .with_constant(max_time)
         .with_type(frame_rate())
         .with_type(mode_index())
+        .with_type(room_type())
         .with_type(room_option_code_type())
         .with_type(room_option_format())
         .with_type(room_option_engine_size())

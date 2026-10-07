@@ -8,6 +8,10 @@ pub fn frame_rate() -> impl ComplexDataType {
     SimpleEnumType::new("FrameRate").with_variant("SixtyHz").with_variant("FiftyHz")
 }
 
+pub fn room_type() -> impl ComplexDataType {
+    SimpleEnumType::new("RoomType").with_variant("Worldwide").with_variant("Personal")
+}
+
 pub fn mode_index() -> impl ComplexDataType {
     SimpleEnumType::new("ModeIndex")
         .with_variant("Versus")
