@@ -25,7 +25,7 @@ pub trait Flood {
     {
         let mut counters = Counters::new();
         let mut flood = Self::new(server_pk, thread_index);
-        let mut buffer = [0u8; BUFFER_SIZE as usize];
+        let mut buffer = [0u8; BUFFER_SIZE];
 
         let instant = Instant::now();
         while instant.elapsed() < duration {

@@ -43,7 +43,7 @@ impl Connection {
         // Returning an error here would allow an off-path attacker with a spoofed IP address to
         // break the connection.
         let Some(plaintext_len) = plaintext_len else { return Ok(()) };
-        let mut plaintext = [0u8; BUFFER_SIZE as usize];
+        let mut plaintext = [0u8; BUFFER_SIZE];
         let plaintext = &mut plaintext[..plaintext_len];
         if self.session.decrypt(message, plaintext).is_err() {
             // Same rationale here
@@ -84,7 +84,7 @@ impl Connection {
                 _ => Ok(None),
             },
             State::Session => {
-                let mut plaintext = [0u8; BUFFER_SIZE as usize];
+                let mut plaintext = [0u8; BUFFER_SIZE];
                 let plaintext_len = clients.read(&self.client_pk, |client| {
                     client.write(
                         frequency,

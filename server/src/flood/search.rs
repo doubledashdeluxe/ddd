@@ -85,7 +85,7 @@ impl Flood for Search {
             let session = o.get_mut();
             let plaintext_len = message.len().checked_sub(Session::MAC_SIZE + Session::NONCE_SIZE);
             let Some(plaintext_len) = plaintext_len else { return };
-            let mut plaintext = [0u8; BUFFER_SIZE as usize];
+            let mut plaintext = [0u8; BUFFER_SIZE];
             let plaintext = &mut plaintext[..plaintext_len];
             if session.decrypt(message, plaintext).is_err() {
                 return;

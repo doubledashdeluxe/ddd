@@ -142,7 +142,7 @@ impl<S: Sender> Shard<S> {
     ) {
         let player_count = self.clients.player_count();
         self.connections.retain(|addr, connection| {
-            let mut message = [0u8; BUFFER_SIZE as usize];
+            let mut message = [0u8; BUFFER_SIZE];
             let message_len = connection.write(
                 now,
                 config,

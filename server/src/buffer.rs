@@ -42,4 +42,4 @@ impl Buffer {
     }
 }
 
-const MAX_LEN: usize = BUFFER_SIZE as usize;
+const MAX_LEN: usize = BUFFER_SIZE;

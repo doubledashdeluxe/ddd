@@ -10,7 +10,7 @@ mod server_state;
 
 pub fn format() -> Format {
     let default_port = SimpleConstant::new("DEFAULT_PORT", 3549u16);
-    let buffer_size = SimpleConstant::new("BUFFER_SIZE", 1152u16);
+    let buffer_size = SimpleConstant::new("BUFFER_SIZE", 1152usize);
     let update_version = SimpleConstant::new("UPDATE_VERSION", 1u8);
     let protocol_version = SimpleConstant::new("PROTOCOL_VERSION", 26u16);
     let max_lap_count = SimpleConstant::new("MAX_LAP_COUNT", 9u8);
