@@ -14,6 +14,7 @@ public:
     };
 
     bool ok() const;
+    bool ready() const;
     u16 serverFrame() const;
     u16 clientFrame() const;
     u16 latency() const;
@@ -101,6 +102,7 @@ private:
     static f32 TruncateVelDiff(f32 diff);
 
     bool m_ok;
+    bool m_ready;
     u16 m_serverFrame;
     u16 m_clientFrame;
     u16 m_latency;

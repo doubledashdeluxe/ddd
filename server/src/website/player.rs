@@ -10,7 +10,7 @@ pub fn write(race: &Race, player: &Player, backend: &mut impl Backend) {
     let write = |body: &mut Children<_>, path_printer: &PathPrinter| {
         let mut ul = body.element("ul")?.children()?;
 
-        ul.element("li")?.content(format_args!("Index: {}", player.index))?;
+        ul.element("li")?.content(format_args!("Profile: {}", player.profile))?;
 
         for mode_index in ModeIndex::VARIANTS {
             let Some(mmr) = player.mmrs.get(&mode_index) else { continue };

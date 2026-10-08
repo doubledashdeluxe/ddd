@@ -10,6 +10,7 @@ mod name;
 
 #[derive(Clone, Debug)]
 pub struct Player {
+    pub profile: u8,
     pub player: ServerPlayer,
     pub mmrs: LinearMap<ModeIndex, u16, MODE_INDEX_COUNT>,
     pub match_count: u64,

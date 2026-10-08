@@ -118,6 +118,7 @@ void SceneTeamSelect::init() {
     const OnlineInfo &onlineInfo = OnlineInfo::Instance();
     m_ok = true;
     m_balanced = false;
+    m_isReplay = onlineInfo.m_isReplay;
     m_isSearch = onlineInfo.m_roomType == RoomType::Worldwide;
     m_isHost = onlineInfo.m_isHost;
     m_canContinue = true;
@@ -139,7 +140,7 @@ void SceneTeamSelect::init() {
     const char *nameTextureName = ModeNameTextureNames[onlineInfo.m_modeIndex];
     namePicture->changeTexture(nameTextureName, 0);
 
-    if (m_isSearch) {
+    if (m_isReplay || m_isSearch) {
         m_nextScene = SceneType::PlayerList;
         nextScene();
     } else {
@@ -156,7 +157,7 @@ void SceneTeamSelect::draw() {
     m_mainScreen.draw(0.0f, 0.0f, m_graphContext);
     m_modeScreen.draw(0.0f, 0.0f, m_graphContext);
 
-    if (!m_isSearch) {
+    if (!m_isReplay && !m_isSearch) {
         OnlineTimer::Instance()->draw(m_graphContext);
     }
 }
@@ -282,7 +283,7 @@ void SceneTeamSelect::calc() {
         m_entryScreens[i].animationMaterials();
     }
 
-    if (!m_isSearch) {
+    if (!m_isReplay && !m_isSearch) {
         OnlineTimer::Instance()->calc();
     }
 
@@ -514,7 +515,9 @@ void SceneTeamSelect::stateNextScene() {
     const JUTGamePad::CButton &button = KartGamePad::GamePad(0)->button();
     if (m_nextScene == SceneType::PlayerList) {
         if (button.risingEdge() & PAD_BUTTON_B || !m_ok || (!m_balanced && m_continuing)) {
-            if (m_isSearch) {
+            if (m_isReplay) {
+                m_nextScene = SceneType::Replay;
+            } else if (m_isSearch) {
                 m_nextScene = SceneType::FormatSelect;
             } else {
                 m_nextScene = SceneType::RoomTypeSelect;

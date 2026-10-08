@@ -27,6 +27,7 @@ private:
 
     typedef void (ScenePersonalRoom::*State)();
 
+    bool clientStateIdle(const ClientStateIdleReadInfo &readInfo) override;
     bool clientStateMode(const ClientStateModeReadInfo &readInfo) override;
     bool clientStatePack(const ClientStatePackReadInfo &readInfo) override;
     bool clientStateRoom(const ClientStateRoomReadInfo &readInfo) override;
@@ -47,6 +48,7 @@ private:
 
     State m_state;
     bool m_ok;
+    bool m_isReplay;
     bool m_isReady;
     bool m_isSearch;
     bool m_isHost;

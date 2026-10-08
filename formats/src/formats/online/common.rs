@@ -173,8 +173,10 @@ pub fn item_event() -> impl ComplexDataType {
 }
 
 pub const MAX_VERSION_LENGTH: usize = 19;
+pub const MAX_PLATFORM_LENGTH: usize = 31;
 pub const MIN_CLIENT_PLAYER_COUNT: usize = 1;
 pub const MAX_CLIENT_PLAYER_COUNT: usize = 4;
+pub const MIN_CLIENT_KART_COUNT: usize = 1;
 pub const MAX_CLIENT_KART_COUNT: usize = 4;
 pub const KART_CHARACTER_COUNT: usize = 2;
 pub const PLAYER_NAME_LENGTH: usize = 3;

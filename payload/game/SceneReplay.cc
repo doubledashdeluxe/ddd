@@ -6,15 +6,22 @@
 #include "game/MenuTitleLine.hh"
 #include "game/Modes.hh"
 #include "game/OnlineBackground.hh"
+#include "game/OnlineInfo.hh"
 #include "game/Race2D.hh"
+#include "game/RaceInfo.hh"
 #include "game/SceneFactory.hh"
 #include "game/SequenceApp.hh"
+#include "game/SequenceInfo.hh"
 #include "game/System.hh"
 
+extern "C" {
+#include <dolphin/OSTime.h>
+}
 #include <jsystem/J2DAnmLoaderDataBase.hh>
 #include <payload/CourseManager.hh>
 #include <payload/Lock.hh>
 #include <payload/online/CubeClient.hh>
+#include <payload/online/CubeReplayManager.hh>
 #include <portable/Algorithm.hh>
 #include <portable/UTF8.hh>
 
@@ -80,8 +87,8 @@ SceneReplay::SceneReplay(JKRArchive *archive, JKRHeap *heap) : Scene(archive, he
     m_mainAnmTransformFrame = 0;
     m_arrowAnmTransformFrame = 0;
     m_downloadAnmTransformFrame = 0;
-    m_selectAnmTransformFrame = 10;
     m_replayAnmTransformFrames.fill(0);
+    m_playerAnmTransformFrames.fill(1);
     m_arrowAlphas.fill(0);
     m_replayAlphas.fill(0);
 }
@@ -99,7 +106,9 @@ void SceneReplay::init() {
 
     System::GetDisplay()->startFadeIn(15);
 
-    if (CourseManager::Instance()->lock()) {
+    m_selectAnmTransformFrame = 10;
+
+    if (CubeReplayManager::Instance()->lock() && CourseManager::Instance()->lock()) {
         slideIn();
     } else {
         wait();
@@ -163,9 +172,6 @@ void SceneReplay::calc() {
                 m_replayAnmTransformFrames[i]--;
             }
         }
-        for (u32 j = 0; j < 8; j++) {
-            m_playerAnmTransformFrames[i][j] = j % 2 ? 2 : 1;
-        }
     }
 
     m_mainAnmTransform->m_frame = m_mainAnmTransformFrame;
@@ -189,7 +195,7 @@ void SceneReplay::calc() {
         m_replayScreens[i].search("GDCurs1")->setAlpha(m_replayAlphas[i]);
         m_replayScreens[i].search("Mode")->setAlpha(m_replayAlphas[i]);
         m_replayScreens[i].search("Logo")->setAlpha(m_replayAlphas[i]);
-        for (u32 j = 0; j < 19; j++) {
+        for (u32 j = 0; j < 23; j++) {
             m_replayScreens[i].search("Time%u", j)->setAlpha(m_replayAlphas[i]);
         }
         for (u32 j = 0; j < m_playerScreens[i].count(); j++) {
@@ -219,11 +225,13 @@ void SceneReplay::wait() {
 }
 
 void SceneReplay::slideIn() {
-    const CourseManager *courseManager = CourseManager::Instance();
-    m_replayCount = courseManager->courseCount(false, true, 0);
+    CubeReplayManager *replayManager = CubeReplayManager::Instance();
+    replayManager->filterAndSort();
+    m_replayCount = replayManager->replayCount();
     m_replayIndex = 0;
     m_rowIndex = m_replayIndex;
     m_rowIndex = Min(m_rowIndex, m_replayCount - Min<u32>(m_replayCount, 5));
+    m_clientIndex = 0;
 
     MenuTitleLine::Instance()->drop("Replays.bti");
     for (u32 i = 0; i < m_replayAlphas.count(); i++) {
@@ -242,7 +250,7 @@ void SceneReplay::slideIn() {
     m_loadStack.reset(new (m_heap, 0x8) u8[stackSize]);
     OSCreateThread(&m_loadThread, Load, this, m_loadStack.get() + stackSize, stackSize, 25, 0);
     OSResumeThread(&m_loadThread);
-    refreshReplays();
+    refreshReplays(false);
     m_state = &SceneReplay::stateSlideIn;
 }
 
@@ -263,9 +271,8 @@ void SceneReplay::scrollUp() {
     m_rowIndex--;
     m_mainAnmTransformFrame = 46;
     m_replayAnmTransformFrames.rotateRight(1);
-    m_playerAnmTransformFrames.rotateRight(1);
     m_replayAlphas.rotateRight(1);
-    refreshReplays();
+    refreshReplays(false);
     m_state = &SceneReplay::stateScrollUp;
 }
 
@@ -275,11 +282,28 @@ void SceneReplay::scrollDown() {
     m_state = &SceneReplay::stateScrollDown;
 }
 
+void SceneReplay::selectIn() {
+    m_clientCount = CubeReplayManager::Instance()->replay(m_replayIndex).clients.count();
+    refreshReplays(true);
+    m_selectAnmTransformFrame = 11;
+    m_state = &SceneReplay::stateSelectIn;
+}
+
+void SceneReplay::selectOut() {
+    refreshReplays(false);
+    m_selectAnmTransformFrame = 18;
+    m_state = &SceneReplay::stateSelectOut;
+}
+
+void SceneReplay::select() {
+    m_state = &SceneReplay::stateSelect;
+}
+
 void SceneReplay::nextScene() {
     for (u32 i = 0; i < m_logos.count(); i++) {
         m_logos[i].reset();
     }
-    refreshReplays();
+    refreshReplays(false);
     m_state = &SceneReplay::stateNextScene;
 }
 
@@ -318,6 +342,10 @@ void SceneReplay::stateSlideOut() {
 void SceneReplay::stateIdle() {
     const JUTGamePad::CButton &button = KartGamePad::GamePad(0)->button();
     if (button.risingEdge() & PAD_BUTTON_A) {
+        if (m_replayCount != 0) {
+            GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE_LITTLE);
+            selectIn();
+        }
     } else if (button.risingEdge() & PAD_BUTTON_B) {
         m_nextScene = SceneType::Title;
         GameAudio::Main::Instance()->fadeOutAll(15);
@@ -336,6 +364,7 @@ void SceneReplay::stateIdle() {
             } else {
                 m_replayIndex--;
             }
+            m_clientIndex = 0;
         }
     } else if (button.repeat() & JUTGamePad::PAD_MSTICK_DOWN) {
         if (m_replayIndex + 1 < m_replayCount) {
@@ -345,6 +374,7 @@ void SceneReplay::stateIdle() {
             } else {
                 m_replayIndex++;
             }
+            m_clientIndex = 0;
         }
     }
 }
@@ -366,10 +396,72 @@ void SceneReplay::stateScrollDown() {
         m_rowIndex++;
         m_mainAnmTransformFrame = 39;
         m_replayAnmTransformFrames.rotateLeft(1);
-        m_playerAnmTransformFrames.rotateLeft(1);
         m_replayAlphas.rotateLeft(1);
-        refreshReplays();
+        refreshReplays(false);
         idle();
+    }
+}
+
+void SceneReplay::stateSelectIn() {
+    m_selectAnmTransformFrame++;
+    hideArrows();
+    if (m_selectAnmTransformFrame == 19) {
+        select();
+    }
+}
+
+void SceneReplay::stateSelectOut() {
+    m_selectAnmTransformFrame--;
+    showArrows(0);
+    if (m_selectAnmTransformFrame == 10) {
+        idle();
+    }
+}
+
+void SceneReplay::stateSelect() {
+    const JUTGamePad::CButton &button = KartGamePad::GamePad(0)->button();
+    if (button.risingEdge() & PAD_BUTTON_A) {
+        m_nextScene = SceneType::PersonalRoom;
+        GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE);
+        const CubeReplayManager *replayManager = CubeReplayManager::Instance();
+        const ReplayManager::Replay &replay = replayManager->replay(m_replayIndex);
+        const ReplayManager::Client *client = nullptr;
+        if (m_clientIndex < replay.clients.count()) {
+            client = &replay.clients[m_clientIndex];
+        }
+        SequenceInfo &sequenceInfo = SequenceInfo::Instance();
+        sequenceInfo.m_padCount = client ? client->players.count() : 1;
+        sequenceInfo.m_statusCount = client ? client->teams.count() : 1;
+        OnlineInfo &onlineInfo = OnlineInfo::Instance();
+        onlineInfo.m_isReplay = true;
+        if (client) {
+            for (u32 i = 0; i < client->players.count(); i++) {
+                onlineInfo.m_names[i] = client->players[i].name;
+            }
+        } else {
+            onlineInfo.m_names[0] = "   ";
+        }
+        onlineInfo.setLocalKarts();
+        onlineInfo.m_roomType = replay.roomType;
+        onlineInfo.m_modeIndex = replay.modeIndex;
+        onlineInfo.m_format = replay.format;
+        onlineInfo.m_isHost = replay.roomType == RoomType::Personal && m_clientIndex == 0;
+        onlineInfo.m_roomCounter = 0;
+        onlineInfo.m_roomCode = replay.roomCode;
+        RaceInfo::Instance().m_raceMode = Modes[replay.modeIndex];
+        CubeClient::Instance()->setReplay(replay, m_clientIndex);
+        slideOut();
+    } else if (button.risingEdge() & PAD_BUTTON_B) {
+        GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CANCEL_LITTLE);
+        selectOut();
+    } else if (button.repeat() & JUTGamePad::PAD_MSTICK_LEFT) {
+        m_clientIndex = m_clientIndex == 0 ? m_clientCount : m_clientIndex - 1;
+        refreshReplays(true);
+        GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CURSOL);
+    } else if (button.repeat() & JUTGamePad::PAD_MSTICK_RIGHT) {
+        m_clientIndex = m_clientIndex == m_clientCount ? 0 : m_clientIndex + 1;
+        refreshReplays(true);
+        GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CURSOL);
     }
 }
 
@@ -381,35 +473,86 @@ void SceneReplay::stateNextScene() {
     SequenceApp::Instance()->setNextScene(m_nextScene);
 }
 
-void SceneReplay::refreshReplays() {
+void SceneReplay::refreshReplays(bool playerColors) {
     Kart2DCommon *kart2DCommon = Kart2DCommon::Instance();
+    const CubeReplayManager *replayManager = CubeReplayManager::Instance();
     for (u32 i = 0; i < m_replayScreens.count(); i++) {
         u32 replayIndex = m_rowIndex + i;
         if (replayIndex >= m_replayCount) {
             break;
         }
+        const ReplayManager::Replay &replay = replayManager->replay(replayIndex);
         J2DScreen &screen = m_replayScreens[i];
         J2DPicture *modePicture = m_replayScreens[i].search("Mode")->downcast<J2DPicture>();
-        modePicture->changeTexture(ModeIconTextureNames[replayIndex % ModeIndexCount], 0);
+        modePicture->changeTexture(ModeIconTextureNames[replay.modeIndex], 0);
         J2DPicture *logoPicture = m_replayScreens[i].search("Logo")->downcast<J2DPicture>();
         logoPicture->m_isVisible = false;
         logoPicture->changeTexture("SelCourse_Pict_Box1.bti", 0);
-        kart2DCommon->changeUnicodeTexture("2026-05-25 18:00:12", 19, screen, "Time", false);
+        OSCalendarTime time;
+        OSTicksToCalendarTime(replay.time, &time);
+        char timeText[24];
+        snprintf(timeText, Count(timeText), "%04d-%02d-%02d %02d:%02d:%02d UTC", time.year,
+                time.mon + 1, time.mday, time.hour, time.min, time.sec);
+        kart2DCommon->changeUnicodeTexture(timeText, 23, screen, "Time", false);
+        const char *names[MaxRoomKartCount][4] = {};
+        u32 colorIndices[MaxRoomKartCount][2];
+        for (u32 j = 0, k = 0; j < replay.clients.count(); j++) {
+            const ReplayManager::Client &client = replay.clients[j];
+            u32 tandemCount = client.players.count() - client.teams.count();
+            for (u32 l = 0; l < client.teams.count(); k++, l++) {
+                if (l < tandemCount) {
+                    names[k][0] = client.players[l / 2 + 0].name.values();
+                    names[k][1] = client.players[l / 2 + 1].name.values();
+                } else {
+                    names[k][0] = client.players[l + tandemCount].name.values();
+                }
+                if (playerColors) {
+                    if (replayIndex == m_replayIndex && j == m_clientIndex) {
+                        if (l < tandemCount) {
+                            colorIndices[k][0] = l / 2 + 0;
+                            colorIndices[k][1] = l / 2 + 1;
+                        } else {
+                            colorIndices[k][0] = l + tandemCount;
+                            colorIndices[k][1] = l + tandemCount;
+                        }
+                    } else {
+                        colorIndices[k][0] = 8;
+                        colorIndices[k][1] = 8;
+                    }
+                } else {
+                    colorIndices[k][0] = client.teams[l];
+                    colorIndices[k][1] = client.teams[l];
+                }
+            }
+        }
         for (u32 j = 0; j < m_playerScreens[i].count(); j++) {
             J2DScreen &screen = m_playerScreens[i][j];
             for (u32 k = 0; k < 2; k++) {
-                const char *name = k == 0 ? "ABC" : j % 2 ? "DEF" : "   ";
+                const char *name = names[j][k] ? names[j][k] : "   ";
                 char prefix[32];
                 snprintf(prefix, Count(prefix), "PName%" PRIu32, k);
                 kart2DCommon->changeUnicodeTexture(name, 3, screen, prefix);
             }
-            J2DPicture::CornerColors cornerColors = Race2D::GetCornerColors(j % 8);
+            if (j >= replay.kartCount) {
+                continue;
+            }
             for (u32 k = 0; k < 2; k++) {
+                u32 colorIndex = colorIndices[j][k];
+                J2DPicture::CornerColors cornerColors;
+                if (colorIndex < 8) {
+                    cornerColors = Race2D::GetCornerColors(colorIndex);
+                } else {
+                    cornerColors.topLeft = (GXColor){255, 255, 255, 255};
+                    cornerColors.topRight = (GXColor){85, 85, 85, 255};
+                    cornerColors.bottomLeft = (GXColor){85, 85, 85, 255};
+                    cornerColors.bottomRight = (GXColor){255, 255, 255, 255};
+                }
                 for (u32 l = 0; l < 3; l++) {
                     J2DPicture *picture = screen.search("PName%u%u", k, l)->downcast<J2DPicture>();
                     picture->m_cornerColors = cornerColors;
                 }
             }
+            m_playerAnmTransformFrames[i][j] = names[j][1] ? 2 : 1;
         }
     }
 
@@ -489,14 +632,16 @@ void *SceneReplay::load() {
 }
 
 bool SceneReplay::load(const Array<u32, 12> &nextReplayIndices) {
+    const CubeReplayManager *replayManager = CubeReplayManager::Instance();
     const CourseManager *courseManager = CourseManager::Instance();
     for (u32 i = 0; i < nextReplayIndices.count(); i++) {
         u32 replayIndex = nextReplayIndices[i];
         if (replayIndex >= m_replayCount) {
             continue;
         }
-        const CourseManager::Course &course =
-                courseManager->courseByHash(false, true, 0, replayIndex);
+        const ReplayManager::Replay &replay = replayManager->replay(replayIndex);
+        const CourseManager::Course &course = courseManager->courseByHash(true, replay.isRace,
+                replay.packIndex, replay.courseIndex);
         UniquePtr<ResTIMG> &logo = findLogo(nextReplayIndices, replayIndex);
         if (!logo.get()) {
             void *texture = course.loadLogo(m_heap);

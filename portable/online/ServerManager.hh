@@ -5,7 +5,7 @@
 #include "portable/Ring.hh"
 #include "portable/crypto/Types.hh"
 
-const u32 MaxServerCount = 32;
+const u32 MaxServerCount = 28;
 const u32 MaxServerNameSize = 32;
 
 typedef Array<char, MaxServerNameSize> ServerName;

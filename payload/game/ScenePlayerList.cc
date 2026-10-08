@@ -235,7 +235,9 @@ void ScenePlayerList::stateIdle() {
     const JUTGamePad::CButton &button = KartGamePad::GamePad(0)->button();
     if (button.risingEdge() & PAD_BUTTON_A || OnlineTimer::Instance()->hasExpired()) {
         const OnlineInfo &onlineInfo = OnlineInfo::Instance();
-        if (onlineInfo.m_spectating) {
+        if (onlineInfo.m_isReplay) {
+            m_nextScene = SceneType::CoursePoll;
+        } else if (onlineInfo.m_spectating) {
             if (onlineInfo.m_hasCourseSelection) {
                 m_nextScene = SceneType::MapSelect;
             } else {

@@ -1,11 +1,13 @@
 #pragma once
 
 #include "portable/Allocator.hh"
+#include "portable/UniquePtr.hh"
 #include "portable/crypto/Random.hh"
 #include "portable/crypto/Types.hh"
 #include "portable/network/DNS.hh"
 #include "portable/network/Network.hh"
 #include "portable/network/UDPSocket.hh"
+#include "portable/online/Replay.hh"
 #include "portable/online/ServerManager.hh"
 
 struct ClientPlatform {
@@ -19,4 +21,5 @@ struct ClientPlatform {
     UDPSocket &socket;
     ServerManager &serverManager;
     const Key &clientK;
+    UniquePtr<Replay> replay;
 };

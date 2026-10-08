@@ -20,6 +20,7 @@
 #include <payload/MemoryProtection.hh>
 #include <payload/crypto/CubeRandom.hh>
 #include <payload/online/CubeClient.hh>
+#include <payload/online/CubeReplayManager.hh>
 #include <payload/online/CubeServerManager.hh>
 
 SceneTitle::SceneTitle(JKRArchive *archive, JKRHeap *heap)
@@ -136,6 +137,7 @@ void SceneTitle::calc() {
 
 void SceneTitle::fadeIn() {
     CubeClient::Instance()->reset();
+    CubeReplayManager::Instance()->unlock();
     CubeServerManager::Instance()->unlock();
     CourseManager::Instance()->unlock();
     m_entryIndex = Entry::Count;
@@ -297,9 +299,7 @@ void SceneTitle::stateStart() {
             m_nextScene = NextScene(m_entryIndex);
             GameAudio::Main::Instance()->fadeOutAll(15);
             GameAudio::Main::Instance()->startSystemSe(SoundID(m_entryIndex));
-            if (m_entryIndex == Entry::Remote) {
-                SequenceInfo::Instance().m_isOnline = true;
-            }
+            SequenceInfo::Instance().m_isOnline = IsOnline(m_entryIndex);
             fadeOut();
         }
     } else if (button.repeat() & JUTGamePad::PAD_MSTICK_UP) {
@@ -371,6 +371,16 @@ u32 SceneTitle::SoundID(u32 entryIndex) {
         return SoundID::JA_SE_TR_TITLE_TO_SELECT;
     default:
         return SoundID::JA_SE_TR_DECIDE;
+    }
+}
+
+bool SceneTitle::IsOnline(u32 entryIndex) {
+    switch (entryIndex) {
+    case Entry::Remote:
+    case Entry::Replays:
+        return true;
+    default:
+        return false;
     }
 }
 

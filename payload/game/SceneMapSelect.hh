@@ -52,9 +52,9 @@ private:
     void stateScrollUp();
     void stateScrollDown();
     void stateSpin();
-    void stateSelect();
     void stateSelectIn();
     void stateSelectOut();
+    void stateSelect();
     void stateNextScene();
     void stateNextBattle();
 

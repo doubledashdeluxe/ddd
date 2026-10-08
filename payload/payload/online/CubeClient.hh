@@ -10,21 +10,18 @@ extern "C" {
 #include <portable/UniquePtr.hh>
 #include <portable/online/ClientPlatform.hh>
 #include <portable/online/ClientState.hh>
+#include <portable/online/ReplayManager.hh>
 
 class CubeClient {
 public:
     void reset();
+    void setReplay(const ReplayManager::Replay &replay, u32 clientIndex);
     void read(ClientReadHandler &handler);
-    void write(const ClientStateIdleWriteInfo &writeInfo);
-    void write(const ClientStateServerWriteInfo &writeInfo);
-    void write(const ClientStateUpdateWriteInfo &writeInfo);
-    void write(const ClientStateModeWriteInfo &writeInfo);
-    void write(const ClientStatePackWriteInfo &writeInfo);
-    void write(const ClientStateRoomWriteInfo &writeInfo);
-    void write(const ClientStateTeamWriteInfo &writeInfo);
-    void write(const ClientStatePollWriteInfo &writeInfo);
-    void write(const ClientStateRaceWriteInfo &writeInfo);
-    void write(const ClientStateErrorWriteInfo &writeInfo);
+
+    template <typename W>
+    void write(const W &writeInfo) {
+        while (updateState(m_state->write(writeInfo))) {}
+    }
 
     static void Init(JKRHeap *heap, SOConfig &config);
     static CubeClient *Instance();

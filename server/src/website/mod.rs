@@ -1,5 +1,5 @@
 pub use crate::website::init::Init;
-pub use crate::website::message::Message;
+pub use crate::website::message::{Batch, Message};
 pub use crate::website::worker::Worker;
 
 mod backend;

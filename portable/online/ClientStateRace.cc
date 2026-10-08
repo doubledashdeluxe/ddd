@@ -7,8 +7,12 @@
 ClientStateRace::ClientStateRace(const ClientPlatform &platform, ClientState &state,
         const ClientStateRaceWriteInfo &writeInfo)
     : ClientState(platform, &state)
-    , m_writeInfo(writeInfo) {
+    , m_writeInfo(writeInfo)
+    , m_serverFrame(0)
+    , m_clientFrameBase(MinClientFrame)
+    , m_clientFrameOffset(0) {
     m_readInfo.ok = true;
+    m_readInfo.ready = true;
     m_readInfo.resultCount = 0;
 }
 
@@ -19,6 +23,10 @@ bool ClientStateRace::needsSockets() {
 }
 
 ClientState &ClientStateRace::read(ClientReadHandler &handler) {
+    if (m_platform.replay) {
+        return readReplay(handler);
+    }
+
     ClientState::read(*this);
 
     if (!handler.clientStateRace(m_readInfo)) {
@@ -103,8 +111,7 @@ void ClientStateRace::setMatchIndex(u8 matchIndex) {
 }
 
 bool ClientStateRace::isFrameValid(u16 frame) {
-    const Optional<ReadInfo::Info> &info = m_readInfo.info;
-    return !info || frame >= info->frame;
+    return isFrameValid(m_platform.replay.get(), frame);
 }
 
 void ClientStateRace::setFrame(u16 frame) {
@@ -112,12 +119,7 @@ void ClientStateRace::setFrame(u16 frame) {
 }
 
 bool ClientStateRace::isClientFrameValid(u16 clientFrame) {
-    if (clientFrame <= m_writeInfo.frame) {
-        const Optional<ReadInfo::Info> &info = m_readInfo.info;
-        return !info || clientFrame >= info->clientFrame;
-    } else {
-        return false;
-    }
+    return isClientFrameValid(m_platform.replay.get(), clientFrame);
 }
 
 void ClientStateRace::setClientFrame(u16 clientFrame) {
@@ -373,6 +375,15 @@ u16 ClientStateRace::getFrame() {
     return m_writeInfo.frame;
 }
 
+u32 ClientStateRace::getFramesCount() {
+    return m_writeInfo.frames.count();
+}
+
+ClientRaceFramesWriter<ClientStateRace> &ClientStateRace::framesElementWriter(u32 i0) {
+    m_frameIndex = i0;
+    return *this;
+}
+
 u32 ClientStateRace::getKartsCount() {
     return m_writeInfo.kartCount;
 }
@@ -396,6 +407,14 @@ u16 ClientStateRace::getLatency() {
 
 u8 ClientStateRace::getStability() {
     return m_writeInfo.stability;
+}
+
+u16 ClientStateRace::getServerFrame() {
+    return m_writeInfo.frames[m_frameIndex].serverFrame;
+}
+
+u16 ClientStateRace::getClientFrame() {
+    return m_writeInfo.frames[m_frameIndex].clientFrame;
 }
 
 u32 ClientStateRace::getInputsCount() {
@@ -485,4 +504,182 @@ s16 ClientStateRace::getEventPosX() {
 
 s16 ClientStateRace::getEventPosZ() {
     return m_writeInfo.karts[m_kartIndex].itemEvents[m_itemEventIndex].posZ;
+}
+
+bool ClientStateRace::isClientStatesCountValid(u32 clientStatesCount) {
+    return clientStatesCount == m_platform.replay->replay().clients.count();
+}
+
+void ClientStateRace::setClientStatesCount(u32 /* clientStatesCount */) {}
+
+bool ClientStateRace::isClientStatesCountValid(u32 /* i0 */, u32 /* clientStatesCount */) {
+    return true;
+}
+
+void ClientStateRace::setClientStatesCount(u32 i0, u32 clientStatesCount) {
+    if (i0 == m_platform.replay->clientIndex()) {
+        m_clientStates.reset();
+        for (u32 i = 0; i < clientStatesCount; i++) {
+            m_clientStates.emplaceBack();
+        }
+    }
+}
+
+ReplayClientStateReader<ClientStateRace> *ClientStateRace::clientStatesElementReader(u32 i0,
+        u32 i1) {
+    m_clientIndex = i0;
+    m_stateIndex = i1;
+    return this;
+}
+
+bool ClientStateRace::isReplayServerFrameValid(u16 /* replayServerFrame */) {
+    return true;
+}
+
+void ClientStateRace::setReplayServerFrame(u16 replayServerFrame) {
+    if (m_clientIndex == m_platform.replay->clientIndex()) {
+        m_clientStates[m_stateIndex].serverFrame = replayServerFrame;
+    }
+}
+
+bool ClientStateRace::isReplayClientFrameValid(u16 /* replayClientFrame */) {
+    return true;
+}
+
+void ClientStateRace::setReplayClientFrame(u16 replayClientFrame) {
+    if (m_clientIndex == m_platform.replay->clientIndex()) {
+        m_clientStates[m_stateIndex].clientFrame = replayClientFrame;
+    }
+}
+
+bool ClientStateRace::isReplayInputsCountValid(u32 replayInputsCount) {
+    return replayInputsCount == m_platform.replay->replay().clients[m_clientIndex].players.count();
+}
+
+void ClientStateRace::setReplayInputsCount(u32 /* replayInputsCount */) {}
+
+bool ClientStateRace::isReplayInputsElementValid(u32 /* i0 */, u16 /* replayInputsElement */) {
+    return true;
+}
+
+void ClientStateRace::setReplayInputsElement(u32 i0, u16 replayInputsElement) {
+    if (m_clientIndex == m_platform.replay->clientIndex()) {
+        m_clientStates[m_stateIndex].inputs[i0] = replayInputsElement;
+    }
+}
+
+ClientState &ClientStateRace::readReplay(ClientReadHandler &handler) {
+    u8 buffer[4 * 1024];
+
+    while (true) {
+        if (!m_platform.replay->ok()) {
+            return *(new (m_platform.allocator) ClientStateError(m_platform));
+        }
+
+        u32 size = Count(buffer);
+        if (!m_platform.replay->read(buffer, size)) {
+            m_readInfo.ready = false;
+
+            if (!handler.clientStateRace(m_readInfo)) {
+                return *(new (m_platform.allocator) ClientStateError(m_platform));
+            }
+
+            return *this;
+        }
+
+        if (size == 0) {
+            u32 clientFrame = m_writeInfo.frame;
+            if (!isClientFrameValid(false, clientFrame)) {
+                break;
+            }
+
+            if (m_readInfo.info) {
+                m_readInfo.info->clientFrame = clientFrame;
+            }
+
+            break;
+        }
+
+        u32 offset = 0;
+        if (!ServerStateReader::isValid(buffer, size, offset)) {
+            return *(new (m_platform.allocator) ClientStateError(m_platform));
+        }
+        m_replayOffset = offset;
+
+        if (!ReplayStateReader::isValid(buffer, size, offset)) {
+            return *(new (m_platform.allocator) ClientStateError(m_platform));
+        }
+
+        if (m_platform.replay->client() && offset < size) {
+            offset = m_replayOffset;
+            ReplayStateReader::read(buffer, offset);
+        } else {
+            m_clientStates.reset();
+            if (m_serverFrame >= MinClientFrame) {
+                ReplayClientState *clientState = m_clientStates.emplaceBack();
+                clientState->serverFrame = m_serverFrame;
+                clientState->clientFrame = m_writeInfo.frame;
+            }
+        }
+
+        m_replayOffset = offset;
+
+        while (m_clientFrameBase + m_clientFrameOffset < m_writeInfo.frame &&
+                m_clientFrameOffset < m_clientStates.count()) {
+            m_clientFrameOffset++;
+        }
+
+        if (m_clientFrameOffset < m_clientStates.count()) {
+            const ReplayClientState &clientState = m_clientStates[m_clientFrameOffset];
+            m_readInfo.replayInputs = clientState.inputs;
+
+            if (!isFrameValid(false, clientState.serverFrame) ||
+                    !isClientFrameValid(false, clientState.clientFrame)) {
+                break;
+            }
+
+            offset = 0;
+            ServerStateReader::read(buffer, offset);
+
+            if (m_readInfo.info) {
+                m_readInfo.info->frame = clientState.serverFrame;
+                m_readInfo.info->clientFrame = clientState.clientFrame;
+            }
+
+            break;
+        }
+
+        m_platform.replay->seek(m_replayOffset);
+        m_serverFrame++;
+        m_clientFrameBase += m_clientStates.count();
+        m_clientFrameOffset = 0;
+    }
+
+    m_readInfo.ready = true;
+
+    if (!handler.clientStateRace(m_readInfo)) {
+        return *(new (m_platform.allocator) ClientStateError(m_platform));
+    }
+
+    return *this;
+}
+
+bool ClientStateRace::isFrameValid(bool isReplay, u16 frame) {
+    if (isReplay) {
+        return true;
+    } else {
+        const Optional<ReadInfo::Info> &info = m_readInfo.info;
+        return !info || frame >= info->frame;
+    }
+}
+
+bool ClientStateRace::isClientFrameValid(bool isReplay, u16 clientFrame) {
+    if (isReplay) {
+        return true;
+    } else if (clientFrame <= m_writeInfo.frame) {
+        const Optional<ReadInfo::Info> &info = m_readInfo.info;
+        return !info || clientFrame >= info->clientFrame;
+    } else {
+        return false;
+    }
 }

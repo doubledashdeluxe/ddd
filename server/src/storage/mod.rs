@@ -7,16 +7,14 @@ pub use crate::storage::worker::Worker;
 
 use std::fs::{self, DirEntry};
 use std::path::Path;
-use std::sync::mpsc::SyncSender;
+use std::sync::mpsc::{SyncSender, TrySendError};
 
 use anyhow::{Context, Result, anyhow};
-use heapless::Vec;
 use jiff::Timestamp;
 use jiff::tz::TimeZone;
 use scc::HashMap;
 
 use crate::dir_entry;
-use crate::formats::online::*;
 use crate::storage::init::Init;
 use crate::website::Init as WebsiteInit;
 
@@ -25,6 +23,7 @@ pub mod race;
 mod batch;
 mod init;
 mod player;
+mod replay;
 mod stats;
 mod worker;
 
@@ -84,6 +83,9 @@ impl Storage {
             website_init.stats.add(&race);
         }
 
+        let replays_path = path.join("replays");
+        fs::create_dir_all(&replays_path)?;
+
         let stats_path = path.join("stats");
         fs::create_dir_all(&stats_path)?;
         for entry in fs::read_dir(&stats_path)? {
@@ -104,13 +106,18 @@ impl Storage {
         self.players.read_sync(player_id, |_, player| f(Some(player))).unwrap_or_else(|| f(None))
     }
 
-    pub fn store(&self, players: Vec<Player, MAX_ROOM_PLAYER_COUNT>, race: Race) -> Result<()> {
-        for player in &players {
+    pub fn store(&self, batch: Batch) -> Option<Batch> {
+        for player in &batch.players {
             self.players.upsert_sync(player.id(), player.clone());
         }
 
-        let batch = Batch { players, race };
-        Ok(self.batch_sender.try_send(batch)?)
+        match self.batch_sender.try_send(batch) {
+            Err(TrySendError::Full(batch)) => Some(batch),
+            r => {
+                r.unwrap();
+                None
+            }
+        }
     }
 }
 

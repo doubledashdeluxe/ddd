@@ -304,7 +304,9 @@ void Result2D::SetGPClr() {
             break;
         }
         const OnlineInfo &onlineInfo = OnlineInfo::Instance();
-        if (onlineInfo.m_matchIndex + 1 < onlineInfo.m_matchCount) {
+        if (onlineInfo.m_isReplay) {
+            s_selector = PauseChoice::OnlineReplay;
+        } else if (onlineInfo.m_matchIndex + 1 < onlineInfo.m_matchCount) {
             s_selector = PauseChoice::PlayerList;
         } else {
             s_selector = PauseChoice::PersonalRoom;
@@ -399,7 +401,9 @@ void Result2D::selectorOnline(const KartGamePad *pad) {
     if (button.repeat() & (JUTGamePad::PAD_MSTICK_UP | JUTGamePad::PAD_MSTICK_DOWN)) {
         if (s_selector == PauseChoice::Title) {
             const OnlineInfo &onlineInfo = OnlineInfo::Instance();
-            if (onlineInfo.m_matchIndex < onlineInfo.m_matchCount) {
+            if (onlineInfo.m_isReplay) {
+                s_selector = PauseChoice::OnlineReplay;
+            } else if (onlineInfo.m_matchIndex < onlineInfo.m_matchCount) {
                 s_selector = PauseChoice::PlayerList;
             } else {
                 s_selector = PauseChoice::PersonalRoom;

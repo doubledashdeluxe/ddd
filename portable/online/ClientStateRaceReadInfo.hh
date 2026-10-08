@@ -42,6 +42,8 @@ struct ClientStateRaceReadInfo {
     };
 
     bool ok;
+    bool ready;
+    Array<u16, MaxClientPlayerCount> replayInputs;
     Optional<Info> info;
     u8 resultCount;
     Array<Result, MaxRoomKartCount> results;

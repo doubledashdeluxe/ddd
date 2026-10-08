@@ -17,8 +17,11 @@ class ClientStateRace
     , public ServerResultReader<ClientStateRace>
     , public ClientStateWriter<ClientStateRace>::Race
     , public ClientStateRaceWriter<ClientStateRace>
+    , public ClientRaceFramesWriter<ClientStateRace>
     , public ClientRaceKartWriter<ClientStateRace>
-    , public ItemEventWriter<ClientStateRace> {
+    , public ItemEventWriter<ClientStateRace>
+    , public ReplayStateReader<ClientStateRace>
+    , public ReplayClientStateReader<ClientStateRace> {
 public:
     ClientStateRace(const ClientPlatform &platform, ClientState &state,
             const ClientStateRaceWriteInfo &writeInfo);
@@ -116,12 +119,17 @@ public:
     ClientStateRaceWriter &raceWriter();
 
     u16 getFrame();
+    u32 getFramesCount();
+    ClientRaceFramesWriter &framesElementWriter(u32 i0);
     u32 getKartsCount();
     ClientRaceKartWriter &kartsElementWriter(u32 i0);
     u8 getItemCountsElement(u32 i0);
     u32 getDelayedFrames();
     u16 getLatency();
     u8 getStability();
+
+    u16 getServerFrame();
+    u16 getClientFrame();
 
     u32 getInputsCount();
     u32 getInputsCount(u32 i0);
@@ -147,13 +155,46 @@ public:
     s16 getEventPosX();
     s16 getEventPosZ();
 
+    bool isClientStatesCountValid(u32 clientStatesCount);
+    void setClientStatesCount(u32 clientStatesCount);
+    bool isClientStatesCountValid(u32 i0, u32 clientStatesCount);
+    void setClientStatesCount(u32 i0, u32 clientStatesCount);
+    ReplayClientStateReader *clientStatesElementReader(u32 i0, u32 i1);
+
+    bool isReplayServerFrameValid(u16 replayServerFrame);
+    void setReplayServerFrame(u16 replayServerFrame);
+    bool isReplayClientFrameValid(u16 replayClientFrame);
+    void setReplayClientFrame(u16 replayClientFrame);
+    bool isReplayInputsCountValid(u32 replayInputsCount);
+    void setReplayInputsCount(u32 replayInputsCount);
+    bool isReplayInputsElementValid(u32 i0, u16 replayInputsElement);
+    void setReplayInputsElement(u32 i0, u16 replayInputsElement);
+
 private:
     typedef ClientStateRaceReadInfo ReadInfo;
     typedef ClientStateRaceWriteInfo WriteInfo;
 
+    struct ReplayClientState {
+        u16 serverFrame;
+        u16 clientFrame;
+        Array<u16, MaxClientPlayerCount> inputs;
+    };
+
+    ClientState &readReplay(ClientReadHandler &handler);
+
+    bool isFrameValid(bool isReplay, u16 frame);
+    bool isClientFrameValid(bool isReplay, u16 clientFrame);
+
+    u32 m_frameIndex;
     u32 m_kartIndex;
     u32 m_itemEventIndex;
     u32 m_resultIndex;
     ReadInfo m_readInfo;
     WriteInfo m_writeInfo;
+    u32 m_clientIndex;
+    u32 m_stateIndex;
+    Ring<ReplayClientState, MaxKartInputCount> m_clientStates;
+    u32 m_serverFrame;
+    u32 m_clientFrameBase;
+    u32 m_clientFrameOffset;
 };

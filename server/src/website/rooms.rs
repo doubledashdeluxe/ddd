@@ -116,7 +116,7 @@ fn write_tr(
             td.attribute("colspan")?.value(2)?;
         }
         let mut td = td.children()?;
-        let id = PlayerId { client_pk: *kart.client_pk(), index: player.index() };
+        let id = PlayerId { client_pk: *kart.client_pk(), profile: player.profile };
         if let Some(number) = player_numbers.get(&id) {
             let mut a = td.element("a")?;
             let href = format_args!("players/{number}");

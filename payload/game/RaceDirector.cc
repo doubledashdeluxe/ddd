@@ -111,6 +111,9 @@ void RaceDirector::checkPauseChoice() {
     case PauseChoice::PlayerList:
         setPhaseWait(RacePhase::PlayerList, true, true, 35);
         return;
+    case PauseChoice::OnlineReplay:
+        setPhaseWait(RacePhase::OnlineReplay, true, true, 35);
+        return;
     }
 
     REPLACED(checkPauseChoice)();

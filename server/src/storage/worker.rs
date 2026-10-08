@@ -21,8 +21,9 @@ use crate::storage::batch::Batch;
 use crate::storage::init::Init;
 use crate::storage::player::{Id as PlayerId, Player};
 use crate::storage::race::Race;
+use crate::storage::replay;
 use crate::storage::stats::Stats;
-use crate::website::Message;
+use crate::website::{Batch as WebsiteBatch, Message};
 
 #[derive(Debug)]
 pub struct Worker {
@@ -90,8 +91,14 @@ impl Worker {
                 }
                 self.write_race(&mut batch.race).log_err();
 
-                self.website_message_sender.try_send(Message::Batch(batch.clone())).log_err();
-                self.webhook_race_sender.try_send(batch.race).log_err();
+                let players = batch.players.clone();
+                let race = batch.race.clone();
+
+                self.write_replay(batch).log_err();
+
+                let website_batch = WebsiteBatch { players, race: race.clone() };
+                self.website_message_sender.try_send(Message::Batch(website_batch)).log_err();
+                self.webhook_race_sender.try_send(race).log_err();
 
                 continue;
             }
@@ -116,34 +123,71 @@ impl Worker {
 
     fn write_player(&mut self, player: &mut Player) -> Result<()> {
         player.number = self.player_number(player.id());
-        self.write(player, player.number, "players")
+        self.write_json(player, player.number, "players")
     }
 
     fn write_race(&mut self, race: &mut Race) -> Result<()> {
         race.room_number = self.room_number(race.room_id);
         for kart in &mut race.karts {
             for player in &mut kart.players {
-                let player_id = PlayerId { client_pk: kart.client_pk, index: player.index };
+                let player_id = PlayerId { client_pk: kart.client_pk, profile: player.profile };
                 player.number = self.player_number(player_id);
             }
         }
         race.number = self.race_number;
         self.race_number = race.number.strict_add(1);
-        self.write(race, race.number, "matches")
+        self.write_json(race, race.number, "matches")
     }
 
     fn write_stats(&mut self, stats: &Stats) -> Result<()> {
-        self.write(stats, stats.dt.strftime("%Y-%m-%dT%H:%M"), "stats")
+        self.write_json(stats, stats.dt.strftime("%Y-%m-%dT%H:%M"), "stats")
     }
 
-    fn write<T: Serialize>(&mut self, x: &T, stem: impl Display, dir: &str) -> Result<()> {
+    fn write_json<T: Serialize>(&mut self, x: &T, stem: impl Display, dir: &str) -> Result<()> {
+        self.write(
+            stem,
+            "json",
+            |buf| {
+                let formatter = PrettyFormatter::with_indent(b"    ");
+                let mut serializer = Serializer::with_formatter(buf, formatter);
+                Ok(x.serialize(&mut serializer)?)
+            },
+            dir,
+        )
+    }
+
+    fn player_number(&mut self, player_id: PlayerId) -> u64 {
+        number(&mut self.player_numbers, &mut self.player_number, player_id)
+    }
+
+    fn room_number(&mut self, room_id: u128) -> u64 {
+        number(&mut self.room_numbers, &mut self.room_number, room_id)
+    }
+
+    fn write_replay(&mut self, batch: Batch) -> Result<()> {
+        self.write(
+            batch.race.number,
+            "gkr",
+            |buf| {
+                replay::write(batch, buf);
+                Ok(())
+            },
+            "replays",
+        )
+    }
+
+    fn write(
+        &mut self,
+        stem: impl Display,
+        ext: &str,
+        write: impl FnOnce(&mut Vec<u8>) -> Result<()>,
+        dir: &str,
+    ) -> Result<()> {
         self.buf.clear();
-        let formatter = PrettyFormatter::with_indent(b"    ");
-        let mut serializer = Serializer::with_formatter(&mut self.buf, formatter);
-        x.serialize(&mut serializer)?;
+        write(&mut self.buf)?;
 
         self.file_name_buf.clear();
-        write!(self.file_name_buf, "{stem}.json")?;
+        write!(self.file_name_buf, "{stem}.{ext}")?;
 
         self.tmp_path.clone_into(&mut self.tmp_path_buf);
         self.tmp_path_buf.push(&self.file_name_buf);
@@ -156,14 +200,6 @@ impl Worker {
         fs::rename(&self.tmp_path_buf, &self.path_buf)?;
 
         Ok(())
-    }
-
-    fn player_number(&mut self, player_id: PlayerId) -> u64 {
-        number(&mut self.player_numbers, &mut self.player_number, player_id)
-    }
-
-    fn room_number(&mut self, room_id: u128) -> u64 {
-        number(&mut self.room_numbers, &mut self.room_number, room_id)
     }
 }
 

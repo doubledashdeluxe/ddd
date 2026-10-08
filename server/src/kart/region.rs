@@ -45,3 +45,14 @@ impl From<u8> for Region {
         }
     }
 }
+
+impl From<Region> for u8 {
+    fn from(region: Region) -> Self {
+        match region {
+            Region::Pal => b'P',
+            Region::NtscU => b'E',
+            Region::NtscJ => b'J',
+            Region::Unknown => b'?',
+        }
+    }
+}

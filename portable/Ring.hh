@@ -6,6 +6,8 @@
 template <typename T, size_t N>
 class Ring {
 public:
+    static const size_t Capacity = N;
+
     Ring() : m_front(0), m_count(0) {}
 
     ~Ring() {

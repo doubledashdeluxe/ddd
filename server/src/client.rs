@@ -149,9 +149,11 @@ impl Client {
                 State::Update { identity, state: update.client_update_state }
             }
             (ClientState::Mode(_), Some(identity), _) => {
-                let mmrs = (0..identity.players.len())
-                    .map(|i| {
-                        let id = PlayerId { client_pk: self.pk, index: i as u8 };
+                let mmrs = identity
+                    .players
+                    .iter()
+                    .map(|player| {
+                        let id = PlayerId { client_pk: self.pk, profile: player.profile };
                         storage
                             .read_player(&id, |player| player.map(|p| p.mmrs.clone()))
                             .unwrap_or_default()
@@ -171,9 +173,11 @@ impl Client {
                             let player = |i| {
                                 let index = i as u8;
                                 let player: &ClientPlayer = &players[i];
+                                let profile = player.profile;
                                 let name = player.name;
-                                let id = PlayerId { client_pk: self.pk, index };
+                                let id = PlayerId { client_pk: self.pk, profile };
                                 storage.read_player(&id, |player| Player {
+                                    profile,
                                     player: ServerPlayer { index, name },
                                     mmrs: player.map_or(LinearMap::new(), |p| p.mmrs.clone()),
                                     match_count: player.map_or(0, |p| p.race_count),
@@ -445,39 +449,11 @@ impl Client {
             State::Room { room_info, .. } => {
                 let server_room_state = match room_info {
                     Some(room_info) => {
-                        let main = rooms.read(&room_info.id, |room| {
-                            let karts = room
-                                .karts()
-                                .iter()
-                                .map(|kart| {
-                                    let local = (kart.client_pk() == &self.pk).into();
-                                    let players = kart
-                                        .players()
-                                        .iter()
-                                        .map(|player| player.player.clone())
-                                        .collect();
-                                    ServerKart {
-                                        local,
-                                        players,
-                                        mmr: kart.mmr(room.mode_index()),
-                                        points: kart.points,
-                                    }
-                                })
-                                .collect();
-                            let pack = room.pack();
-                            ServerRoomStateMain {
-                                karts,
-                                spectator_count: room.spectator_count() as u16,
-                                mode_index: room.mode_index(),
-                                pack_course_count: pack.courses().len() as u8,
-                                pack_hash: *pack.hash(),
-                                room_counter: room_info.counter,
-                                room_code: room.code().unwrap_or(u64::MAX),
-                                spectating_counter: room_info.spectating_counter,
-                                spectating: room_info.spectating.into(),
-                                options: room.options().clone(),
-                                continuing: room.has_room_lock().into(),
-                            }
+                        let main = rooms.read(&room_info.id, |room| ServerRoomStateMain {
+                            room_counter: room_info.counter,
+                            spectating_counter: room_info.spectating_counter,
+                            spectating: room_info.spectating.into(),
+                            ..room.room_state(&self.pk)
                         });
                         let Ok(main) = main else {
                             return Ok(None);

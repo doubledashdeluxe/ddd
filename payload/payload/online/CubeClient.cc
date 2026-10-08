@@ -4,57 +4,30 @@
 #include "payload/network/CubeDNS.hh"
 #include "payload/network/CubeNetwork.hh"
 #include "payload/online/ClientK.hh"
+#include "payload/online/CubeReplay.hh"
 #include "payload/online/CubeServerManager.hh"
 
 #include <jsystem/JKRExpHeap.hh>
+#include <portable/online/ClientStateError.hh>
 #include <portable/online/ClientStateIdle.hh>
 
 void CubeClient::reset() {
+    m_state.reset();
+    m_platform.replay.reset();
     updateState(*(new (m_platform.allocator) ClientStateIdle(m_platform)));
 }
 
+void CubeClient::setReplay(const ReplayManager::Replay &replay, u32 clientIndex) {
+    reset();
+    m_platform.replay.reset(new (m_platform.allocator) CubeReplay(replay, clientIndex));
+}
+
 void CubeClient::read(ClientReadHandler &handler) {
-    while (updateState(m_state->read(handler))) {}
-}
-
-void CubeClient::write(const ClientStateIdleWriteInfo &writeInfo) {
-    while (updateState(m_state->write(writeInfo))) {}
-}
-
-void CubeClient::write(const ClientStateServerWriteInfo &writeInfo) {
-    while (updateState(m_state->write(writeInfo))) {}
-}
-
-void CubeClient::write(const ClientStateUpdateWriteInfo &writeInfo) {
-    while (updateState(m_state->write(writeInfo))) {}
-}
-
-void CubeClient::write(const ClientStateModeWriteInfo &writeInfo) {
-    while (updateState(m_state->write(writeInfo))) {}
-}
-
-void CubeClient::write(const ClientStatePackWriteInfo &writeInfo) {
-    while (updateState(m_state->write(writeInfo))) {}
-}
-
-void CubeClient::write(const ClientStateRoomWriteInfo &writeInfo) {
-    while (updateState(m_state->write(writeInfo))) {}
-}
-
-void CubeClient::write(const ClientStateTeamWriteInfo &writeInfo) {
-    while (updateState(m_state->write(writeInfo))) {}
-}
-
-void CubeClient::write(const ClientStatePollWriteInfo &writeInfo) {
-    while (updateState(m_state->write(writeInfo))) {}
-}
-
-void CubeClient::write(const ClientStateRaceWriteInfo &writeInfo) {
-    while (updateState(m_state->write(writeInfo))) {}
-}
-
-void CubeClient::write(const ClientStateErrorWriteInfo &writeInfo) {
-    while (updateState(m_state->write(writeInfo))) {}
+    do {
+        if (!m_state->ok()) {
+            updateState(*(new (m_platform.allocator) ClientStateError(m_platform)));
+        }
+    } while (updateState(m_state->read(handler)));
 }
 
 void CubeClient::Init(JKRHeap *heap, SOConfig &config) {
@@ -79,11 +52,11 @@ bool CubeClient::updateState(ClientState &nextState) {
         m_state.reset(&nextState);
     }
 
-    if (nextState.needsSockets()) {
+    if (m_platform.replay || !nextState.needsSockets()) {
+        CubeNetwork::Instance().ensureStopped();
+    } else {
         m_config.flag = 1 << 0;
         CubeNetwork::Instance().ensureStarted(m_config);
-    } else {
-        CubeNetwork::Instance().ensureStopped();
     }
 
     return hasChanged;

@@ -29,6 +29,9 @@ private:
     void idle();
     void scrollUp();
     void scrollDown();
+    void selectIn();
+    void selectOut();
+    void select();
     void nextScene();
 
     void stateWait();
@@ -37,9 +40,12 @@ private:
     void stateIdle();
     void stateScrollUp();
     void stateScrollDown();
+    void stateSelectIn();
+    void stateSelectOut();
+    void stateSelect();
     void stateNextScene();
 
-    void refreshReplays();
+    void refreshReplays(bool playerColors);
     void showReplays(s32 rowOffset);
     void showArrows(s32 rowOffset);
     void hideArrows();
@@ -55,6 +61,8 @@ private:
     u32 m_replayCount;
     u32 m_replayIndex;
     u32 m_rowIndex;
+    u32 m_clientCount;
+    u32 m_clientIndex;
     u32 m_nextScene;
     J2DScreen m_mainScreen;
     J2DScreen m_downloadScreen;

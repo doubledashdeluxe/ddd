@@ -19,7 +19,7 @@ pub struct Player {
     pub number: u64,
     #[serde(with = "base64")]
     pub client_pk: PublicKey,
-    pub index: u8,
+    pub profile: u8,
     pub name: Name,
     pub mmrs: LinearMap<ModeIndex, u16, MODE_INDEX_COUNT>,
     #[serde(rename = "match_count")]
@@ -30,6 +30,6 @@ pub struct Player {
 
 impl Player {
     pub const fn id(&self) -> Id {
-        Id { client_pk: self.client_pk, index: self.index }
+        Id { client_pk: self.client_pk, profile: self.profile }
     }
 }

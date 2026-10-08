@@ -55,6 +55,7 @@ private:
 
     static u32 NextScene(u32 entryIndex);
     static u32 SoundID(u32 entryIndex);
+    static bool IsOnline(u32 entryIndex);
 
     State m_state;
     u32 m_timeBeforeDemo;

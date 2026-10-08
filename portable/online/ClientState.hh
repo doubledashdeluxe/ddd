@@ -40,7 +40,6 @@ public:
         }
     };
 
-    ClientState(const ClientPlatform &platform, ClientState *state);
     virtual ~ClientState();
     virtual bool needsSockets() = 0;
     virtual ClientState &read(ClientReadHandler &handler) = 0;
@@ -55,7 +54,10 @@ public:
     virtual ClientState &write(const ClientStateRaceWriteInfo &writeInfo);
     virtual ClientState &write(const ClientStateErrorWriteInfo &writeInfo);
 
+    bool ok() const;
+
 protected:
+    ClientState(const ClientPlatform &platform, ClientState *state);
     void read(ConnectionState::Reader &reader);
     void write(ConnectionState::Writer &writer);
 
@@ -65,6 +67,8 @@ private:
 protected:
     const ClientPlatform &m_platform;
     Ring<UniquePtr<Connection>, MaxServerCount> m_connections;
+    bool m_ok;
     u32 m_readIndex;
     u32 m_writeIndex;
+    u32 m_replayOffset;
 };

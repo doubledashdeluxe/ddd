@@ -4,6 +4,7 @@
 #include "game/KartCtrl.hh"
 #include "game/OnlineInfo.hh"
 #include "game/OnlineTimer.hh"
+#include "game/PauseManager.hh"
 #include "game/RaceClient.hh"
 #include "game/RaceInfo.hh"
 #include "game/RaceMode.hh"
@@ -48,7 +49,11 @@ void RaceApp::calc() {
         return;
     }
 
-    raceClient->read();
+    bool paused = OnlineInfo::Instance().m_isReplay && PauseManager::Instance()->paused();
+
+    if (!paused) {
+        raceClient->read();
+    }
 
     s32 adjustment = 0;
     s32 drift = raceClient->drift();
@@ -67,7 +72,11 @@ void RaceApp::calc() {
         u32 serverFrame = raceClient->serverFrame();
         adjustment = Min<s32>(adjustment, serverFrame - RaceClient::Frame() + 30 - 1);
     }
-    raceClient->adjustDrift(adjustment);
+    if (raceClient->ready() && !paused) {
+        raceClient->adjustDrift(adjustment);
+    } else {
+        adjustment = -1;
+    }
     do {
         if (adjustment >= 0) {
             raceClient->calcBefore();
@@ -85,7 +94,9 @@ void RaceApp::calc() {
         }
     } while (adjustment-- > 0);
 
-    raceClient->write();
+    if (raceClient->ready() && !paused) {
+        raceClient->write();
+    }
 }
 
 void RaceApp::ctrlRace() {
@@ -109,6 +120,10 @@ void RaceApp::ctrlRace() {
         break;
     case RacePhase::PlayerList:
         m_nextScene = SceneType::PlayerList;
+        m_state = 3;
+        break;
+    case RacePhase::OnlineReplay:
+        m_nextScene = SceneType::Replay;
         m_state = 3;
         break;
     }

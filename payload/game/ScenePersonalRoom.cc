@@ -164,6 +164,7 @@ ScenePersonalRoom::~ScenePersonalRoom() {}
 
 void ScenePersonalRoom::init() {
     OnlineInfo &onlineInfo = OnlineInfo::Instance();
+    m_isReplay = onlineInfo.m_isReplay;
     m_isSearch = onlineInfo.m_roomType == RoomType::Worldwide;
     m_isHost = onlineInfo.m_isHost;
     m_canContinue = true;
@@ -175,7 +176,7 @@ void ScenePersonalRoom::init() {
     m_entryIndex = 0;
 
     s32 prevScene = SequenceApp::Instance()->prevScene();
-    if (prevScene != SceneType::None) {
+    if (prevScene != SceneType::None && !m_isReplay) {
         onlineInfo.m_roomCounter++;
     }
 
@@ -381,6 +382,10 @@ void ScenePersonalRoom::calc() {
     client->write(m_writeInfo);
 }
 
+bool ScenePersonalRoom::clientStateIdle(const ClientStateIdleReadInfo & /* readInfo */) {
+    return true;
+}
+
 bool ScenePersonalRoom::clientStateMode(const ClientStateModeReadInfo & /* readInfo */) {
     return true;
 }
@@ -478,7 +483,10 @@ bool ScenePersonalRoom::clientStateRoom(const ClientStateRoomReadInfo &readInfo)
     onlineInfo.m_localKartCount = localKartCount;
     onlineInfo.m_localPlayerCount = localPlayerCount;
     if (info->spectating) {
-        m_ok = m_ok && localKartCount == 0 && info->spectatorCount >= sequenceInfo.m_padCount;
+        m_ok = m_ok && localKartCount == 0;
+        if (!m_isReplay) {
+            m_ok = m_ok && info->spectatorCount >= sequenceInfo.m_padCount;
+        }
     } else {
         if (info->continuing && info->options.format == RoomOptionFormat::Duel) {
             m_ok = m_ok && localKartCount <= sequenceInfo.m_statusCount;
@@ -515,14 +523,7 @@ bool ScenePersonalRoom::clientStateRoom(const ClientStateRoomReadInfo &readInfo)
             m_ok = false;
         }
     }
-    if (m_isHost) {
-        m_canContinue = true;
-        for (u32 i = 0; i < m_optionCount; i++) {
-            u32 serverValue = RoomOption::Read(m_options[i], info->options);
-            u32 clientValue = RoomOption::Read(m_options[i], m_writeInfo.options);
-            m_canContinue = m_canContinue && serverValue == clientValue;
-        }
-    } else {
+    if (m_isReplay || !m_isHost) {
         for (u32 i = 0; i < m_optionCount; i++) {
             u8 value = RoomOption::Read(m_options[i], info->options);
             s32 direction = RoomOption::Direction(m_options[i], m_values[i], value);
@@ -545,6 +546,13 @@ bool ScenePersonalRoom::clientStateRoom(const ClientStateRoomReadInfo &readInfo)
                 m_entryIndex = MaxEntryCount - 1;
             }
             GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CURSOL);
+        }
+    } else {
+        m_canContinue = true;
+        for (u32 i = 0; i < m_optionCount; i++) {
+            u32 serverValue = RoomOption::Read(m_options[i], info->options);
+            u32 clientValue = RoomOption::Read(m_options[i], m_writeInfo.options);
+            m_canContinue = m_canContinue && serverValue == clientValue;
         }
     }
 
@@ -602,6 +610,18 @@ bool ScenePersonalRoom::clientStateRoom(const ClientStateRoomReadInfo &readInfo)
 
     if (!m_ok) {
         return true;
+    }
+
+    for (u32 i = 0; i < Min<u32>(localKartCount * 2, 4); i++) {
+        u32 j = i % localKartCount;
+        u32 k = i / localKartCount;
+        if (i < sequenceInfo.m_padCount) {
+            u32 l = Min(j * 2 + k, i + sequenceInfo.m_padCount - localKartCount);
+            if (k == 0) {
+                onlineInfo.m_padIndices[j][0] = l;
+            }
+            onlineInfo.m_padIndices[j][1] = l;
+        }
     }
 
     RaceInfo &raceInfo = RaceInfo::Instance();
@@ -668,7 +688,9 @@ void ScenePersonalRoom::nextScene() {
 void ScenePersonalRoom::stateWait() {
     const JUTGamePad::CButton &button = KartGamePad::GamePad(0)->button();
     if (button.risingEdge() & PAD_BUTTON_B || !m_ok) {
-        if (m_isSearch) {
+        if (m_isReplay) {
+            m_nextScene = SceneType::Replay;
+        } else if (m_isSearch) {
             m_nextScene = SceneType::FormatSelect;
         } else {
             m_nextScene = m_isHost ? SceneType::PackSelect : SceneType::RoomCodeEnter;
@@ -676,7 +698,7 @@ void ScenePersonalRoom::stateWait() {
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CANCEL_LITTLE);
         slideOut();
     } else if (m_isReady) {
-        if (m_isSearch) {
+        if (m_isReplay || m_isSearch) {
             if (OnlineInfo::Instance().m_isFFA) {
                 m_nextScene = SceneType::PlayerList;
             } else {
@@ -720,7 +742,11 @@ void ScenePersonalRoom::stateIdle() {
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE_LITTLE);
         slideOut();
     } else if (button.risingEdge() & PAD_BUTTON_B || !m_ok) {
-        m_nextScene = SceneType::RoomTypeSelect;
+        if (m_isReplay) {
+            m_nextScene = SceneType::Replay;
+        } else {
+            m_nextScene = SceneType::RoomTypeSelect;
+        }
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CANCEL_LITTLE);
         slideOut();
     } else if (button.risingEdge() & (PAD_BUTTON_Y | PAD_BUTTON_X)) {
@@ -781,7 +807,9 @@ void ScenePersonalRoom::stateNextScene() {
     const JUTGamePad::CButton &button = KartGamePad::GamePad(0)->button();
     if (m_nextScene == SceneType::TeamSelect || m_nextScene == SceneType::PlayerList) {
         if (button.risingEdge() & PAD_BUTTON_B || !m_ok) {
-            if (m_isSearch) {
+            if (m_isReplay) {
+                m_nextScene = SceneType::Replay;
+            } else if (m_isSearch) {
                 m_nextScene = SceneType::FormatSelect;
             } else {
                 m_nextScene = SceneType::RoomTypeSelect;

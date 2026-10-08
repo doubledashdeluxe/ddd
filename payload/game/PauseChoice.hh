@@ -4,11 +4,12 @@ class PauseChoice {
 public:
     enum {
         // ...
-        Title = 0x8,
+        Title = 0x08,
         // ...
-        None = 0xd,
-        PersonalRoom = 0xe, // Added
-        PlayerList = 0xf,   // Added
+        None = 0x0d,
+        PersonalRoom = 0x0e, // Added
+        PlayerList = 0x0f,   // Added
+        OnlineReplay = 0x10, // Added
     };
 
 private:

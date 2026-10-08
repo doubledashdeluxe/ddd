@@ -7,6 +7,11 @@
 #include <formats/Online.hh>
 
 struct ClientStateRaceWriteInfo {
+    struct Frames {
+        u16 serverFrame;
+        u16 clientFrame;
+    };
+
     typedef Array<u16, MaxKartPlayerCount> Inputs;
 
     struct Kart {
@@ -29,6 +34,7 @@ struct ClientStateRaceWriteInfo {
 
     u8 matchIndex;
     u16 frame;
+    Ring<Frames, MaxKartInputCount> frames;
     u8 kartCount;
     Array<Kart, MaxClientKartCount> karts;
     Array<u16, 16> itemCounts;

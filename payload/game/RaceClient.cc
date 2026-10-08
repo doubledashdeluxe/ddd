@@ -20,6 +20,10 @@ bool RaceClient::ok() const {
     return m_ok;
 }
 
+bool RaceClient::ready() const {
+    return m_ready;
+}
+
 u16 RaceClient::serverFrame() const {
     return m_serverFrame;
 }
@@ -131,6 +135,10 @@ void RaceClient::calcBefore() {
 void RaceClient::calcAfter() {
     const OnlineInfo &onlineInfo = OnlineInfo::Instance();
     u32 frame = Frame();
+    while (m_writeInfo.frames.count() >= frame - m_clientFrame) {
+        assert(m_writeInfo.frames.popFront());
+    }
+    m_writeInfo.frames.pushBack((WriteInfo::Frames){m_serverFrame, m_clientFrame});
     for (u32 i = 0; i < m_writeInfo.kartCount; i++) {
         WriteInfo::Kart &kart = m_writeInfo.karts[i];
         while (kart.inputs.count() >= frame - m_clientFrame) {
@@ -240,6 +248,7 @@ bool RaceClient::RankedKartIndexComparator::operator()(const u32 &a, const u32 &
 
 RaceClient::RaceClient()
     : m_ok(true)
+    , m_ready(true)
     , m_serverFrame(0)
     , m_clientFrame(MinClientFrame - 1)
     , m_latency(0)
@@ -279,6 +288,20 @@ bool RaceClient::clientStatePoll(const ClientStatePollReadInfo & /* readInfo */)
 
 bool RaceClient::clientStateRace(const ClientStateRaceReadInfo &readInfo) {
     m_ok = m_ok && readInfo.ok;
+
+    m_ready = readInfo.ready;
+    if (!m_ready) {
+        return true;
+    }
+
+    const OnlineInfo &onlineInfo = OnlineInfo::Instance();
+    if (onlineInfo.m_isReplay) {
+        for (u32 i = 0; i < onlineInfo.m_localPlayerCount; i++) {
+            KartGamePad *pad = KartGamePad::KartPad(i);
+            pad->expand(readInfo.replayInputs[i]);
+        }
+    }
+
     const Optional<ReadInfo::Info> &info = readInfo.info;
     if (!info) {
         return true;
@@ -303,7 +326,6 @@ bool RaceClient::clientStateRace(const ClientStateRaceReadInfo &readInfo) {
     m_clientFrame = info->clientFrame;
     m_endFrame = info->endFrame;
 
-    const OnlineInfo &onlineInfo = OnlineInfo::Instance();
     const RaceInfo &raceInfo = RaceInfo::Instance();
     u32 kartCount = raceInfo.getKartCount();
     const RaceMgr *raceMgr = RaceMgr::Instance();
@@ -322,8 +344,10 @@ bool RaceClient::clientStateRace(const ClientStateRaceReadInfo &readInfo) {
                 }
             }
         }
-        kartDiff.itemFrames = kart.itemFrames;
-        kartDiff.itemIDs = kart.itemIDs;
+        if (onlineInfo.m_isDuel || onlineInfo.m_karts[i].local) {
+            kartDiff.itemFrames = kart.itemFrames;
+            kartDiff.itemIDs = kart.itemIDs;
+        }
         KartChecker *kartChecker = raceMgr->kartChecker(i);
         bool raceEnd = kart.lap == 0;
         u8 lap = raceEnd ? kartChecker->lapCount() : kart.lap - 1;

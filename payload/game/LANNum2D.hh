@@ -12,6 +12,7 @@ public:
     REPLACE void start2();
 
 private:
+    void startOnline();
     void setText(const char *prefix, const char *text);
 
     u8 _000[0x074 - 0x000];

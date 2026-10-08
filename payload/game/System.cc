@@ -22,6 +22,7 @@ extern "C" {
 #include <payload/DOLBinary.hh>
 #include <payload/PayloadBinary.hh>
 #include <payload/PerfOverlay.hh>
+#include <payload/online/CubeReplayManager.hh>
 #include <payload/online/CubeServerManager.hh>
 #include <portable/Log.hh>
 
@@ -48,8 +49,11 @@ void System::Init() {
     DEBUG("%p %p mainD.dol", DOLBinary::CtorsSectionStart(), DOLBinary::End());
     DEBUG("%p %p payloadD.bin", PayloadBinary::CtorsSectionStart(), PayloadBinary::End());
     const u8 *serverManagerStart = reinterpret_cast<u8 *>(CubeServerManager::Instance());
-    const u8 *serverManagerEnd = serverManagerStart + sizeof(ServerManager);
+    const u8 *serverManagerEnd = serverManagerStart + sizeof(CubeServerManager);
     DEBUG("%p %p ServerManager", serverManagerStart, serverManagerEnd);
+    const u8 *replayManagerStart = reinterpret_cast<u8 *>(CubeReplayManager::Instance());
+    const u8 *replayManagerEnd = replayManagerStart + sizeof(CubeReplayManager);
+    DEBUG("%p %p ReplayManager", replayManagerStart, replayManagerEnd);
     const JKRHeap *systemHeap = JKRHeap::GetSystemHeap();
     DEBUG("%p %p SystemHeap", systemHeap->getStartAddr(), systemHeap->getEndAddr());
     DEBUG("%p %p AppHeap", s_appHeap->getStartAddr(), s_appHeap->getEndAddr());

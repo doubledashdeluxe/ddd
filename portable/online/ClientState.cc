@@ -2,18 +2,6 @@
 
 #include "portable/online/ClientStateError.hh"
 
-ClientState::ClientState(const ClientPlatform &platform, ClientState *state)
-    : m_platform(platform)
-    , m_readIndex(0)
-    , m_writeIndex(0) {
-    if (state) {
-        UniquePtr<Connection> *connection = state->m_connections.front();
-        if (connection) {
-            m_connections.emplaceBack()->reset(connection->release());
-        }
-    }
-}
-
 ClientState::~ClientState() {}
 
 ClientState &ClientState::write(const ClientStateIdleWriteInfo & /* writeInfo */) {
@@ -56,7 +44,52 @@ ClientState &ClientState::write(const ClientStateErrorWriteInfo & /* writeInfo *
     return *(new (m_platform.allocator) ClientStateError(m_platform));
 }
 
+bool ClientState::ok() const {
+    return m_ok;
+}
+
+ClientState::ClientState(const ClientPlatform &platform, ClientState *state)
+    : m_platform(platform)
+    , m_ok(true)
+    , m_readIndex(0)
+    , m_writeIndex(0)
+    , m_replayOffset(0) {
+    if (state) {
+        UniquePtr<Connection> *connection = state->m_connections.front();
+        if (connection) {
+            m_connections.emplaceBack()->reset(connection->release());
+        }
+        m_ok = state->m_ok;
+        if (m_platform.replay) {
+            m_platform.replay->seek(state->m_replayOffset);
+        }
+    }
+}
+
 void ClientState::read(ConnectionState::Reader &reader) {
+    if (m_platform.replay) {
+        if (!m_platform.replay->ok()) {
+            m_ok = false;
+            return;
+        }
+
+        u8 buffer[BufferSize];
+        u32 size = Count(buffer);
+        if (!m_platform.replay->read(buffer, size)) {
+            return;
+        }
+
+        u32 offset = 0;
+        if (!reader.isValid(buffer, size, offset)) {
+            return;
+        }
+        offset = 0;
+        reader.read(buffer, offset);
+        m_replayOffset = offset;
+
+        return;
+    }
+
     checkSocket();
 
     if (m_connections.empty()) {
@@ -80,6 +113,10 @@ void ClientState::read(ConnectionState::Reader &reader) {
 }
 
 void ClientState::write(ConnectionState::Writer &writer) {
+    if (m_platform.replay) {
+        return;
+    }
+
     checkSocket();
 
     if (m_connections.empty()) {

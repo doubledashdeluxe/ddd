@@ -25,8 +25,16 @@ ClientState &ClientStateRoom::read(ClientReadHandler &handler) {
 
     Optional<ReadInfo::Info> &info = m_readInfo.info;
     if (info) {
+        const ReplayManager::Client *client = nullptr;
+        if (m_platform.replay) {
+            client = m_platform.replay->client();
+        }
         for (u32 i = 0; i < info->kartCount; i++) {
             Kart &kart = info->karts[i];
+            if (m_platform.replay) {
+                u8 localKartFlags = client ? client->kartFlags : 0;
+                kart.local = localKartFlags >> i & 1;
+            }
             for (u32 j = 0; j < kart.players.count(); j++) {
                 Player &player = kart.players[j];
                 if (j < kart.playerCount) {
@@ -36,6 +44,9 @@ ClientState &ClientStateRoom::read(ClientReadHandler &handler) {
                     player.name = "   ";
                 }
             }
+        }
+        if (m_platform.replay) {
+            info->spectating = !client;
         }
     }
 
@@ -47,11 +58,19 @@ ClientState &ClientStateRoom::read(ClientReadHandler &handler) {
 }
 
 ClientState &ClientStateRoom::write(const ClientStateModeWriteInfo &writeInfo) {
+    if (m_platform.replay) {
+        return *(new (m_platform.allocator) ClientStateError(m_platform));
+    }
+
     u8 playerCount = writeInfo.playerCount;
     return *(new (m_platform.allocator) ClientStateMode(m_platform, *this, playerCount));
 }
 
 ClientState &ClientStateRoom::write(const ClientStatePackWriteInfo &writeInfo) {
+    if (m_platform.replay) {
+        return *(new (m_platform.allocator) ClientStateError(m_platform));
+    }
+
     return *(new (m_platform.allocator) ClientStatePack(m_platform, *this, writeInfo));
 }
 
@@ -216,8 +235,12 @@ void ClientStateRoom::setSpectatingCounter(u32 spectatingCounter) {
 }
 
 bool ClientStateRoom::isSpectatingValid(u8 spectating) {
-    const Optional<ReadInfo::Info> &info = m_readInfo.info;
-    return !info || !info->continuing || spectating == info->spectating;
+    if (m_platform.replay) {
+        return true;
+    } else {
+        const Optional<ReadInfo::Info> &info = m_readInfo.info;
+        return !info || !info->continuing || spectating == info->spectating;
+    }
 }
 
 void ClientStateRoom::setSpectating(u8 spectating) {
@@ -238,8 +261,12 @@ void ClientStateRoom::setContinuing(u8 continuing) {
 }
 
 bool ClientStateRoom::isLocalValid(u8 local) {
-    const Optional<ReadInfo::Info> &info = m_readInfo.info;
-    return !info || !info->continuing || local == info->karts[m_kartIndex].local;
+    if (m_platform.replay) {
+        return true;
+    } else {
+        const Optional<ReadInfo::Info> &info = m_readInfo.info;
+        return !info || !info->continuing || local == info->karts[m_kartIndex].local;
+    }
 }
 
 void ClientStateRoom::setLocal(u8 local) {

@@ -31,3 +31,9 @@ impl From<Vec<u8, MAX_PLATFORM_LENGTH>> for Platform {
         Self(platform)
     }
 }
+
+impl From<Platform> for Vec<u8, MAX_PLATFORM_LENGTH> {
+    fn from(platform: Platform) -> Self {
+        platform.0.into_bytes()
+    }
+}

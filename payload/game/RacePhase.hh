@@ -16,6 +16,7 @@ public:
         Ending = 19,
         PersonalRoom = 20, // Added
         PlayerList = 21,   // Added
+        OnlineReplay = 22, // Added
     };
 
 private:

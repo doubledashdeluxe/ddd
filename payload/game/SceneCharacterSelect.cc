@@ -169,15 +169,12 @@ void SceneCharacterSelect::init() {
         if (i < m_padCount) {
             u32 l = Min(j * 2 + k, i + m_padCount - m_statusCount);
             m_statuses[l] = j;
-            if (k == 0) {
-                m_pads[j][0] = l;
-            }
-            m_pads[j][1] = l;
             Array<char, 32> name;
             snprintf(name.values(), name.count(), "SC_P%lu_u.bti", l + 1);
             picture->changeTexture(name.values(), 0);
         }
     }
+    m_pads = onlineInfo.m_padIndices;
     m_characterIndices.fill(CharacterID::Count);
     if (onlineInfo.m_hasIDs) {
         m_characterIDs = onlineInfo.m_characterIDs;

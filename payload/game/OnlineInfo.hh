@@ -8,9 +8,11 @@ public:
     u32 colorIndex(u32 kartIndex) const;
 
     void reset();
+    void setLocalKarts();
 
     static OnlineInfo &Instance();
 
+    bool m_isReplay;
     Array<u32, 4> m_profileIndices;
     Array<Array<char, 4>, 4> m_names;
     u32 m_partitionIndex;

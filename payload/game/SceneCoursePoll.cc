@@ -338,9 +338,18 @@ bool SceneCoursePoll::clientStatePoll(const ClientStatePollReadInfo &readInfo) {
         if (onlineInfo.m_karts[kartIndex].local) {
             u32 kartLocalIndex = onlineInfo.m_kartLocalIndices[kartIndex];
             const Array<u8, 2> &padIndices = onlineInfo.m_padIndices[kartLocalIndex];
-            frontPad = KartGamePad::GamePad(padIndices[0]);
-            if (padIndices[1] != padIndices[0]) {
-                backPad = KartGamePad::GamePad(padIndices[1]);
+            if (onlineInfo.m_isReplay) {
+                frontPad = KartGamePad::KartPad(padIndices[0]);
+                frontPad->m_padPort = KartGamePad::PadPort::Network;
+                if (padIndices[1] != padIndices[0]) {
+                    backPad = KartGamePad::KartPad(padIndices[1]);
+                    backPad->m_padPort = KartGamePad::PadPort::Network;
+                }
+            } else {
+                frontPad = KartGamePad::GamePad(padIndices[0]);
+                if (padIndices[1] != padIndices[0]) {
+                    backPad = KartGamePad::GamePad(padIndices[1]);
+                }
             }
         }
         if (!frontPad) {
@@ -474,7 +483,8 @@ void SceneCoursePoll::stateSlideOut() {
 }
 
 void SceneCoursePoll::stateIdle() {
-    if (!m_ok) {
+    const JUTGamePad::CButton &button = KartGamePad::GamePad(0)->button();
+    if (button.risingEdge() & PAD_BUTTON_B || !m_ok) {
         m_nextScene = SceneType::Title;
         GameAudio::Main::Instance()->fadeOutAll(15);
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CANCEL);

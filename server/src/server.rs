@@ -45,7 +45,7 @@ pub fn spawn(
     let rooms = Arc::new(Rooms::new(config.load().max_rooms_per_frame_rate));
 
     let (batch_sender, batch_receiver) =
-        mpsc::sync_channel(2 * config.load().max_rooms_per_frame_rate);
+        mpsc::sync_channel(config.load().max_rooms_per_frame_rate / 10);
     let (storage, storage_init, rankings) = Storage::load(batch_sender, base_path)?;
     let storage = Arc::new(storage);
     trace!("Next player number: {}", storage_init.player_number);
@@ -53,7 +53,7 @@ pub fn spawn(
     trace!("Next race number: {}", storage_init.race_number);
 
     let (website_message_sender, website_message_receiver) =
-        mpsc::sync_channel(2 * config.load().max_rooms_per_frame_rate);
+        mpsc::sync_channel(config.load().max_rooms_per_frame_rate / 10);
     let website_worker = WebsiteWorker::new(
         config.clone(),
         courses.clone(),
@@ -65,7 +65,7 @@ pub fn spawn(
     Builder::new().name("website".to_owned()).spawn(|| website_worker.run())?;
 
     let (webhook_race_sender, webhook_race_receiver) =
-        mpsc::sync_channel(2 * config.load().max_rooms_per_frame_rate);
+        mpsc::sync_channel(config.load().max_rooms_per_frame_rate / 10);
     let webhook_worker = WebhookWorker::new(courses.clone(), webhook_race_receiver);
     Builder::new().name("webhook".to_owned()).spawn(|| webhook_worker.run())?;
 
