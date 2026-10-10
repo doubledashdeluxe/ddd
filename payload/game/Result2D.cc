@@ -580,7 +580,15 @@ void Result2D::setOnlineCommon(bool isTotal) {
             J2DPicture *boxPicture = m_gpLines[i].characters[1 - j].box.picture;
             boxPicture->setWhite(boxColor);
             J2DPicture *iconPicture = m_gpLines[i].characters[1 - j].icon.picture;
-            u32 characterID = raceInfo.getKartInfo(kartIndex).getCharDB(j)->id - 1;
+            u32 characterIndex = j;
+            if (kart.local) {
+                u32 kartLocalIndex = onlineInfo.m_kartLocalIndices[kartIndex];
+                const Array<u8, 2> &padIndices = onlineInfo.m_padIndices[kartLocalIndex];
+                if (padIndices[0] > padIndices[1]) {
+                    characterIndex ^= 1;
+                }
+            }
+            u32 characterID = raceInfo.getKartInfo(kartIndex).getCharDB(characterIndex)->id - 1;
             ResTIMG *icon = kart2DCommon->getCharacterIcon(characterID);
             iconPicture->changeTexture(icon, 0);
             const Player &player = kart.players[j];

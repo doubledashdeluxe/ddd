@@ -222,9 +222,11 @@ pub fn client_poll_state_ready() -> impl ComplexDataType {
 
 pub fn client_poll_kart() -> impl ComplexDataType {
     let character_ids = ArrayType::new(character_id(), KART_CHARACTER_COUNT, KART_CHARACTER_COUNT);
+    let swapped: SimpleDataType<u8> = SimpleDataType::new();
     StructType::new("ClientPollKart")
         .with_field("character_ids", character_ids)
         .with_field("kart_id", kart_id())
+        .with_field("swapped", swapped)
 }
 
 pub fn client_course_index() -> impl ComplexDataType {

@@ -548,7 +548,7 @@ impl Room {
             .collect();
         anyhow::ensure!(client_karts.len() == kart_indices.len());
         for client_kart in &client_karts {
-            let ClientPollKart { character_ids, kart_id } = client_kart;
+            let ClientPollKart { character_ids, kart_id, .. } = client_kart;
             anyhow::ensure!(character_ids[0] != character_ids[1]);
             anyhow::ensure!(kart_id.compatible(character_ids));
         }
@@ -598,6 +598,7 @@ impl Room {
                 kart_index,
                 character_ids: client_kart.character_ids,
                 kart_id: client_kart.kart_id,
+                swapped: client_kart.swapped,
                 course_index,
             };
             state.kart_indices.push(kart_index).unwrap();
@@ -904,7 +905,13 @@ impl Room {
                         }
                     };
                     let course_index = self.rng.random_range(..self.pack.courses().len()) as u8;
-                    let kart = ServerPollKart { kart_index, character_ids, kart_id, course_index };
+                    let kart = ServerPollKart {
+                        kart_index,
+                        character_ids,
+                        kart_id,
+                        swapped: 0,
+                        course_index,
+                    };
                     state.kart_indices.push(kart_index).unwrap();
                     v.insert(kart).unwrap();
                     if course_selection == RoomOptionCourseSelection::Host && is_host {

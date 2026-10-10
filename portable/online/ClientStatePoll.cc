@@ -186,6 +186,14 @@ void ClientStatePoll::setKartId(u8 kartId) {
     m_readInfo.ready.emplace().karts[m_kartIndex].kartID = kartId;
 }
 
+bool ClientStatePoll::isSwappedValid(u8 /* swapped */) {
+    return true;
+}
+
+void ClientStatePoll::setSwapped(u8 swapped) {
+    m_readInfo.ready.emplace().karts[m_kartIndex].swapped = swapped;
+}
+
 bool ClientStatePoll::isCourseIndexValid(u8 courseIndex) {
     return courseIndex < m_writeInfo.packCourseCount;
 }
@@ -235,6 +243,10 @@ u8 ClientStatePoll::getCharacterIdsElement(u32 i0) {
 
 u8 ClientStatePoll::getKartId() {
     return m_writeInfo.ready->karts[m_kartIndex].kartID;
+}
+
+u8 ClientStatePoll::getSwapped() {
+    return m_writeInfo.ready->karts[m_kartIndex].swapped;
 }
 
 void ClientStatePoll::getUnspecified() {}

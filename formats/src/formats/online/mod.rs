@@ -14,7 +14,7 @@ pub fn format() -> Format {
     let default_port = SimpleConstant::new("DEFAULT_PORT", 3549u16);
     let buffer_size = SimpleConstant::new("BUFFER_SIZE", 1152usize);
     let update_version = SimpleConstant::new("UPDATE_VERSION", 1u8);
-    let protocol_version = SimpleConstant::new("PROTOCOL_VERSION", 27u16);
+    let protocol_version = SimpleConstant::new("PROTOCOL_VERSION", 28u16);
     let max_lap_count = SimpleConstant::new("MAX_LAP_COUNT", 9u8);
     let min_match_count = SimpleConstant::new("MIN_MATCH_COUNT", 1u8);
     let max_match_count = SimpleConstant::new("MAX_MATCH_COUNT", 96u8);
@@ -52,7 +52,7 @@ pub fn format() -> Format {
     let max_stick_y = SimpleConstant::new("MAX_STICK_Y", 3i8);
     let max_time = SimpleConstant::new("MAX_TIME", 5_999_999u32);
     let replay_magic = SimpleConstant::new("REPLAY_MAGIC", u32::from_be_bytes(*b"GKRD"));
-    let replay_version = SimpleConstant::new("REPLAY_VERSION", 0u16);
+    let replay_version = SimpleConstant::new("REPLAY_VERSION", 1u16);
     let max_replay_client_count =
         SimpleConstant::new("MAX_REPLAY_CLIENT_COUNT", MAX_REPLAY_CLIENT_COUNT);
     Format::new("Online")

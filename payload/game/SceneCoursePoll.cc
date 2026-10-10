@@ -122,6 +122,8 @@ void SceneCoursePoll::init() {
     for (s16 i = 0; i < ready.kartCount; i++) {
         ready.karts[i].characterIDs = onlineInfo.m_characterIDs[i];
         ready.karts[i].kartID = onlineInfo.m_kartIDs[i];
+        const Array<u8, 2> &padIndices = onlineInfo.m_padIndices[i];
+        ready.karts[i].swapped = padIndices[0] > padIndices[1];
     }
     if (onlineInfo.m_hasCourseSelection) {
         const CourseManager::Pack &pack =
@@ -278,7 +280,7 @@ bool SceneCoursePoll::clientStatePoll(const ClientStatePollReadInfo &readInfo) {
         return true;
     }
 
-    const OnlineInfo &onlineInfo = OnlineInfo::Instance();
+    OnlineInfo &onlineInfo = OnlineInfo::Instance();
     Kart2DCommon *kart2DCommon = Kart2DCommon::Instance();
     for (; m_nameCount < kartIndices.count(); m_nameCount++) {
         u32 kartIndex = kartIndices[m_nameCount];
@@ -337,12 +339,15 @@ bool SceneCoursePoll::clientStatePoll(const ClientStatePollReadInfo &readInfo) {
         KartGamePad *frontPad = nullptr, *backPad = nullptr;
         if (onlineInfo.m_karts[kartIndex].local) {
             u32 kartLocalIndex = onlineInfo.m_kartLocalIndices[kartIndex];
-            const Array<u8, 2> &padIndices = onlineInfo.m_padIndices[kartLocalIndex];
+            Array<u8, 2> &padIndices = onlineInfo.m_padIndices[kartLocalIndex];
+            if (kart.swapped != padIndices[0] > padIndices[1]) {
+                Swap(padIndices[0], padIndices[1]);
+            }
             if (onlineInfo.m_isReplay) {
-                frontPad = KartGamePad::KartPad(padIndices[0]);
+                frontPad = KartGamePad::KartPad(Min(padIndices[0], padIndices[1]));
                 frontPad->m_padPort = KartGamePad::PadPort::Network;
                 if (padIndices[1] != padIndices[0]) {
-                    backPad = KartGamePad::KartPad(padIndices[1]);
+                    backPad = KartGamePad::KartPad(Max(padIndices[0], padIndices[1]));
                     backPad->m_padPort = KartGamePad::PadPort::Network;
                 }
             } else {

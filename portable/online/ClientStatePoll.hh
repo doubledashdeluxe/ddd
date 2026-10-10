@@ -68,6 +68,8 @@ public:
     void setCharacterIdsElement(u32 i0, u8 characterIdsElement);
     bool isKartIdValid(u8 kartId);
     void setKartId(u8 kartId);
+    bool isSwappedValid(u8 swapped);
+    void setSwapped(u8 swapped);
     bool isCourseIndexValid(u8 courseIndex);
     void setCourseIndex(u8 courseIndex);
 
@@ -84,6 +86,7 @@ public:
 
     u8 getCharacterIdsElement(u32 i0);
     u8 getKartId();
+    u8 getSwapped();
 
     void getUnspecified();
     u8 getSpecified();

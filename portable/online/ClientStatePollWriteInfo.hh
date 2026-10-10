@@ -9,6 +9,7 @@ struct ClientStatePollWriteInfo {
     struct Kart {
         Array<u8, KartCharacterCount> characterIDs;
         u8 kartID;
+        bool swapped;
     };
 
     struct Ready {
