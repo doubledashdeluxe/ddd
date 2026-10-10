@@ -186,9 +186,9 @@ impl Client {
                             };
 
                             let players = if i < tandem_count {
-                                Vec::from([player(i / 2 + 0), player(i / 2 + 1)])
+                                Vec::from([player(i * 2 + 0), player(i * 2 + 1)])
                             } else {
-                                Vec::from([player(i + tandem_count)])
+                                Vec::from([player(tandem_count + i)])
                             };
                             Kart::new(self.pk, identity.region, identity.platform.clone(), players)
                         })

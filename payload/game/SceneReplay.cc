@@ -501,19 +501,19 @@ void SceneReplay::refreshReplays(bool playerColors) {
             u32 tandemCount = client.players.count() - client.teams.count();
             for (u32 l = 0; l < client.teams.count(); k++, l++) {
                 if (l < tandemCount) {
-                    names[k][0] = client.players[l / 2 + 0].name.values();
-                    names[k][1] = client.players[l / 2 + 1].name.values();
+                    names[k][0] = client.players[l * 2 + 0].name.values();
+                    names[k][1] = client.players[l * 2 + 1].name.values();
                 } else {
-                    names[k][0] = client.players[l + tandemCount].name.values();
+                    names[k][0] = client.players[tandemCount + l].name.values();
                 }
                 if (playerColors) {
                     if (replayIndex == m_replayIndex && j == m_clientIndex) {
                         if (l < tandemCount) {
-                            colorIndices[k][0] = l / 2 + 0;
-                            colorIndices[k][1] = l / 2 + 1;
+                            colorIndices[k][0] = l * 2 + 0;
+                            colorIndices[k][1] = l * 2 + 1;
                         } else {
-                            colorIndices[k][0] = l + tandemCount;
-                            colorIndices[k][1] = l + tandemCount;
+                            colorIndices[k][0] = tandemCount + l;
+                            colorIndices[k][1] = tandemCount + l;
                         }
                     } else {
                         colorIndices[k][0] = 8;

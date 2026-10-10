@@ -20,11 +20,11 @@ void OnlineInfo::setLocalKarts() {
         kart.local = true;
         if (i < tandemCount) {
             kart.playerCount = 2;
-            kart.players[0].index = i / 2 + 0;
-            kart.players[1].index = i / 2 + 1;
+            kart.players[0].index = i * 2 + 0;
+            kart.players[1].index = i * 2 + 1;
         } else {
             kart.playerCount = 1;
-            kart.players[0].index = i + tandemCount;
+            kart.players[0].index = tandemCount + i;
         }
         for (u32 j = 0; j < kart.players.count(); j++) {
             Player &player = kart.players[j];
