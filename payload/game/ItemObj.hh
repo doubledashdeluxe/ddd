@@ -35,7 +35,9 @@ public:
     TVec3<f32> m_pos;
 
 private:
-    u8 _010[0x118 - 0x010];
+    u8 _010[0x07c - 0x010];
+    u32 m_kind;
+    u8 _080[0x118 - 0x080];
     u32 m_state;
     u8 _11c[0x120 - 0x11c];
     u32 m_kartIndex;

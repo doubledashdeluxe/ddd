@@ -42,6 +42,17 @@ void ItemObj::updateHandOffsetPos() {
         return;
     }
 
+    switch (m_kind) {
+    case ItemID::Banana:
+    case ItemID::GiantBanana:
+    case ItemID::Bomb:
+    case ItemID::FakeItemBox:
+    case ItemID::Bombs:
+        break;
+    default:
+        return;
+    }
+
     const RaceClient::ItemEvent *itemEvent = raceClient->itemEvent(m_kartIndex);
     const KartPad *kartPad = kartCtrl->getKartPad(m_kartIndex);
 
