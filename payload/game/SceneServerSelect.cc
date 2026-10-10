@@ -510,13 +510,14 @@ void SceneServerSelect::refreshServers() {
         DescText descText(*this, i);
         u64 descOffset = Max<u64>(m_descOffsets[serverIndex], 300) - 300;
         descText.refresh(descOffset, 1, 42, screen, "Desc");
-        J2DPicture *descColorPicture = m_descColorPictures[i];
+        J2DPicture *descColorPicture = m_descColorPictures[serverIndex];
         if (descColorPicture) {
             for (u32 j = 0; j < 42; j++) {
                 m_descPictures[i][j]->m_cornerColors = descColorPicture->m_cornerColors;
             }
         }
-        kart2DCommon->changeUnicodeTexture(m_playerCounts[i].values(), 3, screen, "PCount", true);
+        kart2DCommon->changeUnicodeTexture(m_playerCounts[serverIndex].values(), 3, screen,
+                "PCount", true);
     }
 }
 
