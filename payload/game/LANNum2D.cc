@@ -52,11 +52,7 @@ void LANNum2D::start2() {
 
 void LANNum2D::startOnline() {
     const OnlineInfo &onlineInfo = OnlineInfo::Instance();
-    if (onlineInfo.m_spectating) {
-        return;
-    }
-
-    m_screen->search("NLan")->m_isVisible = true;
+    m_screen->search("NLan")->m_isVisible = !onlineInfo.m_spectating || onlineInfo.m_isDuel;
     const RaceInfo &raceInfo = RaceInfo::Instance();
     u32 statusCount = raceInfo.getStatusCount();
     for (u32 i = 0; i < statusCount; i++) {
