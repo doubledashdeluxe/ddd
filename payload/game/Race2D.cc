@@ -295,7 +295,7 @@ void Race2D::setup() {
 
 void Race2D::anmTA(s32 status) {
     if (SequenceInfo::Instance().m_isOnline && OnlineInfo::Instance().m_spectating) {
-        m_lapTimes[0].lapFrame = 246;
+        m_lapTimes[status].lapFrame = 246;
     }
 
     REPLACED(anmTA)(status);
@@ -416,9 +416,12 @@ void Race2D::getStartCharPos(s32 frame, s32 index, f32 &f1) {
 void Race2D::CalcLap() {
     bool isOnline = SequenceInfo::Instance().m_isOnline;
     if (isOnline && OnlineInfo::Instance().m_spectating) {
-        u32 kartIndex = J2DManager::StatusKart(0);
-        KartChecker *kartChecker = RaceMgr::Instance()->kartChecker(kartIndex);
-        s_preLap[0] = kartChecker->lap();
+        u32 statusCount = RaceInfo::Instance().getStatusCount();
+        for (u32 i = 0; i < statusCount; i++) {
+            u32 kartIndex = J2DManager::StatusKart(i);
+            KartChecker *kartChecker = RaceMgr::Instance()->kartChecker(kartIndex);
+            s_preLap[i] = Max<s32>(kartChecker->lap(), 0);
+        }
     }
 
     if (isOnline && RaceMgr::Instance()->raceDirector()->raceEnd()) {
