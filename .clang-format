@@ -17,7 +17,7 @@ AllowShortLoopsOnASingleLine: False
 AlwaysBreakAfterReturnType: None
 AlwaysBreakBeforeMultilineStrings: True
 AlwaysBreakTemplateDeclarations: Yes
-BinPackArguments: True
+BinPackArguments: BinPack
 BinPackParameters: BinPack
 BitFieldColonSpacing: Both
 BreakBeforeBinaryOperators: None
@@ -32,7 +32,7 @@ IncludeBlocks: Preserve
 IndentAccessModifiers: False
 IndentCaseBlocks: True
 IndentCaseLabels: False
-IndentGotoLabels: True
+IndentGotoLabels: OuterIndent
 IndentWidth: 4
 InsertBraces: True
 KeepEmptyLinesAtTheStartOfBlocks: False
