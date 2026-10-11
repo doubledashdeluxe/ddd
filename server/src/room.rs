@@ -17,15 +17,14 @@ use rand::{Rng, RngExt, SeedableRng};
 use crate::config::Config;
 use crate::crypto::{ChaCha20Rng, PublicKey};
 use crate::formats::online::*;
-use crate::formats::version;
 use crate::item;
 use crate::kart::Kart;
 use crate::mmr;
 use crate::pack::Pack;
 use crate::race_client_stats::RaceClientStats;
 use crate::results;
-use crate::storage::race;
-use crate::storage::{Batch, Player, Race, Storage};
+use crate::storage::race::{self, Race, Version};
+use crate::storage::{Batch, Player, Storage};
 
 #[derive(Debug)]
 pub struct Room {
@@ -1055,7 +1054,7 @@ impl Room {
                         selected_kart_index: poll_state.selected_kart_index,
                         course_hash: self.pack.courses()[selected_course_index as usize],
                         end: match_end,
-                        version: version::VERSION.try_into().unwrap(),
+                        version: Version::current(),
                     };
                     *batch = Some(Batch {
                         clients: LinearMap::new(),

@@ -11,7 +11,7 @@ use crate::formats::online::{CharacterId, KartId, MODE_INDEX_COUNT, ModeIndex};
 use crate::kart::{Platform, Region};
 use crate::player::Name;
 use crate::sorted::Sorted;
-use crate::storage::Race;
+use crate::storage::race::{Race, Version};
 use crate::website::backend::Backend;
 use crate::website::combo::Combo;
 use crate::website::counter_ranking::CounterRanking;
@@ -25,6 +25,7 @@ use crate::website::ranking;
 
 #[derive(Debug, Default)]
 pub struct Rankings {
+    versions: CounterRanking<Version, u64>,
     regions: CounterRanking<Region, u64>,
     platforms: CounterRanking<Platform, u64>,
     player_mmrs: [Sorted<u64, Reverse<u16>>; MODE_INDEX_COUNT],
@@ -40,6 +41,7 @@ pub struct Rankings {
 impl Rankings {
     pub fn add(&mut self, now: Date, race: &Race) {
         let date = race.start.to_zoned(TimeZone::UTC).into();
+        self.versions.add(now, date, race.version.clone(), 1);
         self.courses.add(now, date, race.course_hash, 1);
         self.packs.add(now, date, race.pack_hash, 1);
         let start = SystemTime::from(race.start);
@@ -63,6 +65,7 @@ impl Rankings {
     }
 
     pub fn update(&mut self, now: Date) {
+        self.versions.update(now);
         self.regions.update(now);
         self.platforms.update(now);
         self.player_races.update(now);
@@ -81,6 +84,7 @@ impl Rankings {
         backend: &mut impl Backend,
     ) {
         write_rankings(backend);
+        self.write_versions(backend);
         self.write_regions(backend);
         self.write_platforms(backend);
         self.write_players(player_names, backend);
@@ -89,6 +93,16 @@ impl Rankings {
         self.write_characters(backend);
         self.write_karts(backend);
         self.write_combos(backend);
+    }
+
+    fn write_versions(&self, backend: &mut impl Backend) {
+        write(
+            "Version",
+            write_counter_ranking("Matches", &self.versions),
+            |version, td, _| td.content(version),
+            backend,
+            "versions",
+        );
     }
 
     fn write_regions(&self, backend: &mut impl Backend) {
@@ -212,6 +226,7 @@ impl Rankings {
 
 fn write_rankings(backend: &mut impl Backend) {
     let write = |body: &mut Children<_>, path_printer: &PathPrinter| {
+        link::write("h2", "rankings/versions", "Versions", body, path_printer)?;
         link::write("h2", "rankings/regions", "Regions", body, path_printer)?;
         link::write("h2", "rankings/platforms", "Platforms", body, path_printer)?;
         link::write("h2", "rankings/players", "Players", body, path_printer)?;
