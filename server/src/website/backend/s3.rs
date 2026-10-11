@@ -1,10 +1,12 @@
 use std::fmt::{self, Display, Write};
+use std::time::Duration;
 
 use anyhow::Result;
 
 use crate::credential::Credential;
 use crate::result_ext::ResultExt;
 use crate::s3;
+use crate::util;
 use crate::website::backend::Backend;
 use crate::website::html::Children;
 use crate::website::page;
@@ -37,16 +39,18 @@ impl Backend for S3<'_> {
             } else {
                 write!(self.path_buf, "/{file_name}")?;
             }
-            self.s3.put_object(
-                self.host,
-                self.region,
-                self.access_key,
-                self.secret_key,
-                max_age,
-                content_type,
-                self.path_buf,
-                content(self.content),
-            )
+            util::retry(5, Duration::from_secs(1), || {
+                self.s3.put_object(
+                    self.host,
+                    self.region,
+                    self.access_key,
+                    self.secret_key,
+                    max_age,
+                    content_type,
+                    self.path_buf,
+                    content(self.content),
+                )
+            })
         }()
         .log_err();
     }
