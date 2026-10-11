@@ -1,6 +1,7 @@
 use std::fmt::{self, Debug, Formatter};
 use std::fs;
 use std::sync::mpsc::Receiver;
+use std::time::Duration;
 
 use anyhow::Result;
 use arc_swap::Cache;
@@ -11,6 +12,7 @@ use crate::courses::{Courses, SharedCourses};
 use crate::http;
 use crate::result_ext::ResultExt;
 use crate::storage;
+use crate::util;
 use crate::webhook::race::Race;
 
 pub struct Worker {
@@ -53,10 +55,12 @@ impl Worker {
         serde_json::to_writer(&mut self.buf, &race)?;
 
         let Some(webhook) = &self.webhook else { return Ok(()) };
-        self.agent
-            .post(&webhook.0)
-            .content_type(HeaderValue::from_static("application/json"))
-            .send(&self.buf)?;
+        util::retry(5, Duration::from_secs(1), || {
+            self.agent
+                .post(&webhook.0)
+                .content_type(HeaderValue::from_static("application/json"))
+                .send(&self.buf)
+        })?;
 
         Ok(())
     }
