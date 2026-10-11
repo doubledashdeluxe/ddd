@@ -42,6 +42,7 @@ mod sorted;
 pub mod storage;
 pub mod update;
 mod updater;
+mod util;
 mod webhook;
 mod website;
 mod weight;

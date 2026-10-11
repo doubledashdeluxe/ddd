@@ -59,6 +59,16 @@ impl Config {
         }
         Ok(config)
     }
+
+    pub fn s3(&self) -> Option<S3Config<'_>> {
+        if let (Some(host), Some(region), Some(access_key), Some(secret_key)) =
+            (&self.s3_host, &self.s3_region, &self.s3_access_key, &self.s3_secret_key)
+        {
+            Some(S3Config { host, region, access_key, secret_key })
+        } else {
+            None
+        }
+    }
 }
 
 impl Default for Config {
@@ -133,3 +143,10 @@ where
 }
 
 pub type SharedConfig = Arc<ArcSwap<Config>>;
+
+pub struct S3Config<'a> {
+    pub host: &'a str,
+    pub region: &'a str,
+    pub access_key: &'a Credential,
+    pub secret_key: &'a Credential,
+}

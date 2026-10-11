@@ -73,17 +73,15 @@ impl Worker {
             let config = config.load();
             let courses = courses.load();
 
-            if let (Some(host), Some(region), Some(access_key), Some(secret_key)) =
-                (&config.s3_host, &config.s3_region, &config.s3_access_key, &config.s3_secret_key)
-            {
+            if let Some(config) = config.s3() {
                 let mut backend = S3Backend {
                     path_buf: &mut self.path_buf,
                     content: &mut self.content,
                     s3: &mut self.s3,
-                    host,
-                    region,
-                    access_key,
-                    secret_key,
+                    host: config.host,
+                    region: config.region,
+                    access_key: config.access_key,
+                    secret_key: config.secret_key,
                 };
                 process(courses, &mut self.state, &self.rooms, &mut message, &mut backend);
             } else {

@@ -8,25 +8,30 @@ use std::sync::mpsc::{Receiver, RecvTimeoutError, SyncSender};
 use std::time::{Duration, Instant};
 
 use anyhow::Result;
+use arc_swap::Cache;
 use jiff::Timestamp;
 use jiff::tz::TimeZone;
 use serde::Serialize;
 use serde_json::ser::{PrettyFormatter, Serializer};
 
 use crate::clients::Clients;
+use crate::config::{Config, SharedConfig};
 use crate::formats::online::FrameRate;
 use crate::result_ext::ResultExt;
 use crate::rooms::Rooms;
+use crate::s3::S3;
 use crate::storage::batch::Batch;
 use crate::storage::init::Init;
 use crate::storage::player::{Id as PlayerId, Player};
 use crate::storage::race::Race;
 use crate::storage::replay;
 use crate::storage::stats::Stats;
+use crate::util;
 use crate::website::{Batch as WebsiteBatch, Message};
 
 #[derive(Debug)]
 pub struct Worker {
+    config: SharedConfig,
     batch_receiver: Receiver<Batch>,
     path: PathBuf,
     tmp_path: PathBuf,
@@ -38,7 +43,8 @@ pub struct Worker {
     buf: Vec<u8>,
     file_name_buf: String,
     tmp_path_buf: PathBuf,
-    path_buf: PathBuf,
+    path_buf: String,
+    s3: S3,
     website_message_sender: SyncSender<Message>,
     webhook_race_sender: SyncSender<Race>,
     clients: Arc<Clients>,
@@ -47,6 +53,7 @@ pub struct Worker {
 
 impl Worker {
     pub fn new(
+        config: SharedConfig,
         batch_receiver: Receiver<Batch>,
         init: Init,
         website_message_sender: SyncSender<Message>,
@@ -55,6 +62,7 @@ impl Worker {
         rooms: Arc<Rooms>,
     ) -> Self {
         Self {
+            config,
             batch_receiver,
             path: init.path,
             tmp_path: init.tmp_path,
@@ -66,7 +74,8 @@ impl Worker {
             buf: vec![],
             file_name_buf: String::new(),
             tmp_path_buf: PathBuf::new(),
-            path_buf: PathBuf::new(),
+            path_buf: String::new(),
+            s3: S3::default(),
             website_message_sender,
             webhook_race_sender,
             clients,
@@ -75,6 +84,7 @@ impl Worker {
     }
 
     pub fn run(mut self) -> ! {
+        let mut config = Cache::new(self.config.clone());
         let mut next_tick = Instant::now();
         loop {
             let now = Instant::now();
@@ -86,15 +96,17 @@ impl Worker {
                     batch => batch.unwrap(),
                 };
 
+                let config = config.load();
+
                 for player in &mut batch.players {
-                    self.write_player(player).log_err();
+                    self.write_player(config, player).log_err();
                 }
-                self.write_race(&mut batch.race).log_err();
+                self.write_race(config, &mut batch.race).log_err();
 
                 let players = batch.players.clone();
                 let race = batch.race.clone();
 
-                self.write_replay(batch).log_err();
+                self.write_replay(config, batch).log_err();
 
                 let website_batch = WebsiteBatch { players, race: race.clone() };
                 self.website_message_sender.try_send(Message::Batch(website_batch)).log_err();
@@ -102,6 +114,8 @@ impl Worker {
 
                 continue;
             }
+
+            let config = config.load();
 
             let room_count = FrameRate::VARIANTS
                 .into_iter()
@@ -113,7 +127,7 @@ impl Worker {
                 room_count,
             };
 
-            self.write_stats(&stats).log_err();
+            self.write_stats(config, &stats).log_err();
 
             self.website_message_sender.try_send(Message::Stats(stats)).log_err();
 
@@ -121,12 +135,12 @@ impl Worker {
         }
     }
 
-    fn write_player(&mut self, player: &mut Player) -> Result<()> {
+    fn write_player(&mut self, config: &Config, player: &mut Player) -> Result<()> {
         player.number = self.player_number(player.id());
-        self.write_json(player, player.number, "players")
+        self.write_json(config, player, player.number, "players")
     }
 
-    fn write_race(&mut self, race: &mut Race) -> Result<()> {
+    fn write_race(&mut self, config: &Config, race: &mut Race) -> Result<()> {
         race.room_number = self.room_number(race.room_id);
         for kart in &mut race.karts {
             for player in &mut kart.players {
@@ -136,15 +150,22 @@ impl Worker {
         }
         race.number = self.race_number;
         self.race_number = race.number.strict_add(1);
-        self.write_json(race, race.number, "matches")
+        self.write_json(config, race, race.number, "matches")
     }
 
-    fn write_stats(&mut self, stats: &Stats) -> Result<()> {
-        self.write_json(stats, stats.dt.strftime("%Y-%m-%dT%H:%M"), "stats")
+    fn write_stats(&mut self, config: &Config, stats: &Stats) -> Result<()> {
+        self.write_json(config, stats, stats.dt.strftime("%Y-%m-%dT%H:%M"), "stats")
     }
 
-    fn write_json<T: Serialize>(&mut self, x: &T, stem: impl Display, dir: &str) -> Result<()> {
+    fn write_json<T: Serialize>(
+        &mut self,
+        config: &Config,
+        x: &T,
+        stem: impl Display,
+        dir: &str,
+    ) -> Result<()> {
         self.write(
+            config,
             stem,
             "json",
             |buf| {
@@ -153,6 +174,7 @@ impl Worker {
                 Ok(x.serialize(&mut serializer)?)
             },
             dir,
+            "application/json",
         )
     }
 
@@ -164,8 +186,9 @@ impl Worker {
         number(&mut self.room_numbers, &mut self.room_number, room_id)
     }
 
-    fn write_replay(&mut self, batch: Batch) -> Result<()> {
+    fn write_replay(&mut self, config: &Config, batch: Batch) -> Result<()> {
         self.write(
+            config,
             batch.race.number,
             "gkr",
             |buf| {
@@ -173,15 +196,18 @@ impl Worker {
                 Ok(())
             },
             "replays",
+            "application/octet-stream",
         )
     }
 
     fn write(
         &mut self,
+        config: &Config,
         stem: impl Display,
         ext: &str,
         write: impl FnOnce(&mut Vec<u8>) -> Result<()>,
         dir: &str,
+        content_type: &str,
     ) -> Result<()> {
         self.buf.clear();
         write(&mut self.buf)?;
@@ -194,10 +220,27 @@ impl Worker {
 
         fs::write(&self.tmp_path_buf, &self.buf)?;
 
-        self.path.clone_into(&mut self.path_buf);
-        self.path_buf.push(dir);
-        self.path_buf.push(&self.file_name_buf);
+        self.path_buf.clear();
+        write!(self.path_buf, "{}/{dir}/{}", self.path.display(), self.file_name_buf)?;
         fs::rename(&self.tmp_path_buf, &self.path_buf)?;
+
+        if let Some(config) = config.s3() {
+            self.path_buf.clear();
+            write!(self.path_buf, "/storage/{dir}/{}", self.file_name_buf)?;
+
+            util::retry(5, Duration::from_secs(1), || {
+                self.s3.put_object(
+                    config.host,
+                    config.region,
+                    config.access_key,
+                    config.secret_key,
+                    365 * 24 * 60 * 60,
+                    content_type,
+                    &self.path_buf,
+                    &self.buf,
+                )
+            })?;
+        }
 
         Ok(())
     }

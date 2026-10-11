@@ -70,6 +70,7 @@ pub fn spawn(
     Builder::new().name("webhook".to_owned()).spawn(|| webhook_worker.run())?;
 
     let storage_worker = StorageWorker::new(
+        config.clone(),
         batch_receiver,
         storage_init,
         website_message_sender,
