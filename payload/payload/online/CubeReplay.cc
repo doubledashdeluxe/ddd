@@ -3,6 +3,9 @@
 #include "payload/Lock.hh"
 
 #include <cube/storage/Storage.hh>
+extern "C" {
+#include <miniz/miniz.h>
+}
 
 CubeReplay::CubeReplay(const ReplayManager::Replay &replay, u32 clientIndex)
     : Replay(replay, clientIndex)
@@ -42,41 +45,86 @@ void CubeReplay::seek(u32 offset) {
     }
 }
 
-void CubeReplay::read() {
+bool CubeReplay::read() {
     Storage::FileHandle file(m_replay.path.values(), Storage::Mode::Read);
     u64 size;
     if (!file.size(size) || size > UINT32_MAX) {
-        m_ok = false;
-        return;
+        return m_ok = false;
     }
 
-    for (u32 offset = m_replay.offset; offset < size;) {
-        alignas(0x20) u8 chunk[4 * 1024];
-        u32 chunkSize = Min<u32>(size - offset, sizeof(chunk));
-        if (!file.read(chunk, chunkSize, offset)) {
-            m_ok = false;
-            return;
+    tinfl_decompressor decompressor;
+    tinfl_init(&decompressor);
+    tinfl_status status = TINFL_STATUS_NEEDS_MORE_INPUT;
+    u32 compressedOffset = m_replay.offset;
+    u32 uncompressedOffset = 0;
+    alignas(0x20) Array<u8, 4 * 1024> compressedBuffer;
+    alignas(0x20) Array<u8, TINFL_LZ_DICT_SIZE> uncompressedBuffer;
+    while (status != TINFL_STATUS_DONE) {
+        s32 flags = 0;
+        u32 compressedBufferOffset = compressedOffset % compressedBuffer.count();
+        u8 *compressed = compressedBuffer.values() + compressedBufferOffset;
+        size_t compressedSize = compressedBuffer.count() - compressedBufferOffset;
+        if (compressedSize > size - compressedOffset) {
+            compressedSize = size - compressedOffset;
+        } else {
+            flags |= TINFL_FLAG_HAS_MORE_INPUT;
+        }
+        u32 uncompressedBufferOffset = uncompressedOffset % uncompressedBuffer.count();
+        u8 *uncompressed = uncompressedBuffer.values() + uncompressedBufferOffset;
+        size_t uncompressedSize = uncompressedBuffer.count() - uncompressedBufferOffset;
+        if (status == TINFL_STATUS_NEEDS_MORE_INPUT) {
+            if (!file.read(compressed, compressedSize, compressedOffset)) {
+                return m_ok = false;
+            }
+        }
+        status = tinfl_decompress(&decompressor, compressed, &compressedSize,
+                uncompressedBuffer.values(), uncompressed, &uncompressedSize, flags);
+        compressedOffset += compressedSize;
+        uncompressedOffset += uncompressedSize;
+        switch (status) {
+        case TINFL_STATUS_DONE:
+            if (compressedOffset != size) {
+                return m_ok = false;
+            }
+            break;
+        case TINFL_STATUS_NEEDS_MORE_INPUT:
+            if (compressedOffset >= size) {
+                return m_ok = false;
+            }
+            break;
+        case TINFL_STATUS_HAS_MORE_OUTPUT:
+            if (compressedOffset > size) {
+                return m_ok = false;
+            }
+            break;
+        default:
+            return m_ok = false;
         }
 
         while (true) {
+            {
+                Lock<Mutex> lock(m_mutex);
+
+                for (; uncompressedSize; uncompressed++, uncompressedSize--) {
+                    if (!m_buffer.pushBack(*uncompressed)) {
+                        break;
+                    }
+                }
+            }
+
+            if (!uncompressedSize) {
+                break;
+            }
+
             OSReceiveMessage(&m_queue, nullptr, OS_MESSAGE_BLOCK);
 
             if (!m_reading) {
-                return;
-            }
-
-            Lock<Mutex> lock(m_mutex);
-
-            if (m_buffer.count() + chunkSize < m_buffer.Capacity) {
-                for (u32 i = 0; i < chunkSize; i++) {
-                    m_buffer.pushBack(chunk[i]);
-                }
-                break;
+                return false;
             }
         }
-
-        offset += chunkSize;
     }
+
+    return true;
 }
 
 void *CubeReplay::Read(void *param) {

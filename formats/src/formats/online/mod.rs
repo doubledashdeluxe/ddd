@@ -52,7 +52,7 @@ pub fn format() -> Format {
     let max_stick_y = SimpleConstant::new("MAX_STICK_Y", 3i8);
     let max_time = SimpleConstant::new("MAX_TIME", 5_999_999u32);
     let replay_magic = SimpleConstant::new("REPLAY_MAGIC", u32::from_be_bytes(*b"GKRD"));
-    let replay_version = SimpleConstant::new("REPLAY_VERSION", 1u16);
+    let replay_version = SimpleConstant::new("REPLAY_VERSION", 2u16);
     let max_replay_client_count =
         SimpleConstant::new("MAX_REPLAY_CLIENT_COUNT", MAX_REPLAY_CLIENT_COUNT);
     Format::new("Online")

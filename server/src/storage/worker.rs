@@ -191,10 +191,7 @@ impl Worker {
             config,
             batch.race.number,
             "gkr",
-            |buf| {
-                replay::write(batch, buf);
-                Ok(())
-            },
+            |buf| replay::write(batch, buf),
             "replays",
             "application/octet-stream",
         )

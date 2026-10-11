@@ -1,12 +1,16 @@
+use std::io::Write;
 use std::iter;
 use std::time::SystemTime;
 use std::vec::IntoIter;
+
+use anyhow::Result;
+use yazi::Encoder;
 
 use crate::formats::online::*;
 use crate::formats::version;
 use crate::storage::batch::Batch;
 
-pub fn write(batch: Batch, buf: &mut Vec<u8>) {
+pub fn write(batch: Batch, buf: &mut Vec<u8>) -> Result<()> {
     let Batch {
         clients: mut race_clients,
         inputs,
@@ -26,7 +30,7 @@ pub fn write(batch: Batch, buf: &mut Vec<u8>) {
         reserved: 0,
         version: version::VERSION.as_bytes().try_into().unwrap(),
     };
-    write_message(buf, &mut message, &replay, Replay::write);
+    write_message(buf, &mut message, &replay, Replay::write)?;
 
     let mut clients = heapless::Vec::new();
     let mut client_pk = None;
@@ -68,24 +72,27 @@ pub fn write(batch: Batch, buf: &mut Vec<u8>) {
         format: race.format,
         room_code: room_state.room_code,
     };
-    write_message(buf, &mut message, &replay_race, ReplayRace::write);
+    write_message(buf, &mut message, &replay_race, ReplayRace::write)?;
+
+    let mut encoder = Encoder::boxed();
+    let mut stream = encoder.stream_into_vec(buf);
 
     let server_room_state = ServerRoomState::Main(room_state);
     let room = ServerStateRoom { server_room_state };
     let server_state = ServerState::Room(room);
-    write_message(buf, &mut message, &server_state, ServerState::write);
+    write_message(&mut stream, &mut message, &server_state, ServerState::write)?;
 
     if let Some(team_state) = team_state {
         let server_team_state = ServerTeamState::Main(team_state);
         let team = ServerStateTeam { server_team_state };
         let server_state = ServerState::Team(team);
-        write_message(buf, &mut message, &server_state, ServerState::write);
+        write_message(&mut stream, &mut message, &server_state, ServerState::write)?;
     }
 
     let server_poll_state = ServerPollState::Ready(poll_state);
     let poll = ServerStatePoll { server_poll_state };
     let server_state = ServerState::Poll(poll);
-    write_message(buf, &mut message, &server_state, ServerState::write);
+    write_message(&mut stream, &mut message, &server_state, ServerState::write)?;
 
     let mut clients: heapless::Vec<_, MAX_REPLAY_CLIENT_COUNT> = heapless::Vec::new();
     let mut client_pk = None;
@@ -124,7 +131,7 @@ pub fn write(batch: Batch, buf: &mut Vec<u8>) {
         let server_race_state = ServerRaceState::Main(race_state);
         let race = ServerStateRace { server_race_state };
         let server_state = ServerState::Race(race);
-        write_message(buf, &mut message, &server_state, ServerState::write);
+        write_message(&mut stream, &mut message, &server_state, ServerState::write)?;
 
         let client_states = client_states
             .iter_mut()
@@ -142,18 +149,22 @@ pub fn write(batch: Batch, buf: &mut Vec<u8>) {
             })
             .collect();
         let replay_state = ReplayState { client_states };
-        write_message(buf, &mut message, &replay_state, ReplayState::write);
+        write_message(&mut stream, &mut message, &replay_state, ReplayState::write)?;
     }
+
+    stream.finish().map_err(|e| anyhow::anyhow!("{e:?}"))?;
+
+    Ok(())
 }
 
 fn write_message<T>(
-    buf: &mut Vec<u8>,
+    writer: &mut impl Write,
     message: &mut [u8],
     x: &T,
     write: for<'a> fn(&T, &'a mut [u8]) -> Result<&'a mut [u8], ()>,
-) {
+) -> Result<()> {
     let message_len = message.len() - write(x, message).unwrap().len();
-    buf.extend(&message[..message_len]);
+    Ok(writer.write_all(&message[..message_len])?)
 }
 
 #[derive(Debug)]

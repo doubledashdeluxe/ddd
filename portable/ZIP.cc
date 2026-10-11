@@ -156,12 +156,6 @@ bool ZIP::Reader::read(const u8 *&buffer, u32 &size) {
                 m_uncompressedBuffer.values(), uncompressed, &uncompressedSize, flags);
         m_compressedOffset += compressedSize;
         m_uncompressedOffset += uncompressedSize;
-        if (m_compressedOffset > m_cdNode.compressedSize) {
-            return m_ok = false;
-        }
-        if (m_uncompressedOffset > m_cdNode.uncompressedSize) {
-            return m_ok = false;
-        }
         switch (m_status) {
         case TINFL_STATUS_DONE:
             if (m_compressedOffset != m_cdNode.compressedSize) {
@@ -172,9 +166,18 @@ bool ZIP::Reader::read(const u8 *&buffer, u32 &size) {
             }
             break;
         case TINFL_STATUS_NEEDS_MORE_INPUT:
+            if (m_compressedOffset >= m_cdNode.compressedSize) {
+                return m_ok = false;
+            }
+            if (m_uncompressedOffset > m_cdNode.uncompressedSize) {
+                return m_ok = false;
+            }
             break;
         case TINFL_STATUS_HAS_MORE_OUTPUT:
-            if (m_compressedOffset == m_cdNode.compressedSize) {
+            if (m_compressedOffset > m_cdNode.compressedSize) {
+                return m_ok = false;
+            }
+            if (m_uncompressedOffset >= m_cdNode.uncompressedSize) {
                 return m_ok = false;
             }
             break;

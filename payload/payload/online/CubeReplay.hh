@@ -19,7 +19,7 @@ public:
     void seek(u32 offset) override;
 
 private:
-    void read();
+    bool read();
 
     static void *Read(void *param);
 
@@ -28,6 +28,6 @@ private:
     Ring<u8, 8 * 1024> m_buffer;
     OSMessageQueue m_queue;
     Array<OSMessage, 1> m_messages;
-    Array<u8, 8 * 1024> m_stack;
+    Array<u8, 56 * 1024> m_stack;
     OSThread m_thread;
 };
