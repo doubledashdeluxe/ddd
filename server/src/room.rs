@@ -17,6 +17,7 @@ use rand::{Rng, RngExt, SeedableRng};
 use crate::config::Config;
 use crate::crypto::{ChaCha20Rng, PublicKey};
 use crate::formats::online::*;
+use crate::formats::version;
 use crate::item;
 use crate::kart::Kart;
 use crate::mmr;
@@ -1054,6 +1055,7 @@ impl Room {
                         selected_kart_index: poll_state.selected_kart_index,
                         course_hash: self.pack.courses()[selected_course_index as usize],
                         end: match_end,
+                        version: version::VERSION.try_into().unwrap(),
                     };
                     *batch = Some(Batch {
                         clients: LinearMap::new(),

@@ -85,6 +85,20 @@ fn write_ul(
     ul.element("li")?.content(timestamp::fmt("Started", race.start))?;
     ul.element("li")?.content(timestamp::fmt("Ended", race.end))?;
 
+    let mut li = ul.element("li")?.children()?;
+    let mut a = li.element("a")?;
+    let href = format_args!("replays/{}.gkr", race.number);
+    a.attribute("href")?.value(path_printer.print_storage_file(href))?;
+    a.attribute("download")?.value(format_args!(
+        "{} {} #{} [{}].gkr",
+        race.end.strftime("%Y-%m-%d-%H-%M-%S"),
+        if race.mode.is_race() { "Race" } else { "Battle" },
+        race.number,
+        race.version,
+    ))?;
+    a.content("\u{1f4be} Download replay")?;
+    li.finish()?;
+
     ul.finish()
 }
 

@@ -61,7 +61,7 @@ impl Backend for S3<'_> {
     ) {
         || -> Result<_> {
             let dir_path = dir_path.into();
-            let path_printer = PathPrinter::new(dir_path, "");
+            let path_printer = PathPrinter::new(dir_path, "", "storage/");
             page::write(name, write, self.content, true, &path_printer)?;
             self.write_file(
                 |content| content.as_bytes(),

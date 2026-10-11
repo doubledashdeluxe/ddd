@@ -1,7 +1,7 @@
 pub use crate::storage::race::kart::Kart;
 pub use crate::storage::race::player::Player;
 
-use heapless::Vec;
+use heapless::{String, Vec};
 use jiff::Timestamp;
 use serde::{Deserialize, Serialize};
 
@@ -46,4 +46,6 @@ pub struct Race {
     #[serde(with = "base64")]
     pub course_hash: [u8; 32],
     pub end: Timestamp,
+    #[serde(default)]
+    pub version: String<MAX_VERSION_LENGTH>,
 }

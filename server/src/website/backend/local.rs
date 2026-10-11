@@ -50,7 +50,7 @@ impl Backend for Local<'_> {
     ) {
         || -> Result<_> {
             let dir_path = dir_path.into();
-            let path_printer = PathPrinter::new(dir_path, ".html");
+            let path_printer = PathPrinter::new(dir_path, ".html", "../");
             page::write(name, write, self.content, false, &path_printer)?;
             self.write_file(
                 |content| content.as_bytes(),
