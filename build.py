@@ -251,7 +251,7 @@ n.newline()
 
 n.rule(
     'cargo',
-    command = 'cargo -q --color always build -r --bin $target',
+    command = 'cargo -q --color always build -r --bin $binary $opts',
     description = 'CARGO $out',
     restat = True,
 )
@@ -367,6 +367,13 @@ n.rule(
 n.newline()
 
 n.rule(
+    'rpm',
+    command = f'rpmbuild --quiet --target $target -D "_topdir $topdir" -bb $in',
+    description = 'RPM $out',
+)
+n.newline()
+
+n.rule(
     'script',
     command = f'{sys.executable} $script $in $out',
     description = 'SCRIPT $out',
@@ -409,18 +416,31 @@ cargo_dirs = {
     ],
 }
 for cargo_dir in cargo_dirs:
-    for target in cargo_dirs[cargo_dir]:
+    for binary in cargo_dirs[cargo_dir]:
         n.build(
-            os.path.join('target', 'release', f'{target}{exe_ext}'),
+            os.path.join('target', 'release', f'{binary}{exe_ext}'),
             'cargo',
             [
                 *sorted(glob.glob(os.path.join(cargo_dir, '**'), recursive=True)),
                 os.path.join('data', 'version.txt'),
             ],
             variables = {
-                'target': target,
+                'binary': binary,
             },
         )
+for arch in ['x86_64', 'aarch64']:
+    n.build(
+        os.path.join('target', f'{arch}-unknown-linux-gnu', 'release', 'ddd-server'),
+        'cargo',
+        [
+            *sorted(glob.glob(os.path.join('server', '**'), recursive=True)),
+            os.path.join('data', 'version.txt'),
+        ],
+        variables = {
+            'binary': 'ddd-server',
+            'opts': f'--target {arch}-unknown-linux-gnu',
+        },
+    )
 
 compile_commands = []
 
@@ -1024,6 +1044,39 @@ n.build(
 )
 n.newline()
 
+rpms = []
+for arch in ['x86_64', 'aarch64']:
+    rpm = os.path.join('$builddir', 'rpm', arch, 'RPMS', f'ddd-server.{arch}.rpm')
+    rpms += [rpm]
+    n.build(
+        rpm,
+        'rpm',
+        os.path.join('admin', 'rpm', 'ddd-server.spec'),
+        implicit = [
+            os.path.join('data', 'version.txt'),
+            os.path.join('target', f'{arch}-unknown-linux-gnu', 'release', 'ddd-server'),
+        ],
+        variables = {
+            'target': arch,
+            'topdir': os.path.abspath(os.path.join('build', 'rpm', arch))
+        },
+    )
+    n.newline()
+
+    n.build(
+        f'{arch}-rpm',
+        'phony',
+        rpm,
+    )
+    n.newline()
+
+n.build(
+    'rpms',
+    'phony',
+    rpms,
+)
+n.newline()
+
 n.build(
     'all',
     'phony',
@@ -1032,6 +1085,7 @@ n.build(
         'tests',
         'fuzzers',
         'checks',
+        'rpms',
     ]
 )
 n.newline()
