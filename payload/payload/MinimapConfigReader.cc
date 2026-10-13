@@ -94,7 +94,7 @@ void MinimapConfigReader::handle(lwjson_stream_type_t type) {
     if (!strcmp(key, "Bottom Right Corner Z") && sscanf(number, "%f", &endY) == 1) {
         m_endY = endY;
     }
-    if (!strcmp(key, "Orientation") && sscanf(number, "%lu", &orientation)) {
+    if (!strcmp(key, "Orientation") && sscanf(number, "%lu", &orientation) == 1) {
         m_orientation = orientation;
     }
 }
