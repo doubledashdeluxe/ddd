@@ -1,7 +1,7 @@
 # Vendored dependencies
 
 - [arith64](https://github.com/glitchub/arith64)
-- [FatFs](https://elm-chan.org/fsw/ff) R0.16
+- [FatFs](https://elm-chan.org/fsw/ff) R0.16 w/patch 1
 - [inih](https://github.com/benhoyt/inih) r62
 - [lwjson](https://docs.majerle.eu/projects/lwjson) 1.9.0
 - [lwprintf](https://docs.majerle.eu/projects/lwprintf) 1.1.0
