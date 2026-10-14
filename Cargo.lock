@@ -577,9 +577,9 @@ checksum = "cf54715a573b99ac80df0bc206da022bcd442c974952c7b9720069370852e21f"
 
 [[package]]
 name = "saa"
-version = "5.6.0"
+version = "5.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "68f5acb362a0e75c2a963532fa7fabf13dff81626dc494df16488d30befcbea0"
+checksum = "bd85992a680de788217d9c70b74aa7685b108cf1aba02f728fb27f1b27199ad1"
 
 [[package]]
 name = "scc"
