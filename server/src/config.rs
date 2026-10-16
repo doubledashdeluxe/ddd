@@ -28,27 +28,11 @@ pub struct Config {
 }
 
 impl Config {
-    pub fn new() -> Self {
-        Self {
-            motd: "It works!".try_into().unwrap(),
-            shards: 0,
-            buffers_per_shard: 5000,
-            max_connections_per_shard: 5000,
-            max_clients: 20000,
-            max_rooms_per_frame_rate: 20000,
-            max_spectators_per_room: 1000,
-            s3_host: None,
-            s3_region: None,
-            s3_access_key: None,
-            s3_secret_key: None,
-        }
-    }
-
     pub fn read() -> Result<Self, Error> {
         let mut config = match fs::read_to_string("run/ddd-server.conf") {
             Err(e) if e.kind() == ErrorKind::NotFound => {
                 debug!("ddd-server.conf not found, using default configuration");
-                Self::new()
+                Self::default()
             }
             r => r?.parse()?,
         };
@@ -73,7 +57,19 @@ impl Config {
 
 impl Default for Config {
     fn default() -> Self {
-        Self::new()
+        Self {
+            motd: "It works!".try_into().unwrap(),
+            shards: 0,
+            buffers_per_shard: 5000,
+            max_connections_per_shard: 5000,
+            max_clients: 20000,
+            max_rooms_per_frame_rate: 20000,
+            max_spectators_per_room: 1000,
+            s3_host: None,
+            s3_region: None,
+            s3_access_key: None,
+            s3_secret_key: None,
+        }
     }
 }
 
@@ -81,7 +77,7 @@ impl FromStr for Config {
     type Err = Infallible;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut config = Self::new();
+        let mut config = Self::default();
         config.parse_str(s)?;
         Ok(config)
     }

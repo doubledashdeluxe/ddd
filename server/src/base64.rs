@@ -1,9 +1,15 @@
 use std::fmt::{self, Display};
 
-use ct_codecs::{Base64UrlSafe, Decoder, Encoder};
+use ct_codecs::{Base64UrlSafe, Decoder, Encoder, Error};
 use serde::de::Error as _;
 use serde::ser::Error as _;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
+
+pub fn decode<const N: usize>(s: &str) -> Result<[u8; N], Error> {
+    let mut arr = [0; N];
+    Base64UrlSafe::decode(&mut arr, s, None)?;
+    Ok(arr)
+}
 
 pub fn display<const N: usize>(arr: &[u8; N]) -> impl Display {
     fmt::from_fn(move |f| {
@@ -26,7 +32,5 @@ pub fn deserialize<'de, D: Deserializer<'de>, const N: usize>(
     deserializer: D,
 ) -> Result<[u8; N], D::Error> {
     let s = <&str>::deserialize(deserializer)?;
-    let mut arr = [0; N];
-    Base64UrlSafe::decode(&mut arr, s, None).map_err(D::Error::custom)?;
-    Ok(arr)
+    decode(s).map_err(D::Error::custom)
 }

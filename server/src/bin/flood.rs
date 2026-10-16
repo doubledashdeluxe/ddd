@@ -36,13 +36,13 @@ fn main() -> Result<()> {
     }
     fs::create_dir_all("run/flood")?;
 
-    let config = Config::new();
+    let config = Config::default();
     let config = Arc::new(ArcSwap::from_pointee(config));
 
     let update = None;
     let update = Arc::new(ArcSwap::from_pointee(update));
 
-    let courses = Courses::read()?;
+    let courses = Courses::default();
     let courses = Arc::new(ArcSwap::from_pointee(courses));
 
     let server_k = X25519::genkey();
