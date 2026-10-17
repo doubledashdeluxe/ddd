@@ -10,7 +10,7 @@ use std::time::{Duration, Instant, SystemTime};
 use anyhow::{Context, Result};
 use heapless::linear_map::{self, LinearMap};
 use jiff::Timestamp;
-use log::trace;
+use log::debug;
 use rand::seq::SliceRandom;
 use rand::{Rng, RngExt, SeedableRng};
 
@@ -109,7 +109,7 @@ impl Room {
         match_count: u8,
         rng: &mut impl Rng,
     ) -> Self {
-        trace!("-> {id}");
+        debug!("-> {id}");
         let options = if mode_index.is_race() {
             let options = RoomOptionsRace {
                 race: (),
@@ -1164,7 +1164,7 @@ fn room_state(
 
 impl Drop for Room {
     fn drop(&mut self) {
-        trace!("<- {}", self.id);
+        debug!("<- {}", self.id);
     }
 }
 

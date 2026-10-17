@@ -40,6 +40,7 @@ mod shard;
 pub mod sighup;
 mod sorted;
 pub mod storage;
+pub mod systemd;
 pub mod update;
 mod updater;
 mod util;

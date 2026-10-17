@@ -1,4 +1,5 @@
-use std::fmt::Display;
+use std::env;
+use std::fmt;
 use std::io::{self, IsTerminal};
 
 use anyhow::Result;
@@ -6,14 +7,14 @@ use jiff::Zoned;
 use log::{Level, LevelFilter, Log, Metadata, Record};
 use yansi::{Condition, Paint};
 
-pub fn init() -> Result<()> {
+pub fn init(max_level: LevelFilter) -> Result<()> {
     let stderr = io::stderr();
     let condition = Condition::clicolor() && Condition::no_color() && stderr.is_terminal();
     let condition = Condition::cached(condition);
     yansi::whenever(condition);
 
     log::set_boxed_logger(Box::new(Logger))?;
-    log::set_max_level(LevelFilter::Trace);
+    log::set_max_level(max_level);
     Ok(())
 }
 
@@ -24,28 +25,37 @@ impl Log for Logger {
         true
     }
 
+    #[expect(clippy::print_stderr)]
     fn log(&self, record: &Record) {
-        let time = Zoned::now().time();
         let file = record.file().and_then(|file| Some(file.rsplit_once('/')?.1)).unwrap_or("?");
-        let line = record.line();
+        let line = fmt::from_fn(|f| match record.line() {
+            Some(line) => write!(f, "{line}"),
+            None => write!(f, "?"),
+        });
         let args = record.args();
+
+        if env::var_os("JOURNAL_STREAM").is_some() {
+            let level = match record.level() {
+                Level::Error => "<3>",
+                Level::Warn => "<4>",
+                Level::Info => "<6>",
+                Level::Debug => "<7>",
+                Level::Trace => "<7>",
+            };
+            eprintln!("{level}[{file}:{line}] {args}");
+            return;
+        }
+
+        let time = Zoned::now().time();
         let args = match record.level() {
             Level::Error => args.red().bold(),
             Level::Warn => args.yellow().bold(),
-            Level::Info => args.bold(),
-            Level::Debug => args.white(),
-            Level::Trace => args.dim(),
+            Level::Info => args.bright_white(),
+            Level::Debug => args.dim(),
+            Level::Trace => args.bright_black(),
         };
-        match line {
-            Some(line) => log(time, file, line, args),
-            None => log(time, file, '?', args),
-        }
+        eprintln!("{} {args}", format_args!("[{time:.3}] [{file}:{line}]").bright_white());
     }
 
     fn flush(&self) {}
-}
-
-#[expect(clippy::print_stderr)]
-fn log(time: impl Display, file: impl Display, line: impl Display, args: impl Display) {
-    eprintln!("[{time:.3}] [{file}:{line}] {args}");
 }

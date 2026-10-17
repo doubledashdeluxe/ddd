@@ -8,7 +8,7 @@ use std::time::Duration;
 
 use anyhow::Result;
 use arc_swap::ArcSwap;
-use log::info;
+use log::{LevelFilter, info};
 use noise_protocol::DH;
 
 use ddd_server::config::Config;
@@ -23,7 +23,7 @@ use ddd_server::options::Options;
 use ddd_server::server;
 
 fn main() -> Result<()> {
-    logger::init()?;
+    logger::init(LevelFilter::Warn)?;
 
     let flood_options = options::options().run();
     anyhow::ensure!(flood_options.parallelism >= 1);
@@ -82,6 +82,8 @@ fn main() -> Result<()> {
     let threads = threads?;
 
     let counters: Vec<_> = threads.into_iter().map(|thread| thread.join().unwrap()).collect();
+
+    log::set_max_level(LevelFilter::Info);
 
     info!("Thread ↑Packets ↓Packets Operations");
     info!("------ -------- -------- ----------");

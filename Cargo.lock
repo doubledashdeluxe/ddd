@@ -127,6 +127,7 @@ dependencies = [
  "rawzip",
  "rustls-graviola",
  "scc",
+ "sd-notify",
  "serde",
  "serde_json",
  "signal-hook",
@@ -589,6 +590,15 @@ checksum = "5d5f8ca67c4f6208caf824037a6a9df0211b4e0937fccc4f543441f294d04511"
 dependencies = [
  "saa",
  "sdd",
+]
+
+[[package]]
+name = "sd-notify"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3e4ef7359e694bfaf1dd27a30f9d760b54c00dfae9f19bd0c05a39bc9128fe76"
+dependencies = [
+ "libc",
 ]
 
 [[package]]

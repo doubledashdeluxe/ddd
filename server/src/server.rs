@@ -1,8 +1,9 @@
+use std::path::Path;
 use std::sync::{Arc, mpsc};
 use std::thread::Builder;
 
 use anyhow::Result;
-use log::trace;
+use log::info;
 use noise_protocol::U8Array;
 
 use crate::buffer::Buffer;
@@ -32,7 +33,7 @@ pub fn spawn(
     shards: usize,
     senders: impl Iterator<Item = Result<impl Sender>>,
     receiver: impl Receiver,
-    base_path: &str,
+    base_path: impl AsRef<Path>,
 ) -> Result<()> {
     let buffers_per_shard = config.load().buffers_per_shard;
     let buffers = shards * buffers_per_shard;
@@ -46,11 +47,11 @@ pub fn spawn(
 
     let (batch_sender, batch_receiver) =
         mpsc::sync_channel(config.load().max_rooms_per_frame_rate / 10);
-    let (storage, storage_init, rankings) = Storage::load(batch_sender, base_path)?;
+    let (storage, storage_init, rankings) = Storage::load(batch_sender, &base_path)?;
     let storage = Arc::new(storage);
-    trace!("Next player number: {}", storage_init.player_number);
-    trace!("Next room number: {}", storage_init.room_number);
-    trace!("Next race number: {}", storage_init.race_number);
+    info!("Next player number: {}", storage_init.player_number);
+    info!("Next room number: {}", storage_init.room_number);
+    info!("Next race number: {}", storage_init.race_number);
 
     let (website_message_sender, website_message_receiver) =
         mpsc::sync_channel(config.load().max_rooms_per_frame_rate / 10);
@@ -59,14 +60,14 @@ pub fn spawn(
         courses.clone(),
         website_message_receiver,
         rankings,
-        base_path,
+        base_path.as_ref(),
         rooms.clone(),
     );
     Builder::new().name("website".to_owned()).spawn(|| website_worker.run())?;
 
     let (webhook_race_sender, webhook_race_receiver) =
         mpsc::sync_channel(config.load().max_rooms_per_frame_rate / 10);
-    let webhook_worker = WebhookWorker::new(courses.clone(), webhook_race_receiver);
+    let webhook_worker = WebhookWorker::new(config.clone(), courses.clone(), webhook_race_receiver);
     Builder::new().name("webhook".to_owned()).spawn(|| webhook_worker.run())?;
 
     let storage_worker = StorageWorker::new(

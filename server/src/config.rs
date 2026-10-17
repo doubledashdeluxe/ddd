@@ -1,13 +1,14 @@
 use std::convert::Infallible;
 use std::fs;
 use std::io::ErrorKind;
+use std::path::Path;
 use std::str::FromStr;
 use std::sync::Arc;
 
 use anyhow::Error;
 use arc_swap::ArcSwap;
 use cini::{Callback, CallbackKind, Ini};
-use log::{debug, warn};
+use log::{info, warn};
 
 use crate::credential::Credential;
 use crate::formats::online;
@@ -25,21 +26,26 @@ pub struct Config {
     pub s3_region: Option<String>,
     pub s3_access_key: Option<Credential>,
     pub s3_secret_key: Option<Credential>,
+    pub discord_webhook: Option<Credential>,
 }
 
 impl Config {
-    pub fn read() -> Result<Self, Error> {
-        let mut config = match fs::read_to_string("run/ddd-server.conf") {
+    pub fn read(config_path: Option<&Path>, credentials_path: &Path) -> Result<Self, Error> {
+        let config_path = config_path.unwrap_or_else(|| "run".as_ref());
+        let config_path = config_path.join("ddd-server.conf");
+        info!("Config path: {}", config_path.display());
+        let mut config = match fs::read_to_string(&config_path) {
             Err(e) if e.kind() == ErrorKind::NotFound => {
-                debug!("ddd-server.conf not found, using default configuration");
+                info!("{} not found, using default configuration", config_path.display());
                 Self::default()
             }
             r => r?.parse()?,
         };
-        config.s3_access_key = Credential::load("run/s3-access-key.txt");
-        config.s3_secret_key = Credential::load("run/s3-secret-key.txt");
+        config.s3_access_key = Credential::load(credentials_path, "s3-access-key")?;
+        config.s3_secret_key = Credential::load(credentials_path, "s3-secret-key")?;
+        config.discord_webhook = Credential::load(credentials_path, "discord-webhook")?;
         for line in format!("{config:#?}").lines() {
-            debug!("{line}");
+            info!("{line}");
         }
         Ok(config)
     }
@@ -69,6 +75,7 @@ impl Default for Config {
             s3_region: None,
             s3_access_key: None,
             s3_secret_key: None,
+            discord_webhook: None,
         }
     }
 }

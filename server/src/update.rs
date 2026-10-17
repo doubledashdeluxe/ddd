@@ -1,11 +1,12 @@
 use std::fs;
 use std::io::{self, ErrorKind};
+use std::path::Path;
 use std::sync::Arc;
 
 use anyhow::Result;
 use arc_swap::ArcSwap;
 use heapless::Vec;
-use log::debug;
+use log::info;
 use rawzip::{CompressionMethod, ZipArchive};
 use yazi::Format;
 
@@ -17,10 +18,13 @@ pub struct Update {
 }
 
 impl Update {
-    pub fn read() -> Result<Option<Self>> {
-        let update = match fs::read("build/update.zip") {
+    pub fn read(path: Option<&Path>) -> Result<Option<Self>> {
+        let path = path.unwrap_or_else(|| "build".as_ref());
+        let path = path.join("update.zip");
+        info!("Update path: {}", path.display());
+        let update = match fs::read(&path) {
             Err(e) if e.kind() == ErrorKind::NotFound => {
-                debug!("Update not found");
+                info!("{} not found", path.display());
                 return Ok(None);
             }
             r => r?,
@@ -48,7 +52,7 @@ impl Update {
         } else {
             Vec::new()
         };
-        debug!("Found update with size {}", update.len());
+        info!("Found update with size {}", update.len());
         Ok(Some(Self { update: update.into(), changelog }))
     }
 }

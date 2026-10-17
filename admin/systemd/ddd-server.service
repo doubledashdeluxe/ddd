@@ -1,0 +1,35 @@
+[Unit]
+Description=Double Dash Deluxe game server
+
+[Service]
+CapabilityBoundingSet=
+ConfigurationDirectory=ddd-server
+DynamicUser=yes
+ExecStart=/usr/bin/ddd-server
+LoadCredentialEncrypted=discord-webhook:ddd-discord-webhook
+LoadCredentialEncrypted=private-key:ddd-private-key
+LoadCredentialEncrypted=s3-access-key:ddd-s3-access-key
+LoadCredentialEncrypted=s3-secret-key:ddd-s3-secret-key
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+PrivateDevices=yes
+PrivateUsers=yes
+ProtectClock=yes
+ProtectControlGroups=yes
+ProtectHome=yes
+ProtectHostname=yes
+ProtectKernelLogs=yes
+ProtectKernelModules=yes
+ProtectKernelTunables=yes
+ProtectProc=invisible
+Restart=on-failure
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+RestrictNamespaces=yes
+RestrictRealtime=yes
+StateDirectory=ddd-server
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+Type=notify-reload
+
+[Install]
+WantedBy=multi-user.target

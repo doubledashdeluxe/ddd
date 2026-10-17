@@ -1,5 +1,3 @@
-use std::fmt::{self, Debug, Formatter};
-use std::fs;
 use std::sync::mpsc::Receiver;
 use std::time::Duration;
 
@@ -8,6 +6,7 @@ use arc_swap::Cache;
 use ureq::Agent;
 use ureq::http::HeaderValue;
 
+use crate::config::{Config, SharedConfig};
 use crate::courses::{Courses, SharedCourses};
 use crate::http;
 use crate::result_ext::ResultExt;
@@ -16,6 +15,7 @@ use crate::util;
 use crate::webhook::race::Race;
 
 pub struct Worker {
+    config: SharedConfig,
     courses: SharedCourses,
     race_receiver: Receiver<storage::Race>,
     username: String,
@@ -23,12 +23,16 @@ pub struct Worker {
     url: String,
     buf: Vec<u8>,
     agent: Agent,
-    webhook: Option<Credential>,
 }
 
 impl Worker {
-    pub fn new(courses: SharedCourses, race_receiver: Receiver<storage::Race>) -> Self {
+    pub fn new(
+        config: SharedConfig,
+        courses: SharedCourses,
+        race_receiver: Receiver<storage::Race>,
+    ) -> Self {
         Self {
+            config,
             courses,
             race_receiver,
             username: "DDD Dev Server".to_owned(),
@@ -36,25 +40,33 @@ impl Worker {
             url: "https://dev.ddd.gg".to_owned(),
             buf: vec![],
             agent: http::agent(),
-            webhook: Credential::load("run/webhook.txt"),
         }
     }
 
     pub fn run(mut self) -> ! {
+        let mut config = Cache::new(self.config.clone());
         let mut courses = Cache::new(self.courses.clone());
         loop {
-            let courses = courses.load();
             let mut race = self.race_receiver.recv().unwrap();
-            self.send_race(courses, &mut race).log_err();
+
+            let config = config.load();
+            let courses = courses.load();
+
+            self.send_race(config, courses, &mut race).log_err();
         }
     }
 
-    fn send_race(&mut self, courses: &Courses, race: &mut storage::Race) -> Result<()> {
+    fn send_race(
+        &mut self,
+        config: &Config,
+        courses: &Courses,
+        race: &mut storage::Race,
+    ) -> Result<()> {
         self.buf.clear();
         let race = Race::new(courses, &self.username, &self.avatar_url, &self.url, race);
         serde_json::to_writer(&mut self.buf, &race)?;
 
-        let Some(webhook) = &self.webhook else { return Ok(()) };
+        let Some(webhook) = &config.discord_webhook else { return Ok(()) };
         util::retry(5, Duration::from_secs(1), || {
             self.agent
                 .post(&webhook.0)
@@ -63,21 +75,5 @@ impl Worker {
         })?;
 
         Ok(())
-    }
-}
-
-struct Credential(String);
-
-impl Credential {
-    fn load(path: &str) -> Option<Self> {
-        let mut credential = fs::read_to_string(path).ok()?;
-        credential.truncate(credential.trim_end().len());
-        Some(Self(credential))
-    }
-}
-
-impl Debug for Credential {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        f.debug_tuple("Credential").finish_non_exhaustive()
     }
 }

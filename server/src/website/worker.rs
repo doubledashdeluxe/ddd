@@ -1,4 +1,6 @@
 use std::collections::HashMap;
+use std::ffi::OsString;
+use std::path::Path;
 use std::sync::Arc;
 use std::sync::mpsc::Receiver;
 
@@ -26,9 +28,10 @@ pub struct Worker {
     courses: SharedCourses,
     message_receiver: Receiver<Message>,
     state: State,
-    path: String,
+    path: OsString,
     content: String,
-    path_buf: String,
+    local_path_buf: OsString,
+    s3_path_buf: String,
     s3: S3,
     rooms: Arc<Rooms>,
 }
@@ -39,7 +42,7 @@ impl Worker {
         courses: SharedCourses,
         message_receiver: Receiver<Message>,
         init: Init,
-        path: &str,
+        path: &Path,
         rooms: Arc<Rooms>,
     ) -> Self {
         let state = State {
@@ -56,9 +59,10 @@ impl Worker {
             courses,
             message_receiver,
             state,
-            path: format!("{path}/website"),
+            path: path.join("website").into(),
             content: String::new(),
-            path_buf: String::new(),
+            local_path_buf: OsString::new(),
+            s3_path_buf: String::new(),
             s3: S3::default(),
             rooms,
         }
@@ -75,7 +79,7 @@ impl Worker {
 
             if let Some(config) = config.s3() {
                 let mut backend = S3Backend {
-                    path_buf: &mut self.path_buf,
+                    path_buf: &mut self.s3_path_buf,
                     content: &mut self.content,
                     s3: &mut self.s3,
                     host: config.host,
@@ -87,7 +91,7 @@ impl Worker {
             } else {
                 let mut backend = LocalBackend {
                     path: &self.path,
-                    path_buf: &mut self.path_buf,
+                    path_buf: &mut self.local_path_buf,
                     content: &mut self.content,
                 };
                 process(courses, &mut self.state, &self.rooms, &mut message, &mut backend);

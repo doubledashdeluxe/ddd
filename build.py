@@ -428,19 +428,7 @@ for cargo_dir in cargo_dirs:
                 'binary': binary,
             },
         )
-for arch in ['x86_64', 'aarch64']:
-    n.build(
-        os.path.join('target', f'{arch}-unknown-linux-gnu', 'release', 'ddd-server'),
-        'cargo',
-        [
-            *sorted(glob.glob(os.path.join('server', '**'), recursive=True)),
-            os.path.join('data', 'version.txt'),
-        ],
-        variables = {
-            'binary': 'ddd-server',
-            'opts': f'--target {arch}-unknown-linux-gnu',
-        },
-    )
+        n.newline()
 
 compile_commands = []
 
@@ -1044,6 +1032,27 @@ n.build(
 )
 n.newline()
 
+cargo_rpm_dirs = {
+    'server': ['ddd-server'],
+    'tools': ['keygen'],
+}
+for cargo_dir in cargo_rpm_dirs:
+    for binary in cargo_rpm_dirs[cargo_dir]:
+        for arch in ['x86_64', 'aarch64']:
+            n.build(
+                os.path.join('target', f'{arch}-unknown-linux-gnu', 'release', binary),
+                'cargo',
+                [
+                    *sorted(glob.glob(os.path.join(cargo_dir, '**'), recursive=True)),
+                    os.path.join('data', 'version.txt'),
+                ],
+                variables = {
+                    'binary': binary,
+                    'opts': f'--target {arch}-unknown-linux-gnu',
+                },
+            )
+            n.newline()
+
 rpms = []
 for arch in ['x86_64', 'aarch64']:
     rpm = os.path.join('$builddir', 'rpm', arch, 'RPMS', f'ddd-server.{arch}.rpm')
@@ -1053,8 +1062,10 @@ for arch in ['x86_64', 'aarch64']:
         'rpm',
         os.path.join('admin', 'rpm', 'ddd-server.spec'),
         implicit = [
+            os.path.join('admin', 'systemd', 'ddd-server.service'),
             os.path.join('data', 'version.txt'),
             os.path.join('target', f'{arch}-unknown-linux-gnu', 'release', 'ddd-server'),
+            os.path.join('target', f'{arch}-unknown-linux-gnu', 'release', 'keygen'),
         ],
         variables = {
             'target': arch,

@@ -5,7 +5,7 @@ use std::time::{Duration, Instant};
 
 use anyhow::{Result, anyhow};
 use heapless::{LinearMap, Vec};
-use log::{debug, trace};
+use log::debug;
 use rand::Rng;
 
 use crate::config::Config;
@@ -32,7 +32,7 @@ pub struct Client {
 
 impl Client {
     pub fn new(now: Instant, addr: SocketAddr, pk: PublicKey) -> Self {
-        trace!("-> {addr}");
+        debug!("-> {addr}");
         let expiration = now + Duration::from_mins(2);
         let state = State::Idle;
         let client_state = None;
@@ -516,7 +516,7 @@ impl Client {
 
 impl Drop for Client {
     fn drop(&mut self) {
-        trace!("<- {}", self.addr);
+        debug!("<- {}", self.addr);
     }
 }
 

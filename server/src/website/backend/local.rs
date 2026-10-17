@@ -1,3 +1,4 @@
+use std::ffi::{OsStr, OsString};
 use std::fmt::{self, Display, Write};
 use std::fs;
 
@@ -11,8 +12,8 @@ use crate::website::path_printer::PathPrinter;
 
 #[derive(Debug)]
 pub struct Local<'a> {
-    pub path: &'a str,
-    pub path_buf: &'a mut String,
+    pub path: &'a OsStr,
+    pub path_buf: &'a mut OsString,
     pub content: &'a mut String,
 }
 

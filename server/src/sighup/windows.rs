@@ -4,7 +4,15 @@ use std::time::Duration;
 
 use anyhow::Result;
 
-pub fn sighup() -> Result<impl Iterator<Item = ()>> {
-    thread::sleep(Duration::MAX);
-    Ok(iter::empty())
+pub struct Sighup;
+
+impl Sighup {
+    pub const fn new() -> Result<Self> {
+        Ok(Self)
+    }
+
+    pub fn wait(&mut self) -> impl Iterator<Item = ()> {
+        thread::sleep(Duration::MAX);
+        iter::empty()
+    }
 }

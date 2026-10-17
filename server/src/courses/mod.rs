@@ -4,11 +4,12 @@ use std::collections::HashMap;
 use std::fs;
 use std::io::ErrorKind;
 use std::ops::Deref;
+use std::path::Path;
 use std::sync::Arc;
 
 use anyhow::Result;
 use arc_swap::ArcSwap;
-use log::debug;
+use log::info;
 
 use crate::base64;
 use crate::dir_entry;
@@ -19,11 +20,14 @@ mod course;
 pub struct Courses(HashMap<[u8; 32], Course>);
 
 impl Courses {
-    pub fn read() -> Result<Self> {
+    pub fn read(path: Option<&Path>) -> Result<Self> {
         let mut courses = Self::default();
-        let entries = match fs::read_dir("run/courses") {
+        let path = path.unwrap_or_else(|| "run".as_ref());
+        let path = path.join("courses");
+        info!("Courses path: {}", path.display());
+        let entries = match fs::read_dir(&path) {
             Err(e) if e.kind() == ErrorKind::NotFound => {
-                debug!("run/courses not found, using default courses");
+                info!("{} not found, using default courses only", path.display());
                 return Ok(courses);
             }
             r => r?,
