@@ -1,14 +1,14 @@
-name: Tag version
+name: Beta release
 
 on:
   push:
     branches-ignore: [dependabot/**]
 
 jobs:
-  tag-version:
-    name: Tag version
+  tag-beta-release:
+    name: Tag beta release
     if: github.repository == 'doubledashdeluxe/ddd'
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 5
     steps:
       - name: Checkout
@@ -17,12 +17,12 @@ jobs:
           token: ${{ secrets.PAT }}
           fetch-depth: 0
           fetch-tags: true
-      - name: Tag version
+      - name: Tag
         run: |
           branch=$(git symbolic-ref --short HEAD)
-          tag=$(git tag -n0 --sort=v:refname $branch-alpha.* | tail -n 1)
+          tag=$(git tag -n0 --sort=v:refname $branch-beta.* | tail -n 1)
           number=${tag##*.}
           number=$((number + 1)) || 1
-          tag=$branch-alpha.$number
+          tag=$branch-beta.$number
           git tag $tag
           git push origin $tag

@@ -18,9 +18,7 @@ pub struct Worker {
     config: SharedConfig,
     courses: SharedCourses,
     race_receiver: Receiver<storage::Race>,
-    username: String,
     avatar_url: String,
-    url: String,
     buf: Vec<u8>,
     agent: Agent,
 }
@@ -35,9 +33,7 @@ impl Worker {
             config,
             courses,
             race_receiver,
-            username: "DDD Dev Server".to_owned(),
             avatar_url: "https://i.imgur.com/sTkpcT9.png".to_owned(),
-            url: "https://dev.ddd.gg".to_owned(),
             buf: vec![],
             agent: http::agent(),
         }
@@ -63,7 +59,7 @@ impl Worker {
         race: &mut storage::Race,
     ) -> Result<()> {
         self.buf.clear();
-        let race = Race::new(courses, &self.username, &self.avatar_url, &self.url, race);
+        let race = Race::new(courses, &config.name, &self.avatar_url, &config.url, race);
         serde_json::to_writer(&mut self.buf, &race)?;
 
         let Some(webhook) = &config.discord_webhook else { return Ok(()) };

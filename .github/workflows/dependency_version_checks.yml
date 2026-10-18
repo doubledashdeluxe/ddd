@@ -11,7 +11,7 @@ jobs:
   check-ff:
     name: Check FatFs
     if: github.repository == 'doubledashdeluxe/ddd'
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 5
     steps:
       - name: Checkout
@@ -48,7 +48,7 @@ jobs:
             repo: snitch
     name: Check ${{ matrix.repo }}
     if: github.repository == 'doubledashdeluxe/ddd'
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 5
     steps:
       - name: Checkout

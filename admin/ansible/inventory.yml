@@ -1,5 +1,11 @@
 servers:
   hosts:
     dev:
-      ansible_host: 129.80.15.96
+      ansible_host: ddd.dev.ddd.gg
+      ansible_user: opc
+    beta:
+      ansible_host: ddd.beta.ddd.gg
+      ansible_user: opc
+    prod:
+      ansible_host: ddd.prod.ddd.gg
       ansible_user: opc

@@ -809,7 +809,7 @@ ddd_out_files = [
     *license_out_files,
 ]
 n.build(
-    os.path.join('$builddir', 'update.zip'),
+    os.path.join('$builddir', 'ddd-update.zip'),
     'zip',
     ddd_out_files,
     variables = {
@@ -823,7 +823,7 @@ n.newline()
 n.build(
     'ddd',
     'phony',
-    os.path.join('$builddir', 'update.zip'),
+    os.path.join('$builddir', 'ddd-update.zip'),
 )
 n.newline()
 
@@ -1069,7 +1069,7 @@ for arch in ['x86_64', 'aarch64']:
         ],
         variables = {
             'target': arch,
-            'topdir': os.path.abspath(os.path.join('build', 'rpm', arch))
+            'topdir': os.path.abspath(os.path.join('build', 'rpm', arch)),
         },
     )
     n.newline()

@@ -9,6 +9,8 @@
         update_only: true
       notify:
         - Reboot
+    - name: Flush handlers
+      meta: flush_handlers
     - name: Set max core dump size
       ansible.builtin.copy:
         src: coredump.conf
@@ -31,10 +33,26 @@
         disable_gpg_check: true
       notify:
         - Enable and restart ddd-server service
+    - name: Create ddd-server private key
+      ansible.builtin.shell: |
+        ddd-keygen /tmp/private-key
+        systemd-creds encrypt /tmp/private-key /etc/credstore.encrypted/ddd-private-key --name=private-key
+        shred -u /tmp/private-key
+      args:
+        creates: /etc/credstore.encrypted/ddd-private-key
+    - name: Flush handlers
+      meta: flush_handlers
     - name: Copy ddd-server config
       ansible.builtin.copy:
         src: host_files/{{ inventory_hostname }}/ddd-server.conf
         dest: /etc/ddd-server/ddd-server.conf
+        mode: '644'
+      notify:
+        - Reload ddd-server service
+    - name: Copy DDD update
+      ansible.builtin.copy:
+        src: ../../build/ddd-update.zip
+        dest: /etc/ddd-server
         mode: '644'
       notify:
         - Reload ddd-server service

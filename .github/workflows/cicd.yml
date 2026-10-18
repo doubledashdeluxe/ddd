@@ -1,0 +1,326 @@
+name: CI/CD
+
+on:
+  push:
+    branches-ignore: [dependabot/**]
+    tags: ['**']
+  pull_request:
+
+env:
+  llvm-version: 23.1.3
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build-ddd:
+    name: Build DDD
+    strategy:
+      fail-fast: false
+      matrix:
+        runner:
+          - ubuntu-26.04
+          - windows-2025
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Set version
+        if: github.ref_type == 'tag'
+        run: git describe --tags --abbrev=0 > data/version.txt
+      - name: Setup LLVM
+        uses: ./.github/actions/setup-llvm
+        with:
+          llvm-version: ${{ env.llvm-version }}
+      - name: Install Wine
+        if: runner.os == 'Linux'
+        run: |
+          sudo dpkg --add-architecture i386
+          sudo apt-get update
+          sudo apt-get install wine32
+          WINEARCH=win32 winecfg
+      - name: Install Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+      - name: Cache CodeWarrior
+        id: cache-cw
+        uses: actions/cache@v6
+        with:
+          path: cache
+          key: ${{ runner.os }}-cw-se-v2.10
+      - name: Download CodeWarrior
+        if: steps.cache-cw.outputs.cache-hit != 'true'
+        run: |
+          mkdir cache && cd cache
+          curl -OJ https://www.nxp.com/lgfiles/devsuites/PowerPC/CW55xx_v2_10_SE.exe
+          cd ..
+      - name: Prepare tools
+        run: bash tools/prepare.sh cache/CW55xx_v2_10_SE.exe
+      - name: Build
+        run: python build.py --ci --llvm-dir tools/llvm -- ddd
+      - name: Upload DDD
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ runner.os }}-ddd
+          path: build/ddd
+      - name: Upload DDD update
+        if: runner.os == 'Linux'
+        uses: actions/upload-artifact@v7
+        with:
+          path: build/ddd-update.zip
+          archive: false
+
+  compare-ddd-binaries:
+    name: Compare DDD binaries
+    runs-on: ubuntu-26.04
+    needs: build-ddd
+    timeout-minutes: 5
+    steps:
+      - name: Download DDD
+        uses: actions/download-artifact@v8
+        with:
+          pattern: '*-ddd'
+      - name: Compare binaries
+        run: cmp Linux-ddd/boot.dol Windows-ddd/boot.dol
+
+  test-ddd:
+    name: Test DDD
+    strategy:
+      fail-fast: false
+      matrix:
+        runner:
+          - ubuntu-26.04
+          - windows-2025
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Set version
+        if: github.ref_type == 'tag'
+        run: git describe --tags --abbrev=0 > data/version.txt
+      - name: Setup LLVM
+        uses: ./.github/actions/setup-llvm
+        with:
+          llvm-version: ${{ env.llvm-version }}
+      - name: Install Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+      - name: Setup ASan
+        if: runner.os == 'Windows'
+        run: echo tools/llvm/lib/clang/23/lib/windows >> $GITHUB_PATH
+      - name: Test
+        run: |
+          python build.py --ci --llvm-dir tools/llvm -- tests
+          build/tests
+
+  fuzz-ddd:
+    name: Fuzz DDD
+    strategy:
+      fail-fast: false
+      matrix:
+        runner:
+          - ubuntu-26.04
+          - windows-2025
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Set version
+        if: github.ref_type == 'tag'
+        run: git describe --tags --abbrev=0 > data/version.txt
+      - name: Setup LLVM
+        uses: ./.github/actions/setup-llvm
+        with:
+          llvm-version: ${{ env.llvm-version }}
+      - name: Install Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+      - name: Setup ASan
+        if: runner.os == 'Windows'
+        run: echo tools/llvm/lib/clang/23/lib/windows >> $GITHUB_PATH
+      - name: Fuzz
+        run: |
+          python build.py --ci --llvm-dir tools/llvm -- fuzzers
+          python fuzz.py data/fuzzers/inputs/*
+          python fuzz.py -max_total_time=10
+
+  check-ddd:
+    name: Check DDD on Linux
+    runs-on: ubuntu-26.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Set version
+        if: github.ref_type == 'tag'
+        run: git describe --tags --abbrev=0 > data/version.txt
+      - name: Setup LLVM
+        uses: ./.github/actions/setup-llvm
+        with:
+          llvm-version: ${{ env.llvm-version }}
+      - name: Install Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+      - name: Check
+        run: python build.py --ci --llvm-dir tools/llvm -- checks
+
+  format-ddd:
+    name: Format DDD
+    strategy:
+      fail-fast: false
+      matrix:
+        runner:
+          - ubuntu-26.04
+          - windows-2025
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Setup LLVM
+        uses: ./.github/actions/setup-llvm
+        with:
+          llvm-version: ${{ env.llvm-version }}
+      - name: Install Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+      - name: Format
+        run: python format.py --ci --llvm-dir tools/llvm
+
+  build-rust:
+    name: Build Rust projects
+    strategy:
+      fail-fast: false
+      matrix:
+        runner:
+          - ubuntu-26.04
+          - ubuntu-26.04-arm
+          - windows-2025
+    runs-on: ${{ matrix.runner }}
+    env:
+      RUSTFLAGS: -D warnings
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Set version
+        if: github.ref_type == 'tag'
+        run: git describe --tags --abbrev=0 > data/version.txt
+      - name: Build
+        run: cargo build -r --target host-tuple
+      - name: Flood
+        run: |
+          cargo run -r --bin flood --target host-tuple -- -p 2 --cookie
+          cargo run -r --bin flood --target host-tuple -- -p 2 --kx
+          cargo run -r --bin flood --target host-tuple -- -p 2 --connection
+          cargo run -r --bin flood --target host-tuple -- -p 2 --identity
+          cargo run -r --bin flood --target host-tuple -- -p 2 --search
+      - name: Upload ddd-server
+        uses: actions/upload-artifact@v7
+        with:
+          name: ddd-server-${{ runner.os }}-${{ runner.arch }}
+          path: target/*/release/ddd-server*
+      - name: Build RPM
+        if: runner.os == 'Linux'
+        run: python build.py --ci -- $(uname -m)-rpm
+      - name: Upload RPM
+        if: runner.os == 'Linux'
+        uses: actions/upload-artifact@v7
+        with:
+          path: build/rpm/*/RPMS/*.rpm
+          archive: false
+
+  test-rust:
+    name: Test Rust projects
+    strategy:
+      fail-fast: false
+      matrix:
+        runner:
+          - ubuntu-26.04
+          - ubuntu-26.04-arm
+          - windows-2025
+    runs-on: ${{ matrix.runner }}
+    env:
+      RUSTFLAGS: -D warnings
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Set version
+        if: github.ref_type == 'tag'
+        run: git describe --tags --abbrev=0 > data/version.txt
+      - name: Test
+        run: |
+          cargo test
+          cargo test -r
+
+  format-rust:
+    name: Format Rust projects
+    strategy:
+      fail-fast: false
+      matrix:
+        runner:
+          - ubuntu-26.04
+          - windows-2025
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Format
+        run: cargo fmt --check
+
+  lint-rust:
+    name: Lint Rust projects
+    strategy:
+      fail-fast: false
+      matrix:
+        runner:
+          - ubuntu-26.04
+          - windows-2025
+    runs-on: ${{ matrix.runner }}
+    env:
+      RUSTFLAGS: -D warnings
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Lint
+        run: cargo clippy --all-targets
+
+  deploy-ddd-server:
+    name: Deploy ddd-server
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-26.04
+    needs: [build-ddd, build-rust]
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Download DDD update
+        uses: actions/download-artifact@v8
+        with:
+          name: ddd-update.zip
+          skip-decompress: true
+      - name: Download RPM
+        uses: actions/download-artifact@v8
+        with:
+          name: ddd-server.aarch64.rpm
+      - name: Deploy
+        run: |
+          mkdir -p build/rpm/aarch64/RPMS
+          mv ddd-update.zip build
+          mv ddd-server.aarch64.rpm build/rpm/aarch64/RPMS
+          install -m 600 -D /dev/null ~/.ssh/id_ed25519
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          cat admin/ansible/known_hosts >> ~/.ssh/known_hosts
+          ansible-playbook -i admin/ansible/inventory.yml -l dev admin/ansible/playbook.yml

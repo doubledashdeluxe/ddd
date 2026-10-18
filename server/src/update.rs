@@ -20,7 +20,7 @@ pub struct Update {
 impl Update {
     pub fn read(path: Option<&Path>) -> Result<Option<Self>> {
         let path = path.unwrap_or_else(|| "build".as_ref());
-        let path = path.join("update.zip");
+        let path = path.join("ddd-update.zip");
         info!("Update path: {}", path.display());
         let update = match fs::read(&path) {
             Err(e) if e.kind() == ErrorKind::NotFound => {

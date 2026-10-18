@@ -15,6 +15,8 @@ use crate::formats::online;
 
 #[derive(Debug)]
 pub struct Config {
+    pub name: String,
+    pub url: String,
     pub motd: heapless::String<{ online::MAX_MOTD_LENGTH }>,
     pub shards: usize,
     pub buffers_per_shard: usize,
@@ -64,6 +66,8 @@ impl Config {
 impl Default for Config {
     fn default() -> Self {
         Self {
+            name: "DDD Dev Server".to_owned(),
+            url: "https://dev.ddd.gg".to_owned(),
             motd: "It works!".try_into().unwrap(),
             shards: 0,
             buffers_per_shard: 5000,
@@ -103,6 +107,7 @@ impl Ini for Config {
             return Ok(());
         };
 
+        let parse_string = |field| parse(field, key, value, |value| Ok(value.parse()?));
         let parse_motd = |field| parse(field, key, value, |value| Ok(value.parse()?));
         let parse_number = |field, limit| {
             parse(field, key, value, |value| {
@@ -115,6 +120,8 @@ impl Ini for Config {
             |field| parse(field, key, value, |value| Ok(Some(value.to_owned())));
 
         match key {
+            "name" => parse_string(&mut self.name),
+            "url" => parse_string(&mut self.url),
             "motd" => parse_motd(&mut self.motd),
             "shards" => parse_number(&mut self.shards, 4096),
             "buffers_per_shard" => parse_number(&mut self.buffers_per_shard, 65536),

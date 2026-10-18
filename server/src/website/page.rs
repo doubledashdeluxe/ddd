@@ -2,6 +2,7 @@ use std::fmt::{Display, Result, Write};
 
 use jiff::Timestamp;
 
+use crate::formats::version;
 use crate::website::css;
 use crate::website::html::{Children, Element};
 use crate::website::path_printer::PathPrinter;
@@ -44,7 +45,7 @@ fn write_head(
     meta.empty()?;
     write_meta("viewport", "width=device-width, initial-scale=1", &mut head)?;
     write_meta("color-scheme", "light dark", &mut head)?;
-    write_title(format_args!("{name} · Double Dash Deluxe [dev]"), &mut head)?;
+    write_title(format_args!("{name} · Double Dash Deluxe [{}]", version::VERSION), &mut head)?;
     write_link(
         "stylesheet",
         path_printer.print_file(format_args!("css/{}", css::FILE_NAME)),
