@@ -1,0 +1,5 @@
+servers:
+  hosts:
+    dev:
+      ansible_host: 129.80.15.96
+      ansible_user: opc

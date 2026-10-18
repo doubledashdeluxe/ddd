@@ -1,0 +1,52 @@
+- name: Deploy
+  hosts: servers
+  become: true
+  tasks:
+    - name: Update all packages
+      ansible.builtin.dnf:
+        name: "*"
+        state: latest
+        update_only: true
+      notify:
+        - Reboot
+    - name: Set max core dump size
+      ansible.builtin.copy:
+        src: coredump.conf
+        dest: /etc/systemd/coredump.conf
+        mode: '644'
+    - name: Add UDP port 3549 to firewall configuration
+      ansible.posix.firewalld:
+        port: 3549/udp
+        permanent: true
+        state: enabled
+    - name: Copy ddd-server RPM
+      ansible.builtin.copy:
+        src: ../../build/rpm/aarch64/RPMS/ddd-server.aarch64.rpm
+        dest: /tmp
+        mode: '644'
+    - name: Install ddd-server package from RPM
+      ansible.builtin.dnf:
+        name: /tmp/ddd-server.aarch64.rpm
+        state: present
+        disable_gpg_check: true
+      notify:
+        - Enable and restart ddd-server service
+    - name: Copy ddd-server config
+      ansible.builtin.copy:
+        src: host_files/{{ inventory_hostname }}/ddd-server.conf
+        dest: /etc/ddd-server/ddd-server.conf
+        mode: '644'
+      notify:
+        - Reload ddd-server service
+  handlers:
+    - name: Reboot
+      ansible.builtin.reboot:
+    - name: Enable and restart ddd-server service
+      ansible.builtin.systemd_service:
+        name: ddd-server
+        enabled: true
+        state: restarted
+    - name: Reload ddd-server service
+      ansible.builtin.systemd_service:
+        name: ddd-server
+        state: reloaded
