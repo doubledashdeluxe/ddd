@@ -19,8 +19,9 @@
     - name: Add UDP port 3549 to firewall configuration
       ansible.posix.firewalld:
         port: 3549/udp
-        permanent: true
         state: enabled
+        permanent: true
+        immediate: true
     - name: Copy ddd-server RPM
       ansible.builtin.copy:
         src: ../../build/rpm/aarch64/RPMS/ddd-server.aarch64.rpm
