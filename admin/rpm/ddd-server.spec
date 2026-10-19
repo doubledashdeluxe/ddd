@@ -4,7 +4,7 @@
 %define systemd_update_helper %_usr/lib/systemd/systemd-update-helper
 
 Name:    ddd-server
-Version: %(cat data/version.txt)
+Version: %(cat data/version.txt | tr - \~)
 Release: 1
 Summary: Double Dash Deluxe game server
 License: AGPL-3.0-only
