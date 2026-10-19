@@ -323,4 +323,4 @@ jobs:
           install -m 600 -D /dev/null ~/.ssh/id_ed25519
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
           cat admin/ansible/known_hosts >> ~/.ssh/known_hosts
-          ansible-playbook -i admin/ansible/inventory.yml -l dev admin/ansible/playbook.yml
+          ansible-playbook -i admin/ansible/inventory.yml -l beta admin/ansible/playbook.yml
