@@ -4,6 +4,7 @@
 
 #include <cube/Arena.hh>
 #include <formats/Online.hh>
+#include <formats/Version.hh>
 #include <portable/Log.hh>
 #include <portable/UTF8.hh>
 
@@ -44,28 +45,57 @@ OSThread &CubeServerManager::thread() {
 
 void CubeServerManager::process() {
     m_servers.reset();
+    addDefaultServers();
     Array<char, 256> path;
     snprintf(path.values(), path.count(), "main:/ddd/servers");
     Storage::CreateDir(path.values(), Storage::Mode::WriteAlways);
     Storage::NodeInfo nodeInfo;
-    addServers(path, nodeInfo);
+    addCustomServers(path, nodeInfo);
     sortServersByName();
 }
 
-void CubeServerManager::addServers(Array<char, 256> &path, Storage::NodeInfo &nodeInfo) {
+void CubeServerManager::addDefaultServers() {
+    bool isDev = strstr(Version, "dev");
+    bool isBeta = strstr(Version, "beta");
+    if (isDev) {
+        u8 publicKey[32] = {0xec, 0x54, 0x34, 0xbe, 0x35, 0x1d, 0xab, 0xf2, 0x81, 0x8c, 0xd2, 0x35,
+                0x5a, 0xe2, 0xe3, 0xa5, 0x8c, 0x79, 0xa9, 0xc4, 0x99, 0xff, 0x4a, 0x5b, 0x75, 0xcb,
+                0x7b, 0xb9, 0xa5, 0xcf, 0xbd, 0x21};
+        addDefaultServer("Dev Server", "dev.ddd.gg", publicKey);
+    }
+    if (isDev || isBeta) {
+        u8 publicKey[32] = {0x82, 0x7d, 0xbb, 0x08, 0x77, 0x2b, 0x67, 0x61, 0x4c, 0x1c, 0xaf, 0xdc,
+                0x58, 0x7e, 0x91, 0xde, 0x7e, 0x13, 0x1c, 0xf4, 0xe7, 0xd9, 0x9e, 0xe3, 0xdf, 0x71,
+                0x6b, 0xd3, 0x80, 0x39, 0xea, 0x25};
+        addDefaultServer("Beta Server", "beta.ddd.gg", publicKey);
+    }
+}
+
+void CubeServerManager::addDefaultServer(const char *name, const char *address,
+        const u8 (&publicKey)[32]) {
+    DEBUG("Adding default server %s...", name);
+    ServerName serverName;
+    snprintf(serverName.values(), serverName.count(), "%s", name);
+    Array<char, 80> serverAddress;
+    snprintf(serverAddress.values(), serverAddress.count(), "%s", address);
+    Server server(serverName, serverAddress, Optional<u16>(), PublicKey(publicKey));
+    m_servers.pushBack(server);
+}
+
+void CubeServerManager::addCustomServers(Array<char, 256> &path, Storage::NodeInfo &nodeInfo) {
     u32 length = strlen(path.values());
     for (Storage::DirHandle dir(path.values()); dir.read(nodeInfo);) {
         snprintf(path.values() + length, path.count() - length, "/%s", nodeInfo.name.values());
         if (nodeInfo.type == Storage::NodeType::Dir) {
-            addServers(path, nodeInfo);
+            addCustomServers(path, nodeInfo);
         } else {
-            addServer(path);
+            addCustomServer(path);
         }
     }
     path[length] = '\0';
 }
 
-void CubeServerManager::addServer(const Array<char, 256> &path) {
+void CubeServerManager::addCustomServer(const Array<char, 256> &path) {
     ServerINI serverINI;
     Array<INIReader::Field, 3> iniFields;
     iniFields[0] = (INIReader::Field){"servername", &serverINI.fallbackName};
@@ -119,7 +149,14 @@ void CubeServerManager::addServer(const Array<char, 256> &path) {
         port.reset();
     }
 
-    DEBUG("Adding server %s...", path.values());
+    for (u32 i = 0; i < m_servers.count(); i++) {
+        if (!strcmp(m_servers[i].address().values(), address.values()) &&
+                m_servers[i].publicKey() == publicKey) {
+            return;
+        }
+    }
+
+    DEBUG("Adding custom server %s...", path.values());
     Server server(name, address, port, publicKey);
     m_servers.pushBack(server);
 }

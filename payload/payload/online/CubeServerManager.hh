@@ -29,8 +29,10 @@ private:
     OSThread &thread() override;
     void process() override;
 
-    void addServers(Array<char, 256> &path, Storage::NodeInfo &nodeInfo);
-    void addServer(const Array<char, 256> &path);
+    void addDefaultServers();
+    void addDefaultServer(const char *name, const char *address, const u8 (&publicKey)[32]);
+    void addCustomServers(Array<char, 256> &path, Storage::NodeInfo &nodeInfo);
+    void addCustomServer(const Array<char, 256> &path);
     void sortServersByName();
 
     static bool CompareServersByName(const Server &a, const Server &b);
