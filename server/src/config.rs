@@ -68,7 +68,7 @@ impl Default for Config {
         Self {
             name: "DDD Dev Server".to_owned(),
             url: "https://dev.ddd.gg".to_owned(),
-            motd: "It works!".try_into().unwrap(),
+            motd: "It works!!".try_into().unwrap(),
             shards: 0,
             buffers_per_shard: 5000,
             max_connections_per_shard: 5000,
