@@ -200,6 +200,7 @@ parser.add_argument('--dry', action='store_true')
 parser.add_argument('--clean', action='store_true')
 parser.add_argument('--ci', action='store_true')
 parser.add_argument('--llvm-dir')
+parser.add_argument('--prod', action='store_true')
 parser.add_argument('--dolphin-force-gamecube', action='store_true')
 args = parser.parse_args(our_argv)
 
@@ -389,7 +390,7 @@ n.newline()
 
 n.rule(
     'zip',
-    command = '$zip -- $in_dir $out $key',
+    command = '$zip $in_dir $out $key',
     description = 'ZIP $out',
 )
 n.newline()
@@ -814,7 +815,7 @@ n.build(
     ddd_out_files,
     variables = {
         'in_dir': os.path.join('$builddir', 'ddd'),
-        'key': os.path.join('data', 'keys', 'update-ed25519-dev.bin'),
+        'key': os.path.join('data', 'keys', f'update-ed25519-{'prod' if args.prod else 'dev'}.bin'),
     },
     implicit = '$zip',
 )

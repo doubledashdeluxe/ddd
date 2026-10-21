@@ -59,8 +59,13 @@ jobs:
           cd ..
       - name: Prepare tools
         run: bash tools/prepare.sh cache/CW55xx_v2_10_SE.exe
+      - name: Prepare prod update key
+        if: github.ref_type == 'tag'
+        run: echo ${{ secrets.UPDATE_PRIVATE_KEY }} | base64 -d > data/keys/update-ed25519-prod.bin
       - name: Build
-        run: python build.py --ci --llvm-dir tools/llvm -- ddd
+        run: >
+          python build.py --ci --llvm-dir tools/llvm
+          ${{ case(github.ref_type == 'tag', '--prod', '') }} -- ddd
       - name: Upload DDD
         uses: actions/upload-artifact@v7
         with:
