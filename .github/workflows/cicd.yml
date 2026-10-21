@@ -302,6 +302,8 @@ jobs:
     if: github.ref_type == 'tag'
     runs-on: ubuntu-26.04
     needs: [build-ddd, build-rust]
+    concurrency:
+      group: deploy-ddd-server
     timeout-minutes: 20
     steps:
       - name: Checkout

@@ -9,6 +9,8 @@ jobs:
     name: Tag beta release
     if: github.repository == 'doubledashdeluxe/ddd'
     runs-on: ubuntu-26.04
+    concurrency:
+      group: tag-beta-release
     timeout-minutes: 5
     steps:
       - name: Checkout
