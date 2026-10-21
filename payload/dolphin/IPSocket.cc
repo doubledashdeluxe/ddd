@@ -125,10 +125,10 @@ s32 SOGetResolver(u32 *main, u32 *backup) {
     if (result < 0) {
         return result;
     }
-    if (main) {
+    if (main && optlen >= 4) {
         *main = table[0];
     }
-    if (backup) {
+    if (backup && optlen >= 8) {
         *backup = table[1];
     }
     return result;
