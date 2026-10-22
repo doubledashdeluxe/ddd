@@ -66,16 +66,19 @@ void Platform::DetectDolphin() {
             // Modern versions
             s_isDolphin = true;
             s_hasDolphinVersion = dolphin.getVersion(versionString, s_dolphinVersion);
-            snprintf(s_string.values(), s_string.count(), "Dolphin %s", versionString.values());
         } else {
             IOS::Resource sha("/dev/sha", IOS::Mode::None);
             if (!sha.ok()) {
                 // Old versions
                 s_isDolphin = true;
-                snprintf(s_string.values(), s_string.count(), "Dolphin");
             } else {
                 snprintf(s_string.values(), s_string.count(), "Wii");
             }
+        }
+        if (s_hasDolphinVersion) {
+            snprintf(s_string.values(), s_string.count(), "Dolphin %s", versionString.values());
+        } else {
+            snprintf(s_string.values(), s_string.count(), "Dolphin");
         }
     }
 
