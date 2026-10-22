@@ -71,14 +71,14 @@ void Platform::DetectDolphin() {
             if (!sha.ok()) {
                 // Old versions
                 s_isDolphin = true;
-            } else {
-                snprintf(s_string.values(), s_string.count(), "Wii");
             }
         }
         if (s_hasDolphinVersion) {
             snprintf(s_string.values(), s_string.count(), "Dolphin %s", versionString.values());
-        } else {
+        } else if (s_isDolphin) {
             snprintf(s_string.values(), s_string.count(), "Dolphin");
+        } else {
+            snprintf(s_string.values(), s_string.count(), "Wii");
         }
     }
 
