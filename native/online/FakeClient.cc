@@ -122,7 +122,7 @@ ClientState &FakeClient::writeStateRoom() {
     writeInfo.isRace = true;
     writeInfo.packHash.fill(0xff);
     writeInfo.isHost = true;
-    writeInfo.roomCounter = 0;
+    writeInfo.roomNonce.fill(0);
     writeInfo.spectatingCounter = 0;
     writeInfo.spectating = false;
     writeInfo.options.codeType = 0;

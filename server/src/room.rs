@@ -140,7 +140,7 @@ impl Room {
             mode_index,
             pack_course_count: pack.courses().len() as u8,
             pack_hash: *pack.hash(),
-            room_counter: 0,
+            room_nonce: [0; _],
             room_code: u64::MAX,
             spectating_counter: 0,
             spectating: 0,

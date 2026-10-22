@@ -198,13 +198,13 @@ impl Client {
 
                 let room_info = match (room.client_room_state, room_info) {
                     (ClientRoomState::Search(search), Some(room_info))
-                        if room_info.counter == search.room_counter =>
+                        if room_info.nonce == search.room_nonce =>
                     {
                         let id = room_info.id;
                         rooms.read(&id, |_| room_info)
                     }
                     (ClientRoomState::Search(search), _) => {
-                        let counter = search.room_counter;
+                        let nonce = search.room_nonce;
                         let frame_rate = identity.frame_rate;
                         let karts = karts();
                         let mode_index = search.mode_index;
@@ -221,11 +221,11 @@ impl Client {
                             let id = room.id();
                             let spectating_counter = 0;
                             let spectating = room.insert(config, karts)?;
-                            Ok(RoomInfo { counter, id, spectating_counter, spectating })
+                            Ok(RoomInfo { nonce, id, spectating_counter, spectating })
                         })
                     }
                     (ClientRoomState::New(new), Some(room_info))
-                        if room_info.counter == new.room_counter =>
+                        if room_info.nonce == new.room_nonce =>
                     {
                         let id = room_info.id;
                         rooms.read(&id, |_| room_info)
@@ -242,14 +242,14 @@ impl Client {
                         let pack = Pack::new(courses, &new.pack_course_indices)?;
                         let id = rooms.insert(room_slots, frame_rate, karts, mode_index, pack, rng);
                         id.map(|id| {
-                            let counter = new.room_counter;
+                            let nonce = new.room_nonce;
                             let spectating_counter = 0;
                             let spectating = false;
-                            RoomInfo { counter, id, spectating_counter, spectating }
+                            RoomInfo { nonce, id, spectating_counter, spectating }
                         })
                     }
                     (ClientRoomState::Code(code), Some(room_info))
-                        if code.room_counter == room_info.counter =>
+                        if code.room_nonce == room_info.nonce =>
                     {
                         let id = room_info.id;
                         rooms.read(&id, |_| room_info)
@@ -258,12 +258,12 @@ impl Client {
                         let frame_rate = identity.frame_rate;
                         let room = rooms.get_by_frame_rate_and_code(frame_rate, code.room_code);
                         room.and_then(|mut room| {
-                            let counter = code.room_counter;
+                            let nonce = code.room_nonce;
                             let id = room.id();
                             let spectating_counter = 0;
                             let karts = karts();
                             let spectating = room.insert(config, karts)?;
-                            Ok(RoomInfo { counter, id, spectating_counter, spectating })
+                            Ok(RoomInfo { nonce, id, spectating_counter, spectating })
                         })
                     }
                     (ClientRoomState::Main(main), Some(room_info)) => {
@@ -450,7 +450,7 @@ impl Client {
                 let server_room_state = match room_info {
                     Some(room_info) => {
                         let main = rooms.read(&room_info.id, |room| ServerRoomStateMain {
-                            room_counter: room_info.counter,
+                            room_nonce: room_info.nonce,
                             spectating_counter: room_info.spectating_counter,
                             spectating: room_info.spectating.into(),
                             ..room.room_state(&self.pk)
@@ -596,7 +596,7 @@ struct Identity {
 
 #[derive(Clone, Copy, Debug)]
 struct RoomInfo {
-    counter: u32,
+    nonce: [u8; 16],
     id: u128,
     spectating_counter: u32,
     spectating: bool,

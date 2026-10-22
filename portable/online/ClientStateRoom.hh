@@ -70,8 +70,8 @@ public:
     void setPackCourseCount(u8 packCourseCount);
     bool isPackHashElementValid(u32 i0, u8 packHashElement);
     void setPackHashElement(u32 i0, u8 packHashElement);
-    bool isRoomCounterValid(u32 roomCounter);
-    void setRoomCounter(u32 roomCounter);
+    bool isRoomNonceElementValid(u32 i0, u8 roomNonceElement);
+    void setRoomNonceElement(u32 i0, u8 roomNonceElement);
     bool isRoomCodeValid(u64 roomCode);
     void setRoomCode(u64 roomCode);
     bool isSpectatingCounterValid(u32 spectatingCounter);
@@ -134,7 +134,7 @@ public:
     u32 getPackCourseIndicesCount();
     u8 getPackCourseIndicesElement(u32 i0);
     u8 getFormat();
-    u32 getRoomCounter();
+    u8 getRoomNonceElement(u32 i0);
 
     u64 getRoomCode();
 

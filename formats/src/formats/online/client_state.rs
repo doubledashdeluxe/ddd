@@ -134,29 +134,32 @@ pub fn client_room_state() -> impl ComplexDataType {
 pub fn client_room_state_search() -> impl ComplexDataType {
     let pack_course_index: SimpleDataType<u8> = SimpleDataType::new();
     let pack_course_indices = ArrayType::new(pack_course_index, 1, MAX_COURSE_COUNT);
-    let room_counter: SimpleDataType<u32> = SimpleDataType::new();
+    let room_nonce_element: SimpleDataType<u8> = SimpleDataType::new();
+    let room_nonce = ArrayType::new(room_nonce_element, 16, 16);
     StructType::new("ClientRoomStateSearch")
         .with_field("mode_index", mode_index())
         .with_field("pack_course_indices", pack_course_indices)
         .with_field("format", room_option_format())
-        .with_field("room_counter", room_counter)
+        .with_field("room_nonce", room_nonce)
 }
 
 pub fn client_room_state_new() -> impl ComplexDataType {
     let pack_course_index: SimpleDataType<u8> = SimpleDataType::new();
     let pack_course_indices = ArrayType::new(pack_course_index, 1, MAX_COURSE_COUNT);
-    let room_counter: SimpleDataType<u32> = SimpleDataType::new();
+    let room_nonce_element: SimpleDataType<u8> = SimpleDataType::new();
+    let room_nonce = ArrayType::new(room_nonce_element, 16, 16);
     StructType::new("ClientRoomStateNew")
         .with_field("mode_index", mode_index())
         .with_field("pack_course_indices", pack_course_indices)
-        .with_field("room_counter", room_counter)
+        .with_field("room_nonce", room_nonce)
 }
 
 pub fn client_room_state_code() -> impl ComplexDataType {
-    let room_counter: SimpleDataType<u32> = SimpleDataType::new();
+    let room_nonce_element: SimpleDataType<u8> = SimpleDataType::new();
+    let room_nonce = ArrayType::new(room_nonce_element, 16, 16);
     let room_code: SimpleDataType<u64> = SimpleDataType::new();
     StructType::new("ClientRoomStateCode")
-        .with_field("room_counter", room_counter)
+        .with_field("room_nonce", room_nonce)
         .with_field("room_code", room_code)
 }
 

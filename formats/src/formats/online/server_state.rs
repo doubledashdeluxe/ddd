@@ -120,7 +120,8 @@ pub fn server_room_state_main() -> impl ComplexDataType {
     let pack_course_count: SimpleDataType<u8> = SimpleDataType::new();
     let pack_hash_element: SimpleDataType<u8> = SimpleDataType::new();
     let pack_hash = ArrayType::new(pack_hash_element, 32, 32);
-    let room_counter: SimpleDataType<u32> = SimpleDataType::new();
+    let room_nonce_element: SimpleDataType<u8> = SimpleDataType::new();
+    let room_nonce = ArrayType::new(room_nonce_element, 16, 16);
     let room_code: SimpleDataType<u64> = SimpleDataType::new();
     let spectating_counter: SimpleDataType<u32> = SimpleDataType::new();
     let spectating: SimpleDataType<u8> = SimpleDataType::new();
@@ -131,7 +132,7 @@ pub fn server_room_state_main() -> impl ComplexDataType {
         .with_field("mode_index", mode_index())
         .with_field("pack_course_count", pack_course_count)
         .with_field("pack_hash", pack_hash)
-        .with_field("room_counter", room_counter)
+        .with_field("room_nonce", room_nonce)
         .with_field("room_code", room_code)
         .with_field("spectating_counter", spectating_counter)
         .with_field("spectating", spectating)

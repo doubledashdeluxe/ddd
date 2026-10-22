@@ -446,7 +446,7 @@ void SceneReplay::stateSelect() {
         onlineInfo.m_modeIndex = replay.modeIndex;
         onlineInfo.m_format = replay.format;
         onlineInfo.m_isHost = replay.roomType == RoomType::Personal && m_clientIndex == 0;
-        onlineInfo.m_roomCounter = 0;
+        onlineInfo.m_roomNonce.fill(0);
         onlineInfo.m_roomCode = replay.roomCode;
         RaceInfo::Instance().m_raceMode = Modes[replay.modeIndex];
         CubeClient::Instance()->setReplay(replay, m_clientIndex);

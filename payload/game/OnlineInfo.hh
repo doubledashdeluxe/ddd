@@ -9,6 +9,7 @@ public:
 
     void reset();
     void setLocalKarts();
+    void setRoomNonce();
 
     static OnlineInfo &Instance();
 
@@ -22,7 +23,7 @@ public:
     u32 m_modeIndex;
     u32 m_format;
     bool m_isHost;
-    u32 m_roomCounter;
+    Array<u8, 16> m_roomNonce;
     u64 m_roomCode;
     Array<Kart, MaxRoomKartCount> m_karts;
     Array<u8, MaxRoomKartCount> m_kartLocalIndices;

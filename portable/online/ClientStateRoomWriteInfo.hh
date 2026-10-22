@@ -13,7 +13,7 @@ struct ClientStateRoomWriteInfo {
     Ring<u8, MaxCourseCount> packCourseIndices;
     Hash packHash;
     bool isHost;
-    u32 roomCounter;
+    Array<u8, 16> roomNonce;
     u64 roomCode;
     u32 spectatingCounter;
     bool spectating;

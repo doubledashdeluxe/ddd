@@ -102,7 +102,7 @@ impl Flood for Search {
                 mode_index: ModeIndex::Versus,
                 pack_course_indices: [0; 1].into(),
                 format: RoomOptionFormat::FreeForAll,
-                room_counter: 0,
+                room_nonce: [0; _],
             };
             let client_room_state = ClientRoomState::Search(search);
             let room = ClientStateRoom { client_room_state };

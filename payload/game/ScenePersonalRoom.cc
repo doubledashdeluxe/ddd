@@ -19,7 +19,6 @@
 
 #include <jsystem/J2DAnmLoaderDataBase.hh>
 #include <payload/CourseManager.hh>
-#include <payload/crypto/CubeRandom.hh>
 #include <payload/online/CubeClient.hh>
 #include <portable/Align.hh>
 
@@ -177,7 +176,7 @@ void ScenePersonalRoom::init() {
 
     s32 prevScene = SequenceApp::Instance()->prevScene();
     if (prevScene != SceneType::None && !m_isReplay) {
-        onlineInfo.m_roomCounter++;
+        onlineInfo.setRoomNonce();
     }
 
     m_writeInfo.isSearch = m_isSearch;
@@ -192,7 +191,7 @@ void ScenePersonalRoom::init() {
         m_writeInfo.packHash = pack.hash();
     }
     m_writeInfo.isHost = m_isHost;
-    m_writeInfo.roomCounter = onlineInfo.m_roomCounter;
+    m_writeInfo.roomNonce = onlineInfo.m_roomNonce;
     if (!m_isHost) {
         m_writeInfo.roomCode = onlineInfo.m_roomCode;
     }

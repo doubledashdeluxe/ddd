@@ -208,11 +208,11 @@ void ClientStateRoom::setPackHashElement(u32 i0, u8 packHashElement) {
     m_readInfo.info.getOrEmplace().packHash[i0] = packHashElement;
 }
 
-bool ClientStateRoom::isRoomCounterValid(u32 roomCounter) {
-    return roomCounter == m_writeInfo.roomCounter;
+bool ClientStateRoom::isRoomNonceElementValid(u32 i0, u8 roomNonceElement) {
+    return roomNonceElement == m_writeInfo.roomNonce[i0];
 }
 
-void ClientStateRoom::setRoomCounter(u32 /* roomCounter */) {}
+void ClientStateRoom::setRoomNonceElement(u32 /* i0 */, u8 /* roomNonceElement */) {}
 
 bool ClientStateRoom::isRoomCodeValid(u64 roomCode) {
     if (m_writeInfo.isSearch) {
@@ -509,8 +509,8 @@ u8 ClientStateRoom::getFormat() {
     return m_writeInfo.options.format;
 }
 
-u32 ClientStateRoom::getRoomCounter() {
-    return m_writeInfo.roomCounter;
+u8 ClientStateRoom::getRoomNonceElement(u32 i0) {
+    return m_writeInfo.roomNonce[i0];
 }
 
 u64 ClientStateRoom::getRoomCode() {

@@ -3,6 +3,7 @@
 #include "game/BBAMgr.hh"
 #include "game/CardAgent.hh"
 #include "game/GameAudioMain.hh"
+#include "game/OnlineInfo.hh"
 #include "game/ResMgr.hh"
 #include "game/SequenceApp.hh"
 #include "game/System.hh"
@@ -40,6 +41,7 @@ void LogoApp::calc() {
             return;
         }
         INFO("Loaded se00_0.aw.");
+        OnlineInfo::Instance().setRoomNonce();
         CourseManager::Instance()->start();
         CubeServerManager::Instance()->start();
         CubeReplayManager::Instance()->start();

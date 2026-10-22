@@ -2,6 +2,8 @@
 
 #include "game/SequenceInfo.hh"
 
+#include <payload/crypto/CubeRandom.hh>
+
 u32 OnlineInfo::colorIndex(u32 kartIndex) const {
     return m_isFFA ? kartIndex : m_teams[kartIndex];
 }
@@ -38,11 +40,16 @@ void OnlineInfo::setLocalKarts() {
     }
 }
 
+void OnlineInfo::setRoomNonce() {
+    CubeRandom *random = CubeRandom::Instance();
+    random->get(m_roomNonce.values(), m_roomNonce.count());
+}
+
 OnlineInfo &OnlineInfo::Instance() {
     return s_instance;
 }
 
-OnlineInfo::OnlineInfo() : m_roomCounter(0) {
+OnlineInfo::OnlineInfo() {
     reset();
 }
 
