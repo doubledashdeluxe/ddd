@@ -14,8 +14,10 @@
 #include "game/System.hh"
 
 #include <cube/Console.hh>
+#include <formats/Version.hh>
 #include <jsystem/J2DAnmLoaderDataBase.hh>
 #include <jsystem/J2DPicture.hh>
+#include <jsystem/JUTReport.hh>
 #include <payload/CourseManager.hh>
 #include <payload/MemoryProtection.hh>
 #include <payload/crypto/CubeRandom.hh>
@@ -84,6 +86,8 @@ void SceneTitle::draw() {
 }
 
 void SceneTitle::calc() {
+    JUTReport(2, 28, "%s", Version);
+
     (this->*m_state)();
 
     m_printMemoryCard.calc();
