@@ -1136,12 +1136,12 @@ bool CourseManager::compareCourseIndicesByName(const u32 &a, const u32 &b,
     return UTF8::CaseCompare(na, nb) <= 0;
 }
 
-u32 CourseManager::ConvertPackCount(bool isOnline, u32 packCount) {
-    return isOnline ? packCount - 2 : packCount;
+u32 CourseManager::ConvertPackCount(bool /* isOnline */, u32 packCount) {
+    return packCount;
 }
 
-u32 CourseManager::ConvertPackIndex(bool isOnline, u32 packIndex) {
-    return isOnline ? packIndex == 0 ? 1 : packIndex + 2 : packIndex;
+u32 CourseManager::ConvertPackIndex(bool /* isOnline */, u32 packIndex) {
+    return packIndex;
 }
 
 bool CourseManager::GetDefaultCourseID(const char *name, u32 &courseID) {
