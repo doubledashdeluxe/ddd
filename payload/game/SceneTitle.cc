@@ -87,6 +87,8 @@ void SceneTitle::draw() {
 
 void SceneTitle::calc() {
     JUTReport(2, 28, "%s", Version);
+    u32 frameRate = KartLocale::GetVideoFrameMode() ? 50 : 60;
+    JUTReport(2, 42, "%u Hz", frameRate);
 
     (this->*m_state)();
 
