@@ -77,6 +77,12 @@ jobs:
         with:
           path: build/ddd-update.zip
           archive: false
+      - name: Upload ELF files
+        if: runner.os == 'Linux'
+        uses: actions/upload-artifact@v7
+        with:
+          name: elf-files
+          path: build/*/*.elf
 
   compare-ddd-binaries:
     name: Compare DDD binaries
