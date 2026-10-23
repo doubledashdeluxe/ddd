@@ -11,3 +11,7 @@ void JUTConsole::print(const char *message) {
 
     REPLACED(print)(message);
 }
+
+JUTConsoleManager *JUTConsoleManager::Instance() {
+    return s_manager;
+}
