@@ -1,7 +1,9 @@
 #include "JUTException.hh"
 
+#include <cube/Memory.hh>
 #include <cube/VI.hh>
 extern "C" {
+#include <cube/StackCanary.h>
 #include <dolphin/OSInterrupt.h>
 #include <dolphin/PPCArch.h>
 #include <dolphin/VI.h>
@@ -38,5 +40,41 @@ void *JUTException::run() {
         VI *vi = VI::Instance();
         m_directPrint->changeFrameBuffer(m_frameBuffer, vi->getXFBWidth(), vi->getXFBHeight());
         printContext(co->error, co->context, co->dsisr, co->dar);
+    }
+}
+
+void JUTException::showStack(OSContext * /* context */) {
+    if (!s_console) {
+        return;
+    }
+
+    s_console->print("-------------------------------- TRACE\n");
+    struct StackFrame {
+        StackFrame *backChain;
+        void *lrSave;
+    };
+    StackFrame *stackFrame = reinterpret_cast<StackFrame *>(m_stackPointer);
+    s_console->print_f("Address:   BackChain   LR save\n");
+
+    for (u32 i = 0; stackFrame && reinterpret_cast<u32>(stackFrame) != 0xffffffff && i++ < 0x10;
+            stackFrame = stackFrame->backChain) {
+        if (i > m_traceDepth) {
+            s_console->print("Suppress trace.");
+            return;
+        }
+
+        // If undoing the LR puts us in MEM1, display that instead
+        // Assume code only executes in MEM1
+        u32 lrSave = reinterpret_cast<u32>(stackFrame->lrSave);
+        u32 tstAddress = lrSave ^ StackCanary_Canary();
+        if (Memory::IsMEM1(tstAddress)) {
+            lrSave = tstAddress;
+        }
+
+        s_console->print_f("%08X:  %08X    %08X\n", reinterpret_cast<u32>(stackFrame),
+                reinterpret_cast<u32>(stackFrame->backChain), lrSave);
+        showMapInfo_subroutine(lrSave, false);
+        JUTConsoleManager::s_manager->drawDirect(true);
+        waitTime(m_traceWaitTime);
     }
 }

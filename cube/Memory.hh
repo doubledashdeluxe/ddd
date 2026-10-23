@@ -26,14 +26,20 @@ public:
 
     template <typename T>
     static bool IsMEM1(T *ptr) {
-        uintptr_t addr = reinterpret_cast<uintptr_t>(ptr);
+        return IsMEM1(reinterpret_cast<uintptr_t>(ptr));
+    }
+
+    static bool IsMEM1(uintptr_t addr) {
         return (addr >= 0x80000000 && addr < 0x81800000) ||
                 (addr >= 0xc0000000 && addr < 0xc1800000);
     }
 
     template <typename T>
     static bool IsMEM2(T *ptr) {
-        uintptr_t addr = reinterpret_cast<uintptr_t>(ptr);
+        return IsMEM2(reinterpret_cast<uintptr_t>(ptr));
+    }
+
+    static bool IsMEM2(uintptr_t addr) {
         return (addr >= 0x90000000 && addr < 0x94000000) ||
                 (addr >= 0xd0000000 && addr < 0xd4000000);
     }
