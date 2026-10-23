@@ -102,6 +102,8 @@ void SceneServerSelect::init() {
     u32 playerCount = sequenceInfo.m_padCount;
 
     m_serverCount = 0;
+    m_rowIndex = 0;
+    m_serverIndex = 0;
     for (u32 i = 0; i < m_descs.count(); i++) {
         // Crashes MWCC:
         // m_descs[i][0] = '\0';
