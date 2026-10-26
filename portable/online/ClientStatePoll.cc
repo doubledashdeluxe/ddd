@@ -102,7 +102,9 @@ bool ClientStatePoll::isMatchIndexValid(u8 /* matchIndex */) {
 }
 
 void ClientStatePoll::setMatchIndex(u8 matchIndex) {
-    if (matchIndex != m_writeInfo.matchIndex) {
+    if (m_platform.replay || matchIndex == m_writeInfo.matchIndex) {
+        m_readInfo.matchIndex = matchIndex;
+    } else {
         m_readInfo.ok = false;
     }
 }

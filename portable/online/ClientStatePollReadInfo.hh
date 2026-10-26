@@ -21,6 +21,7 @@ struct ClientStatePollReadInfo {
     };
 
     bool ok;
+    Optional<u8> matchIndex;
     Ring<u8, MaxRoomKartCount> kartIndices;
     Optional<Ready> ready;
 };

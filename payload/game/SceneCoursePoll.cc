@@ -312,11 +312,17 @@ bool SceneCoursePoll::clientStatePoll(const ClientStatePollReadInfo &readInfo) {
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CURSOL);
     }
 
+    const Optional<u8> &matchIndex = readInfo.matchIndex;
+    if (!matchIndex) {
+        return true;
+    }
+
     const Optional<ClientStatePollReadInfo::Ready> &ready = readInfo.ready;
     if (!ready) {
         return true;
     }
 
+    onlineInfo.m_matchIndex = *matchIndex;
     RaceInfo &raceInfo = RaceInfo::Instance();
     for (u32 i = 0, remotePadCount = 0; i < m_kartCount; i++) {
         u32 kartIndex = kartIndices[i];
