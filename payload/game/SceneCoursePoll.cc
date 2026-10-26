@@ -357,9 +357,11 @@ bool SceneCoursePoll::clientStatePoll(const ClientStatePollReadInfo &readInfo) {
                     backPad->m_padPort = KartGamePad::PadPort::Network;
                 }
             } else {
-                frontPad = KartGamePad::GamePad(padIndices[0]);
+                frontPad = KartGamePad::KartPad(padIndices[0]);
+                frontPad->m_padPort = padIndices[0];
                 if (padIndices[1] != padIndices[0]) {
-                    backPad = KartGamePad::GamePad(padIndices[1]);
+                    backPad = KartGamePad::KartPad(padIndices[1]);
+                    backPad->m_padPort = padIndices[1];
                 }
             }
         }
