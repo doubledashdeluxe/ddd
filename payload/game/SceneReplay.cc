@@ -430,6 +430,7 @@ void SceneReplay::stateSelect() {
             client = &replay.clients[m_clientIndex];
         }
         SequenceInfo &sequenceInfo = SequenceInfo::Instance();
+        sequenceInfo.m_packIndex = replay.packIndex;
         sequenceInfo.m_padCount = client ? client->players.count() : 1;
         sequenceInfo.m_statusCount = client ? client->teams.count() : 1;
         OnlineInfo &onlineInfo = OnlineInfo::Instance();
