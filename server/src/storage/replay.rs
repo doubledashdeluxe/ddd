@@ -65,7 +65,7 @@ pub fn write(batch: Batch, buf: &mut Vec<u8>) -> Result<()> {
         mode_index: race.mode,
         pack_course_count: race.pack_course_count as u8,
         pack_hash: race.pack_hash,
-        course_index: race.karts[race.selected_kart_index as usize].course_index,
+        course_index: poll_state.karts[race.selected_kart_index as usize].course_index,
         clients,
         time,
         room_type: if race.host_pk.is_none() { RoomType::Worldwide } else { RoomType::Personal },
