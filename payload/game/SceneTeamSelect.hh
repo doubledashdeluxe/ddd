@@ -1,5 +1,6 @@
 #pragma once
 
+#include "game/PrintMemoryCard.hh"
 #include "game/Scene.hh"
 
 #include <jsystem/J2DScreen.hh>
@@ -32,12 +33,14 @@ private:
     void slideOut();
     void idle();
     void spin();
+    void quit();
     void nextScene();
 
     void stateSlideIn();
     void stateSlideOut();
     void stateIdle();
     void stateSpin();
+    void stateQuit();
     void stateNextScene();
 
     void calcBalanced();
@@ -57,6 +60,7 @@ private:
     u32 m_spinFrame;
     ClientStateTeamWriteInfo m_writeInfo;
     u32 m_nextScene;
+    PrintMemoryCard m_printMemoryCard;
     J2DScreen m_mainScreen;
     J2DScreen m_modeScreen;
     Array<J2DScreen, MaxEntryCount> m_entryScreens;

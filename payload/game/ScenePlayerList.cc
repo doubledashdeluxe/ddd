@@ -23,7 +23,9 @@ extern "C" {
 #include <stdio.h>
 }
 
-ScenePlayerList::ScenePlayerList(JKRArchive *archive, JKRHeap *heap) : Scene(archive, heap) {
+ScenePlayerList::ScenePlayerList(JKRArchive *archive, JKRHeap *heap)
+    : Scene(archive, heap)
+    , m_printMemoryCard(heap) {
     SceneFactory *sceneFactory = SceneFactory::Instance();
     JKRArchive *titleLineArchive = sceneFactory->archive(SceneFactory::ArchiveType::TitleLine);
 
@@ -65,6 +67,9 @@ void ScenePlayerList::init() {
     m_writeInfo.packCourseCount = courseManager->courseCount(true, raceInfo.isRace(), packIndex);
     m_writeInfo.kartCount = raceInfo.getKartCount();
 
+    m_printMemoryCard.reset();
+    m_printMemoryCard.init(0x28);
+
     s32 prevScene = SequenceApp::Instance()->prevScene();
     if (prevScene != SceneType::CharacterSelect) {
         System::GetDisplay()->startFadeIn(15);
@@ -91,6 +96,8 @@ void ScenePlayerList::draw() {
     m_mainScreen.draw(0.0f, 0.0f, m_graphContext);
 
     OnlineTimer::Instance()->draw(m_graphContext);
+
+    m_printMemoryCard.draw();
 }
 
 void ScenePlayerList::calc() {
@@ -98,6 +105,8 @@ void ScenePlayerList::calc() {
     client->read(*this);
 
     (this->*m_state)();
+
+    m_printMemoryCard.calc();
 
     OnlineBackground::Instance()->calc();
     MenuTitleLine::Instance()->calc();
@@ -197,6 +206,11 @@ void ScenePlayerList::idle() {
     m_state = &ScenePlayerList::stateIdle;
 }
 
+void ScenePlayerList::quit() {
+    m_printMemoryCard.init(0x27);
+    m_state = &ScenePlayerList::stateQuit;
+}
+
 void ScenePlayerList::nextScene() {
     m_state = &ScenePlayerList::stateNextScene;
 }
@@ -248,12 +262,29 @@ void ScenePlayerList::stateIdle() {
         }
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE_LITTLE);
         slideOut();
-    } else if (button.risingEdge() & PAD_BUTTON_B || !m_ok) {
+    } else if (!m_ok) {
         m_nextScene = SceneType::Title;
         GameAudio::Main::Instance()->fadeOutAll(15);
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CANCEL);
         System::GetDisplay()->startFadeOut(15);
         slideOut();
+    } else if (button.risingEdge() & PAD_BUTTON_B) {
+        quit();
+    }
+}
+
+void ScenePlayerList::stateQuit() {
+    s32 choice = m_printMemoryCard.getFinalChoice();
+    if (choice == 0) {
+        m_printMemoryCard.ack();
+        m_nextScene = SceneType::Title;
+        GameAudio::Main::Instance()->fadeOutAll(15);
+        System::GetDisplay()->startFadeOut(15);
+        slideOut();
+    } else if (choice == 1) {
+        m_printMemoryCard.ack();
+        m_printMemoryCard.init(0x28);
+        idle();
     }
 }
 

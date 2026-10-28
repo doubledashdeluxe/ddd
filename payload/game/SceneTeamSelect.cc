@@ -25,7 +25,9 @@ extern "C" {
 #include <stdio.h>
 }
 
-SceneTeamSelect::SceneTeamSelect(JKRArchive *archive, JKRHeap *heap) : Scene(archive, heap) {
+SceneTeamSelect::SceneTeamSelect(JKRArchive *archive, JKRHeap *heap)
+    : Scene(archive, heap)
+    , m_printMemoryCard(heap) {
     SceneFactory *sceneFactory = SceneFactory::Instance();
     JKRArchive *mapSelectArchive = sceneFactory->archive(SceneFactory::ArchiveType::MapSelect);
 
@@ -133,6 +135,9 @@ void SceneTeamSelect::init() {
     m_writeInfo.teamCount = m_teamCount;
     m_writeInfo.continuing = false;
 
+    m_printMemoryCard.reset();
+    m_printMemoryCard.init(0x28);
+
     J2DPicture *iconPicture = m_modeScreen.search("BtlPict")->downcast<J2DPicture>();
     J2DPicture *namePicture = m_modeScreen.search("SubM")->downcast<J2DPicture>();
     const char *iconTextureName = ModeIconTextureNames[onlineInfo.m_modeIndex];
@@ -160,6 +165,8 @@ void SceneTeamSelect::draw() {
     if (!m_isReplay && !m_isSearch) {
         OnlineTimer::Instance()->draw(m_graphContext);
     }
+
+    m_printMemoryCard.draw();
 }
 
 void SceneTeamSelect::calc() {
@@ -169,6 +176,8 @@ void SceneTeamSelect::calc() {
     calcBalanced();
 
     (this->*m_state)();
+
+    m_printMemoryCard.calc();
 
     calcBalanced();
     OnlineInfo::Instance().m_teams = m_teams;
@@ -392,6 +401,11 @@ void SceneTeamSelect::spin() {
     m_state = &SceneTeamSelect::stateSpin;
 }
 
+void SceneTeamSelect::quit() {
+    m_printMemoryCard.init(0x27);
+    m_state = &SceneTeamSelect::stateQuit;
+}
+
 void SceneTeamSelect::nextScene() {
     m_state = &SceneTeamSelect::stateNextScene;
 }
@@ -440,10 +454,18 @@ void SceneTeamSelect::stateIdle() {
         m_nextScene = SceneType::PlayerList;
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE_LITTLE);
         slideOut();
-    } else if (button.risingEdge() & PAD_BUTTON_B || !m_ok || (!m_balanced && m_continuing)) {
-        m_nextScene = SceneType::RoomTypeSelect;
+    } else if (!m_ok || (!m_balanced && m_continuing)) {
+        if (m_isReplay) {
+            m_nextScene = SceneType::Replay;
+        } else if (m_isSearch) {
+            m_nextScene = SceneType::FormatSelect;
+        } else {
+            m_nextScene = SceneType::RoomTypeSelect;
+        }
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CANCEL_LITTLE);
         slideOut();
+    } else if (button.risingEdge() & PAD_BUTTON_B) {
+        quit();
     } else if (m_isHost && button.repeat() & JUTGamePad::PAD_MSTICK_UP) {
         if (m_entryIndex >= 1) {
             if (m_entryIndex + 1 == MaxEntryCount) {
@@ -511,10 +533,37 @@ void SceneTeamSelect::stateSpin() {
     }
 }
 
+void SceneTeamSelect::stateQuit() {
+    s32 choice = m_printMemoryCard.getFinalChoice();
+    if (choice == 0) {
+        m_printMemoryCard.ack();
+        if (m_isReplay) {
+            m_nextScene = SceneType::Replay;
+        } else if (m_isSearch) {
+            m_nextScene = SceneType::FormatSelect;
+        } else {
+            m_nextScene = SceneType::RoomTypeSelect;
+        }
+        if (m_mainAnmTransformFrame == 0) {
+            nextScene();
+        } else {
+            slideOut();
+        }
+    } else if (choice == 1) {
+        m_printMemoryCard.ack();
+        m_printMemoryCard.init(0x28);
+        if (m_mainAnmTransformFrame == 0) {
+            nextScene();
+        } else {
+            idle();
+        }
+    }
+}
+
 void SceneTeamSelect::stateNextScene() {
     const JUTGamePad::CButton &button = KartGamePad::GamePad(0)->button();
     if (m_nextScene == SceneType::PlayerList) {
-        if (button.risingEdge() & PAD_BUTTON_B || !m_ok || (!m_balanced && m_continuing)) {
+        if (!m_ok || (!m_balanced && m_continuing)) {
             if (m_isReplay) {
                 m_nextScene = SceneType::Replay;
             } else if (m_isSearch) {
@@ -523,6 +572,8 @@ void SceneTeamSelect::stateNextScene() {
                 m_nextScene = SceneType::RoomTypeSelect;
             }
             GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CANCEL_LITTLE);
+        } else if (button.risingEdge() & PAD_BUTTON_B) {
+            quit();
         }
     }
 

@@ -25,7 +25,8 @@
 
 SceneCoursePoll::SceneCoursePoll(JKRArchive *archive, JKRHeap *heap)
     : Scene(archive, heap)
-    , m_heap(heap) {
+    , m_heap(heap)
+    , m_printMemoryCard(heap) {
     SceneFactory *sceneFactory = SceneFactory::Instance();
     JKRArchive *lanEntryArchive = sceneFactory->archive(SceneFactory::ArchiveType::LanEntry);
 
@@ -150,6 +151,8 @@ void SceneCoursePoll::draw() {
 
     m_mainScreen.draw(0.0f, 0.0f, m_graphContext);
     m_gridScreen.draw(0.0f, 0.0f, m_graphContext);
+
+    m_printMemoryCard.draw();
 }
 
 void SceneCoursePoll::calc() {
@@ -157,6 +160,8 @@ void SceneCoursePoll::calc() {
     client->read(*this);
 
     (this->*m_state)();
+
+    m_printMemoryCard.calc();
 
     Kart2DCommon *kart2DCommon = Kart2DCommon::Instance();
     for (u32 i = 0; i < 3; i += 2) {
@@ -406,6 +411,8 @@ void SceneCoursePoll::clientStateError(const ClientStateErrorReadInfo & /* readI
 }
 
 void SceneCoursePoll::slideIn() {
+    m_printMemoryCard.reset();
+    m_printMemoryCard.init(0x28);
     RaceInfo &raceInfo = RaceInfo::Instance();
     if (raceInfo.isRace()) {
         MenuTitleLine::Instance()->drop("CoursePoll.bti");
@@ -450,6 +457,11 @@ void SceneCoursePoll::select() {
         m_thumbnailAnmTevRegKeyFrames[i] = i == m_kartIndex;
     }
     m_state = &SceneCoursePoll::stateSelect;
+}
+
+void SceneCoursePoll::quit() {
+    m_printMemoryCard.init(0x27);
+    m_state = &SceneCoursePoll::stateQuit;
 }
 
 void SceneCoursePoll::nextScene() {
@@ -497,12 +509,15 @@ void SceneCoursePoll::stateSlideOut() {
 
 void SceneCoursePoll::stateIdle() {
     const JUTGamePad::CButton &button = KartGamePad::GamePad(0)->button();
-    if (button.risingEdge() & PAD_BUTTON_B || !m_ok) {
+    if (!m_ok) {
         m_nextScene = SceneType::Title;
         GameAudio::Main::Instance()->fadeOutAll(15);
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CANCEL);
         System::GetDisplay()->startFadeOut(15);
         slideOut();
+        return;
+    } else if (button.risingEdge() & PAD_BUTTON_B) {
+        quit();
         return;
     }
 
@@ -548,6 +563,21 @@ void SceneCoursePoll::stateSelect() {
         GameAudio::Main::Instance()->fadeOutAll(15);
         System::GetDisplay()->startFadeOut(15);
         slideOut();
+    }
+}
+
+void SceneCoursePoll::stateQuit() {
+    s32 choice = m_printMemoryCard.getFinalChoice();
+    if (choice == 0) {
+        m_printMemoryCard.ack();
+        m_nextScene = SceneType::Title;
+        GameAudio::Main::Instance()->fadeOutAll(15);
+        System::GetDisplay()->startFadeOut(15);
+        slideOut();
+    } else if (choice == 1) {
+        m_printMemoryCard.ack();
+        m_printMemoryCard.init(0x28);
+        idle();
     }
 }
 

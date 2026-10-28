@@ -1,5 +1,6 @@
 #pragma once
 
+#include "game/PrintMemoryCard.hh"
 #include "game/Scene.hh"
 
 extern "C" {
@@ -35,6 +36,7 @@ private:
     void idle();
     void spin();
     void select();
+    void quit();
     void nextScene();
     void nextRace();
 
@@ -43,6 +45,7 @@ private:
     void stateIdle();
     void stateSpin();
     void stateSelect();
+    void stateQuit();
     void stateNextScene();
     void stateNextRace();
 
@@ -66,6 +69,7 @@ private:
     u32 m_selectFrame;
     ClientStatePollWriteInfo m_writeInfo;
     u32 m_nextScene;
+    PrintMemoryCard m_printMemoryCard;
     J2DScreen m_mainScreen;
     J2DScreen m_gridScreen;
     Array<J2DScreen, MaxRoomKartCount> m_courseScreens;

@@ -26,7 +26,9 @@ extern "C" {
 #include <stdio.h>
 }
 
-ScenePersonalRoom::ScenePersonalRoom(JKRArchive *archive, JKRHeap *heap) : Scene(archive, heap) {
+ScenePersonalRoom::ScenePersonalRoom(JKRArchive *archive, JKRHeap *heap)
+    : Scene(archive, heap)
+    , m_printMemoryCard(heap) {
     SceneFactory *sceneFactory = SceneFactory::Instance();
     JKRArchive *titleLineArchive = sceneFactory->archive(SceneFactory::ArchiveType::TitleLine);
 
@@ -219,6 +221,8 @@ void ScenePersonalRoom::draw() {
     MenuTitleLine::Instance()->draw(m_graphContext);
 
     m_mainScreen.draw(0.0f, 0.0f, m_graphContext);
+
+    m_printMemoryCard.draw();
 }
 
 void ScenePersonalRoom::calc() {
@@ -226,6 +230,8 @@ void ScenePersonalRoom::calc() {
     client->read(*this);
 
     (this->*m_state)();
+
+    m_printMemoryCard.calc();
 
     OnlineBackground::Instance()->calc();
     MenuTitleLine::Instance()->calc();
@@ -649,6 +655,8 @@ void ScenePersonalRoom::clientStateError(const ClientStateErrorReadInfo & /* rea
 void ScenePersonalRoom::wait() {
     m_ok = true;
     m_isReady = false;
+    m_printMemoryCard.reset();
+    m_printMemoryCard.init(0x28);
     m_state = &ScenePersonalRoom::stateWait;
 }
 
@@ -680,13 +688,18 @@ void ScenePersonalRoom::idle() {
     m_state = &ScenePersonalRoom::stateIdle;
 }
 
+void ScenePersonalRoom::quit() {
+    m_printMemoryCard.init(0x27);
+    m_state = &ScenePersonalRoom::stateQuit;
+}
+
 void ScenePersonalRoom::nextScene() {
     m_state = &ScenePersonalRoom::stateNextScene;
 }
 
 void ScenePersonalRoom::stateWait() {
     const JUTGamePad::CButton &button = KartGamePad::GamePad(0)->button();
-    if (button.risingEdge() & PAD_BUTTON_B || !m_ok) {
+    if (!m_ok) {
         if (m_isReplay) {
             m_nextScene = SceneType::Replay;
         } else if (m_isSearch) {
@@ -696,6 +709,8 @@ void ScenePersonalRoom::stateWait() {
         }
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CANCEL_LITTLE);
         slideOut();
+    } else if (button.risingEdge() & PAD_BUTTON_B) {
+        quit();
     } else if (m_isReady) {
         if (m_isReplay || m_isSearch) {
             if (OnlineInfo::Instance().m_isFFA) {
@@ -740,7 +755,7 @@ void ScenePersonalRoom::stateIdle() {
         }
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE_LITTLE);
         slideOut();
-    } else if (button.risingEdge() & PAD_BUTTON_B || !m_ok) {
+    } else if (!m_ok) {
         if (m_isReplay) {
             m_nextScene = SceneType::Replay;
         } else {
@@ -748,6 +763,8 @@ void ScenePersonalRoom::stateIdle() {
         }
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CANCEL_LITTLE);
         slideOut();
+    } else if (button.risingEdge() & PAD_BUTTON_B) {
+        quit();
     } else if (button.risingEdge() & (PAD_BUTTON_Y | PAD_BUTTON_X)) {
         if (m_switchAnmTransformFrames[1] == 16) {
             m_writeInfo.spectatingCounter++;
@@ -802,10 +819,46 @@ void ScenePersonalRoom::stateIdle() {
     }
 }
 
+void ScenePersonalRoom::stateQuit() {
+    s32 choice = m_printMemoryCard.getFinalChoice();
+    if (choice == 0) {
+        m_printMemoryCard.ack();
+        if (m_isReplay) {
+            m_nextScene = SceneType::Replay;
+        } else if (m_isSearch) {
+            m_nextScene = SceneType::FormatSelect;
+        } else if (m_isReady) {
+            m_nextScene = SceneType::RoomTypeSelect;
+        } else {
+            m_nextScene = m_isHost ? SceneType::PackSelect : SceneType::RoomCodeEnter;
+        }
+        if (m_mainAnmTransformFrame == 0) {
+            nextScene();
+        } else {
+            slideOut();
+        }
+    } else if (choice == 1) {
+        m_printMemoryCard.ack();
+        m_printMemoryCard.init(0x28);
+        if (m_mainAnmTransformFrame == 26) {
+            idle();
+        } else if (m_continuing || m_writeInfo.continuing) {
+            if (OnlineInfo::Instance().m_isFFA) {
+                m_nextScene = SceneType::PlayerList;
+            } else {
+                m_nextScene = SceneType::TeamSelect;
+            }
+            nextScene();
+        } else {
+            wait();
+        }
+    }
+}
+
 void ScenePersonalRoom::stateNextScene() {
     const JUTGamePad::CButton &button = KartGamePad::GamePad(0)->button();
     if (m_nextScene == SceneType::TeamSelect || m_nextScene == SceneType::PlayerList) {
-        if (button.risingEdge() & PAD_BUTTON_B || !m_ok) {
+        if (!m_ok) {
             if (m_isReplay) {
                 m_nextScene = SceneType::Replay;
             } else if (m_isSearch) {
@@ -814,6 +867,8 @@ void ScenePersonalRoom::stateNextScene() {
                 m_nextScene = SceneType::RoomTypeSelect;
             }
             GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_CANCEL_LITTLE);
+        } else if (button.risingEdge() & PAD_BUTTON_B) {
+            quit();
         }
     }
 
