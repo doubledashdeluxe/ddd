@@ -323,7 +323,7 @@ bool SceneServerSelect::clientStateServer(const ClientStateServerReadInfo &readI
             snprintf(playerCount.values(), playerCount.count(), "...");
         }
         m_canContinue[i] = !!motd;
-        m_canUpdate[i] = updateIsAvailable;
+        m_canUpdate[i] = updateIsAvailable && !Platform::IsDolphin();
     }
     return true;
 }
