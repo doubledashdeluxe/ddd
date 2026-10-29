@@ -1,6 +1,7 @@
 #include "Platform.hh"
 
 #include "cube/Dolphin.hh"
+#include "cube/ios/File.hh"
 #include "cube/ios/Resource.hh"
 
 extern "C" {
@@ -78,7 +79,12 @@ void Platform::DetectDolphin() {
         } else if (s_isDolphin) {
             snprintf(s_string.values(), s_string.count(), "Dolphin");
         } else {
-            snprintf(s_string.values(), s_string.count(), "Wii");
+            IOS::File file("/title/00000001/00000200/content/title.tmd", IOS::Mode::Read);
+            if (file.ok()) {
+                snprintf(s_string.values(), s_string.count(), "Wii U");
+            } else {
+                snprintf(s_string.values(), s_string.count(), "Wii");
+            }
         }
     }
 
