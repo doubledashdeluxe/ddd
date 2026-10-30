@@ -165,7 +165,9 @@ ScenePersonalRoom::~ScenePersonalRoom() {}
 
 void ScenePersonalRoom::init() {
     OnlineInfo &onlineInfo = OnlineInfo::Instance();
+    m_ok = true;
     m_isReplay = onlineInfo.m_isReplay;
+    m_isReady = false;
     m_isSearch = onlineInfo.m_roomType == RoomType::Worldwide;
     m_isHost = onlineInfo.m_isHost;
     m_canContinue = true;
@@ -205,6 +207,9 @@ void ScenePersonalRoom::init() {
         m_writeInfo.options.matchCount = format == RoomOptionFormat::Duel ? 5 : 1;
     }
     m_writeInfo.continuing = false;
+
+    m_printMemoryCard.reset();
+    m_printMemoryCard.init(0x28);
 
     if (prevScene == SceneType::None) {
         System::GetDisplay()->startFadeIn(15);
@@ -653,10 +658,6 @@ void ScenePersonalRoom::clientStateError(const ClientStateErrorReadInfo & /* rea
 }
 
 void ScenePersonalRoom::wait() {
-    m_ok = true;
-    m_isReady = false;
-    m_printMemoryCard.reset();
-    m_printMemoryCard.init(0x28);
     m_state = &ScenePersonalRoom::stateWait;
 }
 
