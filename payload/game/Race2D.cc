@@ -343,7 +343,7 @@ void Race2D::calcPlayerMark() {
                     ZCaptureMgr *zCaptureMgr = raceMgr->raceDrawer()->zCaptureMgr();
                     s32 depth = zCaptureMgr->getZValue(j, i);
                     zCaptureMgr->setPosition(j, i, pos.x, pos.y);
-                    isVisible = depth >= comparator.depths[j];
+                    isVisible = depth == 0 || depth >= comparator.depths[j];
                 }
                 alpha = isVisible ? Min<u8>(alpha, 247) + 8 : Max<u8>(alpha, 4) - 4;
             }
