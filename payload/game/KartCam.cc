@@ -37,26 +37,45 @@ void KartCam::setPtr() {
     REPLACED(setPtr)();
 }
 
+void KartCam::doRaceCtrl() {
+    // Prevent most camera mode processing when spectating
+    bool isOnline = SequenceInfo::Instance().m_isOnline;
+    if (isOnline && OnlineInfo::Instance().m_spectating) {
+        doCameraMode();
+        return;
+    }
+
+    REPLACED(doRaceCtrl)();
+}
+
 void KartCam::doCameraMode() {
     m_hasJumped = m_isRearView != m_prevIsRearView;
     m_prevIsRearView = m_isRearView;
 
     bool isOnline = SequenceInfo::Instance().m_isOnline;
-    if (isOnline && OnlineInfo::Instance().m_spectating && m_mode == Mode::Out) {
-        u32 kartCount = RaceInfo::Instance().getKartCount();
-        u32 targetKart = m_targetKart + kartCount;
-        const JUTGamePad::CButton &button = KartGamePad::GamePad(0)->button();
-        if (button.repeat() & (static_cast<u32>(JUTGamePad::PAD_MSTICK_LEFT) | PAD_TRIGGER_L)) {
-            targetKart--;
-        }
-        if (button.repeat() & (static_cast<u32>(JUTGamePad::PAD_MSTICK_RIGHT) | PAD_TRIGGER_R)) {
-            targetKart++;
-        }
-        targetKart %= kartCount;
-        if (targetKart != m_targetKart) {
-            RaceMgr::Instance()->console(0).changeTarget(targetKart, true);
-            initOutView();
-            m_hasJumped = true;
+    if (isOnline && OnlineInfo::Instance().m_spectating) {
+        // This generally prevents issues with the camera being locked on P1
+        m_mode = Mode::Out;
+        initOutView();
+
+        // Don't allow inputs on the results screen
+        if (!RaceMgr::Instance()->raceDirector()->raceEnd()) {
+            u32 kartCount = RaceInfo::Instance().getKartCount();
+            u32 targetKart = m_targetKart + kartCount;
+            const JUTGamePad::CButton &button = KartGamePad::GamePad(0)->button();
+            if (button.repeat() & (static_cast<u32>(JUTGamePad::PAD_MSTICK_LEFT) | PAD_TRIGGER_L)) {
+                targetKart--;
+            }
+            if (button.repeat() &
+                    (static_cast<u32>(JUTGamePad::PAD_MSTICK_RIGHT) | PAD_TRIGGER_R)) {
+                targetKart++;
+            }
+            targetKart %= kartCount;
+            if (targetKart != m_targetKart) {
+                RaceMgr::Instance()->console(0).changeTarget(targetKart, true);
+                initOutView();
+                m_hasJumped = true;
+            }
         }
     }
 

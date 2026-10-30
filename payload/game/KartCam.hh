@@ -27,6 +27,8 @@ private:
     void initOutView();
     void REPLACED(setPtr)();
     REPLACE void setPtr();
+    void REPLACED(doRaceCtrl)();
+    REPLACE void doRaceCtrl();
     void REPLACED(doCameraMode)();
     REPLACE void doCameraMode();
 
