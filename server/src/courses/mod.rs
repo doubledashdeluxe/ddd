@@ -60,7 +60,7 @@ impl Default for Courses {
             ("Daisy Cruiser", "Nintendo", "HahnEFNmYXnUDQrNpykdwCLR9bpc5vMfjnBDYq-LDp0="),
             ("Dino Dino Jungle", "Nintendo", "VnlSQvx3dYato9SZ8q7yftgenPoSHdvDxS0u9bA0ER0="),
             ("Dry Dry Desert", "Nintendo", "co6PQ0Q_3R4dLNiClhAFQpuRP38RLDzVV3hxnXufub4="),
-            ("Luigi Circuit", "Nintendo", "V_DwDLkEx2s_F5WVAWojRKZsUTFDU-ZyJrJTHVwMvC8="),
+            ("Luigi Circuit", "Nintendo", "7cIPGdGg3u0-rGkL-WF3586KVrT4SKrNYxJovWkSCXQ="),
             ("Luigi's Mansion", "Nintendo", "QSAMbAGh6G3f8aPwU_rXfV-Hvqc63-EOSDltzClY_7Y="),
             ("Mario Circuit", "Nintendo", "k856RRZt0GHLtbAGyqARwCemR543BTU2UWRLf4-hY9M="),
             ("Mushroom Bridge", "Nintendo", "SdK2RDLzg4qcRU6Nn9y_W1_iR5SXX7an8uOk_lrE47w="),
