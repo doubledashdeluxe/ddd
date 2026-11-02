@@ -1213,7 +1213,7 @@ enum State {
 
 impl State {
     fn new_room(race_states: Option<Vec<ServerRaceStateMain>>) -> Self {
-        let duration = if race_states.is_some() { 40 } else { 0 };
+        let duration = if race_states.is_some() { 50 } else { 0 };
         Self::Room { deadline: Instant::now() + Duration::from_secs(duration), race_states }
     }
 
@@ -1231,7 +1231,7 @@ impl State {
         match_index: u8,
         race_states: Option<Vec<ServerRaceStateMain>>,
     ) -> Self {
-        let duration = if match_index == 0 { 35 } else { 75 };
+        let duration = if match_index == 0 { 35 } else { 85 };
         Self::Poll {
             team_state,
             match_index,
