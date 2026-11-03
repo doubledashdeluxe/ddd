@@ -70,6 +70,9 @@
 8001cc34 waitTime__12JUTExceptionFl
 8001cda0 setPreUserCallback__12JUTExceptionFPFUsP9OSContextUlUl_v
 8001d4c0 control__8JUTFaderFv
+8001dd10 read__10JUTGamePadFv
+8001e5cc update__Q210JUTGamePad7CButtonFPC9PADStatusUl
+8001e9c8 update__Q210JUTGamePad6CStickFScScQ210JUTGamePad10EStickModeQ210JUTGamePad11EWhichStickQ210JUTGamePad7CButton
 8001ee3c StartMotor__Q210JUTGamePad7CRumbleFl
 8001eee0 StopMotor__Q210JUTGamePad7CRumbleFlb
 8001fbf0 Create__10JUTProcBarFv
@@ -713,6 +716,7 @@
 80389e00 s_thunderAnm__6Race2D
 
 803ae998 s_volumeList__13JKRFileLoader
+803aeb8c s_padStatus__10JUTGamePad
 803b6db0 s_instance__6J3DSys
 
 803bad54 s_instance__12SequenceInfo
