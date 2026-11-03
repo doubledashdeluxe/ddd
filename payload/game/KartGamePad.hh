@@ -30,7 +30,7 @@ public:
     ~KartGamePad() override;
 
     s32 padPort() const;
-    void expand(const PadMgr::KartPadData &data);
+    REPLACE void expand(const PadMgr::KartPadData &data);
     void expand(const u16 &data);
 
     static KartGamePad *GamePad(u32 index);

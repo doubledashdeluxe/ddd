@@ -39,3 +39,10 @@ void JUTGamePad::startMotor() {
 void JUTGamePad::stopMotor(bool hard) {
     CRumble::StopMotor(m_chan, hard);
 }
+
+PADStatus *JUTGamePad::PadStatus(u32 index) {
+    if (index < 4) {
+        return &s_padStatus[index];
+    }
+    return nullptr;
+}
