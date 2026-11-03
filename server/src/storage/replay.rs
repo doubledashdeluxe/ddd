@@ -51,7 +51,7 @@ pub fn write(batch: Batch, buf: &mut Vec<u8>) -> Result<()> {
         for player in &kart.players {
             client
                 .players
-                .push(ClientPlayer { profile: player.profile, name: player.name.0 })
+                .push(ClientPlayer { profile: player.profile, name: player.name.into() })
                 .unwrap();
         }
         client.teams.push(kart.team).unwrap();

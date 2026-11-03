@@ -121,9 +121,9 @@ fn write_tr(
             let mut a = td.element("a")?;
             let href = format_args!("players/{number}");
             a.attribute("href")?.value(path_printer.print_page(href))?;
-            a.content(player.name())?;
+            a.content(player.name)?;
         } else {
-            td.content(player.name())?;
+            td.content(player.name)?;
         }
         td.finish()?;
     }

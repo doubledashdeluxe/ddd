@@ -213,8 +213,8 @@ impl Display for PlayersValue {
             write!(f, "{team} ")?;
 
             for i in 0..max_name_count {
-                let name = kart.names.get(i);
-                let name = name.and_then(|name| str::from_utf8(&name.0).ok());
+                let name: Option<[u8; _]> = kart.names.get(i).map(|name| (*name).into());
+                let name = name.as_ref().and_then(|name| str::from_utf8(name).ok());
                 let name = name.unwrap_or("   ");
                 write!(f, "{name} ")?;
             }

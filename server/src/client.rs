@@ -15,7 +15,7 @@ use crate::formats::version;
 use crate::frequency::Frequency;
 use crate::kart::{Kart, Platform, Region};
 use crate::pack::Pack;
-use crate::player::Player;
+use crate::player::{Name, Player};
 use crate::room::Room;
 use crate::rooms::{Rooms, Search};
 use crate::storage::{PlayerId, Storage};
@@ -121,11 +121,21 @@ impl Client {
                         let kart_count = client_identity.kart_count as usize;
                         anyhow::ensure!(kart_count >= player_count.div_ceil(2));
                         anyhow::ensure!(kart_count <= player_count);
+                        let players: Result<_> = client_identity
+                            .players
+                            .into_iter()
+                            .map(|player| {
+                                Ok(IdentityPlayer {
+                                    profile: player.profile,
+                                    name: player.name.try_into()?,
+                                })
+                            })
+                            .collect();
                         let mut identity = identity.unwrap_or(Identity {
                             frame_rate: client_identity.frame_rate,
                             region: client_identity.region.into(),
                             platform: client_identity.platform.into(),
-                            players: client_identity.players,
+                            players: players?,
                             kart_count: client_identity.kart_count,
                             race_courses: Box::new(Vec::new()),
                             battle_courses: Box::new(Vec::new()),
@@ -172,13 +182,14 @@ impl Client {
 
                             let player = |i| {
                                 let index = i as u8;
-                                let player: &ClientPlayer = &players[i];
+                                let player: &IdentityPlayer = &players[i];
                                 let profile = player.profile;
                                 let name = player.name;
                                 let id = PlayerId { client_pk: self.pk, profile };
                                 storage.read_player(&id, |player| Player {
                                     profile,
-                                    player: ServerPlayer { index, name },
+                                    index,
+                                    name,
                                     mmrs: player.map_or(LinearMap::new(), |p| p.mmrs.clone()),
                                     match_count: player.map_or(0, |p| p.race_count),
                                     play_time: player.map_or(Duration::ZERO, |p| p.play_time),
@@ -588,10 +599,16 @@ struct Identity {
     frame_rate: FrameRate,
     region: Region,
     platform: Platform,
-    players: Vec<ClientPlayer, MAX_CLIENT_PLAYER_COUNT>,
+    players: Vec<IdentityPlayer, MAX_CLIENT_PLAYER_COUNT>,
     kart_count: u8,
     race_courses: Box<Vec<[u8; 32], MAX_COURSE_COUNT>>,
     battle_courses: Box<Vec<[u8; 32], MAX_COURSE_COUNT>>,
+}
+
+#[derive(Clone, Copy, Debug)]
+struct IdentityPlayer {
+    profile: u8,
+    name: Name,
 }
 
 #[derive(Clone, Copy, Debug)]

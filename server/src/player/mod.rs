@@ -11,18 +11,15 @@ mod name;
 #[derive(Clone, Debug)]
 pub struct Player {
     pub profile: u8,
-    pub player: ServerPlayer,
+    pub index: u8,
+    pub name: Name,
     pub mmrs: LinearMap<ModeIndex, u16, MODE_INDEX_COUNT>,
     pub match_count: u64,
     pub play_time: Duration,
 }
 
 impl Player {
-    pub const fn index(&self) -> u8 {
-        self.player.index
-    }
-
-    pub const fn name(&self) -> Name {
-        Name(self.player.name)
+    pub fn player(&self) -> ServerPlayer {
+        ServerPlayer { index: self.index, name: self.name.into() }
     }
 }

@@ -976,7 +976,7 @@ impl Room {
                             .map(|player| race::Player {
                                 profile: player.profile,
                                 number: 0,
-                                name: player.name(),
+                                name: player.name,
                                 mmr: *player.mmrs.get(&self.mode_index).unwrap_or(&0),
                             })
                             .collect();
@@ -1021,7 +1021,7 @@ impl Room {
                                 number: 0,
                                 client_pk: *kart.client_pk(),
                                 profile: player.profile,
-                                name: player.name(),
+                                name: player.name,
                                 mmrs: player.mmrs.clone(),
                                 race_count: player.match_count,
                                 play_time: player.play_time,
@@ -1128,7 +1128,7 @@ impl Room {
             .karts
             .iter()
             .map(|kart| {
-                let players = kart.players().iter().map(|player| player.player.clone()).collect();
+                let players = kart.players().iter().map(super::player::Player::player).collect();
                 ServerKart {
                     local: 0,
                     players,
@@ -1155,7 +1155,7 @@ fn room_state(
         .iter()
         .map(|kart| {
             let local = (Some(kart.client_pk()) == client_pk).into();
-            let players = kart.players().iter().map(|player| player.player.clone()).collect();
+            let players = kart.players().iter().map(super::player::Player::player).collect();
             ServerKart { local, players, mmr: kart.mmr(room_state.mode_index), points: kart.points }
         })
         .collect();
