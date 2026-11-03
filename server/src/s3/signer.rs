@@ -13,7 +13,7 @@ use percent_encoding::{AsciiSet, NON_ALPHANUMERIC};
 use ureq::http::Request;
 use ureq::http::header;
 
-use crate::credential::Credential;
+use crate::config::Credential;
 use crate::s3::hex_str::HexStr;
 
 #[derive(Debug, Default)]

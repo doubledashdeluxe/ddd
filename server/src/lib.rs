@@ -10,7 +10,6 @@ mod clients;
 pub mod config;
 mod connection;
 pub mod courses;
-mod credential;
 pub mod crypto;
 mod dir_entry;
 pub mod flood;

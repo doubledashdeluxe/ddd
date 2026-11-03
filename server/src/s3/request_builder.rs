@@ -2,7 +2,7 @@ use anyhow::{Error, Result};
 use jiff::Timestamp;
 use ureq::http::{HeaderName, HeaderValue, Method, Request, Uri};
 
-use crate::credential::Credential;
+use crate::config::Credential;
 use crate::s3::signer::Signer;
 
 pub struct RequestBuilder<'a> {
@@ -72,7 +72,7 @@ mod tests {
     use ureq::http::Method;
     use ureq::http::header;
 
-    use crate::credential::Credential;
+    use crate::config::Credential;
     use crate::s3::request_builder::RequestBuilder;
     use crate::s3::signer::Signer;
 

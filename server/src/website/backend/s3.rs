@@ -3,7 +3,7 @@ use std::time::Duration;
 
 use anyhow::Result;
 
-use crate::credential::Credential;
+use crate::config::Credential;
 use crate::result_ext::ResultExt;
 use crate::s3;
 use crate::util;

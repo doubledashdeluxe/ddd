@@ -9,7 +9,7 @@ use ureq::http::Method;
 use ureq::http::header;
 use ureq::http::uri::{Scheme, Uri};
 
-use crate::credential::Credential;
+use crate::config::Credential;
 use crate::http;
 use crate::s3::hex_str::HexStr;
 use crate::s3::request_builder::RequestBuilder;

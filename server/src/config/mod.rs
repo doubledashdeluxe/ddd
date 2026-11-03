@@ -1,3 +1,5 @@
+pub use crate::config::credential::Credential;
+
 use std::convert::Infallible;
 use std::fs;
 use std::io::ErrorKind;
@@ -10,8 +12,9 @@ use arc_swap::ArcSwap;
 use cini::{Callback, CallbackKind, Ini};
 use log::{info, warn};
 
-use crate::credential::Credential;
 use crate::formats::online;
+
+mod credential;
 
 #[derive(Debug)]
 pub struct Config {
