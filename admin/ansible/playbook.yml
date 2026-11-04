@@ -50,6 +50,13 @@
         mode: '644'
       notify:
         - Reload ddd-server service
+    - name: Copy denied names
+      ansible.builtin.copy:
+        src: denied-names
+        dest: /etc/ddd-server/denied-names
+        mode: '644'
+      notify:
+        - Reload ddd-server service
     - name: Copy DDD update
       ansible.builtin.copy:
         src: ../../build/ddd-update.zip

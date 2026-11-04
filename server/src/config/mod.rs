@@ -7,14 +7,16 @@ use std::path::Path;
 use std::str::FromStr;
 use std::sync::Arc;
 
-use anyhow::Error;
+use anyhow::{Error, Result};
 use arc_swap::ArcSwap;
 use cini::{Callback, CallbackKind, Ini};
 use log::{info, warn};
 
+use crate::config::denied_names::DeniedNames;
 use crate::formats::online;
 
 mod credential;
+mod denied_names;
 
 #[derive(Debug)]
 pub struct Config {
@@ -32,10 +34,11 @@ pub struct Config {
     pub s3_access_key: Option<Credential>,
     pub s3_secret_key: Option<Credential>,
     pub discord_webhook: Option<Credential>,
+    pub denied_names: DeniedNames,
 }
 
 impl Config {
-    pub fn read(config_path: Option<&Path>, credentials_path: &Path) -> Result<Self, Error> {
+    pub fn read(config_path: Option<&Path>, credentials_path: &Path) -> Result<Self> {
         let config_path = config_path.unwrap_or_else(|| "run".as_ref());
         let config_path = config_path.join("ddd-server.conf");
         info!("Config path: {}", config_path.display());
@@ -49,6 +52,8 @@ impl Config {
         config.s3_access_key = Credential::load(credentials_path, "s3-access-key")?;
         config.s3_secret_key = Credential::load(credentials_path, "s3-secret-key")?;
         config.discord_webhook = Credential::load(credentials_path, "discord-webhook")?;
+        let config_path = config_path.parent().unwrap();
+        config.denied_names = DeniedNames::read(config_path)?;
         for line in format!("{config:#?}").lines() {
             info!("{line}");
         }
@@ -83,6 +88,7 @@ impl Default for Config {
             s3_access_key: None,
             s3_secret_key: None,
             discord_webhook: None,
+            denied_names: DeniedNames::default(),
         }
     }
 }

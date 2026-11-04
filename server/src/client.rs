@@ -98,6 +98,11 @@ impl Client {
             State::Poll { identity, room_info } => (Some(identity), room_info),
             State::Race { identity, room_info, .. } => (Some(identity), room_info),
         };
+        if let Some(identity) = &identity {
+            let mut names: Vec<_, MAX_CLIENT_PLAYER_COUNT> =
+                identity.players.iter().map(|player| player.name.into()).collect();
+            anyhow::ensure!(!config.denied_names.contains(&mut names));
+        }
         self.state = match (client_state, identity, room_info) {
             (ClientState::Server(server), identity, _) => {
                 let update_courses = |courses: &mut Vec<[u8; 32], MAX_COURSE_COUNT>,
