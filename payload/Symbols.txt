@@ -681,6 +681,7 @@
 802b8b6c isGetItemAnime__9KartAnimeCFUl
 802b8c28 isBack__9KartAnimeCFUl
 802b8d80 makeThrowAnime__9KartAnimeFbbb
+802bbaa0 isMyItem__8KartItemCFv
 802bbc6c doOtherAnime__8KartItemFv
 802bc378 doTandemItemAnime__8KartItemFv
 802bc998 doTandemItemRelease__8KartItemFv

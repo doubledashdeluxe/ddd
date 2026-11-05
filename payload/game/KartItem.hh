@@ -3,6 +3,10 @@
 #include "game/KartBody.hh"
 
 class KartItem {
+public:
+    bool REPLACED(isMyItem)() const;
+    REPLACE bool isMyItem() const;
+
 private:
     void REPLACED(doOtherAnime)();
     REPLACE void doOtherAnime();

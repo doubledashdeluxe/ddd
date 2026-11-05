@@ -6,6 +6,12 @@
 #include "game/RaceClient.hh"
 #include "game/SequenceInfo.hh"
 
+bool KartItem::isMyItem() const {
+    u32 index = m_body->getIndex();
+    const ItemObj *item = ItemObjMgr::Instance()->getKartEquipItem(index);
+    return item && item->getKind() == ItemID::Chomp && REPLACED(isMyItem)();
+}
+
 void KartItem::doOtherAnime() {
     const KartCtrl *kartCtrl = KartCtrl::Instance();
     u32 index = m_body->getIndex();
