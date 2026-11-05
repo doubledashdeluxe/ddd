@@ -222,6 +222,8 @@ void SceneRoomCodeEnter::stateSlideIn() {
     if (m_mainAnmTransformFrame < 15) {
         m_mainAnmTransformFrame++;
         m_tandemAnmTransformFrame = Min<u8>(m_mainAnmTransformFrame, 9);
+    } else if (m_chars[m_charCount - 1] == 8 || m_charCount == MaxCharCount) {
+        selectIn();
     } else {
         idle();
     }
