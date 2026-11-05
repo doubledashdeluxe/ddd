@@ -54,8 +54,11 @@ void ItemObj::updateHandOffsetPos() {
     }
 
     const RaceClient::ItemEvent *itemEvent = raceClient->itemEvent(m_kartIndex);
-    const KartPad *kartPad = kartCtrl->getKartPad(m_kartIndex);
+    if (!itemEvent) {
+        return;
+    }
 
+    const KartPad *kartPad = kartCtrl->getKartPad(m_kartIndex);
     f32 t = (6.0f - kartPad->m_itemFrame) / 5;
     TVec3<f32> handOffsetPos;
     PSMTXMultVec(*m_handAnmMtx, &m_handOffsetPos, &handOffsetPos);
