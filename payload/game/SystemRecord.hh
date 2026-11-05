@@ -57,11 +57,11 @@ public:
     static SystemRecord &Instance();
 
 public:
-    u8 m_rearViewButtons : 8; // Added
-    u8 m_aspectRatio : 4;     // Added
+    u16 m_rearViewButtons : 12; // 3 bits (8 options for the button) * 4 players = 12 bits
+    u8 m_aspectRatio : 4;       // Added
 
 private:
-    u32 : 16;
+    u32 : 12;
 
 public:
     bool m_noTAGhosts : 1;

@@ -22,8 +22,9 @@ void KartGame::doStatus() {
     for (u32 i = 0; i < 8; i++) {
         KartCam *kartCam = kartCtrl->getKartCam(i);
         if (kartCam && kartCam->getBody() == m_body) {
-            u32 masks[4] = {PAD_BUTTON_X, PAD_BUTTON_Y, PAD_TRIGGER_L, PAD_TRIGGER_R};
-            u32 mask = masks[(SystemRecord::Instance().m_rearViewButtons >> (2 * padPort)) % 4];
+            u32 masks[8] = {PAD_BUTTON_X, PAD_BUTTON_Y, PAD_TRIGGER_L, PAD_TRIGGER_R,
+                    PAD_BUTTON_LEFT, PAD_BUTTON_RIGHT, PAD_BUTTON_DOWN, PAD_BUTTON_UP};
+            u32 mask = masks[(SystemRecord::Instance().m_rearViewButtons >> (3 * padPort)) % 8];
             kartCam->m_isRearView = kartGamePad->button().level() & mask;
             break;
         }

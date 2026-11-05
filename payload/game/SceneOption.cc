@@ -310,7 +310,7 @@ void SceneOption::calc() {
     }
 
     refreshOption("SbBGMw1", static_cast<u8>(abs(m_unsavedValues[Option::Volume] - 10)));
-    refreshOption("SbBGMw2", "-+"[m_unsavedValues[Option::Volume] > 10]);
+    refreshOption("SbBGMw2", static_cast<u32>("-+"[m_unsavedValues[Option::Volume] > 10]));
     const char *soundValueNames[] = {"Mono", "Stereo", "DolbySurround"};
     refreshOption(Option::Sound, soundValueNames);
     const char *rumbleValueNames[] = {"Off", "On"};
@@ -320,10 +320,12 @@ void SceneOption::calc() {
     const char *itemsValueNames[] = {"Standard", "Smash", "Super", "Simple"};
     refreshOption(Option::Items, itemsValueNames);
     refreshOption(Option::Laps, static_cast<s8>(0));
-    refreshOption(Option::P1RearView, "XYLR");
-    refreshOption(Option::P2RearView, "XYLR");
-    refreshOption(Option::P3RearView, "XYLR");
-    refreshOption(Option::P4RearView, "XYLR");
+    // The last four entries are for '←', '→', '↓', '↑'.
+    const u32 rearViewOptions[] = {'X', 'Y', 'L', 'R', 0x2190, 0x2192, 0x2193, 0x2191};
+    refreshOption(Option::P1RearView, rearViewOptions);
+    refreshOption(Option::P2RearView, rearViewOptions);
+    refreshOption(Option::P3RearView, rearViewOptions);
+    refreshOption(Option::P4RearView, rearViewOptions);
     const char *aspectRatioValueNames[] = {"Auto", "43", "1914", "32", "1610", "169", "3821",
             "219"};
     refreshOption(Option::AspectRatio, aspectRatioValueNames);
@@ -528,7 +530,7 @@ void SceneOption::readOptions() {
     }
     m_savedValues[Option::Laps] = systemRecord.m_vsLapNum;
     for (u32 i = 0; i < 4; i++) {
-        m_savedValues[Option::P1RearView + i] = (systemRecord.m_rearViewButtons >> (2 * i)) % 4;
+        m_savedValues[Option::P1RearView + i] = (systemRecord.m_rearViewButtons >> (3 * i)) % 8;
     }
     m_savedValues[Option::AspectRatio] = systemRecord.m_aspectRatio;
 
@@ -553,7 +555,7 @@ void SceneOption::writeOptions() {
     }
     systemRecord.m_rearViewButtons = 0;
     for (u32 i = 0; i < 4; i++) {
-        systemRecord.m_rearViewButtons |= m_unsavedValues[Option::P1RearView + i] << (2 * i);
+        systemRecord.m_rearViewButtons |= m_unsavedValues[Option::P1RearView + i] << (3 * i);
     }
     systemRecord.m_aspectRatio = m_unsavedValues[Option::AspectRatio];
 
@@ -587,10 +589,10 @@ void SceneOption::refreshOption(u32 index, const char **valueNames) {
     refreshOption(tag.values(), name.values());
 }
 
-void SceneOption::refreshOption(u32 index, const char *valueNames) {
+void SceneOption::refreshOption(u32 index, const u32 *valueNames) {
     Array<char, 9> tag;
     snprintf(tag.values(), tag.count(), "Sb%s_M", EntryNames[index]);
-    char name = valueNames[m_unsavedValues[index]];
+    u32 name = valueNames[m_unsavedValues[index]];
     refreshOption(tag.values(), name);
 }
 
@@ -606,10 +608,10 @@ void SceneOption::refreshOption(const char *tag, const char *name) {
     picture->changeTexture(name, 0);
 }
 
-void SceneOption::refreshOption(const char *tag, char name) {
+void SceneOption::refreshOption(const char *tag, u32 name) {
     J2DPicture *picture = m_mainScreen.search("%s", tag)->downcast<J2DPicture>();
     Kart2DCommon *kart2DCommon = Kart2DCommon::Instance();
-    picture->changeTexture(kart2DCommon->getAsciiTexture(name), 0);
+    picture->changeTexture(kart2DCommon->getUnicodeTexture(name), 0);
 }
 
 void SceneOption::refreshOption(const char *tag, u8 name) {
@@ -661,6 +663,6 @@ void SceneOption::hideArrows() {
     }
 }
 
-const u32 SceneOption::ValueCounts[Option::Count] = {3, 21, 2, 2, 4, 10, 4, 4, 4, 4, 8};
+const u32 SceneOption::ValueCounts[Option::Count] = {3, 21, 2, 2, 4, 10, 8, 8, 8, 8, 8};
 const char *const SceneOption::EntryNames[Entry::Count] = {"Sd", "BGM", "Rm", "Gh", "Is", "Lp",
         "Re1", "Re2", "Re3", "Re4", "As", "ReTtl"};

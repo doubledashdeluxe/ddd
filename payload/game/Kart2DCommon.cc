@@ -141,6 +141,18 @@ ResTIMG *Kart2DCommon::getUnicodeTexture(u32 cp) {
     case 0x00fc: // ü
         path = "timg/MarioFont_U_diaeresis.bti";
         break;
+    case 0x2190: // ←
+        path = "timg/MarioFontLeftArrow.bti";
+        break;
+    case 0x2191: // ↑
+        path = "timg/MarioFontUpArrow.bti";
+        break;
+    case 0x2192: // →
+        path = "timg/MarioFontRightArrow.bti";
+        break;
+    case 0x2193: // ↓
+        path = "timg/MarioFontDownArrow.bti";
+        break;
     case 0x3044: // い
         path = "timg/MarioFontH_i.bti";
         break;

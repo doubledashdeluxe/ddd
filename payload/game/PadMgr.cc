@@ -12,8 +12,11 @@ void PadMgr::SetRecorder(PadRecorder *recorder) {
 void PadMgr::GetPadData(u8 port, bool remote, KartPadData *data) {
     REPLACED(GetPadData)(port, remote, data);
     if (!remote) {
-        u8 rearViewButton = (SystemRecord::Instance().m_rearViewButtons >> (port * 2)) % 4;
-        data->buttons &= ~(1 << (2 + rearViewButton));
+        u8 rearViewButton = (SystemRecord::Instance().m_rearViewButtons >> (port * 3)) % 8;
+        if (rearViewButton < 4) {
+            // D-Pad inputs not stored in PadMgr.
+            data->buttons &= ~(1 << (2 + rearViewButton));
+        }
     }
 }
 
