@@ -16,6 +16,13 @@ KartGamePad *KartGamePad::KartPad(u32 index) {
     return s_kartPads[index];
 }
 
+void KartGamePad::removeInputs() {
+    PADStatus padStatus = {};
+    u32 stickButtons = m_mainStick.update(padStatus.stickX, padStatus.stickY, Clamped,
+            WhichStick_MainStick, m_button);
+    m_button.update(&padStatus, stickButtons << 0x18);
+}
+
 void KartGamePad::expand(const PadMgr::KartPadData &data) {
     PADStatus padStatus;
     padStatus.stickX = data.stickX * 4.0f;

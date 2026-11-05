@@ -32,6 +32,7 @@ public:
     s32 padPort() const;
     REPLACE void expand(const PadMgr::KartPadData &data);
     void expand(const u16 &data);
+    void removeInputs();
 
     static KartGamePad *GamePad(u32 index);
     static KartGamePad *KartPad(u32 index);

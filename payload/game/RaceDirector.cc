@@ -35,7 +35,7 @@ void RaceDirector::calc(s32 adjustment) {
     if (adjustment >= 0) {
         if (pauseManager->paused()) {
             KartGamePad *pad = KartGamePad::GamePad(0);
-            pad->expand(0);
+            pad->removeInputs();
         }
     }
     m_isFrameRenewal = true;

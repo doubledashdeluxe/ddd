@@ -67,10 +67,10 @@ private:
     void writeOptions();
     void onOptionChange();
     void refreshOption(u32 index, const char **valueNames);
-    void refreshOption(u32 index, const char *valueNames);
+    void refreshOption(u32 index, const u32 *valueNames);
     void refreshOption(u32 index, s8 nameOffset);
     void refreshOption(const char *tag, const char *name);
-    void refreshOption(const char *tag, char name);
+    void refreshOption(const char *tag, u32 name);
     void refreshOption(const char *tag, u8 name);
     void showOptions();
     void showArrows();
