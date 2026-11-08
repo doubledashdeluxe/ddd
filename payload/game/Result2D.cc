@@ -196,7 +196,30 @@ Result2D::Result2D(JKRHeap *heap, Online /* online */)
 void Result2D::init() {
     m_overScreen->search("OverBack")->setHasARScale(false, false);
 
-    REPLACED(init)();
+    if (!SequenceInfo::Instance().m_isOnline) {
+        REPLACED(init)();
+        return;
+    }
+
+    s_isVisible = true;
+    m_frame = 0;
+    m_endFrame = 0;
+    m_overBackAlpha = 0;
+    m_selectorX = 840.0f;
+    m_anmEndFrame = 0;
+    m_lineColorFrame = 0;
+    Fill(m_gpLineXs, 840.0f);
+    GPScale gpScale;
+    gpScale.line.set(1.0f, 1.0f);
+    gpScale.point.set(1.0f, 1.0f);
+    Fill(m_gpScales, gpScale);
+    m_selectorScaleFrame = 0;
+    m_selectorScale = 1.0f;
+    m_selectorCursorFrame = 0;
+    m_selectorCursorPrevY = 0.0f;
+    m_selectorCursorCurrY = 0.0f;
+    m_selectorCursorNextY = 0.0f;
+    m_overScreen->search("OverBack")->setAlpha(0);
 }
 
 void Result2D::calc(const KartGamePad *pad) {
