@@ -100,7 +100,8 @@ static void *Run(void * /* param */) {
         } else {
             s_isVirtual = false;
             REPLACED(SOStartup)(&s_config);
-            s_isVirtual = !Platform::IsGameCube() && IFDefault.mode == ETH_MODE_UNKNOWN;
+            s_isVirtual = (!Platform::IsGameCube() && IFDefault.mode == ETH_MODE_UNKNOWN) ||
+                    Platform::IsDolphin();
             if (s_isVirtual) {
                 while (s_kdResource->ioctl(KdIoctl::StartupSocket, nullptr, 0, out.values(),
                                out.count()) < 0) {
