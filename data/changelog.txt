@@ -1,3 +1,4 @@
 
-This update contains camera improvements
-for spectators.
+This update adds D-Pad buttons as options
+for rear view and support for 12-race GPs
+online.
