@@ -1,3 +1,4 @@
+use std::cmp::Reverse;
 use std::fmt::{self, Display, Formatter};
 
 use heapless::Vec;
@@ -46,6 +47,21 @@ impl<'a> Race<'a> {
             })
             .collect();
         let players_field = PlayersField { name: "Players", value: PlayersValue { karts } };
+        let fields = if race.format == RoomOptionFormat::FreeForAll {
+            Fields::FreeForAll(course_field, players_field)
+        } else {
+            let karts = &players_field.value.karts;
+            let team_count = karts.iter().map(|kart| kart.team).max().unwrap_or(0);
+            let mut teams: Vec<_, _> =
+                (0..=team_count).map(|team| Team { team, point_diff: 0, points: 0 }).collect();
+            for kart in karts {
+                teams[kart.team as usize].point_diff += kart.point_diff;
+                teams[kart.team as usize].points += kart.points;
+            }
+            teams.sort_unstable_by_key(|team| (Reverse(team.point_diff), team.points, team.team));
+            let teams_field = TeamsField { name: "Teams", value: TeamsValue { teams } };
+            Fields::Teams(course_field, players_field, teams_field)
+        };
         let footer_text = FooterText {
             frame_rate: race.frame_rate,
             engine_size: race.engine_size,
@@ -59,7 +75,7 @@ impl<'a> Race<'a> {
             author,
             title: Title { race_number: race.number, mode: race.mode },
             url: Url { base_url: url, race_number: race.number },
-            fields: (course_field, players_field),
+            fields,
             footer: Footer { text: footer_text },
         };
         Self { username, avatar_url, embeds: (embed,) }
@@ -73,7 +89,7 @@ struct Embed<'a> {
     title: Title,
     #[serde(serialize_with = "serialize_display")]
     url: Url<'a>,
-    fields: (CourseField<'a>, PlayersField),
+    fields: Fields<'a>,
     footer: Footer,
 }
 
@@ -131,6 +147,13 @@ impl Display for Url<'_> {
 }
 
 #[derive(Serialize)]
+#[serde(untagged)]
+enum Fields<'a> {
+    FreeForAll(CourseField<'a>, PlayersField),
+    Teams(CourseField<'a>, PlayersField, TeamsField),
+}
+
+#[derive(Serialize)]
 struct CourseField<'a> {
     #[serde(serialize_with = "serialize_display")]
     name: CourseName,
@@ -172,45 +195,17 @@ impl Display for PlayersValue {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         let max_name_count = self.karts.iter().map(|kart| kart.names.len()).max().unwrap_or(0);
 
-        let point_diff_width = self
-            .karts
-            .iter()
-            .filter_map(|kart| kart.point_diff.unsigned_abs().checked_ilog10())
-            .max()
-            .map_or(1, |width| width + 2) as usize;
+        let point_diff_width = point_diff_width(self.karts.iter().map(|kart| kart.point_diff));
 
-        let points_width =
-            self.karts.iter().filter_map(|kart| kart.points.checked_ilog10()).max().unwrap_or(0)
-                as usize
-                + 1;
+        let points_width = points_width(self.karts.iter().map(|kart| kart.points));
 
         for (rank, kart) in self.karts.iter().enumerate() {
             if rank != 0 {
                 writeln!(f)?;
             }
-            let rank = match rank {
-                0 => "\u{1f947}",
-                1 => "\u{1f948}",
-                2 => "\u{1f949}",
-                3 => "4\u{fe0f}\u{20e3}",
-                4 => "5\u{fe0f}\u{20e3}",
-                5 => "6\u{fe0f}\u{20e3}",
-                6 => "7\u{fe0f}\u{20e3}",
-                _ => "8\u{fe0f}\u{20e3}",
-            };
-            write!(f, "`{rank} ")?;
+            write!(f, "`{} ", rank_emoji(rank))?;
 
-            let team = match kart.team {
-                0 => "\u{2764}\u{fe0f}",
-                1 => "\u{1f499}",
-                2 => "\u{1f49a}",
-                3 => "\u{1f49b}",
-                4 => "\u{1fa77}",
-                5 => "\u{1f90e}",
-                6 => "\u{1fa75}",
-                _ => "\u{1f49c}",
-            };
-            write!(f, "{team} ")?;
+            write!(f, "{} ", team_emoji(kart.team))?;
 
             for i in 0..max_name_count {
                 let name: Option<[u8; _]> = kart.names.get(i).map(|name| (*name).into());
@@ -236,6 +231,44 @@ struct Kart {
     team: u8,
     names: Vec<Name, MAX_KART_PLAYER_COUNT>,
     time: u32,
+    point_diff: i32,
+    points: u16,
+}
+
+#[derive(Serialize)]
+struct TeamsField {
+    name: &'static str,
+    #[serde(serialize_with = "serialize_display")]
+    value: TeamsValue,
+}
+
+struct TeamsValue {
+    teams: Vec<Team, MAX_TEAM_COUNT>,
+}
+
+impl Display for TeamsValue {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        let point_diff_width = point_diff_width(self.teams.iter().map(|team| team.point_diff));
+
+        let points_width = points_width(self.teams.iter().map(|team| team.points));
+
+        for (rank, team) in self.teams.iter().enumerate() {
+            if rank != 0 {
+                writeln!(f)?;
+            }
+            write!(f, "`{} ", rank_emoji(rank))?;
+
+            write!(f, "{} ", team_emoji(team.team))?;
+
+            write!(f, "{:+point_diff_width$} {:points_width$}`", team.point_diff, team.points)?;
+        }
+
+        Ok(())
+    }
+}
+
+struct Team {
+    team: u8,
     point_diff: i32,
     points: u16,
 }
@@ -282,6 +315,43 @@ impl Display for FooterText {
         }
 
         Ok(())
+    }
+}
+
+fn point_diff_width(point_diffs: impl Iterator<Item = i32>) -> usize {
+    point_diffs
+        .filter_map(|point_diff| point_diff.unsigned_abs().checked_ilog10())
+        .max()
+        .map_or(1, |width| width + 2) as usize
+}
+
+fn points_width(points: impl Iterator<Item = u16>) -> usize {
+    points.filter_map(u16::checked_ilog10).max().unwrap_or(0) as usize + 1
+}
+
+const fn rank_emoji(rank: usize) -> &'static str {
+    match rank {
+        0 => "\u{1f947}",
+        1 => "\u{1f948}",
+        2 => "\u{1f949}",
+        3 => "4\u{fe0f}\u{20e3}",
+        4 => "5\u{fe0f}\u{20e3}",
+        5 => "6\u{fe0f}\u{20e3}",
+        6 => "7\u{fe0f}\u{20e3}",
+        _ => "8\u{fe0f}\u{20e3}",
+    }
+}
+
+const fn team_emoji(team: u8) -> &'static str {
+    match team {
+        0 => "\u{2764}\u{fe0f}",
+        1 => "\u{1f499}",
+        2 => "\u{1f49a}",
+        3 => "\u{1f49b}",
+        4 => "\u{1fa77}",
+        5 => "\u{1f90e}",
+        6 => "\u{1fa75}",
+        _ => "\u{1f49c}",
     }
 }
 
