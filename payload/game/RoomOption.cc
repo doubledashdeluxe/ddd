@@ -75,7 +75,7 @@ Array<RoomOption::Option, RoomOption::Count> RoomOption::MakeOptions() {
     options[ItemMode].count = RoomOptionItemMode::Count;
     options[ItemMode].accessor = &RoomOptions::itemMode;
     options[LapCount].count = MaxLapCount + 1;
-    static const u8 matchCounts[] = {1, 2, 3, 4, 5, 6, 8, 16, 24, 32, 48, 64, 96};
+    static const u8 matchCounts[] = {1, 2, 3, 4, 5, 6, 8, 12, 16, 24, 32, 48, 64, 96};
     options[LapCount].accessor = &RoomOptions::lapCount;
     options[RaceCount].count = ::Count(matchCounts);
     options[RaceCount].values = matchCounts;
