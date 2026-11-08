@@ -1,6 +1,9 @@
 pub use crate::storage::race::kart::Kart;
 pub use crate::storage::race::player::Player;
+pub use crate::storage::race::team::Team;
 pub use crate::storage::race::version::Version;
+
+use std::cmp::Reverse;
 
 use heapless::Vec;
 use jiff::Timestamp;
@@ -12,6 +15,7 @@ use crate::formats::online::*;
 
 mod kart;
 mod player;
+mod team;
 mod version;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -50,4 +54,19 @@ pub struct Race {
     pub end: Timestamp,
     #[serde(default)]
     pub version: Version,
+}
+
+impl Race {
+    pub fn teams(&self) -> Vec<Team, MAX_TEAM_COUNT> {
+        let team_count = self.karts.iter().map(|kart| kart.team).max().unwrap_or(0);
+        let mut teams: Vec<_, _> =
+            (0..=team_count).map(|team| Team { team, point_diff: 0, points: 0 }).collect();
+        for kart in &self.karts {
+            let point_diff = i32::from(kart.result_points) - i32::from(kart.points);
+            teams[kart.team as usize].point_diff += point_diff;
+            teams[kart.team as usize].points += kart.result_points;
+        }
+        teams.sort_unstable_by_key(|team| (Reverse(team.point_diff), team.points, team.team));
+        teams
+    }
 }

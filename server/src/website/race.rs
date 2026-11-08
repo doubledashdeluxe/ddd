@@ -1,7 +1,8 @@
 use std::fmt::{self, Result, Write};
 
 use crate::courses::Courses;
-use crate::storage::race::{Kart, Race};
+use crate::formats::online::RoomOptionFormat;
+use crate::storage::race::{Kart, Race, Team};
 use crate::website::backend::Backend;
 use crate::website::course_name;
 use crate::website::html::Children;
@@ -17,7 +18,10 @@ pub fn write(courses: &Courses, race: &mut Race, backend: &mut impl Backend) {
 
     let write = |body: &mut Children<_>, path_printer: &PathPrinter| {
         write_ul(courses, race, body, path_printer)?;
-        write_table(race, body, path_printer)?;
+        write_player_table(race, body, path_printer)?;
+        if race.format != RoomOptionFormat::FreeForAll {
+            write_team_table(race, body)?;
+        }
         Ok(())
     };
 
@@ -102,7 +106,7 @@ fn write_ul(
     ul.finish()
 }
 
-fn write_table(
+fn write_player_table(
     race: &mut Race,
     body: &mut Children<impl Write>,
     path_printer: &PathPrinter,
@@ -113,13 +117,13 @@ fn write_table(
 
     race.karts.sort_unstable_by_key(|kart| kart.result_index);
     for (rank, kart) in race.karts.iter().enumerate() {
-        write_tr(race, rank, kart, &mut table, path_printer)?;
+        write_kart_tr(race, rank, kart, &mut table, path_printer)?;
     }
 
     table.finish()
 }
 
-fn write_tr(
+fn write_kart_tr(
     race: &Race,
     rank: usize,
     kart: &Kart,
@@ -184,6 +188,40 @@ fn write_tr(
     stat("Delayed frames", kart.delayed_frames, "")?;
     stat("Latency", kart.latency, " f")?;
     stat("Stability", kart.stability, "/64")?;
+
+    tr.finish()
+}
+
+fn write_team_table(race: &Race, body: &mut Children<impl Write>) -> Result {
+    let mut table = body.element("table")?;
+    table.attribute("class")?.value("teams race-teams")?;
+    let mut table = table.children()?;
+
+    for (rank, team) in race.teams().iter().enumerate() {
+        write_team_tr(rank, team, &mut table)?;
+    }
+
+    table.finish()
+}
+
+fn write_team_tr(rank: usize, team: &Team, table: &mut Children<impl Write>) -> Result {
+    let mut tr = table.element("tr")?;
+    tr.attribute("class")?.value(format_args!("team-{}", team.team))?;
+    let mut tr = tr.children()?;
+
+    tr.element("td")?.content(Rank(rank))?;
+
+    let name = match team.team {
+        0 => "Red",
+        1 => "Blue",
+        2 => "Green",
+        _ => "Yellow",
+    };
+    tr.element("td")?.content(format_args!("{name} Team"))?;
+
+    tr.element("td")?.content(format_args!("{:+}", team.point_diff))?;
+
+    tr.element("td")?.content(format_args!("{} pts", team.points))?;
 
     tr.finish()
 }

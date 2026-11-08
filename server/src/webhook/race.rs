@@ -1,4 +1,3 @@
-use std::cmp::Reverse;
 use std::fmt::{self, Display, Formatter};
 
 use heapless::Vec;
@@ -9,6 +8,7 @@ use crate::courses::{Course, Courses};
 use crate::formats::online::*;
 use crate::player::Name;
 use crate::storage;
+use crate::storage::race::Team;
 
 #[derive(Serialize)]
 pub struct Race<'a> {
@@ -50,15 +50,7 @@ impl<'a> Race<'a> {
         let fields = if race.format == RoomOptionFormat::FreeForAll {
             Fields::FreeForAll(course_field, players_field)
         } else {
-            let karts = &players_field.value.karts;
-            let team_count = karts.iter().map(|kart| kart.team).max().unwrap_or(0);
-            let mut teams: Vec<_, _> =
-                (0..=team_count).map(|team| Team { team, point_diff: 0, points: 0 }).collect();
-            for kart in karts {
-                teams[kart.team as usize].point_diff += kart.point_diff;
-                teams[kart.team as usize].points += kart.points;
-            }
-            teams.sort_unstable_by_key(|team| (Reverse(team.point_diff), team.points, team.team));
+            let teams = race.teams();
             let teams_field = TeamsField { name: "Teams", value: TeamsValue { teams } };
             Fields::Teams(course_field, players_field, teams_field)
         };
@@ -265,12 +257,6 @@ impl Display for TeamsValue {
 
         Ok(())
     }
-}
-
-struct Team {
-    team: u8,
-    point_diff: i32,
-    points: u16,
 }
 
 #[derive(Serialize)]

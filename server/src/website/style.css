@@ -37,36 +37,41 @@ a {
     color: inherit;
 }
 
-.players {
+.players, .teams {
     border-spacing: 0 0.25rem;
     display: block;
     overflow: auto;
     white-space: nowrap;
 }
 
-.players td {
+.players td, .teams td {
     border-style: solid;
     border-width: 0.125rem 0 0.125rem 0;
     padding: 0.25rem 0.5rem;
 }
 
-.players td:first-child {
+.players td:first-child, .teams td:first-child {
     border-left-width: 0.125rem;
     border-radius: 0.5rem 0 0 0.5rem;
 }
 
-.players td:last-child {
+.players td:last-child, .teams td:last-child {
     border-right-width: 0.125rem;
     border-radius: 0 0.5rem 0.5rem 0;
 }
 
-.match-players td:nth-child(3),
-.match-players td:nth-child(4),
-.match-players td:nth-child(5),
-.match-players td:nth-last-child(3),
-.match-players td:nth-last-child(2),
-.match-players td:nth-last-child(1),
-.room-players td:nth-child(2) {
+.race-players td:nth-child(2)[colspan="2"] ~ td:nth-child(3),
+.race-players td:nth-child(4),
+.race-players td:nth-child(5),
+.race-players td:nth-child(2):not([colspan="2"]) ~ td:nth-child(6),
+.race-players td:nth-last-child(3),
+.race-players td:nth-last-child(2),
+.race-players td:nth-last-child(1),
+.race-teams td:nth-child(2),
+.race-teams td:nth-child(3),
+.race-teams td:nth-child(4),
+.room-players td:nth-child(1)[colspan="2"] ~ td:nth-child(2),
+.room-players td:nth-child(1):not([colspan="2"]) ~ td:nth-child(3) {
     text-align: right;
 }
 
