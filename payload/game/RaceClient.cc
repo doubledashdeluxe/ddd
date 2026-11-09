@@ -71,6 +71,10 @@ const Array<s32, 8> &RaceClient::pointDiffs() const {
     return m_pointDiffs;
 }
 
+const Array<u32, 8> &RaceClient::gpRankedKartIndices() const {
+    return m_gpRankedKartIndices;
+}
+
 void RaceClient::setHasItem(u32 kartIndex, u32 characterIndex) {
     u32 frame = Frame() + 1;
     const OnlineInfo &onlineInfo = OnlineInfo::Instance();
@@ -238,12 +242,30 @@ u32 RaceClient::Frame() {
     return MinClientFrame + RaceMgr::Instance()->frame();
 }
 
-bool RaceClient::RankedKartIndexComparator::operator()(const u32 &a, const u32 &b) {
+bool RaceClient::PointComparator::operator()(const u32 &a, const u32 &b) {
     if (points[a] != points[b]) {
         return points[a] > points[b];
     }
 
     return prevPoints[a] <= prevPoints[b];
+}
+
+bool RaceClient::TeamPointComparator::operator()(const u32 &a, const u32 &b) {
+    u32 ta = teams[a], tb = teams[b];
+
+    if (teamPoints[ta] != teamPoints[tb]) {
+        return teamPoints[ta] > teamPoints[tb];
+    }
+
+    if (prevTeamPoints[ta] != prevTeamPoints[tb]) {
+        return prevTeamPoints[ta] < prevTeamPoints[tb];
+    }
+
+    if (ta != tb) {
+        return ta < tb;
+    }
+
+    return comparator(a, b);
 }
 
 RaceClient::RaceClient()
@@ -527,7 +549,7 @@ bool RaceClient::clientStateRace(const ClientStateRaceReadInfo &readInfo) {
     }
 
     SequenceInfo &sequenceInfo = SequenceInfo::Instance();
-    Array<u32, 8> prevPoints = sequenceInfo.m_points;
+    Array<u32, MaxRoomKartCount> prevPoints = sequenceInfo.m_points;
     sequenceInfo.m_prevGPRankedKartIndices = sequenceInfo.m_gpRankedKartIndices;
     for (u32 i = 0; i < kartCount; i++) {
         const ReadInfo::Result &result = results[i];
@@ -536,8 +558,18 @@ bool RaceClient::clientStateRace(const ClientStateRaceReadInfo &readInfo) {
         sequenceInfo.m_gpRankedKartIndices[i] = i;
         m_pointDiffs[i] = result.points - prevPoints[result.kartIndex];
     }
-    RankedKartIndexComparator comparator = {sequenceInfo.m_points, prevPoints};
+    PointComparator comparator = {sequenceInfo.m_points, prevPoints};
     Sort(sequenceInfo.m_gpRankedKartIndices, kartCount, comparator);
+    m_gpRankedKartIndices = sequenceInfo.m_gpRankedKartIndices;
+    if (!onlineInfo.m_isFFA) {
+        Array<u32, MaxTeamCount> prevTeamPoints =
+                ComputeTeamPoints(kartCount, onlineInfo.m_teams, prevPoints);
+        Array<u32, MaxTeamCount> teamPoints =
+                ComputeTeamPoints(kartCount, onlineInfo.m_teams, sequenceInfo.m_points);
+        TeamPointComparator teamComparator = {comparator, onlineInfo.m_teams, teamPoints,
+                prevTeamPoints};
+        Sort(m_gpRankedKartIndices, kartCount, teamComparator);
+    }
     m_hasResults = true;
     return true;
 }
@@ -608,6 +640,15 @@ f32 RaceClient::TruncateAngleDiff(f32 diff) {
 
 f32 RaceClient::TruncateVelDiff(f32 diff) {
     return TruncateDiff(diff, 1.0f / VelScale);
+}
+
+Array<u32, MaxTeamCount> RaceClient::ComputeTeamPoints(u32 kartCount,
+        const Array<u8, MaxRoomKartCount> &teams, const Array<u32, MaxRoomKartCount> &points) {
+    Array<u32, MaxTeamCount> teamPoints(0);
+    for (u32 i = 0; i < kartCount; i++) {
+        teamPoints[teams[i]] += points[i];
+    }
+    return teamPoints;
 }
 
 RaceClient *RaceClient::s_instance = nullptr;

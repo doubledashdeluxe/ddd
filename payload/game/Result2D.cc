@@ -213,6 +213,7 @@ void Result2D::init() {
     gpScale.line.set(1.0f, 1.0f);
     gpScale.point.set(1.0f, 1.0f);
     Fill(m_gpScales, gpScale);
+    Fill(m_selectorFrames, 0);
     m_selectorScaleFrame = 0;
     m_selectorScale = 1.0f;
     m_selectorCursorFrame = 0;
@@ -567,11 +568,56 @@ void Result2D::setOnlineMatch() {
 
 void Result2D::setOnlineTotal() {
     setOnlineCommon(true);
+    const SequenceInfo &sequenceInfo = SequenceInfo::Instance();
+    const OnlineInfo &onlineInfo = OnlineInfo::Instance();
     const RaceInfo &raceInfo = RaceInfo::Instance();
     u32 kartCount = raceInfo.getKartCount();
+    const RaceClient *raceClient = RaceClient::Instance();
+    Kart2DCommon *kart2DCommon = Kart2DCommon::Instance();
+    Array<u32, 8> ranks;
     for (u32 i = 0; i < kartCount; i++) {
-        for (u32 j = 0; j < Count(m_plusDigitPictures[i]); j++) {
-            m_plusDigitPictures[i][j]->m_isVisible = false;
+        ranks[sequenceInfo.m_raceRankedKartIndices[i]] = i;
+    }
+    for (u32 i = 0; i < kartCount; i++) {
+        GPLine &gpLine = m_gpLines[i];
+        u32 kartIndex = raceClient->gpRankedKartIndices()[i];
+        char name[32];
+        snprintf(name, Count(name), "position1_%" PRIu32 ".bti", ranks[kartIndex] + 1);
+        gpLine.rank.picture->changeTexture(name, 0);
+        m_gpPoints[i].points.picture->m_isVisible = onlineInfo.m_isFFA;
+        bool hasTeamPoints;
+        if (onlineInfo.m_isFFA) {
+            hasTeamPoints = false;
+        } else if (i + 1 == kartCount) {
+            hasTeamPoints = true;
+        } else {
+            u32 nextKartIndex = raceClient->gpRankedKartIndices()[i + 1];
+            hasTeamPoints = onlineInfo.m_teams[nextKartIndex] != onlineInfo.m_teams[kartIndex];
+        }
+        if (hasTeamPoints) {
+            u32 teamPoints = 0;
+            for (u32 j = 0; j < kartCount; j++) {
+                if (onlineInfo.m_teams[j] == onlineInfo.m_teams[kartIndex]) {
+                    teamPoints += sequenceInfo.m_points[j];
+                }
+            }
+            char plusText[5];
+            snprintf(plusText, Count(plusText), "%4" PRIu32, teamPoints);
+            kart2DCommon->changeUnicodeTexture(plusText, m_plusDigitPictures[i], 4);
+            f32 xs[4];
+            for (u32 j = 0; j < 4; j++) {
+                xs[j] = m_plusDigitPictures[i][j]->m_offset.x;
+            }
+            f32 x = (xs[0] + xs[1] + xs[2] + xs[3]) * (1.0f / 4.0f);
+            f32 w = (xs[3] - xs[0]) * (1.0f / 3.0f);
+            for (u32 j = 0; j < 4; j++) {
+                m_plusDigitPictures[i][j]->m_offset.x += m_gpPointPositions[0].x + w * 0.25f - x;
+                m_plusDigitPictures[i][j]->calcMtx();
+            }
+        } else {
+            for (u32 j = 0; j < Count(m_plusDigitPictures[i]); j++) {
+                m_plusDigitPictures[i][j]->m_isVisible = false;
+            }
         }
     }
 }
@@ -584,10 +630,11 @@ void Result2D::setOnlineCommon(bool isTotal) {
     const OnlineInfo &onlineInfo = OnlineInfo::Instance();
     const RaceInfo &raceInfo = RaceInfo::Instance();
     u32 kartCount = raceInfo.getKartCount();
+    const RaceClient *raceClient = RaceClient::Instance();
     Kart2DCommon *kart2DCommon = Kart2DCommon::Instance();
     for (u32 i = 0; i < kartCount; i++) {
         J2DScreen *screen = m_gpLineScreens[i];
-        u32 kartIndex = isTotal ? sequenceInfo.m_gpRankedKartIndices[i]
+        u32 kartIndex = isTotal ? raceClient->gpRankedKartIndices()[i]
                                 : sequenceInfo.m_raceRankedKartIndices[i];
         GXColor kartColor;
         getKartColor(kartIndex, kartColor);

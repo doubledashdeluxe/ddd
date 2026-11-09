@@ -209,7 +209,8 @@ private:
     u8 m_gpLayoutAlpha;
     bool m_hasOnlineTime;  // Added (was padding)
     bool m_hasOnlineTotal; // Added (was padding)
-    u8 _1a5f[0x1af4 - 0x1a5f];
+    u8 _1a5f[0x1adc - 0x1a5f];
+    s32 m_selectorFrames[6];
     s32 m_selectorScaleFrame;
     f32 m_selectorScale;
     s32 m_selectorCursorFrame;

@@ -24,6 +24,7 @@ public:
     u16 endFrame() const;
     bool hasResults() const;
     const Array<s32, 8> &pointDiffs() const;
+    const Array<u32, 8> &gpRankedKartIndices() const;
     void setHasItem(u32 kartIndex, u32 characterIndex);
     bool hasItem(u32 kartIndex, u32 characterIndex) const;
     u32 itemID(u32 kartIndex, u32 characterIndex) const;
@@ -63,11 +64,20 @@ private:
         Ring<ItemEvent, MaxItemEventCount> itemEvents;
     };
 
-    struct RankedKartIndexComparator {
+    struct PointComparator {
         bool operator()(const u32 &a, const u32 &b);
 
-        const Array<u32, 8> &points;
-        const Array<u32, 8> &prevPoints;
+        const Array<u32, MaxRoomKartCount> &points;
+        const Array<u32, MaxRoomKartCount> &prevPoints;
+    };
+
+    struct TeamPointComparator {
+        bool operator()(const u32 &a, const u32 &b);
+
+        PointComparator comparator;
+        const Array<u8, MaxRoomKartCount> &teams;
+        const Array<u32, MaxTeamCount> &teamPoints;
+        const Array<u32, MaxTeamCount> &prevTeamPoints;
     };
 
     RaceClient();
@@ -100,6 +110,8 @@ private:
     static f32 TruncatePosDiff(f32 diff);
     static f32 TruncateAngleDiff(f32 diff);
     static f32 TruncateVelDiff(f32 diff);
+    static Array<u32, MaxTeamCount> ComputeTeamPoints(u32 kartCount,
+            const Array<u8, MaxRoomKartCount> &teams, const Array<u32, MaxRoomKartCount> &points);
 
     bool m_ok;
     bool m_ready;
@@ -112,7 +124,8 @@ private:
     Ring<s32, 60> m_drifts;
     u16 m_endFrame;
     bool m_hasResults;
-    Array<s32, 8> m_pointDiffs;
+    Array<s32, MaxRoomKartCount> m_pointDiffs;
+    Array<u32, MaxRoomKartCount> m_gpRankedKartIndices;
     Array<Ring<KartState, 30>, MaxRoomKartCount> m_kartStates;
     Array<KartDiff, MaxRoomKartCount> m_kartDiffs;
     WriteInfo m_writeInfo;
