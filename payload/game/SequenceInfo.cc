@@ -4,6 +4,12 @@
 #include "game/OnlineInfo.hh"
 #include "game/RaceInfo.hh"
 
+#include <formats/Online.hh>
+
+bool SequenceInfo::isOnlineTA() const {
+    return m_isOnline && OnlineInfo::Instance().m_modeIndex == ModeIndex::TimeAttack;
+}
+
 u32 SequenceInfo::getBattleMode() const {
     return m_battleMode;
 }

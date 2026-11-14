@@ -6,6 +6,7 @@
 
 class SequenceInfo {
 public:
+    bool isOnlineTA() const;
     u32 getBattleMode() const;
     const char *modeIconTextureName() const;
     const char *modeNameTextureName() const;
