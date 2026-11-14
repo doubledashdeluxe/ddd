@@ -55,6 +55,8 @@ pub fn format() -> Format {
     let replay_version = SimpleConstant::new("REPLAY_VERSION", 3u16);
     let max_replay_client_count =
         SimpleConstant::new("MAX_REPLAY_CLIENT_COUNT", MAX_REPLAY_CLIENT_COUNT);
+    let course_index_history_count =
+        SimpleConstant::new("COURSE_INDEX_HISTORY_COUNT", COURSE_INDEX_HISTORY_COUNT);
     Format::new("Online")
         .with_constant(default_port)
         .with_constant(buffer_size)
@@ -94,6 +96,7 @@ pub fn format() -> Format {
         .with_constant(replay_magic)
         .with_constant(replay_version)
         .with_constant(max_replay_client_count)
+        .with_constant(course_index_history_count)
         .with_type(frame_rate())
         .with_type(room_type())
         .with_type(mode_index())
