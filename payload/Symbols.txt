@@ -685,6 +685,7 @@
 802bc378 doTandemItemAnime__8KartItemFv
 802bc998 doTandemItemRelease__8KartItemFv
 802bd478 doHorn__9KartSoundFv
+802c5e14 checkBodyHit__9KartCheckCFUlUl
 
 80333a20 __ptmf_null
 
