@@ -646,6 +646,9 @@ bool ScenePersonalRoom::clientStateRoom(const ClientStateRoomReadInfo &readInfo)
         u32 targetKart = isDuel ? i : spectating ? 0 : onlineInfo.m_localKartIndices[i];
         raceInfo.setConsoleTarget(i, targetKart, spectating);
     }
+    if (onlineInfo.m_modeIndex == ModeIndex::TimeAttack) {
+        Fill(raceInfo.m_startOffsetIndices, -1);
+    }
     return true;
 }
 

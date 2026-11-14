@@ -49,7 +49,12 @@ private:
     s16 m_statusCount;
     u8 _024[0x030 - 0x024];
     KartInfo m_karts[8];
-    u8 _0f0[0x11c - 0x0f0];
+
+public:
+    s16 m_startOffsetIndices[8];
+
+private:
+    u8 _100[0x11c - 0x100];
     bool m_isDemoKart[4];
     s16 m_awardKartNo;
     u8 _122[0x298 - 0x122];
