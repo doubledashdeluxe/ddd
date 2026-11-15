@@ -186,3 +186,4 @@ pub const MIN_KART_PLAYER_COUNT: usize = 1;
 pub const MAX_KART_PLAYER_COUNT: usize = 2;
 pub const MAX_TEAM_COUNT: usize = 4;
 pub const MAX_ITEM_EVENT_COUNT: usize = 3;
+pub const COURSE_INDEX_HISTORY_COUNT: usize = 4;
