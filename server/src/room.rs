@@ -8,6 +8,7 @@ use std::ops::BitOr;
 use std::time::{Duration, Instant, SystemTime};
 
 use anyhow::{Context, Result};
+use heapless::Deque;
 use heapless::linear_map::{self, LinearMap};
 use jiff::Timestamp;
 use log::debug;
@@ -44,6 +45,7 @@ pub struct Room {
     state: State,
     start: Instant,
     rng: ChaCha20Rng,
+    previous_races_course_indices: Deque<u8, COURSE_INDEX_HISTORY_COUNT>,
 }
 
 impl Room {
@@ -164,6 +166,7 @@ impl Room {
             state: State::new_room(None),
             start: Instant::now(),
             rng: ChaCha20Rng::from_rng(rng),
+            previous_races_course_indices: Deque::new(),
         }
     }
 
@@ -619,6 +622,8 @@ impl Room {
                 *host_course_index,
                 &self.karts,
                 &mut self.rng,
+                self.host_pk.is_some(),
+                &mut self.previous_races_course_indices,
             );
         }
         Ok(())
@@ -932,6 +937,8 @@ impl Room {
                     *host_course_index,
                     &self.karts,
                     &mut self.rng,
+                    self.host_pk.is_some(),
+                    &mut self.previous_races_course_indices,
                 );
             }
             State::Race {
@@ -1253,6 +1260,8 @@ impl State {
         host_course_index: Option<u8>,
         karts: &heapless::Vec<Kart, MAX_ROOM_KART_COUNT>,
         rng: &mut impl Rng,
+        is_personal_room: bool,
+        previous_races: &mut Deque<u8, COURSE_INDEX_HISTORY_COUNT>,
     ) -> Self {
         let inputs = karts
             .iter()
@@ -1264,10 +1273,38 @@ impl State {
             .map(|kart_index| server_karts.remove(kart_index).unwrap())
             .collect();
         let kart_count = karts.len();
-        let selected_kart_index = rng.random_range(..kart_count as u8);
-        if let Some(host_course_index) = host_course_index {
-            karts[selected_kart_index as usize].course_index = host_course_index;
-        }
+        let selected_kart_index: u8 = match host_course_index {
+            // personal rooms are random picks.
+            _ if is_personal_room => rng.random_range(..kart_count as u8),
+            Some(host_course_index) => {
+                let kart_index = rng.random_range(..kart_count as u8);
+                karts[kart_index as usize].course_index = host_course_index;
+                kart_index
+            }
+            _ => {
+                // the only valid indices are those that are not recorded.
+                let valid_course_indices: heapless::Vec<(usize, u8), MAX_ROOM_KART_COUNT> = karts
+                    .iter()
+                    .map(|kart| kart.course_index)
+                    .enumerate()
+                    .filter(|(_, course_index)| {
+                        previous_races.iter().any(|prev_index| course_index != prev_index)
+                    })
+                    .collect();
+                let kart_index = if valid_course_indices.is_empty() {
+                    // if there are no valid currently picked courses, pick any random one.
+                    rng.random_range(..kart_count as u8)
+                } else {
+                    // else, choose from the remaining (valid) ones
+                    valid_course_indices[rng.random_range(..valid_course_indices.len())].0 as u8
+                };
+                if previous_races.is_full() {
+                    previous_races.pop_front();
+                }
+                previous_races.push_back(karts[kart_index as usize].course_index).unwrap();
+                kart_index
+            }
+        };
         Self::Race {
             team_state,
             match_index,
