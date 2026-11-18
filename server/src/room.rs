@@ -113,12 +113,17 @@ impl Room {
     ) -> Self {
         debug!("-> {id}");
         let options = if mode_index.is_race() {
+            let item_mode = if mode_index == ModeIndex::Versus {
+                RoomOptionItemMode::Recommended
+            } else {
+                RoomOptionItemMode::None
+            };
             let options = RoomOptionsRace {
                 race: (),
                 code_type: RoomOptionCodeType::Long,
                 format,
                 engine_size: RoomOptionEngineSize::Large,
-                item_mode: RoomOptionItemMode::Recommended,
+                item_mode,
                 lap_count: 0,
                 match_count,
                 course_selection: RoomOptionCourseSelection::Poll,
@@ -423,6 +428,9 @@ impl Room {
                 if self.has_room_lock() {
                     anyhow::ensure!(client == *server);
                 } else {
+                    if self.mode_index == ModeIndex::TimeAttack {
+                        anyhow::ensure!(client.item_mode == RoomOptionItemMode::None);
+                    }
                     anyhow::ensure!(client.lap_count <= MAX_LAP_COUNT);
                     anyhow::ensure!(client.match_count >= MIN_MATCH_COUNT);
                     anyhow::ensure!(client.match_count <= MAX_MATCH_COUNT);
