@@ -2,9 +2,8 @@
 
 extern "C" {
 #include <dolphin/OSTime.h>
-
-#include <assert.h>
 }
+#include <portable/Algorithm.hh>
 
 u32 DOSTime::Now() {
     OSCalendarTime time;
@@ -12,27 +11,23 @@ u32 DOSTime::Now() {
 
     u32 dosTime = 0;
 
-    assert(time.year >= 1980 && time.year < 2108);
+    time.year = Clamp(time.year, 1980, 2107);
     dosTime |= (time.year - 1980) << 25;
 
-    assert(time.mon >= 0 && time.mon < 12);
+    time.mon = Clamp(time.mon, 0, 11);
     dosTime |= (time.mon + 1) << 21;
 
-    assert(time.mday >= 1 && time.mday <= 31);
+    time.mday = Clamp(time.mday, 1, 31);
     dosTime |= time.mday << 16;
 
-    assert(time.hour >= 0 && time.hour < 24);
+    time.hour = Clamp(time.hour, 0, 23);
     dosTime |= time.hour << 11;
 
-    assert(time.min >= 0 && time.min < 60);
+    time.min = Clamp(time.min, 0, 59);
     dosTime |= time.min << 5;
 
-    assert(time.sec >= 0 && time.sec < 62);
-    if (time.sec >= 60) {
-        dosTime |= 59 >> 1;
-    } else {
-        dosTime |= time.sec >> 1;
-    }
+    time.sec = Clamp(time.sec, 0, 59);
+    dosTime |= time.sec >> 1;
 
     return dosTime;
 }
