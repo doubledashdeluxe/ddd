@@ -773,7 +773,7 @@ n.build(
 )
 n.newline()
 
-for in_file in ['version.txt', 'changelog.txt']:
+for in_file in ['icon.png', 'opening.bnr', 'version.txt', 'changelog.txt']:
     n.build(
         os.path.join('$builddir', 'ddd', in_file),
         'cp',
@@ -805,6 +805,8 @@ n.newline()
 ddd_out_files = [
     os.path.join('$builddir', 'ddd', 'boot.dol'),
     os.path.join('$builddir', 'ddd', 'meta.xml'),
+    os.path.join('$builddir', 'ddd', 'icon.png'),
+    os.path.join('$builddir', 'ddd', 'opening.bnr'),
     os.path.join('$builddir', 'ddd', 'version.txt'),
     os.path.join('$builddir', 'ddd', 'changelog.txt'),
     *license_out_files,

@@ -13,7 +13,8 @@ use crate::storage::race::Team;
 #[derive(Serialize)]
 pub struct Race<'a> {
     username: &'a str,
-    avatar_url: &'a str,
+    #[serde(serialize_with = "serialize_display")]
+    avatar_url: AvatarUrl<'a>,
     embeds: (Embed<'a>,),
 }
 
@@ -21,10 +22,10 @@ impl<'a> Race<'a> {
     pub fn new(
         courses: &'a Courses,
         username: &'a str,
-        avatar_url: &'a str,
         url: &'a str,
         race: &mut storage::Race,
     ) -> Self {
+        let avatar_url = AvatarUrl { base_url: url };
         let author = Author {
             name: AuthorName { room_number: race.room_number, has_host: race.host_pk.is_some() },
             url: AuthorUrl { base_url: url, room_number: race.room_number },
@@ -71,6 +72,16 @@ impl<'a> Race<'a> {
             footer: Footer { text: footer_text },
         };
         Self { username, avatar_url, embeds: (embed,) }
+    }
+}
+
+struct AvatarUrl<'a> {
+    base_url: &'a str,
+}
+
+impl Display for AvatarUrl<'_> {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(f, "{}/icon.png", self.base_url)
     }
 }
 

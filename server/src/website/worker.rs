@@ -156,6 +156,13 @@ fn process_stats(
             "image/vnd.microsoft.icon",
             24 * 60 * 60,
         );
+        backend.write_file(
+            |_| include_bytes!("icon.png"),
+            None,
+            "icon.png",
+            "image/png",
+            24 * 60 * 60,
+        );
     }
     if state.counter.is_multiple_of(15) {
         state.rankings.write(courses, &state.player_names, backend);

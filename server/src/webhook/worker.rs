@@ -18,7 +18,6 @@ pub struct Worker {
     config: SharedConfig,
     courses: SharedCourses,
     race_receiver: Receiver<storage::Race>,
-    avatar_url: String,
     buf: Vec<u8>,
     agent: Agent,
 }
@@ -29,14 +28,7 @@ impl Worker {
         courses: SharedCourses,
         race_receiver: Receiver<storage::Race>,
     ) -> Self {
-        Self {
-            config,
-            courses,
-            race_receiver,
-            avatar_url: "https://i.imgur.com/sTkpcT9.png".to_owned(),
-            buf: vec![],
-            agent: http::agent(),
-        }
+        Self { config, courses, race_receiver, buf: vec![], agent: http::agent() }
     }
 
     pub fn run(mut self) -> ! {
@@ -59,7 +51,7 @@ impl Worker {
         race: &mut storage::Race,
     ) -> Result<()> {
         self.buf.clear();
-        let race = Race::new(courses, &config.name, &self.avatar_url, &config.url, race);
+        let race = Race::new(courses, &config.name, &config.url, race);
         serde_json::to_writer(&mut self.buf, &race)?;
 
         let Some(webhook) = &config.discord_webhook else { return Ok(()) };
