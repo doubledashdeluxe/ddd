@@ -36,9 +36,9 @@ public:
 private:
     u8 _00c[0x010 - 0x00c];
     u32 m_raceLevel;
-    u8 _014[0x018 - 0x014];
 
 public:
+    u32 m_itemSlotType;
     u16 m_vsLapNum;
     u16 m_lanLapNum;
 

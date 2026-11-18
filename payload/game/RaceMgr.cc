@@ -3,6 +3,7 @@
 #include "game/ItemObjMgr.hh"
 #include "game/J2DManager.hh"
 #include "game/MotorManager.hh"
+#include "game/SequenceInfo.hh"
 
 RaceDirector *RaceMgr::raceDirector() const {
     return m_raceDirector;
@@ -22,6 +23,14 @@ u32 RaceMgr::frame() const {
 
 bool RaceMgr::isReplay() const {
     return m_isReplay;
+}
+
+bool RaceMgr::isItemBoxValid() const {
+    if (SequenceInfo::Instance().m_isOnline) {
+        return m_raceInfo->m_itemSlotType != 1;
+    }
+
+    return REPLACED(isItemBoxValid)();
 }
 
 RaceMgr::Console &RaceMgr::console(u32 index) const {

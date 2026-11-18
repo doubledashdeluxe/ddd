@@ -5,6 +5,7 @@
 #include "game/KartLoader.hh"
 #include "game/RaceDirector.hh"
 #include "game/RaceDrawer.hh"
+#include "game/RaceInfo.hh"
 #include "game/StaffRoll2D.hh"
 
 #include <payload/Replace.hh>
@@ -25,6 +26,8 @@ public:
     u8 loopFrame() const;
     u32 frame() const;
     bool isReplay() const;
+    bool REPLACED(isItemBoxValid)() const;
+    REPLACE bool isItemBoxValid() const;
     bool isJugemCountStart() const;
     Console &console(u32 index) const;
     KartChecker *kartChecker(u32 index) const;
@@ -48,7 +51,9 @@ private:
     u8 _28[0x2c - 0x28];
     u16 : 15;
     bool m_isReplay : 1;
-    u8 _2e[0x40 - 0x2e];
+    u8 _2e[0x38 - 0x2e];
+    RaceInfo *m_raceInfo;
+    u8 _3c[0x40 - 0x3c];
     Console *m_consoles;
     u8 _44[0x48 - 0x44];
     KartChecker *m_kartCheckers[8];
