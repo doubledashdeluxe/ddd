@@ -3,6 +3,7 @@
 #include <cube/Clock.hh>
 #include <cube/DCache.hh>
 #include <cube/Memory.hh>
+#include <cube/Platform.hh>
 
 enum {
     X1 = 1 << 0,
@@ -21,7 +22,9 @@ extern "C" volatile u32 ppcirqmask;
 namespace IOS {
 
 void Resource::Init() {
-    while ((ppcctrl & Y2) != Y2) {}
+    if (!Platform::IsWiiU()) {
+        while ((ppcctrl & Y2) != Y2) {}
+    }
     ppcctrl = Y2;
     ppcctrl = X2;
     ppcirqmask = 1 << 30; // Dolphin is not happy without this, likely a bug!

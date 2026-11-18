@@ -7,8 +7,15 @@ extern "C" {
 #include <payload/PerfOverlay.hh>
 
 extern OSThreadQueue threadQueue;
+extern OSThread *currentThread;
 
 static OSThread *thread;
+
+extern "C" void REPLACED(OSThreadInit)();
+extern "C" REPLACE void OSThreadInit() {
+    currentThread = nullptr;
+    REPLACED(OSThreadInit)();
+}
 
 extern "C" REPLACE void DefaultSwitchThreadCallback(OSThread *prev, OSThread *next) {
     PerfOverlay *perfOverlay = PerfOverlay::Instance();

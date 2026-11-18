@@ -8,6 +8,7 @@ public:
     typedef Array<char, MaxPlatformLength + 1> String;
 
     static bool IsGameCube();
+    static bool IsWiiU();
     static bool IsDolphin();
     static bool GetDolphinVersion(DolphinVersion &dolphinVersion);
     static String GetString();
@@ -18,11 +19,14 @@ private:
     Platform();
 
     static void DetectGameCube();
+    static void DetectWiiU();
     static void DetectDolphin();
 
     static bool s_gameCubeDetectionIsDone;
+    static bool s_wiiUDetectionIsDone;
     static bool s_dolphinDetectionIsDone;
     static bool s_isGameCube;
+    static bool s_isWiiU;
     static bool s_isDolphin;
     static bool s_hasDolphinVersion;
     static DolphinVersion s_dolphinVersion;

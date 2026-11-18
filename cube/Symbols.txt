@@ -9,6 +9,7 @@
 800000d4 currentContext
 800000d8 currentFPUContext
 800000dc threadQueue
+800000e4 currentThread
 800000f8 busClock
 
 800030c0 exiProbeStartTimes

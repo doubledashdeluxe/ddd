@@ -1,7 +1,6 @@
 #include "Platform.hh"
 
 #include "cube/Dolphin.hh"
-#include "cube/ios/File.hh"
 #include "cube/ios/Resource.hh"
 
 extern "C" {
@@ -14,6 +13,12 @@ bool Platform::IsGameCube() {
     DetectGameCube();
 
     return s_isGameCube;
+}
+
+bool Platform::IsWiiU() {
+    DetectWiiU();
+
+    return s_isWiiU;
 }
 
 bool Platform::IsDolphin() {
@@ -55,6 +60,14 @@ void Platform::DetectGameCube() {
     s_gameCubeDetectionIsDone = true;
 }
 
+void Platform::DetectWiiU() {
+    if (s_wiiUDetectionIsDone) {
+        return;
+    }
+
+    s_isWiiU = (consoleType & 0x0fffffff) == 0x13;
+}
+
 void Platform::DetectDolphin() {
     if (s_dolphinDetectionIsDone) {
         return;
@@ -78,13 +91,10 @@ void Platform::DetectDolphin() {
             snprintf(s_string.values(), s_string.count(), "Dolphin %s", versionString.values());
         } else if (s_isDolphin) {
             snprintf(s_string.values(), s_string.count(), "Dolphin");
+        } else if (IsWiiU()) {
+            snprintf(s_string.values(), s_string.count(), "Wii U");
         } else {
-            IOS::File file("/title/00000001/00000200/content/title.tmd", IOS::Mode::Read);
-            if (file.ok()) {
-                snprintf(s_string.values(), s_string.count(), "Wii U");
-            } else {
-                snprintf(s_string.values(), s_string.count(), "Wii");
-            }
+            snprintf(s_string.values(), s_string.count(), "Wii");
         }
     }
 
@@ -92,8 +102,10 @@ void Platform::DetectDolphin() {
 }
 
 bool Platform::s_gameCubeDetectionIsDone = false;
+bool Platform::s_wiiUDetectionIsDone = false;
 bool Platform::s_dolphinDetectionIsDone = false;
 bool Platform::s_isGameCube = false;
+bool Platform::s_isWiiU = false;
 bool Platform::s_isDolphin = false;
 bool Platform::s_hasDolphinVersion = false;
 DolphinVersion Platform::s_dolphinVersion;

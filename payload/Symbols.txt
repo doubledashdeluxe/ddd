@@ -311,6 +311,7 @@
 800eafb8 SystemCallVector
 800eafd8 OSInitSystemCall
 800eb03c DefaultSwitchThreadCallback
+800eb040 OSThreadInit
 800eb198 OSInitThreadQueue
 800eb1a8 OSGetCurrentThread
 800eb1b4 OSIsThreadTerminated
