@@ -8,8 +8,6 @@ public:
     REPLACE bool isMyItem() const;
 
 private:
-    void REPLACED(doOtherAnime)();
-    REPLACE void doOtherAnime();
     void REPLACED(doTandemItemAnime)();
     REPLACE void doTandemItemAnime();
     void REPLACED(doTandemItemRelease)();
