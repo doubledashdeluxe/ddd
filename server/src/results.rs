@@ -28,32 +28,12 @@ pub fn compute(
     results
 }
 
-const POINTS: [[u16; 8]; 7] = points();
-
-const fn points() -> [[u16; 8]; 7] {
-    let mut points = [[0; _]; _];
-
-    points[6] = [10, 8, 6, 4, 3, 2, 1, 0];
-
-    let mut i = 0u32;
-    while i < 6 {
-        let mut j = 0u32;
-        while j < i + 1 {
-            let t = (j * 7) as f64 / (i + 1) as f64;
-
-            let t0 = (t.floor() as isize).cast_unsigned();
-            let t1 = t0 + 1;
-
-            let p0 = points[6][t0] as f64;
-            let p1 = points[6][t1] as f64;
-
-            let p = p0 * (1.0 - t.fract()) + p1 * t.fract();
-            points[i as usize][j as usize] = (p as i16).cast_unsigned();
-
-            j += 1;
-        }
-        i += 1;
-    }
-
-    points
-}
+const POINTS: [&[u16]; 7] = [
+    &[10, 0],
+    &[10, 4, 0],
+    &[10, 6, 3, 0],
+    &[10, 7, 4, 2, 0],
+    &[10, 7, 5, 3, 1, 0],
+    &[10, 8, 6, 4, 2, 1, 0],
+    &[10, 8, 6, 4, 3, 2, 1, 0],
+];
