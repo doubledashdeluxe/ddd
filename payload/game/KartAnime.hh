@@ -5,6 +5,7 @@
 class KartAnime {
 public:
     bool isChangeStart() const;
+    bool isFloatAnime(u32 kartIndex) const;
     bool isGetItemAnime(u32 kartIndex) const;
     bool isBack(u32 kartIndex) const;
     bool isBackStart(u32 kartIndex) const;

@@ -738,7 +738,12 @@ impl Room {
             }
             let inputs = client_inputs.iter().map(|inputs| *inputs.last().unwrap()).collect();
             let kart = &karts[kart_index];
-            let mut item_ids = kart.as_ref().map_or([ItemId::None; 2], |kart| kart.item_ids);
+            let item_id = if self.mode_index == ModeIndex::TimeAttack {
+                ItemId::Mushroom
+            } else {
+                ItemId::None
+            };
+            let mut item_ids = kart.as_ref().map_or([item_id; 2], |kart| kart.item_ids);
             for (i, item_frame) in client_kart.item_frames.iter_mut().enumerate() {
                 let kart_item_frame =
                     kart.as_ref().map_or(MIN_CLIENT_FRAME, |kart| kart.item_frames[i]);

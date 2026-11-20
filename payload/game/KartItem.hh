@@ -4,6 +4,8 @@
 
 class KartItem {
 public:
+    void REPLACED(setSucMashItem)();
+    REPLACE void(setSucMashItem)();
     bool REPLACED(isMyItem)() const;
     REPLACE bool isMyItem() const;
 
@@ -17,6 +19,8 @@ private:
     static bool IsBanana(u32 itemID);
 
     KartBody *m_body;
-    u8 _4[0xc - 0x4];
+    bool m_taMushroomDone;
+    u16 m_taMushroomFrame;
+    u8 _8[0xc - 0x8];
 };
 size_assert(KartItem, 0xc);

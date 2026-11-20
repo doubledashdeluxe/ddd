@@ -62,13 +62,22 @@ public:
 
 private:
     u8 _474[0x574 - 0x474];
-    u32 : 24;
+
+public:
+    u32 : 6;
+    bool m_hasStartBoostCharge : 1;
+    u32 : 4;
+    bool m_isFlying : 1;
+    u32 : 3;
+    bool m_hasStartBoost : 1;
+    u32 : 4;
+    bool m_hasWheelSpin : 1;
+    u32 : 3;
     bool m_isChange : 1;
     u32 : 7;
     u32 m_gameStatus;
     u32 : 28;
 
-public:
     bool m_itemTrigger : 1;
     bool m_itemBack : 1;
     bool m_itemFront : 1;

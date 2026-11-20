@@ -679,9 +679,11 @@
 802b33c8 setPtr__7KartCamFv
 802b60a0 initOutView__7KartCamFv
 802b882c isBackStart__9KartAnimeCFUl
+802b8aac isFloatAnime__9KartAnimeCFUl
 802b8b6c isGetItemAnime__9KartAnimeCFUl
 802b8c28 isBack__9KartAnimeCFUl
 802b8d80 makeThrowAnime__9KartAnimeFbbb
+802bae94 setSucMashItem__8KartItemFv
 802bbaa0 isMyItem__8KartItemCFv
 802bc378 doTandemItemAnime__8KartItemFv
 802bc998 doTandemItemRelease__8KartItemFv

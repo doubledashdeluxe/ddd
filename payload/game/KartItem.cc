@@ -4,6 +4,39 @@
 #include "game/KartCtrl.hh"
 #include "game/OnlineInfo.hh"
 #include "game/RaceClient.hh"
+#include "game/SequenceInfo.hh"
+
+void KartItem::setSucMashItem() {
+    REPLACED(setSucMashItem)();
+
+    if (!SequenceInfo::Instance().isOnlineTA()) {
+        return;
+    }
+
+    if (m_taMushroomDone) {
+        return;
+    }
+
+    if (++m_taMushroomFrame < 120) {
+        return;
+    }
+
+    u32 index = m_body->getIndex();
+    const KartAnime *kartAnime = KartCtrl::Instance()->getKartAnime(index);
+    if (kartAnime->isFloatAnime(index)) {
+        return;
+    }
+
+    if (m_body->m_hasStartBoostCharge || m_body->m_hasStartBoost || m_body->m_hasWheelSpin) {
+        return;
+    }
+
+    ItemObjMgr *itemObjMgr = ItemObjMgr::Instance();
+    for (u32 i = 0; i < 2; i++) {
+        itemObjMgr->stockItemToKart(ItemID::Mushroom, index, i, false, 0);
+    }
+    m_taMushroomDone = true;
+}
 
 bool KartItem::isMyItem() const {
     u32 index = m_body->getIndex();
