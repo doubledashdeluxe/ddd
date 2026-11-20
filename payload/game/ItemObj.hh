@@ -20,6 +20,7 @@ public:
     u32 getState() const;
     bool isSuccessionItem() const;
     s32 getSuccessionItemNum() const;
+    void setStateForceDisappear();
 
 protected:
     const TVec3<f32> &REPLACED(getHandOffsetPos)();
