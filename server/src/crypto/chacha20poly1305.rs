@@ -3,7 +3,7 @@ use orion::hazardous::aead::chacha20poly1305::{self, Nonce, SecretKey};
 
 use crate::crypto;
 
-pub enum ChaCha20Poly1305 {}
+pub struct ChaCha20Poly1305(!);
 
 impl Cipher for ChaCha20Poly1305 {
     type Key = crypto::Key;

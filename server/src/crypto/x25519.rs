@@ -4,7 +4,7 @@ use orion::hazardous::ecc::x25519::{self, PrivateKey, PublicKey};
 use crate::crypto;
 use crate::crypto::sensitive::Sensitive;
 
-pub enum X25519 {}
+pub struct X25519(!);
 
 impl DH for X25519 {
     type Key = crypto::Key;

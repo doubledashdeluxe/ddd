@@ -126,7 +126,7 @@ trait Period {
 }
 
 #[derive(Debug)]
-enum Hour {}
+struct Hour(!);
 
 impl Period for Hour {
     const UNIT: Unit = Unit::Hour;
@@ -148,7 +148,7 @@ impl Period for Hour {
 }
 
 #[derive(Debug)]
-enum Day {}
+struct Day(!);
 
 impl Period for Day {
     const UNIT: Unit = Unit::Day;
@@ -170,7 +170,7 @@ impl Period for Day {
 }
 
 #[derive(Debug)]
-enum Month {}
+struct Month(!);
 
 impl Period for Month {
     const UNIT: Unit = Unit::Month;
