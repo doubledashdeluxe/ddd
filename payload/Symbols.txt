@@ -665,6 +665,7 @@
 8021a1f8 getHandOffsetPos__7ItemObjFv
 8021d768 initFall__10ItemKinokoFv
 8026712c GetScreenPos__6SiUtilFlRC5Vec3fR5Vec2f
+802888f8 showItem__12MapObjMeteorFv
 802953dc setPosition__11ZCaptureMgrFUlUlss
 80295410 getZValue__11ZCaptureMgrFUlUl
 8029e080 debugCamera__7KartCamFPCcUl
