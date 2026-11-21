@@ -1274,13 +1274,12 @@ impl State {
             .collect();
         let kart_count = karts.len();
         let selected_kart_index: u8 = match host_course_index {
-            // personal rooms are random picks.
-            _ if is_personal_room => rng.random_range(..kart_count as u8),
             Some(host_course_index) => {
                 let kart_index = rng.random_range(..kart_count as u8);
                 karts[kart_index as usize].course_index = host_course_index;
                 kart_index
             }
+            _ if is_personal_room => rng.random_range(..kart_count as u8),
             _ => {
                 // the only valid indices are those that are not recorded.
                 let valid_course_indices: heapless::Vec<(usize, u8), MAX_ROOM_KART_COUNT> = karts
