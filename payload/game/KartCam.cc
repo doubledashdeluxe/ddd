@@ -41,6 +41,12 @@ void KartCam::doRaceCtrl() {
     // Prevent most camera mode processing when spectating
     bool isOnline = SequenceInfo::Instance().m_isOnline;
     if (isOnline && OnlineInfo::Instance().m_spectating) {
+        if (m_mode != Mode::Out) {
+            // This generally prevents issues with the camera being locked on P1
+            m_mode = Mode::Out;
+            initOutView();
+        }
+
         doCameraMode();
         return;
     }
@@ -54,10 +60,6 @@ void KartCam::doCameraMode() {
 
     bool isOnline = SequenceInfo::Instance().m_isOnline;
     if (isOnline && OnlineInfo::Instance().m_spectating) {
-        // This generally prevents issues with the camera being locked on P1
-        m_mode = Mode::Out;
-        initOutView();
-
         // Don't allow inputs on the results screen
         if (!RaceMgr::Instance()->raceDirector()->raceEnd()) {
             u32 kartCount = RaceInfo::Instance().getKartCount();
