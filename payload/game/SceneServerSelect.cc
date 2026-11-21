@@ -351,9 +351,11 @@ void SceneServerSelect::slideIn() {
     m_rowIndex = Min(m_rowIndex, m_serverCount - Min<u32>(m_serverCount, 5));
 
     CourseManager *courseManager = CourseManager::Instance();
+    m_writeInfo.raceCourses.reset();
     for (u32 i = 0; i < courseManager->courseCount(true); i++) {
         *m_writeInfo.raceCourses.emplaceBack() = courseManager->course(true, i).archiveHash();
     }
+    m_writeInfo.battleCourses.reset();
     for (u32 i = 0; i < courseManager->courseCount(false); i++) {
         *m_writeInfo.battleCourses.emplaceBack() = courseManager->course(false, i).archiveHash();
     }
