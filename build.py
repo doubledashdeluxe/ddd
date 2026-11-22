@@ -43,6 +43,7 @@ def get_flags(tool, platform, target, format_code_dirs, args):
             '-RTTI', 'off',
             '-sdata', '0',
             '-sdata2', '0',
+            '-use_lmw_stmw', 'on',
             '-w', 'most',
             '-w', 'noextracomma',
         ]
