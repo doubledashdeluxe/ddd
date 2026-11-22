@@ -29,6 +29,11 @@ bool FakeClient::write() {
 }
 
 bool FakeClient::clientStateIdle(const ClientStateIdleReadInfo & /* readInfo */) {
+    m_writer = &FakeClient::writeStateNetwork;
+    return true;
+}
+
+bool FakeClient::clientStateNetwork(const ClientStateNetworkReadInfo & /* readInfo */) {
     m_writer = &FakeClient::writeStateServer;
     return true;
 }
@@ -78,6 +83,10 @@ bool FakeClient::clientStateRace(const ClientStateRaceReadInfo & /* readInfo */)
 
 void FakeClient::clientStateError(const ClientStateErrorReadInfo & /* readInfo */) {
     m_writer = nullptr;
+}
+
+ClientState &FakeClient::writeStateNetwork() {
+    return m_state->write((ClientStateNetworkWriteInfo){});
 }
 
 ClientState &FakeClient::writeStateServer() {

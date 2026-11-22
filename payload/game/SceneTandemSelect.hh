@@ -4,8 +4,11 @@
 
 #include <jsystem/J2DScreen.hh>
 #include <portable/Array.hh>
+#include <portable/online/ClientReadHandler.hh>
 
-class SceneTandemSelect : public Scene {
+class SceneTandemSelect
+    : public Scene
+    , private ClientReadHandler {
 public:
     SceneTandemSelect(JKRArchive *archive, JKRHeap *heap);
     ~SceneTandemSelect() override;
@@ -15,6 +18,10 @@ public:
 
 private:
     typedef void (SceneTandemSelect::*State)();
+
+    bool clientStateNetwork(const ClientStateNetworkReadInfo &readInfo) override;
+    bool clientStateServer(const ClientStateServerReadInfo &readInfo) override;
+    void clientStateError(const ClientStateErrorReadInfo &readInfo) override;
 
     void slideIn();
     void slideOut();

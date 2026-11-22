@@ -20,6 +20,10 @@ ClientState &ClientStateError::write(const ClientStateIdleWriteInfo & /* writeIn
     return *this;
 }
 
+ClientState &ClientStateError::write(const ClientStateNetworkWriteInfo & /* writeInfo */) {
+    return *this;
+}
+
 ClientState &ClientStateError::write(const ClientStateServerWriteInfo & /* writeInfo */) {
     return *this;
 }

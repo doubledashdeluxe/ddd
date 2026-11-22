@@ -3,6 +3,7 @@
 #include "portable/Upcast.hh"
 #include "portable/online/ClientStateError.hh"
 #include "portable/online/ClientStateMode.hh"
+#include "portable/online/ClientStateNetwork.hh"
 #include "portable/online/ClientStateUpdate.hh"
 
 #include <formats/Version.hh>
@@ -74,6 +75,10 @@ ClientState &ClientStateServer::write(const WriteInfo &writeInfo) {
     }
 
     return *this;
+}
+
+ClientState &ClientStateServer::write(const ClientStateNetworkWriteInfo & /* writeInfo */) {
+    return *(new (m_platform.allocator) ClientStateNetwork(m_platform));
 }
 
 ClientState &ClientStateServer::write(const ClientStateUpdateWriteInfo &writeInfo) {

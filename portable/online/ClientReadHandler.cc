@@ -4,6 +4,10 @@ bool ClientReadHandler::clientStateIdle(const ClientStateIdleReadInfo & /* readI
     return false;
 }
 
+bool ClientReadHandler::clientStateNetwork(const ClientStateNetworkReadInfo & /* readInfo */) {
+    return false;
+}
+
 bool ClientReadHandler::clientStateServer(const ClientStateServerReadInfo & /* readInfo */) {
     return false;
 }

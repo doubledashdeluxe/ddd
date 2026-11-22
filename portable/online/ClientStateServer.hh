@@ -25,6 +25,7 @@ public:
     ~ClientStateServer() override;
     bool needsSockets() override;
     ClientState &read(ClientReadHandler &handler) override;
+    ClientState &write(const ClientStateNetworkWriteInfo &writeInfo) override;
     ClientState &write(const ClientStateServerWriteInfo &writeInfo) override;
     ClientState &write(const ClientStateUpdateWriteInfo &writeInfo) override;
     ClientState &write(const ClientStateModeWriteInfo &writeInfo) override;

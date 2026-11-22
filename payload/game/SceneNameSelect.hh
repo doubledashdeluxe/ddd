@@ -6,8 +6,11 @@
 #include <jsystem/J2DScreen.hh>
 #include <portable/Array.hh>
 #include <portable/UniquePtr.hh>
+#include <portable/online/ClientReadHandler.hh>
 
-class SceneNameSelect : public Scene {
+class SceneNameSelect
+    : public Scene
+    , private ClientReadHandler {
 public:
     SceneNameSelect(JKRArchive *archive, JKRHeap *heap);
     ~SceneNameSelect() override;
@@ -17,6 +20,10 @@ public:
 
 private:
     typedef void (SceneNameSelect::*State)();
+
+    bool clientStateNetwork(const ClientStateNetworkReadInfo &readInfo) override;
+    bool clientStateServer(const ClientStateServerReadInfo &readInfo) override;
+    void clientStateError(const ClientStateErrorReadInfo &readInfo) override;
 
     void slideIn();
     void slideOut();

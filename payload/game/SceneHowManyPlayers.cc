@@ -1,5 +1,6 @@
 #include "SceneHowManyPlayers.hh"
 
+#include "game/ErrorViewApp.hh"
 #include "game/GameAudioMain.hh"
 #include "game/KartGamePad.hh"
 #include "game/MenuTitleLine.hh"
@@ -10,6 +11,7 @@
 #include "game/System.hh"
 
 #include <jsystem/J2DAnmLoaderDataBase.hh>
+#include <payload/online/CubeClient.hh>
 
 SceneHowManyPlayers::SceneHowManyPlayers(JKRArchive *archive, JKRHeap *heap)
     : Scene(archive, heap) {
@@ -81,6 +83,9 @@ void SceneHowManyPlayers::draw() {
 }
 
 void SceneHowManyPlayers::calc() {
+    CubeClient *client = CubeClient::Instance();
+    client->read(*this);
+
     (this->*m_state)();
 
     OnlineBackground::Instance()->calc();
@@ -117,7 +122,21 @@ void SceneHowManyPlayers::calc() {
         m_circleAnmTransforms[i]->m_frame = m_circleAnmTransformFrames[i];
     }
 
+    client->write((ClientStateNetworkWriteInfo){});
+
     m_screen.animation();
+}
+
+bool SceneHowManyPlayers::clientStateIdle(const ClientStateIdleReadInfo & /* readInfo */) {
+    return true;
+}
+
+bool SceneHowManyPlayers::clientStateNetwork(const ClientStateNetworkReadInfo & /* readInfo */) {
+    return true;
+}
+
+void SceneHowManyPlayers::clientStateError(const ClientStateErrorReadInfo & /* readInfo */) {
+    ErrorViewApp::Call(6);
 }
 
 void SceneHowManyPlayers::slideIn() {

@@ -92,10 +92,6 @@ SceneServerSelect::SceneServerSelect(JKRArchive *archive, JKRHeap *heap) : Scene
 SceneServerSelect::~SceneServerSelect() {}
 
 void SceneServerSelect::init() {
-    if (SequenceApp::Instance()->prevScene() != SceneType::RoomTypeSelect) {
-        CubeClient::Instance()->reset();
-    }
-
     const SequenceInfo &sequenceInfo = SequenceInfo::Instance();
     OnlineInfo &onlineInfo = OnlineInfo::Instance();
     onlineInfo.setLocalKarts();
@@ -231,7 +227,7 @@ void SceneServerSelect::calc() {
     }
 
     if (m_writeInfo.raceCourses.empty() && m_writeInfo.battleCourses.empty()) {
-        client->write((ClientStateIdleWriteInfo){});
+        client->write((ClientStateNetworkWriteInfo){});
     } else {
         client->write(m_writeInfo);
     }
@@ -256,7 +252,7 @@ void SceneServerSelect::DescText::setAlpha(u8 alpha) {
     m_scene.m_descAlphas[m_descIndex] = alpha;
 }
 
-bool SceneServerSelect::clientStateIdle(const ClientStateIdleReadInfo & /* readInfo */) {
+bool SceneServerSelect::clientStateNetwork(const ClientStateNetworkReadInfo & /* readInfo */) {
     return true;
 }
 

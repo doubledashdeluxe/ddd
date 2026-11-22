@@ -37,7 +37,7 @@ private:
 
     typedef void (SceneServerSelect::*State)();
 
-    bool clientStateIdle(const ClientStateIdleReadInfo &readInfo) override;
+    bool clientStateNetwork(const ClientStateNetworkReadInfo &readInfo) override;
     bool clientStateServer(const ClientStateServerReadInfo &readInfo) override;
     bool clientStateMode(const ClientStateModeReadInfo &readInfo) override;
     void clientStateError(const ClientStateErrorReadInfo &readInfo) override;

@@ -4,8 +4,11 @@
 
 #include <jsystem/J2DScreen.hh>
 #include <portable/Array.hh>
+#include <portable/online/ClientReadHandler.hh>
 
-class SceneHowManyPlayers : public Scene {
+class SceneHowManyPlayers
+    : public Scene
+    , private ClientReadHandler {
 public:
     SceneHowManyPlayers(JKRArchive *archive, JKRHeap *heap);
     ~SceneHowManyPlayers() override;
@@ -15,6 +18,10 @@ public:
 
 private:
     typedef void (SceneHowManyPlayers::*State)();
+
+    bool clientStateIdle(const ClientStateIdleReadInfo &readInfo) override;
+    bool clientStateNetwork(const ClientStateNetworkReadInfo &readInfo) override;
+    void clientStateError(const ClientStateErrorReadInfo &readInfo) override;
 
     void slideIn();
     void slideOut();

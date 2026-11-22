@@ -3,6 +3,7 @@
 #include "portable/online/ClientStateErrorReadInfo.hh"
 #include "portable/online/ClientStateIdleReadInfo.hh"
 #include "portable/online/ClientStateModeReadInfo.hh"
+#include "portable/online/ClientStateNetworkReadInfo.hh"
 #include "portable/online/ClientStatePackReadInfo.hh"
 #include "portable/online/ClientStatePollReadInfo.hh"
 #include "portable/online/ClientStateRaceReadInfo.hh"
@@ -14,6 +15,7 @@
 class ClientReadHandler {
 public:
     virtual bool clientStateIdle(const ClientStateIdleReadInfo &readInfo);
+    virtual bool clientStateNetwork(const ClientStateNetworkReadInfo &readInfo);
     virtual bool clientStateServer(const ClientStateServerReadInfo &readInfo);
     virtual bool clientStateUpdate(const ClientStateUpdateReadInfo &readInfo);
     virtual bool clientStateMode(const ClientStateModeReadInfo &readInfo);

@@ -8,6 +8,10 @@ ClientState &ClientState::write(const ClientStateIdleWriteInfo & /* writeInfo */
     return *(new (m_platform.allocator) ClientStateError(m_platform));
 }
 
+ClientState &ClientState::write(const ClientStateNetworkWriteInfo & /* writeInfo */) {
+    return *(new (m_platform.allocator) ClientStateError(m_platform));
+}
+
 ClientState &ClientState::write(const ClientStateServerWriteInfo & /* writeInfo */) {
     return *(new (m_platform.allocator) ClientStateError(m_platform));
 }

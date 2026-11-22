@@ -1,5 +1,6 @@
 #include "SceneTandemSelect.hh"
 
+#include "game/ErrorViewApp.hh"
 #include "game/GameAudioMain.hh"
 #include "game/Kart2DCommon.hh"
 #include "game/KartGamePad.hh"
@@ -174,6 +175,9 @@ void SceneTandemSelect::draw() {
 }
 
 void SceneTandemSelect::calc() {
+    CubeClient *client = CubeClient::Instance();
+    client->read(*this);
+
     (this->*m_state)();
 
     OnlineBackground::Instance()->calc();
@@ -227,11 +231,23 @@ void SceneTandemSelect::calc() {
 
     m_mainScreen.animation();
     m_padCountScreen.animation();
+
+    client->write((ClientStateNetworkWriteInfo){});
+}
+
+bool SceneTandemSelect::clientStateNetwork(const ClientStateNetworkReadInfo & /* readInfo */) {
+    return true;
+}
+
+bool SceneTandemSelect::clientStateServer(const ClientStateServerReadInfo & /* readInfo */) {
+    return true;
+}
+
+void SceneTandemSelect::clientStateError(const ClientStateErrorReadInfo & /* readInfo */) {
+    ErrorViewApp::Call(6);
 }
 
 void SceneTandemSelect::slideIn() {
-    CubeClient::Instance()->reset();
-    CubeServerManager::Instance()->unlock();
     MenuTitleLine::Instance()->drop(MenuTitleLine::Title::SelectTandem);
     m_mainAnmTransformFrame = 0;
     m_padCountAnmTransformFrame = 0;

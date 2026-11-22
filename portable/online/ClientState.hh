@@ -5,6 +5,7 @@
 #include "portable/online/ClientStateErrorWriteInfo.hh"
 #include "portable/online/ClientStateIdleWriteInfo.hh"
 #include "portable/online/ClientStateModeWriteInfo.hh"
+#include "portable/online/ClientStateNetworkWriteInfo.hh"
 #include "portable/online/ClientStatePackWriteInfo.hh"
 #include "portable/online/ClientStatePollWriteInfo.hh"
 #include "portable/online/ClientStateRaceWriteInfo.hh"
@@ -44,6 +45,7 @@ public:
     virtual bool needsSockets() = 0;
     virtual ClientState &read(ClientReadHandler &handler) = 0;
     virtual ClientState &write(const ClientStateIdleWriteInfo &writeInfo);
+    virtual ClientState &write(const ClientStateNetworkWriteInfo &wrifeInfo);
     virtual ClientState &write(const ClientStateServerWriteInfo &writeInfo);
     virtual ClientState &write(const ClientStateUpdateWriteInfo &writeInfo);
     virtual ClientState &write(const ClientStateModeWriteInfo &writeInfo);

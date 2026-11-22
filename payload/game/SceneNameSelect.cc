@@ -1,6 +1,7 @@
 #include "SceneNameSelect.hh"
 
 #include "game/CardAgent.hh"
+#include "game/ErrorViewApp.hh"
 #include "game/ExtendedSystemRecord.hh"
 #include "game/GameAudioMain.hh"
 #include "game/KartGamePad.hh"
@@ -101,6 +102,9 @@ void SceneNameSelect::draw() {
 }
 
 void SceneNameSelect::calc() {
+    CubeClient *client = CubeClient::Instance();
+    client->read(*this);
+
     (this->*m_state)();
 
     OnlineBackground::Instance()->calc();
@@ -122,11 +126,23 @@ void SceneNameSelect::calc() {
     for (u32 i = 0; i < m_padCount; i++) {
         m_nameEntryHelpers[i]->calc();
     }
+
+    client->write((ClientStateNetworkWriteInfo){});
+}
+
+bool SceneNameSelect::clientStateNetwork(const ClientStateNetworkReadInfo & /* readInfo */) {
+    return true;
+}
+
+bool SceneNameSelect::clientStateServer(const ClientStateServerReadInfo & /* readInfo */) {
+    return true;
+}
+
+void SceneNameSelect::clientStateError(const ClientStateErrorReadInfo & /* readInfo */) {
+    ErrorViewApp::Call(6);
 }
 
 void SceneNameSelect::slideIn() {
-    CubeClient::Instance()->reset();
-    CubeServerManager::Instance()->unlock();
     MenuTitleLine::Instance()->drop("SelectName.bti");
     m_mainAnmTransformFrame = 0;
     m_padCountAnmTransformFrame = 0;
