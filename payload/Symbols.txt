@@ -47,6 +47,7 @@
 80014e14 FindFromRoot__7JKRHeapFPv
 800155a8 __nw__FUl
 8001563c __nw__FUlP7JKRHeapl
+800156a8 __nwa__FUl
 800157a8 __dl__FPv
 800157cc __dla__FPv
 80015f40 Create__12JKRSolidHeapFUlP7JKRHeapb
@@ -78,6 +79,7 @@
 8001fbf0 Create__10JUTProcBarFv
 8001fd64 clear__10JUTProcBarFv
 8001fe34 draw__10JUTProcBarFv
+800230f4 __ct__10JUTTextureFUlUlUl
 80023adc PreRetraceProc__8JUTVideoFUl
 80023d44 DummyNoDrawWait__8JUTVideoFv
 80023e24 setRenderMode__8JUTVideoFPC15GXRenderModeObj
@@ -105,7 +107,9 @@
 800432fc animation__11J2DMaterialFv
 8004558c drawFullSet__12J2DPictureExFffffPA3_A4_f
 800483b4 getBlackWhite__10J2DPictureCFP7GXColorP7GXColor
+8004da44 setTexCacheRegion__6J3DSysFUl
 8004dbf4 drawInit__6J3DSysFv
+8004e3c8 reinitGX__6J3DSysFv
 8004ecfc setArray__15J3DVertexBufferFv
 80066554 J3DGDSetTexImgPtr__FUlPv
 800665e8 J3DGDSetTexImgPtrRaw__FUlUl
@@ -136,6 +140,7 @@
 800a9600 PPCMfmsr
 800a9608 PPCMtmsr
 800a96cc PPCMfhid2
+800a9740 PSMTXCopy
 800a9774 PSMTXConcat
 800a9890 PSMTXInverse
 800a9988 PSMTXRotRad
@@ -199,8 +204,12 @@
 800bfb00 GXInvalidateTexAll
 800c0730 GXSetTevColorOp
 800c0798 GXSetTevAlphaOp
+800c111c GXSetColorUpdate
+800c1148 GXSetAlphaUpdate
+800c1174 GXSetZMode
 800c11dc GXSetPixelFmt
 800c12b0 GXSetDither
+800c12dc GXSetDstAlpha
 800c1efc GXCallDisplayList
 800c213c GXSetCurrentMtx
 800c22b4 GXSetViewport
@@ -340,6 +349,7 @@
 800ff0e0 __register_global_object
 800ff1a4 __destroy_arr
 800ff21c __construct_array
+800ff3d0 __construct_new_array
 800ff4d4 __ptmf_test
 800ff504 __ptmf_scall
 800ff554 __cvt_fp2unsigned
@@ -523,12 +533,15 @@
 80189bb0 setHeapGroup__8SysDebugFPCcP7JKRHeap
 80189bb4 setDefaultHeapGroup__8SysDebugFP7JKRHeap
 80189c64 createHeapInfo__8SysDebugFP7JKRHeapPCc
+8018a430 draw__8LightMgrFv
 8018b298 reset__8RaceInfoFv
 8018b3d8 setConsoleTarget__8RaceInfoFUlUlb
 8018b3f0 settingForWaitDemo__8RaceInfoFb
 8018b708 setRace__8RaceInfoFUlUlUlUlUl
 8018b794 setKart__8RaceInfoFUlUlUlP11KartGamePadUlP11KartGamePad
 8018b824 setRaceLevel__8RaceInfoFUl
+8018f744 drawKart__10KartDrawerFUlUl
+8018f918 drawDriver__10KartDrawerFUlUl
 8019e54c resetCommon__12RaceDirectorFv
 8019e5dc calc__12RaceDirectorFv
 8019e6ec doCourseDemo__12RaceDirectorFv
@@ -541,6 +554,12 @@
 8019f238 checkPauseChoice__12RaceDirectorFv
 8019f448 setPhaseWait__12RaceDirectorFUlbbl
 8019f568 checkRaceEnd__12RaceDirectorCFv
+801a0764 drawMidScene__10RaceDrawerFv
+801a0d74 drawGhost__10RaceDrawerFv
+801ab13c reset__11GhostScreenFv
+801ab148 captureScene__11GhostScreenFv
+801ab1bc captureGhost__11GhostScreenFv
+801ab208 draw__11GhostScreenFv
 801af940 Create__8MovieAppFv
 801b0084 Create__11MoviePlayerFP7JKRHeap
 801b0314 DrawDone__11MoviePlayerFv
@@ -592,6 +611,18 @@
 801d0d38 Get2DScisY__6SystemFv
 801d0d48 Get2DScisW__6SystemFv
 801d0d58 Get2DScisH__6SystemFv
+801d0d68 Get3DScisX__6SystemFv
+801d0d78 Get3DScisY__6SystemFv
+801d0d88 Get3DScisW__6SystemFv
+801d0d98 Get3DScisH__6SystemFv
+801d0de8 Get3DScisDiv2X__6SystemFUc
+801d0dfc Get3DScisDiv2Y__6SystemFUc
+801d0e14 Get3DScisDiv2W__6SystemFUc
+801d0e2c Get3DScisDiv2H__6SystemFUc
+801d0e44 Get3DScisDiv4X__6SystemFUc
+801d0e58 Get3DScisDiv4Y__6SystemFUc
+801d0e70 Get3DScisDiv4W__6SystemFUc
+801d0e88 Get3DScisDiv4H__6SystemFUc
 801d139c expand__11KartGamePadFRCQ26PadMgr11KartPadData
 801d139c expand__11KartGamePadFRCUs
 801d1a9c Draw__6AppMgrFv
@@ -658,6 +689,7 @@
 8020b7d0 startItemShuffleSingle__10ItemObjMgrFUlb
 8020b8a4 startItemShuffleDouble__10ItemObjMgrFUl
 8020b9d4 getRobberyItemNum__10ItemObjMgrFUlUl
+8020bd3c drawSimpleModel__10ItemObjMgrFUlUlUlP8LightObj
 8020c9b8 slotItem__14ItemShuffleMgrFUlUl
 8020cbac doShuffle__14ItemShuffleMgrFUlUl
 802145c4 isSuccessionItem__7ItemObjCFv
@@ -674,6 +706,7 @@
 8029f190 doCameraMode__7KartCamFv
 8029f63c dynamicsInit__8KartCtrlFb
 8029fb60 dynamicsReset__8KartCtrlFv
+802a02b4 drawKartInit__8KartCtrlFUl
 802aaf34 doChange__8KartGameFv
 802afcb0 doStatus__8KartGameFv
 802b1284 getBodyPos__8KartCtrlCFUlR5Vec3f
@@ -783,6 +816,7 @@
 803d5600 s_instance__12BattleName2D
 803d5628 s_instance__7RaceMgr
 803d5630 s_manager__8SysDebug
+803d5638 s_instance__8LightMgr
 803d5ab0 s_instance__11MoviePlayer
 803d5b30 s_time__9GameClock
 803d5b60 s_instance__7RaceApp

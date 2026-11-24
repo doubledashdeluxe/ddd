@@ -5,6 +5,13 @@
 #include "game/MotorManager.hh"
 #include "game/SequenceInfo.hh"
 
+void RaceMgr::setup() {
+    if (SequenceInfo::Instance().isOnlineTA()) {
+        m_hasAreaLight = true;
+    }
+    m_raceDrawer->setup();
+}
+
 RaceDirector *RaceMgr::raceDirector() const {
     return m_raceDirector;
 }

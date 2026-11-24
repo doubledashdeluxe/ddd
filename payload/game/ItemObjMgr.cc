@@ -1,5 +1,6 @@
 #include "ItemObjMgr.hh"
 
+#include "game/J2DManager.hh"
 #include "game/KartCtrl.hh"
 #include "game/OnlineInfo.hh"
 #include "game/RaceClient.hh"
@@ -67,6 +68,15 @@ bool ItemObjMgr::startItemShuffle(u32 kart, u32 character) {
 
     m_shuffleMgrs[kart][character]->start();
     return true;
+}
+
+void ItemObjMgr::drawSimpleModel(u32 screenIndex, u32 type, u32 kart, LightObj *light) {
+    if (SequenceInfo::Instance().isOnlineTA() && type == 1 &&
+            J2DManager::KartStatus(kart) != screenIndex) {
+        return;
+    }
+
+    REPLACED(drawSimpleModel)(screenIndex, type, kart, light);
 }
 
 ItemObjMgr *ItemObjMgr::Instance() {

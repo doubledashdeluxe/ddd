@@ -3,6 +3,15 @@
 #include <payload/Replace.h>
 #include <portable/Types.h>
 
+enum {
+    GX_TF_I8 = 1,
+    GX_TF_RGB565 = 4,
+};
+
+enum {
+    GX_TEXCACHE_128K = 1,
+};
+
 typedef struct GXTexObj {
     u8 _00[0x0c - 0x00];
     u32 image_ptr;

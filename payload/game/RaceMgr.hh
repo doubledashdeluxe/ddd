@@ -21,6 +21,7 @@ public:
     };
     size_assert(Console, 0x10);
 
+    void setup();
     RaceDirector *raceDirector() const;
     RaceDrawer *raceDrawer() const;
     u8 loopFrame() const;
@@ -45,7 +46,8 @@ private:
     u8 _00[0x18 - 0x00];
     RaceDirector *m_raceDirector;
     RaceDrawer *m_raceDrawer;
-    u8 _20[0x22 - 0x20];
+    u16 : 15;
+    bool m_hasAreaLight : 1;
     u8 m_loopFrame;
     u32 m_frame;
     u8 _28[0x2c - 0x28];

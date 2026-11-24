@@ -392,7 +392,11 @@ void ClientStateRoom::setEngineSize(u8 engineSize) {
 
 bool ClientStateRoom::isItemModeValid(u8 itemMode) {
     if (m_writeInfo.isSearch) {
-        return itemMode == RoomOptionItemMode::Recommended;
+        if (m_writeInfo.modeIndex == ModeIndex::TimeAttack) {
+            return itemMode == RoomOptionItemMode::None;
+        } else {
+            return itemMode == RoomOptionItemMode::Recommended;
+        }
     } else {
         const Optional<ReadInfo::Info> &info = m_readInfo.info;
         return !info || !info->continuing || itemMode == info->options.itemMode;

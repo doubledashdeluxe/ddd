@@ -8,6 +8,7 @@
 class KartCam {
 public:
     KartBody *getBody() const;
+    const Mtx34 &mtx() const;
     bool hasJumped() const;
 
 private:

@@ -21,6 +21,8 @@ public:
     void REPLACED(dynamicsReset)();
     REPLACE void dynamicsReset();
 
+    void drawKartInit(u32 screenIndex);
+
     static KartCtrl *Instance();
 
 private:

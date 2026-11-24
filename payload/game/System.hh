@@ -37,6 +37,18 @@ public:
     static u32 Get2DScisY();
     static u32 Get2DScisW();
     static u32 Get2DScisH();
+    static u32 Get3DScisX();
+    static u32 Get3DScisY();
+    static u32 Get3DScisW();
+    static u32 Get3DScisH();
+    static u32 Get3DScisDiv2X(u8 index);
+    static u32 Get3DScisDiv2Y(u8 index);
+    static u32 Get3DScisDiv2W(u8 index);
+    static u32 Get3DScisDiv2H(u8 index);
+    static u32 Get3DScisDiv4X(u8 index);
+    static u32 Get3DScisDiv4Y(u8 index);
+    static u32 Get3DScisDiv4W(u8 index);
+    static u32 Get3DScisDiv4H(u8 index);
 
     static void SetAspectRatio(u32 index);
 

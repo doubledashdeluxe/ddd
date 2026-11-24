@@ -10,6 +10,7 @@ typedef struct Vec3 {
 
 typedef f32 Mtx34[3][4];
 
+void PSMTXCopy(const Mtx34 src, Mtx34 dst);
 void PSMTXConcat(const Mtx34 a, const Mtx34 b, Mtx34 ab);
 void PSMTXInverse(const Mtx34 m, Mtx34 inv);
 void PSMTXRotRad(Mtx34 m, char axis, f32 rad);

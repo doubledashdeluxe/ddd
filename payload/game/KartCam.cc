@@ -14,6 +14,10 @@ KartBody *KartCam::getBody() const {
     return m_body;
 }
 
+const Mtx34 &KartCam::mtx() const {
+    return m_mtx;
+}
+
 bool KartCam::hasJumped() const {
     return m_hasJumped;
 }

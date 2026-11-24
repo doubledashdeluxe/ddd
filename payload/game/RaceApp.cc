@@ -16,6 +16,7 @@
 RaceApp *RaceApp::Create() {
     if (!s_instance) {
         s_instance = new (System::GetAppHeap(), 0x4) RaceApp;
+        s_instance->setup();
         if (SequenceInfo::Instance().m_isOnline) {
             RaceClient::Create();
         }
@@ -97,6 +98,10 @@ void RaceApp::calc() {
     if (raceClient->ready() && !paused) {
         raceClient->write();
     }
+}
+
+void RaceApp::setup() {
+    m_raceMgr->setup();
 }
 
 void RaceApp::ctrlRace() {

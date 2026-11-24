@@ -2,6 +2,7 @@
 
 #include "game/ItemObj.hh"
 #include "game/ItemShuffleMgr.hh"
+#include "game/LightObj.hh"
 
 #include <jsystem/JSUList.hh>
 #include <payload/Replace.hh>
@@ -21,6 +22,8 @@ public:
     bool startItemShuffle(u32 kart, u32 character);
     bool stockItemToKart(u32 item, u32 kart, u32 character, bool isHeart, u8 r8);
     bool equipItemToKart(u32 item, u32 kart, u32 character, bool isHeart, u8 r8);
+    void REPLACED(drawSimpleModel)(u32 screenIndex, u32 type, u32 kart, LightObj *light);
+    REPLACE void drawSimpleModel(u32 screenIndex, u32 type, u32 kart, LightObj *light);
 
     static ItemObjMgr *Instance();
 

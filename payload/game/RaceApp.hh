@@ -44,6 +44,7 @@ private:
     void REPLACED(calc)();
     REPLACE void calc() override;
 
+    void setup();
     void REPLACED(ctrlRace)();
     REPLACE void ctrlRace();
     void ctrlRecorder();

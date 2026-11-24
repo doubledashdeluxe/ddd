@@ -1,15 +1,22 @@
 #pragma once
 
+extern "C" {
+#include <dolphin/MTX.h>
+}
 #include <portable/Types.hh>
 
 class J3DSys {
 public:
+    void setTexCacheRegion(u32 cacheSize);
     void drawInit();
+    void reinitGX();
+    void setViewMtx(const Mtx34 viewMtx);
 
     static J3DSys &Instance();
 
 private:
-    u8 _000[0x058 - 0x000];
+    Mtx34 m_viewMtx;
+    u8 _030[0x058 - 0x030];
 
 public:
     void *_058;
