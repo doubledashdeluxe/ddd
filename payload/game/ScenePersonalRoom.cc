@@ -442,6 +442,9 @@ bool ScenePersonalRoom::clientStateRoom(const ClientStateRoomReadInfo &readInfo)
 
     u32 raceMode = Modes[info->modeIndex];
     m_isRace = RaceMode::IsRace(raceMode);
+    J2DPicture *packPicture = m_mainScreen.search("Icon")->downcast<J2DPicture>();
+    const char *packTextureName = m_isRace ? "RacePack.bti" : "BattlePack.bti";
+    packPicture->changeTexture(packTextureName, 0);
     for (u32 i = 0; i < m_entryScreens.count(); i++) {
         J2DPicture *iconPicture = m_entryScreens[i].search("Icon")->downcast<J2DPicture>();
         const char *iconTextureName = ModeIconTextureNames[info->modeIndex];

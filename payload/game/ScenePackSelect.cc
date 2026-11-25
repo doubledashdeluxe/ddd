@@ -111,7 +111,7 @@ void ScenePackSelect::init() {
         if (RaceInfo::Instance().isRace()) {
             picture->changeTexture("Course.bti", 0);
         } else {
-            picture->changeTexture("Arena.bti", 0);
+            picture->changeTexture("Stage.bti", 0);
         }
     }
 
