@@ -16,7 +16,7 @@ pub struct Stats {
 
 impl Stats {
     pub fn add(&mut self, race: &Race) {
-        let dt = race.start.to_zoned(TimeZone::UTC).into();
+        let dt = race.start.to_zoned_datetime(TimeZone::UTC).into();
         self.races.add(dt, 1);
     }
 

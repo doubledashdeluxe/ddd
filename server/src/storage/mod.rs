@@ -45,7 +45,7 @@ impl Storage {
 
         let mut init = Init::new(path.to_owned(), tmp_path);
         let mut website_init = WebsiteInit::default();
-        let now = Timestamp::now().to_zoned(TimeZone::UTC).into();
+        let now = Timestamp::now().to_zoned_datetime(TimeZone::UTC).into();
 
         let players_path = path.join("players");
         fs::create_dir_all(&players_path)?;

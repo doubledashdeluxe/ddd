@@ -5,7 +5,7 @@ use std::collections::hash_map::{Entry, HashMap};
 use std::iter;
 use std::mem;
 use std::ops::BitOr;
-use std::time::{Duration, Instant, SystemTime};
+use std::time::{Duration, Instant};
 
 use anyhow::{Context, Result};
 use heapless::Deque;
@@ -979,9 +979,8 @@ impl Room {
                 if batch.is_none() && frame >= *end_frame + 5 * 60 {
                     *results = results::compute(&self.karts, karts);
                     let match_end = Timestamp::now();
-                    let match_duration = SystemTime::from(match_end)
-                        .duration_since(SystemTime::from(*match_start))
-                        .unwrap_or_default();
+                    let match_duration =
+                        match_end.duration_since(*match_start).try_into().unwrap_or_default();
                     for kart in &mut self.karts {
                         for player in kart.players_mut() {
                             player.match_count += 1;

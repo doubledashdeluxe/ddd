@@ -50,7 +50,7 @@ impl Stat {
 
 impl Default for Stat {
     fn default() -> Self {
-        let now = Timestamp::now().to_zoned(TimeZone::UTC).into();
+        let now = Timestamp::now().to_zoned_datetime(TimeZone::UTC).into();
         Self { hourly: Hourly::new(now), daily: Daily::new(now), monthly: Monthly::new(now) }
     }
 }
