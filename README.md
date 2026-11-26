@@ -13,7 +13,7 @@ You need:
 - Python 3.11 or later
 - Ninja
 - cargo
-- LLVM 22
+- LLVM 23
 
 The used compiler is [NXP 'CodeWarrior Special Edition' for MPC55xx/MPC56xx v2.10](https://www.nxp.com/lgfiles/devsuites/PowerPC/CW55xx_v2_10_SE.exe). You can run `tools/prepare.sh` which will extract the relevant files from the installer with 7-Zip, or do the same manually. To use the compiler on non-Windows platforms, a Wine installation is needed.
 
