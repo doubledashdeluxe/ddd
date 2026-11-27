@@ -1,9 +1,10 @@
 use std::io::Write;
 use std::iter;
-use std::time::SystemTime;
+use std::time::Duration;
 use std::vec::IntoIter;
 
 use anyhow::Result;
+use jiff::Timestamp;
 use yazi::Encoder;
 
 use crate::formats::online::*;
@@ -56,10 +57,9 @@ pub fn write(batch: Batch, buf: &mut Vec<u8>) -> Result<()> {
         }
         client.teams.push(kart.team).unwrap();
     }
-    let time = SystemTime::from(race.end)
-        .duration_since(SystemTime::UNIX_EPOCH)
-        .unwrap_or_default()
-        .as_secs();
+    let duration: Duration =
+        race.end.duration_since(Timestamp::UNIX_EPOCH).try_into().unwrap_or_default();
+    let time = duration.as_secs();
     let replay_race = ReplayRace {
         frame_rate: race.frame_rate,
         mode_index: race.mode,

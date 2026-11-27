@@ -3,7 +3,7 @@ use std::fmt;
 use std::io::{self, IsTerminal};
 
 use anyhow::Result;
-use jiff::Zoned;
+use jiff::ZonedDateTime;
 use log::{Level, LevelFilter, Log, Metadata, Record};
 use yansi::{Condition, Paint};
 
@@ -46,7 +46,7 @@ impl Log for Logger {
             return;
         }
 
-        let time = Zoned::now().time();
+        let time = ZonedDateTime::now().time();
         let args = match record.level() {
             Level::Error => args.red().bold(),
             Level::Warn => args.yellow().bold(),

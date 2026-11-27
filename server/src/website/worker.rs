@@ -131,7 +131,7 @@ fn process_batch(
         state.player_names.insert(player.number, player.name);
     }
 
-    let now = Timestamp::now().to_zoned(TimeZone::UTC).into();
+    let now = Timestamp::now().to_zoned_datetime(TimeZone::UTC).into();
     state.rankings.add(now, &batch.race);
     state.stats.add(&batch.race);
 }
@@ -143,7 +143,7 @@ fn process_stats(
     stats: &StorageStats,
     backend: &mut impl Backend,
 ) {
-    let now = Timestamp::now().to_zoned(TimeZone::UTC).into();
+    let now = Timestamp::now().to_zoned_datetime(TimeZone::UTC).into();
     state.rankings.update(now);
     state.stats.max(stats);
 

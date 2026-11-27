@@ -122,7 +122,7 @@ impl Worker {
                 .map(|frame_rate| self.rooms.count(frame_rate) as u64)
                 .sum();
             let stats = Stats {
-                dt: Timestamp::now().to_zoned(TimeZone::UTC).into(),
+                dt: Timestamp::now().to_zoned_datetime(TimeZone::UTC).into(),
                 player_count: self.clients.player_count() as u64,
                 room_count,
             };

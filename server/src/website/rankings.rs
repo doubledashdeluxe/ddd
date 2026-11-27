@@ -1,7 +1,6 @@
 use std::cmp::Reverse;
 use std::collections::HashMap;
 use std::fmt::{self, Display, Result, Write};
-use std::time::SystemTime;
 
 use jiff::civil::Date;
 use jiff::tz::TimeZone;
@@ -40,13 +39,12 @@ pub struct Rankings {
 
 impl Rankings {
     pub fn add(&mut self, now: Date, race: &Race) {
-        let date = race.start.to_zoned(TimeZone::UTC).into();
+        let date = race.start.to_zoned_datetime(TimeZone::UTC).into();
         self.versions.add(now, date, race.version.clone(), 1);
         self.courses.add(now, date, race.course_hash, 1);
         self.packs.add(now, date, race.pack_hash, 1);
-        let start = SystemTime::from(race.start);
-        let end = SystemTime::from(race.end);
-        let duration = end.duration_since(start).unwrap_or_default();
+        let duration = race.end.duration_since(race.start);
+        let duration = duration.try_into().unwrap_or_default();
         let duration = Duration(duration);
         for kart in &race.karts {
             self.regions.add(now, date, kart.region, 1);
