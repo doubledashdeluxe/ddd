@@ -28,6 +28,8 @@ private:
     };
     size_assert(CallbackObject, 0x14);
 
+    void REPLACED(showMainInfo)(u16 error, OSContext *context, u32 dsisr, u32 dar);
+    REPLACE void showMainInfo(u16 error, OSContext *context, u32 dsisr, u32 dar);
     REPLACE void showStack(OSContext *context);
 
     void printContext(u16 error, OSContext *context, u32 dsisr, u32 dar);
