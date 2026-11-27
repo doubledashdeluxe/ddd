@@ -39,6 +39,7 @@ void Payload::Run(Context *context) {
     INFO("Initializing clock...");
     Clock::Init();
     INFO("Initialized clock.");
+    Platform::IsDolphin();
 
     if (!Platform::IsGameCube()) {
         INFO("Initializing WUP-028...");

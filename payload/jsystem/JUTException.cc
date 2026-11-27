@@ -1,6 +1,8 @@
 #include "JUTException.hh"
 
+#include <cube/DiscID.hh>
 #include <cube/Memory.hh>
+#include <cube/Platform.hh>
 #include <cube/VI.hh>
 extern "C" {
 #include <cube/StackCanary.h>
@@ -8,6 +10,7 @@ extern "C" {
 #include <dolphin/PPCArch.h>
 #include <dolphin/VI.h>
 }
+#include <formats/Version.hh>
 
 void *JUTException::run() {
     u32 msr = PPCMfmsr();
@@ -78,4 +81,14 @@ void JUTException::showStack(OSContext * /* context */) {
         JUTConsoleManager::Instance()->drawDirect(true);
         waitTime(m_traceWaitTime);
     }
+}
+
+void JUTException::showMainInfo(u16 error, OSContext *context, u32 dsisr, u32 dar) {
+    s_console->print("-------------------------------- VERSION\n");
+    s_console->print_f("DDD Version: %s\n", Version);
+    s_console->print_f("Game Region: %s\n", DiscID::Get().gameID);
+    s_console->print_f("Platform:    %s\n", Platform::GetString().values());
+
+    s_console->print("-------------------------------- INFO\n");
+    REPLACED(showMainInfo)(error, context, dsisr, dar);
 }
