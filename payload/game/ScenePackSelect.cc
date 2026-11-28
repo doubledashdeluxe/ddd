@@ -414,6 +414,7 @@ void ScenePackSelect::stateIdle() {
         }
         GameAudio::Main::Instance()->startSystemSe(SoundID::JA_SE_TR_DECIDE_LITTLE);
         sequenceInfo.m_packIndex = m_packIndex;
+        onlineInfo.m_courseIndex = 0;
         slideOut();
     } else if (button.risingEdge() & PAD_BUTTON_B) {
         if (m_isOnline) {

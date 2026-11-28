@@ -44,6 +44,7 @@ public:
     Array<u8, 4> m_kartIDs;
     bool m_hasCourseSelection;
     bool m_hasCourseShuffle;
+    u32 m_courseIndex;
 
 private:
     OnlineInfo();

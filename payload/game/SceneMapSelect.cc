@@ -125,7 +125,10 @@ void SceneMapSelect::init() {
     m_ok = true;
     m_mapCount =
             courseManager->courseCount(m_isOnline, raceInfo.isRace(), sequenceInfo.m_packIndex);
-    m_mapIndex = 0;
+
+    OnlineInfo &onlineInfo = OnlineInfo::Instance();
+    m_mapIndex = onlineInfo.m_courseIndex;
+
     if (sequenceInfo.m_fromPause) {
         m_mapIndex = sequenceInfo.m_mapIndex;
         sequenceInfo.m_fromPause = false;
@@ -138,7 +141,7 @@ void SceneMapSelect::init() {
     m_rowIndex = Min(m_rowIndex, m_rowCount - Min<u32>(m_rowCount, 2));
 
     if (m_isOnline) {
-        m_writeInfo.matchIndex = OnlineInfo::Instance().m_matchIndex;
+        m_writeInfo.matchIndex = onlineInfo.m_matchIndex;
         m_writeInfo.packCourseCount = m_mapCount;
         m_writeInfo.kartCount = raceInfo.getKartCount();
     }
@@ -648,6 +651,7 @@ void SceneMapSelect::stateSelect() {
         sequenceInfo.m_mapIndex = m_mapIndex;
         if (m_isOnline) {
             m_nextScene = SceneType::CoursePoll;
+            OnlineInfo::Instance().m_courseIndex = m_mapIndex;
         } else {
             m_nextScene = SceneType::None;
             GameAudio::Main::Instance()->fadeOutAll(15);
